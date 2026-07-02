@@ -56,9 +56,8 @@ workflows:
       app_store_connect: CodemagicAppStoreKey
     environment:
       flutter: 3.41.9
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.elsheikh.whatscamp
+      vars:
+        BUNDLE_ID: "com.elsheikh.whatscamp"
     scripts:
       - name: Flutter version
         script: flutter --version
@@ -66,8 +65,14 @@ workflows:
         script: flutter pub get
       - name: Install CocoaPods dependencies
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Set up code signing (fetch/create profiles)
-        script: xcode-project use-profiles
+      - name: Set up code signing (creates App ID, cert & profile if missing)
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain initialize
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Build signed IPA
         script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
     artifacts:
