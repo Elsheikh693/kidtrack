@@ -1,0 +1,86 @@
+# Codemagic CI/CD config for KidTrack
+# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
+#
+# Android signing works automatically because key.properties + keystore.jks
+# are committed to this (private) repo, so no extra Codemagic setup is needed
+# for Android. iOS needs an App Store Connect API key configured in the
+# Codemagic UI (see notes at the bottom of this file).
+
+workflows:
+  # ----------------------------------------------------------------------
+  # ANDROID — builds a release APK (for manual install) and AAB (Play Store)
+  # ----------------------------------------------------------------------
+  android-workflow:
+    name: Android Build
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: 3.41.9   # matches the local Flutter version; change to "stable" if needed
+    scripts:
+      - name: Flutter version
+        script: flutter --version
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build APK (release)
+        script: flutter build apk --release
+      - name: Build App Bundle (release)
+        script: flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - msheikh@tharaco.sa
+        notify:
+          success: true
+          failure: true
+      # To auto-upload to Google Play, add a Google Play service account in
+      # Codemagic UI, then uncomment:
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: internal
+
+  # ----------------------------------------------------------------------
+  # iOS — builds a signed IPA (App Store / TestFlight)
+  # Requires an App Store Connect API key set up in Codemagic UI.
+  # ----------------------------------------------------------------------
+  ios-workflow:
+    name: iOS Build
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      # Name of the App Store Connect API key you create in Codemagic UI
+      # (Team settings > Integrations > Developer Portal). Rename to match.
+      app_store_connect: CodemagicAppStoreKey
+    environment:
+      flutter: 3.41.9
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.elsheikh.whatscamp
+    scripts:
+      - name: Flutter version
+        script: flutter --version
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods dependencies
+        script: find . -name "Podfile" -execdir pod install \;
+      - name: Set up code signing (fetch/create profiles)
+        script: xcode-project use-profiles
+      - name: Build signed IPA
+        script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - msheikh@tharaco.sa
+        notify:
+          success: true
+          failure: true
+      # To auto-upload to TestFlight, uncomment:
+      # app_store_connect:
+      #   auth: integration
+      #   submit_to_testflight: true
