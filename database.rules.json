@@ -1,0 +1,217 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+
+    "notifications": {
+      "$userId": {
+        ".indexOn": ["isRead", "createdAt"]
+      }
+    },
+
+    "busTracking": {
+      "$branchId": {
+        ".indexOn": ["status", "startedAt"]
+      }
+    },
+
+    "platform": {
+      "$nurseryId": {
+
+        "classrooms": {
+          ".indexOn": ["teacherId", "branchId"]
+        },
+
+        "children": {
+          ".indexOn": ["classroomId", "status", "branchId", "parentId"]
+        },
+
+        "childAttendance": {
+          ".indexOn": ["date", "classroomId", "childId", "branchId"]
+        },
+
+        "enrollments": {
+          ".indexOn": ["childId", "classroomId", "status", "branchId"]
+        },
+
+        "medicalProfiles": {
+          ".indexOn": ["childId"]
+        },
+
+        "documents": {
+          ".indexOn": ["childId", "branchId"]
+        },
+
+        "authorizedPickups": {
+          ".indexOn": ["childId", "isActive"]
+        },
+
+        "invoices": {
+          ".indexOn": ["childId", "status", "branchId", "categoryId"]
+        },
+
+        "payments": {
+          ".indexOn": ["childId", "branchId", "invoiceId"]
+        },
+
+        "paymentCategories": {
+          ".indexOn": ["isActive", "createdAt"]
+        },
+
+        "pickupRequests": {
+          ".indexOn": ["childId", "parentId", "status", "branchId"]
+        },
+
+        "childLeaveRequests": {
+          ".indexOn": ["childId", "parentId", "status", "branchId"]
+        },
+
+        "schedules": {
+          ".indexOn": ["classroomId", "day"]
+        },
+
+        "classroomActivities": {
+          "$classroomId": {
+            ".indexOn": ["status", "startedAt"]
+          }
+        },
+
+        "assessments": {
+          ".indexOn": ["childId", "classroomId", "activityId"]
+        },
+
+        "homework": {
+          ".indexOn": ["classroomId", "subjectId", "activityId", "createdAt"]
+        },
+
+        "academicTopics": {
+          ".indexOn": ["subjectId", "programId", "order", "isActive"]
+        },
+
+        "topicProgress": {
+          ".indexOn": ["classroomId"]
+        },
+
+        "teacherAssignments": {
+          ".indexOn": ["teacherId", "branchId", "isSetupDone"]
+        },
+
+        "dailyAssessments": {
+          ".indexOn": ["classroomId", "childId", "date"]
+        },
+
+        "careEvents": {
+          ".indexOn": ["date", "childId", "branchId"]
+        },
+
+        "incidents": {
+          ".indexOn": ["childId", "branchId"]
+        },
+
+        "notes": {
+          ".indexOn": ["childId", "classroomId"]
+        },
+
+        "childReports": {
+          ".indexOn": ["childId", "classroomId"]
+        },
+
+        "announcements": {
+          ".indexOn": ["classroomId", "branchId"]
+        },
+
+        "classroomPosts": {
+          ".indexOn": ["classroomId"]
+        },
+
+        "lessonPlans": {
+          ".indexOn": ["classroomId", "subjectId"]
+        },
+
+        "staff": {
+          ".indexOn": ["branchId", "userType", "isActive"]
+        },
+
+        "staffAttendance": {
+          ".indexOn": ["staffId", "date", "branchId"]
+        },
+
+        "staffLeaves": {
+          ".indexOn": ["staffId", "status", "branchId"]
+        },
+
+        "waitingList": {
+          ".indexOn": ["branchId", "status"]
+        },
+
+        "parentChildren": {
+          ".indexOn": ["parentId", "childId"]
+        },
+
+        "notifications": {
+          ".indexOn": ["userId", "isRead"]
+        },
+
+        "feed": {
+          ".indexOn": ["createdAt", "isPinned", "category"]
+        },
+
+        "courses": {
+          ".indexOn": ["createdAt", "isActive"]
+        },
+
+        "courseLessons": {
+          "$courseId": {
+            ".indexOn": ["orderIndex", "createdAt"]
+          }
+        },
+
+        "courseProgress": {
+          "$uid": {
+            ".indexOn": ["savedAt"]
+          }
+        },
+
+        "events": {
+          ".indexOn": ["date", "branchId", "isActive"]
+        },
+
+        "eventAttendees": {
+          "$eventId": {
+            ".indexOn": ["childId", "parentId"]
+          }
+        },
+
+        "subjects": {
+          ".indexOn": ["isActive"]
+        },
+
+        "homeworkProgress": {
+          "$childId": {
+            ".indexOn": ["savedAt"]
+          }
+        },
+
+        "childCurrentStatus": {
+          "$childId": {
+            ".indexOn": ["status", "updatedAt"]
+          }
+        },
+
+        "childDailyEvents": {
+          "$date": {
+            "$childId": {
+              ".indexOn": ["eventType", "createdAt"]
+            }
+          }
+        },
+
+        "evaluationReasons": {
+          ".indexOn": ["isActive", "createdAt"]
+        }
+
+      }
+    }
+
+  }
+}

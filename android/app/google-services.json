@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "552691466414",
+    "project_id": "kidtrack-bed28",
+    "storage_bucket": "kidtrack-bed28.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552691466414:android:9eec34c6dd4a62f2086d3f",
+        "android_client_info": {
+          "package_name": "com.elsheikh.kidtrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPGuiOwGXTFatZQjvEEfafp3eOPiqw5aE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

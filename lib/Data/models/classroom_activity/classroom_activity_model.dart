@@ -1,0 +1,219 @@
+enum EvalLevel {
+  excellent,      // 🟢 ممتاز
+  needsFollow,    // 🟡 يحتاج متابعة
+  needsAttention; // 🔴 يحتاج اهتمام
+
+  String get key {
+    switch (this) {
+      case EvalLevel.excellent:      return 'excellent';
+      case EvalLevel.needsFollow:    return 'needs_follow';
+      case EvalLevel.needsAttention: return 'needs_attention';
+    }
+  }
+
+  static EvalLevel fromKey(String? k) {
+    switch (k) {
+      case 'excellent':      return EvalLevel.excellent;
+      case 'needs_follow':   return EvalLevel.needsFollow;
+      case 'needs_attention':return EvalLevel.needsAttention;
+      default:               return EvalLevel.excellent;
+    }
+  }
+}
+
+class ClassroomActivityModel {
+  final String? key;
+  final String nurseryId;
+  final String classroomId;
+  final String? subjectId;
+  final String? subjectName;
+  final String title;
+  final String teacherId;
+  final String status; // 'active' | 'completed'
+  final int startedAt;
+  final int? endedAt;
+  // childId → EvalLevel.key  (saved only for evaluated children)
+  final Map<String, String> evaluations;
+  // childId → note text  (optional)
+  final Map<String, String> notes;
+  // childId → list of selected reason titles (structured evaluation reasons)
+  final Map<String, List<String>> childReasons;
+  // photoId → downloadUrl
+  final Map<String, String> photos;
+  // general note for the whole class
+  final String? groupNote;
+  final int? createdAt;
+  // snapshot of child IDs present when activity started — used for timeline fan-out
+  final List<String> childIds;
+
+  const ClassroomActivityModel({
+    this.key,
+    required this.nurseryId,
+    required this.classroomId,
+    this.subjectId,
+    this.subjectName,
+    required this.title,
+    required this.teacherId,
+    this.status = 'active',
+    required this.startedAt,
+    this.endedAt,
+    this.evaluations = const {},
+    this.notes = const {},
+    this.childReasons = const {},
+    this.photos = const {},
+    this.groupNote,
+    this.createdAt,
+    this.childIds = const [],
+  });
+
+  bool get isActive => status == 'active';
+
+  Duration get elapsed =>
+      DateTime.fromMillisecondsSinceEpoch(
+              isActive ? DateTime.now().millisecondsSinceEpoch : (endedAt ?? startedAt))
+          .difference(DateTime.fromMillisecondsSinceEpoch(startedAt));
+
+  String get elapsedLabel {
+    final d = elapsed;
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    if (h > 0) return '$h س ${m.toString().padLeft(2, '0')} د';
+    return '$m دقيقة';
+  }
+
+  EvalLevel? evalFor(String childId) {
+    final v = evaluations[childId];
+    if (v == null) return null;
+    return EvalLevel.fromKey(v);
+  }
+
+  factory ClassroomActivityModel.fromJson(Map<dynamic, dynamic> json,
+      {String? key}) {
+    Map<String, String> _parseMap(dynamic raw) {
+      if (raw == null || raw is! Map) return {};
+      return {
+        for (final e in (raw as Map).entries)
+          e.key.toString(): e.value.toString(),
+      };
+    }
+
+    return ClassroomActivityModel(
+      key: key ?? json['key']?.toString(),
+      nurseryId: json['nurseryId']?.toString() ?? '',
+      classroomId: json['classroomId']?.toString() ?? '',
+      subjectId: json['subjectId']?.toString(),
+      subjectName: json['subjectName']?.toString(),
+      title: json['title']?.toString() ?? '',
+      teacherId: json['teacherId']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'active',
+      startedAt: _parseInt(json['startedAt']) ?? _now(),
+      endedAt: _parseInt(json['endedAt']),
+      evaluations: _parseMap(json['evaluations']),
+      notes: _parseMap(json['notes']),
+      childReasons: _parseReasonsMap(json['childReasons']),
+      photos: _parseMap(json['photos']),
+      groupNote: json['groupNote']?.toString(),
+      createdAt: _parseInt(json['createdAt']),
+      childIds: _parseStringList(json['childIds']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+    void put(String k, dynamic v) {
+      if (v != null) data[k] = v;
+    }
+
+    put('key', key);
+    data['nurseryId'] = nurseryId;
+    data['classroomId'] = classroomId;
+    put('subjectId', subjectId);
+    put('subjectName', subjectName);
+    data['title'] = title;
+    data['teacherId'] = teacherId;
+    data['status'] = status;
+    data['startedAt'] = startedAt;
+    put('endedAt', endedAt);
+    if (evaluations.isNotEmpty) data['evaluations'] = evaluations;
+    if (notes.isNotEmpty) data['notes'] = notes;
+    if (childReasons.isNotEmpty) {
+      data['childReasons'] = {
+        for (final e in childReasons.entries)
+          e.key: {for (int i = 0; i < e.value.length; i++) '$i': e.value[i]},
+      };
+    }
+    if (photos.isNotEmpty) data['photos'] = photos;
+    put('groupNote', groupNote);
+    put('createdAt', createdAt ?? _now());
+    if (childIds.isNotEmpty) data['childIds'] = childIds;
+    return data;
+  }
+
+  ClassroomActivityModel copyWith({
+    String? key,
+    String? nurseryId,
+    String? classroomId,
+    String? subjectId,
+    String? subjectName,
+    String? title,
+    String? teacherId,
+    String? status,
+    int? startedAt,
+    int? endedAt,
+    Map<String, String>? evaluations,
+    Map<String, String>? notes,
+    Map<String, List<String>>? childReasons,
+    Map<String, String>? photos,
+    String? groupNote,
+    int? createdAt,
+    List<String>? childIds,
+  }) =>
+      ClassroomActivityModel(
+        key: key ?? this.key,
+        nurseryId: nurseryId ?? this.nurseryId,
+        classroomId: classroomId ?? this.classroomId,
+        subjectId: subjectId ?? this.subjectId,
+        subjectName: subjectName ?? this.subjectName,
+        title: title ?? this.title,
+        teacherId: teacherId ?? this.teacherId,
+        status: status ?? this.status,
+        startedAt: startedAt ?? this.startedAt,
+        endedAt: endedAt ?? this.endedAt,
+        evaluations: evaluations ?? this.evaluations,
+        notes: notes ?? this.notes,
+        childReasons: childReasons ?? this.childReasons,
+        photos: photos ?? this.photos,
+        groupNote: groupNote ?? this.groupNote,
+        createdAt: createdAt ?? this.createdAt,
+        childIds: childIds ?? this.childIds,
+      );
+
+  static int _now() => DateTime.now().millisecondsSinceEpoch;
+  static int? _parseInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    return int.tryParse(v.toString());
+  }
+
+  static Map<String, List<String>> _parseReasonsMap(dynamic raw) {
+    if (raw == null || raw is! Map) return {};
+    final result = <String, List<String>>{};
+    for (final entry in (raw as Map).entries) {
+      final childId = entry.key.toString();
+      final value = entry.value;
+      if (value is Map) {
+        result[childId] = value.values.map((v) => v.toString()).toList();
+      } else if (value is List) {
+        result[childId] = value.map((v) => v.toString()).toList();
+      }
+    }
+    return result;
+  }
+
+  static List<String> _parseStringList(dynamic raw) {
+    if (raw == null) return [];
+    if (raw is List) return raw.map((e) => e.toString()).toList();
+    if (raw is Map) return raw.values.map((e) => e.toString()).toList();
+    return [];
+  }
+}

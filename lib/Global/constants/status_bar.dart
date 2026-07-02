@@ -1,0 +1,3 @@
+enum StatusBarTheme{
+  light,dark
+}
