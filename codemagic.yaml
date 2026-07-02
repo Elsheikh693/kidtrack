@@ -65,8 +65,23 @@ workflows:
         script: flutter pub get
       - name: Install CocoaPods dependencies
         script: find . -name "Podfile" -execdir pod install \;
-      - name: Set up code signing (creates App ID, cert & profile if missing)
+      - name: Set up code signing (regenerates profile with current capabilities)
         script: |
+          # Delete any existing App Store profiles for this bundle id first.
+          # fetch-signing-files REUSES an existing profile if it finds one, so a
+          # stale profile (e.g. one created before Push Notifications was enabled
+          # on the App ID) keeps getting reused and the build fails with
+          # "requires a provisioning profile with the Push Notifications feature".
+          # Removing them forces a fresh profile that includes every capability
+          # currently enabled on the App ID.
+          app-store-connect list-profiles \
+            --bundle-id-identifier "$BUNDLE_ID" \
+            --profile-type IOS_APP_STORE \
+            --json | jq -r '.[].id' | while read -r PROFILE_ID; do
+              [ -n "$PROFILE_ID" ] && app-store-connect delete-profile "$PROFILE_ID" || true
+            done
+
+          # Now create a fresh App ID (if missing), distribution cert & profile.
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
