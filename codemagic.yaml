@@ -82,7 +82,10 @@ workflows:
           # We just point the Xcode project at that profile here.
           xcode-project use-profiles
       - name: Build signed IPA
-        script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+        # $BUILD_NUMBER is Codemagic's auto-incrementing build counter. Passing
+        # it as the iOS build number keeps every upload unique, otherwise
+        # TestFlight rejects a build whose number was already used.
+        script: flutter build ipa --release --build-number=$BUILD_NUMBER --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
@@ -93,7 +96,8 @@ workflows:
         notify:
           success: true
           failure: true
-      # To auto-upload to TestFlight, uncomment:
-      # app_store_connect:
-      #   auth: integration
-      #   submit_to_testflight: true
+      # Auto-upload every successful build to TestFlight using the App Store
+      # Connect API key integration (CodemagicAppStoreKey) declared above.
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
