@@ -1,4 +1,4 @@
-package com.elsheikh.kidtrack
+package com.elsheikh.marketingwhats
 
 import io.flutter.embedding.android.FlutterActivity
 

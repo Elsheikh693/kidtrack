@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.elsheikh.kidtrack"
+    namespace = "com.elsheikh.marketingwhats"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.elsheikh.kidtrack"
+        applicationId = "com.elsheikh.marketingwhats"
 
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
