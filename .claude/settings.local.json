@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/apple/thara/**)",
+      "Bash(git -C /Users/apple/thara status)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(gh search *)",
+      "Bash(gh api *)",
+      "Bash(flutter test *)",
+      "Bash(git rm *)",
+      "Bash(git add *)"
+    ]
+  }
+}
