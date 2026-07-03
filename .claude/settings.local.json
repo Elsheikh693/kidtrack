@@ -9,7 +9,10 @@
       "Bash(gh api *)",
       "Bash(flutter test *)",
       "Bash(git rm *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(grep -v '^$')",
+      "Bash(git ls-tree *)"
     ]
   }
 }
