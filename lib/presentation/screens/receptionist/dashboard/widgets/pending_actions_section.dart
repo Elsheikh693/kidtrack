@@ -75,16 +75,9 @@ class DashboardPendingActionsSection extends StatelessWidget {
         isLast: false,
       ));
     }
-    if (controller.overdueInvoices.value > 0) {
-      items.add(_PendingTile(
-        icon: Icons.warning_amber_rounded,
-        color: const Color(0xFFDC2626),
-        label: 'reception_pending_overdue'.tr,
-        count: controller.overdueInvoices.value,
-        onTap: () => Get.toNamed(invoicesView),
-        isLast: false,
-      ));
-    }
+    // Overdue-invoices tile removed (Phase 4): it read the LEGACY Invoice
+    // system and navigated to InvoicesView. The new FinancialTransaction
+    // system is cash-only and has no "overdue" concept.
     if (controller.waitingListCount.value > 0) {
       items.add(_PendingTile(
         icon: Icons.pending_actions_rounded,
