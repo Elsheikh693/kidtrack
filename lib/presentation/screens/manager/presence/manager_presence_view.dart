@@ -30,7 +30,7 @@ class ManagerPresenceView extends StatelessWidget {
             ),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded,
+            icon: Icon(Icons.arrow_forward_ios_outlined,
                 size: 18.sp, color: AppColors.textDefault),
             onPressed: Get.back,
           ),
@@ -162,7 +162,7 @@ class _DateBar extends StatelessWidget {
         ),
         SizedBox(width: 8.w),
         _NavArrow(
-          icon: Icons.chevron_left_rounded,
+          icon: Icons.chevron_right_rounded,
           onTap: controller.isToday ? null : controller.goNextDay,
         ),
       ],

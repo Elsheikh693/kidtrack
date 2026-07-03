@@ -50,9 +50,6 @@ class ProgramListController extends GetxController {
   void openAdd() => _openSheet(null);
   void openEdit(ProgramModel p) => _openSheet(p);
 
-  void openSubjects(ProgramModel p) =>
-      Get.toNamed(subjectsView, arguments: p);
-
   void _openSheet(ProgramModel? program) {
     Get.bottomSheet(
       ProgramSheet(initial: program),

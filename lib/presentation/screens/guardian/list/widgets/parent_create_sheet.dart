@@ -7,7 +7,8 @@ class ParentCreateSheet extends StatefulWidget {
   State<ParentCreateSheet> createState() => _ParentCreateSheetState();
 }
 
-class _ParentCreateSheetState extends State<ParentCreateSheet> with KeyboardSheetMixin {
+class _ParentCreateSheetState extends State<ParentCreateSheet>
+    with KeyboardSheetMixin {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
@@ -32,10 +33,12 @@ class _ParentCreateSheetState extends State<ParentCreateSheet> with KeyboardShee
 
   Future<void> _loadChildren() async {
     _childrenLoading.value = true;
-    await Get.find<ChildParentService>().getAll(callBack: (list) {
-      _children.value = list.whereType<ChildModel>().toList()
-        ..sort((a, b) => a.firstName.compareTo(b.firstName));
-    });
+    await Get.find<ChildParentService>().getAll(
+      callBack: (list) {
+        _children.value = list.whereType<ChildModel>().toList()
+          ..sort((a, b) => a.firstName.compareTo(b.firstName));
+      },
+    );
     _childrenLoading.value = false;
   }
 
@@ -229,9 +232,13 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     keyboardType: keyboardType,
-    style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+    style: context.typography.smRegular.copyWith(
+      fontSize: 15,
+      color: const Color(0xFF1E293B),
+    ),
     decoration: _inputDecoration(hint),
   );
 }
@@ -250,9 +257,13 @@ class _PasswordField extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Obx(
     () => TextField(
+      inputFormatters: const [EnglishDigitsFormatter()],
       controller: controller,
       obscureText: !showPassword.value,
-      style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+      style: context.typography.smRegular.copyWith(
+        fontSize: 15,
+        color: const Color(0xFF1E293B),
+      ),
       decoration: _inputDecoration(hint).copyWith(
         suffixIcon: IconButton(
           icon: Icon(
@@ -289,7 +300,11 @@ class _ChildMultiSelect extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Align(
           alignment: AlignmentDirectional.centerStart,
-          child: SizedBox(width: 18.w, height: 18.h, child: const CircularProgressIndicator(strokeWidth: 2)),
+          child: SizedBox(
+            width: 18.w,
+            height: 18.h,
+            child: const CircularProgressIndicator(strokeWidth: 2),
+          ),
         ),
       );
     }
@@ -300,8 +315,13 @@ class _ChildMultiSelect extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Align(
           alignment: AlignmentDirectional.centerStart,
-          child: Text('guardian_create_child_none'.tr,
-              style: context.typography.smRegular.copyWith(color: const Color(0xFF94A3B8), fontSize: 14)),
+          child: Text(
+            'guardian_create_child_none'.tr,
+            style: context.typography.smRegular.copyWith(
+              color: const Color(0xFF94A3B8),
+              fontSize: 14,
+            ),
+          ),
         ),
       );
     }
@@ -328,21 +348,32 @@ class _ChildMultiSelect extends StatelessWidget {
                     width: 22.w,
                     height: 22.h,
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF6366F1) : Colors.transparent,
+                      color: isSelected
+                          ? const Color(0xFF6366F1)
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(6.r),
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF6366F1) : const Color(0xFFCBD5E1),
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFFCBD5E1),
                         width: 1.8,
                       ),
                     ),
                     child: isSelected
-                        ? Icon(Icons.check_rounded, size: 14.sp, color: Colors.white)
+                        ? Icon(
+                            Icons.check_rounded,
+                            size: 14.sp,
+                            color: Colors.white,
+                          )
                         : null,
                   ),
                   SizedBox(width: 12.w),
                   Text(
                     '${c.firstName} ${c.lastName}',
-                    style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+                    style: context.typography.smRegular.copyWith(
+                      fontSize: 15,
+                      color: const Color(0xFF1E293B),
+                    ),
                   ),
                 ],
               ),
@@ -367,7 +398,10 @@ class _RelationshipDropdown extends StatelessWidget {
         child: DropdownButton<String>(
           value: relationship.value,
           isExpanded: true,
-          style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+          style: context.typography.smRegular.copyWith(
+            fontSize: 15,
+            color: const Color(0xFF1E293B),
+          ),
           items: [
             DropdownMenuItem(
               value: 'father',

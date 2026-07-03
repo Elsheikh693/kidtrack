@@ -129,7 +129,8 @@ class _ReminderCard extends StatelessWidget {
                         'invoice_status_${invoice.status}'.tr,
                         style: context.typography.smSemiBold.copyWith(color: color, fontSize: 11),
                       )),
-                    if (invoice.dueDate != null) ...[
+                    if (invoice.dueDate != null &&
+                        invoice.key?.startsWith('fee_') != true) ...[
                       SizedBox(width: 8.w),
                       Text(
                         _fmtDate(invoice.dueDate!),

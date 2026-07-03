@@ -9,25 +9,25 @@ class EnrolledCourseCard extends StatelessWidget {
   const EnrolledCourseCard({
     super.key,
     required this.course,
-    required this.enrollment,
+    required this.attended,
     required this.index,
   });
 
   final NurseryCourse course;
-  final CourseEnrollment enrollment;
+  final int attended;
   final int index;
 
   Color get catColor => course.category.color;
 
   @override
   Widget build(BuildContext context) {
-    final completedCount = enrollment.completedCount();
-    final lessonCount = course.lessonCount;
+    final completedCount = attended;
+    final lessonCount = course.totalSessions;
     final progress = lessonCount == 0 ? 0.0 : completedCount / lessonCount;
-    final isDone = progress >= 1.0;
+    final isDone = lessonCount > 0 && progress >= 1.0;
 
     return GestureDetector(
-      onTap: () => showCourseDetail(context, course, enrollment: enrollment),
+      onTap: () => showCourseDetail(context, course, isEnrolled: true),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 7, 16, 7),
         decoration: BoxDecoration(

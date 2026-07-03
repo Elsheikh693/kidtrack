@@ -19,6 +19,10 @@ class NurseryFeedbackPrompt {
     if ((session.nurseryId ?? '').isEmpty) return;
     if (NurseryFeedbackGate.isDone(uid)) return;
 
+    // Don't nag for a rating before the mandatory child-profile onboarding is
+    // done — that sheet takes priority on first login.
+    if (!await ChildProfileCompletionPrompt.isActiveChildComplete()) return;
+
     final alreadyOnServer = await Get.find<NurseryFeedbackParentService>()
         .hasSubmitted(uid);
     if (alreadyOnServer) {

@@ -183,7 +183,7 @@ class _OwnersChip extends StatelessWidget {
             ),
           ),
           SizedBox(width: 4.w),
-          Icon(Icons.chevron_left_rounded, size: 18.sp, color: const Color(0xFF6366F1)),
+          Icon(Icons.chevron_right_rounded, size: 18.sp, color: const Color(0xFF6366F1)),
         ],
       ),
     ),

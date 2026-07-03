@@ -79,8 +79,10 @@ class OwnerCoursesController extends GetxController {
     required double price,
     required CourseCategory category,
     required String ageGroup,
+    int sessionCount = 0,
     bool isActive = true,
     List<String> branchIds = const [],
+    int? startDate,
     XFile? coverImage,
   }) async {
     EasyLoading.show(status: 'جاري الحفظ...');
@@ -90,8 +92,10 @@ class OwnerCoursesController extends GetxController {
       price: price,
       category: category,
       ageGroup: ageGroup,
+      sessionCount: sessionCount,
       isActive: isActive,
       branchIds: branchIds,
+      startDate: startDate,
       coverImage: coverImage,
     );
     EasyLoading.dismiss();
@@ -111,8 +115,11 @@ class OwnerCoursesController extends GetxController {
     required double price,
     required CourseCategory category,
     required String ageGroup,
+    int? sessionCount,
     bool? isActive,
     List<String>? branchIds,
+    int? startDate,
+    bool clearStartDate = false,
     XFile? newCoverImage,
     bool removeCover = false,
   }) async {
@@ -124,8 +131,11 @@ class OwnerCoursesController extends GetxController {
       price: price,
       category: category,
       ageGroup: ageGroup,
+      sessionCount: sessionCount,
       isActive: isActive,
       branchIds: branchIds,
+      startDate: startDate,
+      clearStartDate: clearStartDate,
       newCoverImage: newCoverImage,
       removeCover: removeCover,
     );

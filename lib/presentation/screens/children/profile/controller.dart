@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import '../../../../Global/services/parent_education_service.dart';
 
 class ChildProfileController extends GetxController {
   final child      = Rx<ChildModel?>(null);
@@ -6,19 +7,22 @@ class ChildProfileController extends GetxController {
   final enrollment = Rx<EnrollmentModel?>(null);
   final classroom  = Rx<ClassroomModel?>(null);
 
-  // Attendance + activities, both scoped to the active filter window.
+  // Attendance + activities + teacher notes, all scoped to the active window.
   final recentAttendance = <ChildAttendanceModel>[].obs;
   final activities = <ClassroomActivityModel>[].obs;
   final homework   = <HomeworkModel>[].obs;
+  final teacherNotes = <NoteModel>[].obs;
 
   final isLoading = true.obs;
   final isRangeLoading = false.obs;
 
   // ─── Filter ───────────────────────────────────────────────────────────────
   // One window drives BOTH the absences row and the activities list. The user
-  // browses backwards a day or a week at a time; `anchorDate` is the last day
-  // shown, the window spans back from it.
-  final filterByWeek = true.obs;
+  // browses backwards a day or a week at a time, or jumps straight to any date
+  // via the picker; `anchorDate` is the last day shown, the window spans back
+  // from it. Defaults to a single DAY so the manager reads one focused day
+  // (a whole week at once was too much noise).
+  final filterByWeek = false.obs;
   final anchorDate = DateTime.now().obs;
 
   late final ChildParentService          _childSvc;
@@ -29,6 +33,7 @@ class ChildProfileController extends GetxController {
   late final ChildAttendanceParentService  _attendSvc;
 
   final _activitySvc = TeacherActivityService();
+  final _eduSvc = ParentEducationService();
   final _session = SessionService();
 
   String get childId =>
@@ -147,6 +152,10 @@ class ChildProfileController extends GetxController {
     recentAttendance.clear();
     activities.clear();
     homework.clear();
+    teacherNotes.clear();
+    // Controller is a fenix singleton reused across opens — force the focused
+    // single-day view on every open (don't inherit a previous week selection).
+    filterByWeek.value = false;
     anchorDate.value = DateTime.now();
     // The child must load first — parent/class lookups fall back to fields on
     // child.value. Then resolve the classroom before the ranged reads, which
@@ -182,6 +191,21 @@ class ChildProfileController extends GetxController {
     await _loadRange();
   }
 
+  /// Jump directly to any date via the picker instead of stepping one window
+  /// at a time — the fast way to reach the day a parent is asking about.
+  Future<void> pickDate(BuildContext context) async {
+    final picked = await showAppDatePicker(
+      context,
+      initialDate: _anchorDay,
+      minimumDate: DateTime(_today.year - 3),
+      maximumDate: _today,
+      showTodayButton: true,
+    );
+    if (picked == null) return;
+    anchorDate.value = DateTime(picked.year, picked.month, picked.day);
+    await _loadRange();
+  }
+
   // ─── Loaders ────────────────────────────────────────────────────────────────
 
   Future<void> _loadRange() async {
@@ -190,6 +214,7 @@ class ChildProfileController extends GetxController {
       _loadAttendanceRange(),
       _loadActivities(),
       _loadHomework(),
+      _loadNotes(),
     ]);
     isRangeLoading.value = false;
   }
@@ -277,6 +302,19 @@ class ChildProfileController extends GetxController {
     homework.value = await _activitySvc.getHomeworkByClassroom(
       nurseryId: _nurseryId,
       classroomId: _classroomId,
+    );
+  }
+
+  Future<void> _loadNotes() async {
+    if (_nurseryId.isEmpty) {
+      teacherNotes.clear();
+      return;
+    }
+    teacherNotes.value = await _eduSvc.getNotesForRange(
+      _nurseryId,
+      childId,
+      startMs: _startMs,
+      endMs: _endMs,
     );
   }
 

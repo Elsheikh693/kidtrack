@@ -41,11 +41,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                       const _BackToOwnerCard(),
                       const SizedBox(height: 16),
                     ],
-                    ManagerProfileCard(controller: controller),
+                    ManagerProfileCard(
+                      controller: controller,
+                      onTap: () => showEditProfileSheet(isStaff: true),
+                    ),
                     const SizedBox(height: 24),
                     _operationsSection(),
-                    const SizedBox(height: 20),
-                    _educationSection(),
                     const SizedBox(height: 20),
                     Obx(() => _businessSection()),
                     const SizedBox(height: 20),
@@ -91,15 +92,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'owner_item_contact_numbers',
           onTap: () => Get.toNamed(nurseryContactsView),
         ),
-      ],
-    );
-  }
-
-  /// Teaching quality and the academic catalog.
-  Widget _educationSection() {
-    return ManagerGridSection(
-      titleKey: 'manager_more_section_education',
-      tiles: [
         ManagerGridTile(
           icon: Icons.play_lesson_rounded,
           color: AppColors.activityPurple,
@@ -117,6 +109,18 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           color: AppColors.teal,
           labelKey: 'owner_item_subjects',
           onTap: () => Get.toNamed(subjectsView),
+        ),
+        ManagerGridTile(
+          icon: Icons.account_balance_rounded,
+          color: AppColors.activityPurple,
+          labelKey: 'owner_item_branches',
+          onTap: () => Get.toNamed(branchesView),
+        ),
+        ManagerGridTile(
+          icon: Icons.card_membership_rounded,
+          color: AppColors.primary,
+          labelKey: 'owner_item_packages',
+          onTap: () => Get.toNamed(nurseryPackagesView),
         ),
       ],
     );
@@ -159,18 +163,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'manager_more_link_application_file',
           onTap: () => Get.toNamed(managerApplicationFileView),
         ),
-        ManagerGridTile(
-          icon: Icons.account_balance_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'owner_item_branches',
-          onTap: () => Get.toNamed(branchesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.card_membership_rounded,
-          color: AppColors.primary,
-          labelKey: 'owner_item_packages',
-          onTap: () => Get.toNamed(nurseryPackagesView),
-        ),
       ],
     );
   }
@@ -192,10 +184,10 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           onTap: () => Get.toNamed(holidaysView),
         ),
         ManagerGridTile(
-          icon: Icons.settings_outlined,
-          color: AppColors.grayMedium,
-          labelKey: 'manager_more_link_settings',
-          onTap: () => Get.toNamed(settingsView),
+          icon: Icons.support_agent_rounded,
+          color: AppColors.blueForeground,
+          labelKey: 'staff_account_contact_support',
+          onTap: () => showContactSheet(ContactType.support),
         ),
       ],
     );

@@ -65,7 +65,7 @@ class ChildDirectoryTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_back_ios_new_rounded,
+            Icon(Icons.arrow_forward_ios_outlined,
                 size: 13, color: AppColors.grayMedium),
           ],
         ),

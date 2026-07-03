@@ -57,7 +57,7 @@ class ManagerTeacherReportsView extends StatelessWidget {
             ),
           ),
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded,
+            icon: Icon(Icons.arrow_forward_ios_outlined,
                 size: 18.sp, color: AppColors.textDefault),
             onPressed: Get.back,
           ),

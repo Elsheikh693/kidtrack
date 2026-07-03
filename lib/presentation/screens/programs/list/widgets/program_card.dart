@@ -5,7 +5,6 @@ class ProgramCard extends StatelessWidget {
   final String branchScope;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final VoidCallback onSubjects;
 
   const ProgramCard({
     super.key,
@@ -13,7 +12,6 @@ class ProgramCard extends StatelessWidget {
     required this.branchScope,
     required this.onEdit,
     required this.onDelete,
-    required this.onSubjects,
   });
 
   @override
@@ -41,7 +39,6 @@ class ProgramCard extends StatelessWidget {
             _ProgramMenu(
               onEdit: onEdit,
               onDelete: onDelete,
-              onSubjects: onSubjects,
             ),
           ],
         ),
@@ -154,11 +151,9 @@ class _StatusBadge extends StatelessWidget {
 class _ProgramMenu extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final VoidCallback onSubjects;
   const _ProgramMenu({
     required this.onEdit,
     required this.onDelete,
-    required this.onSubjects,
   });
 
   @override
@@ -168,14 +163,9 @@ class _ProgramMenu extends StatelessWidget {
       switch (a) {
         case _Action.edit: onEdit();
         case _Action.delete: onDelete();
-        case _Action.subjects: onSubjects();
       }
     },
     itemBuilder: (_) => [
-      PopupMenuItem(
-        value: _Action.subjects,
-        child: _MenuItem(icon: Icons.list_alt_outlined, label: 'program_subjects_btn'.tr),
-      ),
       PopupMenuItem(
         value: _Action.edit,
         child: _MenuItem(icon: Icons.edit_outlined, label: 'program_edit_title'.tr),
@@ -208,4 +198,4 @@ class _MenuItem extends StatelessWidget {
   );
 }
 
-enum _Action { edit, delete, subjects }
+enum _Action { edit, delete }

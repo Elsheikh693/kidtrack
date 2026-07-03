@@ -477,7 +477,7 @@ class _CardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100.h,
+      height: 150.h,
       decoration: BoxDecoration(
         gradient: course.coverUrl != null
             ? null
@@ -536,7 +536,7 @@ class _CardHeader extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                   decoration: BoxDecoration(
-                    color: course.isFree ? Colors.white.withOpacity(0.20) : Colors.white,
+                    color: course.isFree ? Colors.white.withValues(alpha: 0.20) : Colors.white,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(

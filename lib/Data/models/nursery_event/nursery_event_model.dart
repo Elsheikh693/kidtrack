@@ -54,6 +54,8 @@ class NurseryEventModel {
   final String? location;
   final String? coverImage;
   final EventCategory category;
+  /// Ticket/participation fee. Null or 0 means the event is free.
+  final double? price;
   final String createdBy;
   final String createdByName;
   final int createdAt;
@@ -71,6 +73,7 @@ class NurseryEventModel {
     this.location,
     this.coverImage,
     this.category = EventCategory.other,
+    this.price,
     required this.createdBy,
     required this.createdByName,
     required this.createdAt,
@@ -79,6 +82,9 @@ class NurseryEventModel {
   });
 
   bool get isUpcoming => date > DateTime.now().millisecondsSinceEpoch;
+
+  /// A real fee was set (parents should be shown the amount); otherwise free.
+  bool get hasPrice => price != null && price! > 0;
 
   DateTime get dateTime => DateTime.fromMillisecondsSinceEpoch(date);
 
@@ -103,6 +109,7 @@ class NurseryEventModel {
       location: json['location']?.toString(),
       coverImage: json['coverImage']?.toString(),
       category: EventCategory.fromString(json['category']?.toString()),
+      price: _parseDouble(json['price']),
       createdBy: json['createdBy']?.toString() ?? '',
       createdByName: json['createdByName']?.toString() ?? '',
       createdAt: _parseInt(json['createdAt']) ?? DateTime.now().millisecondsSinceEpoch,
@@ -128,6 +135,7 @@ class NurseryEventModel {
     if (timeStr != null) m['timeStr'] = timeStr;
     if (location != null) m['location'] = location;
     if (coverImage != null) m['coverImage'] = coverImage;
+    if (price != null) m['price'] = price;
     return m;
   }
 
@@ -142,6 +150,7 @@ class NurseryEventModel {
     String? location,
     String? coverImage,
     EventCategory? category,
+    double? price,
     String? createdBy,
     String? createdByName,
     int? createdAt,
@@ -159,6 +168,7 @@ class NurseryEventModel {
         location: location ?? this.location,
         coverImage: coverImage ?? this.coverImage,
         category: category ?? this.category,
+        price: price ?? this.price,
         createdBy: createdBy ?? this.createdBy,
         createdByName: createdByName ?? this.createdByName,
         createdAt: createdAt ?? this.createdAt,
@@ -170,5 +180,11 @@ class NurseryEventModel {
     if (v == null) return null;
     if (v is int) return v;
     return int.tryParse(v.toString());
+  }
+
+  static double? _parseDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    return double.tryParse(v.toString());
   }
 }

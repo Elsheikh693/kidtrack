@@ -18,7 +18,10 @@ class NurseryOwnerSection extends StatelessWidget {
         SizedBox(height: 20.h),
         _NurseryLabel('nursery_owner_name_label'.tr),
         SizedBox(height: 6.h),
-        _NurseryField(controller: ownerNameCtrl, hint: 'nursery_owner_name_hint'.tr),
+        _NurseryField(
+          controller: ownerNameCtrl,
+          hint: 'nursery_owner_name_hint'.tr,
+        ),
         SizedBox(height: 14.h),
         _NurseryLabel('nursery_owner_phone_label'.tr),
         SizedBox(height: 6.h),
@@ -30,7 +33,10 @@ class NurseryOwnerSection extends StatelessWidget {
         SizedBox(height: 6.h),
         Text(
           'nursery_owner_password_note'.tr,
-          style: context.typography.xsRegular.copyWith(fontSize: 12, color: const Color(0xFF6B7280)),
+          style: context.typography.xsRegular.copyWith(
+            fontSize: 12,
+            color: const Color(0xFF6B7280),
+          ),
         ),
       ],
     );
@@ -44,7 +50,10 @@ class _NurseryLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: context.typography.smMedium.copyWith(fontSize: 14, color: const Color(0xFF475569)),
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
   );
 }
 
@@ -61,12 +70,18 @@ class _NurseryField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     keyboardType: keyboardType,
-    style: context.typography.smRegular.copyWith(color: const Color(0xFF1E293B)),
+    style: context.typography.smRegular.copyWith(
+      color: const Color(0xFF1E293B),
+    ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),

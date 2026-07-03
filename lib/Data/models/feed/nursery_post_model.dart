@@ -30,6 +30,9 @@ class NurseryPostModel {
   final bool isPinned;
   final int createdAt;
   final int? updatedAt;
+  // Distinct parents who have seen this post. Derived from the `seenBy/{uid}`
+  // subtree, which is written separately from the post body (never in toJson).
+  final int seenCount;
 
   const NurseryPostModel({
     required this.id,
@@ -45,6 +48,7 @@ class NurseryPostModel {
     this.isPinned = false,
     required this.createdAt,
     this.updatedAt,
+    this.seenCount = 0,
   });
 
   bool get isAllBranches => branchIds.isEmpty;
@@ -64,6 +68,7 @@ class NurseryPostModel {
       isPinned: json['isPinned'] == true,
       createdAt: _parseInt(json['createdAt']) ?? DateTime.now().millisecondsSinceEpoch,
       updatedAt: _parseInt(json['updatedAt']),
+      seenCount: _countMap(json['seenBy']),
     );
   }
 
@@ -99,6 +104,7 @@ class NurseryPostModel {
     bool? isPinned,
     int? createdAt,
     int? updatedAt,
+    int? seenCount,
   }) =>
       NurseryPostModel(
         id: id ?? this.id,
@@ -114,6 +120,7 @@ class NurseryPostModel {
         isPinned: isPinned ?? this.isPinned,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        seenCount: seenCount ?? this.seenCount,
       );
 
   static List<String> _parseList(dynamic v) {
@@ -136,5 +143,11 @@ class NurseryPostModel {
     if (v == null) return null;
     if (v is int) return v;
     return int.tryParse(v.toString());
+  }
+
+  static int _countMap(dynamic v) {
+    if (v is Map) return v.length;
+    if (v is List) return v.where((e) => e != null).length;
+    return 0;
   }
 }

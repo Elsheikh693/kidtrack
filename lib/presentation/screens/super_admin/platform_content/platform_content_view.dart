@@ -50,6 +50,14 @@ class PlatformContentView extends StatelessWidget {
             subtitle: 'pcontent_support_sub'.tr,
             onTap: () => Get.toNamed(supportRequestsAdminView),
           ),
+          SizedBox(height: 12.h),
+          _Tile(
+            icon: Icons.reviews_rounded,
+            color: const Color(0xFFEC4899),
+            title: 'pcontent_reviews'.tr,
+            subtitle: 'pcontent_reviews_sub'.tr,
+            onTap: () => Get.toNamed(appReviewsAdminView),
+          ),
         ],
       ),
     );

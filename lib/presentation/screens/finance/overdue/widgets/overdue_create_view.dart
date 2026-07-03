@@ -1,13 +1,14 @@
 import '../../../../../index/index_main.dart';
 
-typedef OnSaveObligation = void Function({
-  required String party,
-  String? item,
-  required ObligationCategory category,
-  required double amount,
-  required bool payNow,
-  DateTime? dueDate,
-});
+typedef OnSaveObligation =
+    void Function({
+      required String party,
+      String? item,
+      required ObligationCategory category,
+      required double amount,
+      required bool payNow,
+      DateTime? dueDate,
+    });
 
 class OverdueCreateView extends StatefulWidget {
   final List<ObligationCategory> categories;
@@ -95,8 +96,9 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
           ),
           title: Text(
             'overdue_sheet_title'.tr,
-            style: context.typography.mdBold
-                .copyWith(color: const Color(0xFF1E293B)),
+            style: context.typography.mdBold.copyWith(
+              color: const Color(0xFF1E293B),
+            ),
           ),
         ),
         body: SingleChildScrollView(
@@ -116,8 +118,11 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
 
               _label('overdue_field_amount'.tr),
               SizedBox(height: 6.h),
-              _field(_amountCtrl, 'overdue_field_amount_hint'.tr,
-                  type: TextInputType.number),
+              _field(
+                _amountCtrl,
+                'overdue_field_amount_hint'.tr,
+                type: TextInputType.number,
+              ),
               SizedBox(height: 16.h),
 
               _label('overdue_field_category'.tr),
@@ -160,7 +165,9 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
                   onTap: _pickDate,
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                        horizontal: 14.w, vertical: 14.h),
+                      horizontal: 14.w,
+                      vertical: 14.h,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(10.r),
@@ -168,8 +175,11 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.calendar_today_outlined,
-                            size: 16.sp, color: const Color(0xFF94A3B8)),
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 16.sp,
+                          color: const Color(0xFF94A3B8),
+                        ),
                         SizedBox(width: 8.w),
                         Text(
                           _dueDate != null
@@ -201,12 +211,14 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r)),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
               ),
               child: Text(
                 'overdue_sheet_save'.tr,
-                style: context.typography.smSemiBold
-                    .copyWith(color: Colors.white),
+                style: context.typography.smSemiBold.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -226,8 +238,7 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
         decoration: BoxDecoration(
           color: active ? color : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
-          border:
-              Border.all(color: active ? color : const Color(0xFFE2E8F0)),
+          border: Border.all(color: active ? color : const Color(0xFFE2E8F0)),
         ),
         child: Text(
           cat.name,
@@ -264,9 +275,11 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon,
-                size: 20.sp,
-                color: selected ? AppColors.primary : const Color(0xFF94A3B8)),
+            Icon(
+              icon,
+              size: 20.sp,
+              color: selected ? AppColors.primary : const Color(0xFF94A3B8),
+            ),
             SizedBox(height: 8.h),
             Text(
               title,
@@ -277,8 +290,9 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
             SizedBox(height: 2.h),
             Text(
               subtitle,
-              style: context.typography.xsRegular
-                  .copyWith(color: const Color(0xFF94A3B8)),
+              style: context.typography.xsRegular.copyWith(
+                color: const Color(0xFF94A3B8),
+              ),
             ),
           ],
         ),
@@ -287,36 +301,39 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: context.typography.xsMedium
-            .copyWith(color: const Color(0xFF374151)),
-      );
+    text,
+    style: context.typography.xsMedium.copyWith(color: const Color(0xFF374151)),
+  );
 
-  Widget _field(TextEditingController ctrl, String hint,
-          {TextInputType type = TextInputType.text}) =>
-      TextField(
-        controller: ctrl,
-        keyboardType: type,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: context.typography.xsRegular
-              .copyWith(fontSize: 13, color: const Color(0xFF94A3B8)),
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(color: AppColors.primary),
-          ),
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        ),
-      );
+  Widget _field(
+    TextEditingController ctrl,
+    String hint, {
+    TextInputType type = TextInputType.text,
+  }) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
+    controller: ctrl,
+    keyboardType: type,
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: context.typography.xsRegular.copyWith(
+        fontSize: 13,
+        color: const Color(0xFF94A3B8),
+      ),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.r),
+        borderSide: BorderSide(color: AppColors.primary),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+    ),
+  );
 }

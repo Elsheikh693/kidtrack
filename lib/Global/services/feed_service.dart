@@ -185,6 +185,44 @@ class FeedService {
     await _feedRef.child(id).update({'isPinned': !current});
   }
 
+  // ─── Mark a post as seen by the current parent ─────────────────────────────
+  // Writes `feed/{postId}/seenBy/{uid}`. Idempotent (one entry per parent) so
+  // the manager's `seenCount` is a count of DISTINCT parents. Fire-and-forget:
+  // seen-tracking must never break the parent's feed.
+  Future<void> markPostSeen(String postId) async {
+    final uid = _session.userId ?? '';
+    if (uid.isEmpty || postId.isEmpty) return;
+    try {
+      await _feedRef.child(postId).child('seenBy').child(uid).set(
+            ServerValue.timestamp,
+          );
+    } catch (_) {}
+  }
+
+  // ─── Latest posts (parent home peek) ───────────────────────────────────────
+  // Small real-time window of the most recent posts, newest first. The home
+  // card picks the newest one that matches this parent's audience and was
+  // created today — so it self-clears at midnight.
+  Stream<List<NurseryPostModel>> watchLatestPosts({int limit = 5}) {
+    return _feedRef
+        .orderByChild('createdAt')
+        .limitToLast(limit)
+        .onValue
+        .map((event) {
+      final data = event.snapshot.value;
+      if (data == null || data is! Map) return <NurseryPostModel>[];
+      final posts = <NurseryPostModel>[];
+      for (final entry in data.entries) {
+        try {
+          final map = Map<String, dynamic>.from(entry.value as Map);
+          posts.add(NurseryPostModel.fromJson(map, id: entry.key.toString()));
+        } catch (_) {}
+      }
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return posts;
+    });
+  }
+
   // ─── Image helpers ────────────────────────────────────────────────────────
   Future<List<String>> _uploadImages(String postId, List<XFile> images) async {
     final urls = <String>[];

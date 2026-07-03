@@ -66,7 +66,9 @@ class OwnerMetricsService {
     final enrollments = await enrollmentsF;
     final waiting = await waitingF;
     final branches = (await branchesF).where((b) => b.isActive).toList();
-    final staff = (await staffF).where((s) => s.isActive).toList();
+    final staff = (await staffF)
+        .where((s) => s.isActive && s.role != UserType.owner)
+        .toList();
     final recentActivity = await recentActivityF;
 
     final now = DateTime.now();

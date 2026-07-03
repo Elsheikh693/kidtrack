@@ -78,11 +78,6 @@ class DashboardHero extends StatelessWidget {
                 icon: Icons.notifications_none_rounded,
                 onTap: () => Get.toNamed(notificationsView),
               ),
-              SizedBox(width: 10.w),
-              _HeroAction(
-                icon: Icons.settings_outlined,
-                onTap: () => Get.toNamed(settingsView),
-              ),
             ],
           ),
           SizedBox(height: 20.h),

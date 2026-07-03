@@ -40,6 +40,19 @@ class ChatService {
     });
   }
 
+  // ─── Unread (single conversation) ───────────────────────────────────────────
+  /// Live unread count for one side of a single child's conversation. Used to
+  /// drive the entry-point badge (parent home card / account) without loading
+  /// the whole thread.
+  Stream<int> watchUnread(String childId, String role) {
+    final key = role == 'manager' ? 'unreadManager' : 'unreadParent';
+    return _chatRef(childId).child('meta').child(key).onValue.map((event) {
+      final v = event.snapshot.value;
+      if (v is int) return v;
+      return int.tryParse(v?.toString() ?? '') ?? 0;
+    });
+  }
+
   // ─── Messages (single thread) ───────────────────────────────────────────────
   Stream<List<ChatMessageModel>> watchMessages(String childId) {
     return _chatRef(childId)

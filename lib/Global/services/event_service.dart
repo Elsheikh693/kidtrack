@@ -68,6 +68,7 @@ class EventService {
     String? timeStr,
     String? location,
     required EventCategory category,
+    double? price,
     XFile? coverImage,
   }) async {
     try {
@@ -85,6 +86,7 @@ class EventService {
         location: location,
         coverImage: imageUrl,
         category: category,
+        price: price,
         createdBy: _session.userId ?? '',
         createdByName: _session.currentUser?.displayName ?? 'الاستقبال',
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -105,6 +107,7 @@ class EventService {
     String? timeStr,
     String? location,
     required EventCategory category,
+    double? price,
     XFile? newCoverImage,
     bool removeCover = false,
   }) async {
@@ -125,8 +128,13 @@ class EventService {
         location: location,
         coverImage: imageUrl,
         category: category,
+        price: price,
       );
-      await _eventsRef.child(event.id).update(updated.toJson());
+      final data = updated.toJson();
+      // Write price explicitly (even when null) so editing a paid event back to
+      // free actually clears the stored amount — toJson omits null keys.
+      data['price'] = price;
+      await _eventsRef.child(event.id).update(data);
       return true;
     } catch (_) {
       return false;

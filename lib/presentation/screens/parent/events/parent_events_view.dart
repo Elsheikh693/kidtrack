@@ -176,8 +176,16 @@ class _ParentEventCard extends StatelessWidget {
                         _chip(Icons.access_time_rounded, event.timeStr!, color),
                         const SizedBox(width: 8),
                       ],
-                      if (event.location != null)
+                      if (event.location != null) ...[
                         _chip(Icons.location_on_rounded, event.location!, color),
+                        const SizedBox(width: 8),
+                      ],
+                      if (event.hasPrice)
+                        _chip(
+                          Icons.payments_rounded,
+                          '${event.price!.round()} ${'currency'.tr}',
+                          color,
+                        ),
                       const Spacer(),
                       Row(
                         children: [
@@ -389,6 +397,40 @@ class _EventDetailSheet extends StatelessWidget {
                     if (event.location != null) ...[
                       const SizedBox(height: 12),
                       _metaTile(Icons.location_on_rounded, 'event_field_location'.tr, event.location!, color),
+                    ],
+                    if (event.hasPrice) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.07),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.payments_rounded, color: color, size: 20),
+                            const SizedBox(width: 10),
+                            Text(
+                              'event_field_price'.tr,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: color,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${event.price!.round()} ${'currency'.tr}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: color,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 16),
 

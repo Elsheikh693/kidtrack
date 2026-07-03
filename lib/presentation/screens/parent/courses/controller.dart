@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import '../../../../Data/models/course_enrollment/course_enrollment_model.dart';
 
 class ParentCoursesController extends GetxController {
   final _session = SessionService();
@@ -7,11 +8,23 @@ class ParentCoursesController extends GetxController {
   final activeTab        = 0.obs;
   final courses          = <NurseryCourse>[].obs;
   final isLoading        = true.obs;
-  final progress         = <String, CourseEnrollment>{}.obs;
   final selectedCategory = Rxn<CourseCategory>();
 
+  // Reception-driven enrollment: courseId → set of enrolled childIds.
+  final _enrollments = <String, Set<String>>{}.obs;
+  // courseId → attendance records (all children), for per-card track progress.
+  final _attendance  = <String, List<CourseSessionAttendance>>{}.obs;
+
   StreamSubscription? _coursesSub;
-  StreamSubscription? _progressSub;
+  StreamSubscription? _enrollSub;
+  StreamSubscription? _attendSub;
+
+  ActiveChildService? get _activeChild =>
+      Get.isRegistered<ActiveChildService>()
+          ? Get.find<ActiveChildService>()
+          : null;
+
+  String get _activeChildId => _activeChild?.childId.value ?? '';
 
   String get childName  => _session.currentUser?.displayName ?? 'الأهل';
   String get childStatus => 'inside';
@@ -24,19 +37,19 @@ class ParentCoursesController extends GetxController {
       courses.value = _filterByBranch(list);
       isLoading.value = false;
     });
-
-    final uid = _session.userId;
-    if (uid != null) {
-      _progressSub = _service.watchProgress(uid).listen((map) {
-        progress.value = map;
-      });
-    }
+    _enrollSub = _service.watchAllEnrollments().listen((map) {
+      _enrollments.value = map;
+    });
+    _attendSub = _service.watchAllAttendance().listen((map) {
+      _attendance.value = map;
+    });
   }
 
   @override
   void onClose() {
     _coursesSub?.cancel();
-    _progressSub?.cancel();
+    _enrollSub?.cancel();
+    _attendSub?.cancel();
     super.onClose();
   }
 
@@ -54,7 +67,7 @@ class ParentCoursesController extends GetxController {
 
   void selectCategory(CourseCategory? c) => selectedCategory.value = c;
 
-  // ── Enrollment helpers ──────────────────────────────────────────────────────
+  // ── Enrollment helpers (reception-driven, per active child) ─────────────────
 
   List<NurseryCourse> get availableCourses => courses;
 
@@ -71,23 +84,40 @@ class ParentCoursesController extends GetxController {
     return CourseCategory.values.where(present.contains).toList();
   }
 
+  // Course ids the active child is enrolled in (reception added them).
+  Set<String> get enrolledCourseIds {
+    final cid = _activeChildId;
+    if (cid.isEmpty) return const {};
+    final ids = <String>{};
+    _enrollments.forEach((courseId, kids) {
+      if (kids.contains(cid)) ids.add(courseId);
+    });
+    return ids;
+  }
+
   List<NurseryCourse> get enrolledCourses {
-    final ids = progress.keys.toSet();
+    final ids = enrolledCourseIds;
     return courses.where((c) => ids.contains(c.id)).toList();
   }
 
   int get totalCount => courses.length;
   int get enrolledCount => enrolledCourses.length;
 
-  CourseEnrollment? enrollmentFor(String courseId) => progress[courseId];
+  bool isEnrolled(String courseId) => enrolledCourseIds.contains(courseId);
 
-  bool isEnrolled(String courseId) => progress.containsKey(courseId);
+  // How many sessions the active child has attended (present) in a course.
+  int attendedCount(String courseId) {
+    final cid = _activeChildId;
+    if (cid.isEmpty) return 0;
+    final records = _attendance[courseId];
+    if (records == null) return 0;
+    return records.where((r) => r.childId == cid && r.isPresent).length;
+  }
 
-  // ── Mark lesson completed ───────────────────────────────────────────────────
-
-  Future<void> markCompleted(String courseId, String lessonId) async {
-    final uid = _session.userId;
-    if (uid == null) return;
-    await _service.markLessonCompleted(uid, courseId, lessonId);
+  // Track progress (0..1) for the active child on a course.
+  double progressFor(NurseryCourse course) {
+    final total = course.totalSessions;
+    if (total <= 0) return 0;
+    return (attendedCount(course.id) / total).clamp(0, 1).toDouble();
   }
 }

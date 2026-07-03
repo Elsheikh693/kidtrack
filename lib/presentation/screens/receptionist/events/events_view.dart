@@ -35,7 +35,10 @@ class _ReceptionistEventsViewState extends State<ReceptionistEventsView> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: _bg,
-        appBar: HomeAppBar(title: 'event_title'.tr),
+        appBar: HomeAppBar(
+          title: 'event_title'.tr,
+          onSettingsTap: () => Get.toNamed(settingsView),
+        ),
         floatingActionButton: _GradientFab(onPressed: () => _showCreate(context)),
         body: Obx(() {
           if (controller.isLoading.value) {

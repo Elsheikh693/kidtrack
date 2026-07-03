@@ -4,6 +4,7 @@ import '../../../../../index/index_main.dart';
 /// and the attended-activities list, so the manager reads one coherent window.
 class ProfileFilterBar extends StatelessWidget {
   final ChildProfileController controller;
+
   const ProfileFilterBar({super.key, required this.controller});
 
   static const _accent = Color(0xFF6C4DDB);
@@ -40,21 +41,38 @@ class ProfileFilterBar extends StatelessWidget {
             ),
             const Spacer(),
             _NavButton(
-              icon: Icons.chevron_right_rounded,
+              icon: Icons.chevron_left_rounded,
               enabled: true,
               onTap: controller.stepBack,
             ),
-            Container(
-              constraints: const BoxConstraints(minWidth: 96),
-              alignment: Alignment.center,
-              child: Text(
-                controller.rangeLabel,
-                style: context.typography.xsMedium
-                    .copyWith(color: AppColors.textDefault),
+            GestureDetector(
+              onTap: () => controller.pickDate(context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 96),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 14,
+                      color: _accent,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      controller.rangeLabel,
+                      style: context.typography.xsMedium.copyWith(
+                        color: AppColors.textDefault,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             _NavButton(
-              icon: Icons.chevron_left_rounded,
+              icon: Icons.chevron_right_rounded,
               enabled: controller.canGoForward,
               onTap: controller.stepForward,
             ),
@@ -69,6 +87,7 @@ class _Segment extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
   const _Segment({
     required this.label,
     required this.selected,
@@ -105,6 +124,7 @@ class _NavButton extends StatelessWidget {
   final IconData icon;
   final bool enabled;
   final VoidCallback onTap;
+
   const _NavButton({
     required this.icon,
     required this.enabled,

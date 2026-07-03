@@ -12,10 +12,7 @@ const _border = Color(0xFFE2E8F0);
 class ReceptionPaymentSheet extends StatefulWidget {
   final String nurseryId;
 
-  const ReceptionPaymentSheet({
-    super.key,
-    required this.nurseryId,
-  });
+  const ReceptionPaymentSheet({super.key, required this.nurseryId});
 
   @override
   State<ReceptionPaymentSheet> createState() => _ReceptionPaymentSheetState();
@@ -67,8 +64,9 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 24.h),
           child: Column(
@@ -92,8 +90,10 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                   Expanded(
                     child: Text(
                       'payment_add'.tr,
-                      style: context.typography.mdBold
-                          .copyWith(fontSize: 18, color: _ink),
+                      style: context.typography.mdBold.copyWith(
+                        fontSize: 18,
+                        color: _ink,
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -105,8 +105,11 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                         color: _field,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 19.sp, color: const Color(0xFF64748B)),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 19.sp,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                   ),
                 ],
@@ -124,14 +127,18 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                     children.isEmpty
                         ? 'payment_no_children'.tr
                         : 'payment_select_child'.tr,
-                    style: context.typography.smRegular
-                        .copyWith(color: _muted, fontSize: 14),
+                    style: context.typography.smRegular.copyWith(
+                      color: _muted,
+                      fontSize: 14,
+                    ),
                   ),
                   items: children
-                      .map((c) => DropdownMenuItem(
-                            value: c.key!,
-                            child: Text(c.fullName),
-                          ))
+                      .map(
+                        (c) => DropdownMenuItem(
+                          value: c.key!,
+                          child: Text(c.fullName),
+                        ),
+                      )
                       .toList(),
                   onChanged: children.isEmpty
                       ? null
@@ -159,34 +166,46 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
               _label('payment_amount'.tr),
               SizedBox(height: 6.h),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _amountCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                style: context.typography.smRegular
-                    .copyWith(fontSize: 15, color: _ink),
-                decoration: _decoration(hint: 'payment_amount_hint'.tr).copyWith(
-                  suffixIcon: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 14.w),
-                    child: Text(
-                      'overdue_currency'.tr,
-                      textAlign: TextAlign.center,
-                      style: context.typography.smSemiBold
-                          .copyWith(color: _accent, fontSize: 14),
-                    ),
-                  ),
-                  suffixIconConstraints:
-                      const BoxConstraints(minWidth: 0, minHeight: 0),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
+                style: context.typography.smRegular.copyWith(
+                  fontSize: 15,
+                  color: _ink,
+                ),
+                decoration: _decoration(hint: 'payment_amount_hint'.tr)
+                    .copyWith(
+                      suffixIcon: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        child: Text(
+                          'overdue_currency'.tr,
+                          textAlign: TextAlign.center,
+                          style: context.typography.smSemiBold.copyWith(
+                            color: _accent,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                    ),
               ),
               SizedBox(height: 16.h),
 
               _label('invoice_notes'.tr),
               SizedBox(height: 6.h),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _notesCtrl,
                 maxLines: 2,
-                style: context.typography.smRegular
-                    .copyWith(fontSize: 15, color: _ink),
+                style: context.typography.smRegular.copyWith(
+                  fontSize: 15,
+                  color: _ink,
+                ),
                 decoration: _decoration(hint: 'payment_notes_hint'.tr),
               ),
               SizedBox(height: 24.h),
@@ -200,7 +219,8 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                     backgroundColor: _accent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r)),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
@@ -236,22 +256,28 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                   color: Color(_selectedCategory!.colorValue),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
-                child: Icon(Icons.wallet_rounded,
-                    color: Colors.white, size: 14.sp),
+                child: Icon(
+                  Icons.wallet_rounded,
+                  color: Colors.white,
+                  size: 14.sp,
+                ),
               ),
               SizedBox(width: 10.w),
               Text(
                 _selectedCategory!.name,
-                style: context.typography.smMedium
-                    .copyWith(color: Color(_selectedCategory!.colorValue)),
+                style: context.typography.smMedium.copyWith(
+                  color: Color(_selectedCategory!.colorValue),
+                ),
               ),
             ] else ...[
               Icon(Icons.category_outlined, size: 18.sp, color: _muted),
               SizedBox(width: 10.w),
               Text(
                 'payment_cat_select'.tr,
-                style: context.typography.smRegular
-                    .copyWith(color: _muted, fontSize: 14),
+                style: context.typography.smRegular.copyWith(
+                  color: _muted,
+                  fontSize: 14,
+                ),
               ),
             ],
             const Spacer(),
@@ -294,18 +320,20 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
                   Get.back();
                 },
               ),
-              ..._controller.categories.map((cat) => _CategoryOption(
-                    label: cat.name,
-                    color: Color(cat.colorValue),
-                    selected: _categoryKey == cat.key,
-                    onTap: () {
-                      setState(() {
-                        _categoryKey = cat.key;
-                        _selectedCategory = cat;
-                      });
-                      Get.back();
-                    },
-                  )),
+              ..._controller.categories.map(
+                (cat) => _CategoryOption(
+                  label: cat.name,
+                  color: Color(cat.colorValue),
+                  selected: _categoryKey == cat.key,
+                  onTap: () {
+                    setState(() {
+                      _categoryKey = cat.key;
+                      _selectedCategory = cat;
+                    });
+                    Get.back();
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -314,32 +342,35 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: context.typography.smMedium
-            .copyWith(fontSize: 14, color: const Color(0xFF475569)),
-      );
+    text,
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
+  );
 
   InputDecoration _decoration({String? hint}) => InputDecoration(
-        hintText: hint,
-        hintStyle:
-            context.typography.smRegular.copyWith(color: _muted, fontSize: 14),
-        filled: true,
-        fillColor: _field,
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: _border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: _border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: _accent, width: 1.5),
-        ),
-      );
+    hintText: hint,
+    hintStyle: context.typography.smRegular.copyWith(
+      color: _muted,
+      fontSize: 14,
+    ),
+    filled: true,
+    fillColor: _field,
+    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.r),
+      borderSide: const BorderSide(color: _border),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.r),
+      borderSide: const BorderSide(color: _border),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.r),
+      borderSide: BorderSide(color: _accent, width: 1.5),
+    ),
+  );
 }
 
 class _CategoryOption extends StatelessWidget {
@@ -365,9 +396,7 @@ class _CategoryOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? color.withOpacity(0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-            color: selected ? color : const Color(0xFFE2E8F0),
-          ),
+          border: Border.all(color: selected ? color : const Color(0xFFE2E8F0)),
         ),
         child: Row(
           children: [
@@ -381,8 +410,9 @@ class _CategoryOption extends StatelessWidget {
               label,
               style: selected
                   ? context.typography.smSemiBold.copyWith(color: color)
-                  : context.typography.smRegular
-                      .copyWith(color: const Color(0xFF475569)),
+                  : context.typography.smRegular.copyWith(
+                      color: const Color(0xFF475569),
+                    ),
             ),
             const Spacer(),
             if (selected)

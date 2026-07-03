@@ -39,6 +39,13 @@ class _ReceptionistCheckInViewState extends State<ReceptionistCheckInView> {
           ),
           centerTitle: true,
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              onPressed: () => Get.toNamed(settingsView),
+            ),
+            SizedBox(width: 6.w),
+          ],
         ),
         body: Column(
           children: [

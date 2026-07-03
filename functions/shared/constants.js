@@ -15,6 +15,13 @@ const NotificationType = {
   report: "report",
   finance: "finance",
   general: "general",
+  // Newer feature types — the Flutter notification card falls back to a
+  // generic look for unknown types, so these render safely today. Add matching
+  // cases in notification_card.dart when we want dedicated icons.
+  event: "event",
+  course: "course",
+  chat: "chat",
+  engagement: "engagement",
 };
 
 // Recipient roles — decides which path tokenService reads the FCM token from.

@@ -35,7 +35,9 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
   void initState() {
     super.initState();
     final e = widget.existing;
-    _childId = e?.childId ?? (widget.children.isNotEmpty ? widget.children.first.key! : '');
+    _childId =
+        e?.childId ??
+        (widget.children.isNotEmpty ? widget.children.first.key! : '');
     _status = e?.status ?? 'pending';
     _categoryId = e?.categoryId;
     _categoryName = e?.categoryName;
@@ -59,11 +61,14 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
     final now = DateTime.now();
     final picked = await showAppDatePicker(
       context,
-      initialDate: _dueDate != null ? DateTime.fromMillisecondsSinceEpoch(_dueDate!) : now,
+      initialDate: _dueDate != null
+          ? DateTime.fromMillisecondsSinceEpoch(_dueDate!)
+          : now,
       minimumDate: now.subtract(const Duration(days: 365)),
       maximumDate: now.add(const Duration(days: 730)),
     );
-    if (picked != null) setState(() => _dueDate = picked.millisecondsSinceEpoch);
+    if (picked != null)
+      setState(() => _dueDate = picked.millisecondsSinceEpoch);
   }
 
   void _submit() {
@@ -71,7 +76,8 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
     final discount = double.tryParse(_discountCtrl.text.trim()) ?? 0;
     if (_childId.isEmpty || amount <= 0) return;
     final service = Get.find<InvoiceParentService>();
-    final key = widget.existing?.key ?? 'inv_${DateTime.now().millisecondsSinceEpoch}';
+    final key =
+        widget.existing?.key ?? 'inv_${DateTime.now().millisecondsSinceEpoch}';
     final model = InvoiceModel(
       key: key,
       nurseryId: widget.nurseryId,
@@ -141,7 +147,9 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
               ),
               Text(
                 widget.existing == null ? 'invoice_add'.tr : 'invoice_edit'.tr,
-                style: context.typography.lgBold.copyWith(color: Color(0xFF1E293B)),
+                style: context.typography.lgBold.copyWith(
+                  color: Color(0xFF1E293B),
+                ),
               ),
               SizedBox(height: 20.h),
 
@@ -162,21 +170,32 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
                       }),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
-                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14.w,
+                          vertical: 8.h,
+                        ),
                         decoration: BoxDecoration(
                           color: active ? color : Colors.white,
                           borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(color: active ? color : const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: active ? color : const Color(0xFFE2E8F0),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.wallet_rounded, size: 14.sp, color: active ? Colors.white : color),
+                            Icon(
+                              Icons.wallet_rounded,
+                              size: 14.sp,
+                              color: active ? Colors.white : color,
+                            ),
                             SizedBox(width: 6.w),
                             Text(
                               cat.name,
                               style: context.typography.xsMedium.copyWith(
-                                color: active ? Colors.white : const Color(0xFF475569),
+                                color: active
+                                    ? Colors.white
+                                    : const Color(0xFF475569),
                               ),
                             ),
                           ],
@@ -194,7 +213,12 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
               DropdownButtonFormField<String>(
                 value: _childId.isEmpty ? null : _childId,
                 items: widget.children
-                    .map((c) => DropdownMenuItem(value: c.key!, child: Text(c.fullName)))
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c.key!,
+                        child: Text(c.fullName),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _childId = v ?? ''),
                 decoration: _decoration('invoice_child'.tr),
@@ -205,17 +229,32 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
               _label('invoice_title'.tr),
               SizedBox(height: 6.h),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _titleCtrl,
                 decoration: _decoration('invoice_title_hint'.tr),
               ),
               SizedBox(height: 14.h),
 
               // ── Amount + discount ───────────────────────────────────────────
-              Row(children: [
-                Expanded(child: _fieldCol('invoice_amount'.tr, _amountCtrl, TextInputType.number)),
-                SizedBox(width: 12.w),
-                Expanded(child: _fieldCol('invoice_discount'.tr, _discountCtrl, TextInputType.number)),
-              ]),
+              Row(
+                children: [
+                  Expanded(
+                    child: _fieldCol(
+                      'invoice_amount'.tr,
+                      _amountCtrl,
+                      TextInputType.number,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _fieldCol(
+                      'invoice_discount'.tr,
+                      _discountCtrl,
+                      TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 14.h),
 
               // ── Status ──────────────────────────────────────────────────────
@@ -231,16 +270,23 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
                     onTap: () => setState(() => _status = s),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
                         color: active ? color : Colors.white,
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: active ? color : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: active ? color : const Color(0xFFE2E8F0),
+                        ),
                       ),
                       child: Text(
                         'invoice_status_$s'.tr,
                         style: context.typography.xsMedium.copyWith(
-                          color: active ? Colors.white : const Color(0xFF475569),
+                          color: active
+                              ? Colors.white
+                              : const Color(0xFF475569),
                         ),
                       ),
                     ),
@@ -253,40 +299,58 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
               GestureDetector(
                 onTap: _pickDueDate,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 14.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: Row(children: [
-                    Icon(Icons.calendar_today_outlined, size: 16.sp, color: const Color(0xFF94A3B8)),
-                    SizedBox(width: 8.w),
-                    Text(
-                      _dueDate != null
-                          ? () {
-                              final d = DateTime.fromMillisecondsSinceEpoch(_dueDate!);
-                              return '${d.day}/${d.month}/${d.year}';
-                            }()
-                          : 'invoice_due_date'.tr,
-                      style: context.typography.xsRegular.copyWith(
-                        color: _dueDate != null ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16.sp,
+                        color: const Color(0xFF94A3B8),
                       ),
-                    ),
-                    if (_dueDate != null) ...[
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => setState(() => _dueDate = null),
-                        child: Icon(Icons.close, size: 16.sp, color: const Color(0xFF94A3B8)),
+                      SizedBox(width: 8.w),
+                      Text(
+                        _dueDate != null
+                            ? () {
+                                final d = DateTime.fromMillisecondsSinceEpoch(
+                                  _dueDate!,
+                                );
+                                return '${d.day}/${d.month}/${d.year}';
+                              }()
+                            : 'invoice_due_date'.tr,
+                        style: context.typography.xsRegular.copyWith(
+                          color: _dueDate != null
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFF94A3B8),
+                        ),
                       ),
+                      if (_dueDate != null) ...[
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => setState(() => _dueDate = null),
+                          child: Icon(
+                            Icons.close,
+                            size: 16.sp,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
                     ],
-                  ]),
+                  ),
                 ),
               ),
               SizedBox(height: 14.h),
 
               // ── Notes ───────────────────────────────────────────────────────
               TextFormField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _notesCtrl,
                 decoration: _decoration('invoice_notes'.tr),
                 maxLines: 2,
@@ -301,10 +365,14 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
                   child: Text(
-                    widget.existing == null ? 'invoice_save'.tr : 'invoice_update'.tr,
+                    widget.existing == null
+                        ? 'invoice_save'.tr
+                        : 'invoice_update'.tr,
                     style: context.typography.displaySmBold,
                   ),
                 ),
@@ -317,39 +385,50 @@ class _InvoiceSheetState extends State<InvoiceSheet> with KeyboardSheetMixin {
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: context.typography.xsMedium.copyWith(color: const Color(0xFF374151)),
-      );
+    text,
+    style: context.typography.xsMedium.copyWith(color: const Color(0xFF374151)),
+  );
 
-  Widget _fieldCol(String label, TextEditingController ctrl, TextInputType type) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _label(label),
-          SizedBox(height: 6.h),
-          TextField(controller: ctrl, keyboardType: type, decoration: _decoration(label)),
-        ],
-      );
+  Widget _fieldCol(
+    String label,
+    TextEditingController ctrl,
+    TextInputType type,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _label(label),
+      SizedBox(height: 6.h),
+      TextField(
+        inputFormatters: const [EnglishDigitsFormatter()],
+        controller: ctrl,
+        keyboardType: type,
+        decoration: _decoration(label),
+      ),
+    ],
+  );
 
   InputDecoration _decoration(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: context.typography.xsRegular
-            .copyWith(fontSize: 13, color: const Color(0xFF94A3B8)),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: BorderSide(color: AppColors.primary),
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      );
+    hintText: hint,
+    hintStyle: context.typography.xsRegular.copyWith(
+      fontSize: 13,
+      color: const Color(0xFF94A3B8),
+    ),
+    filled: true,
+    fillColor: const Color(0xFFF8FAFC),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: BorderSide(color: AppColors.primary),
+    ),
+    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+  );
 
   Color _statusColor(String s) {
     switch (s) {

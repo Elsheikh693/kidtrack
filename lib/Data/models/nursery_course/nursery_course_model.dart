@@ -205,8 +205,14 @@ class NurseryCourse {
   final CourseCategory category;
   final String ageGroup;
   final bool isActive;
+  // Number of sessions (حصص) the manager declares for this course.
+  // 0 = fall back to the lesson/content count.
+  final int sessionCount;
   final int lessonCount;
   final int totalMinutes;
+  // When the course starts (ms since epoch). Declared by the manager; shown to
+  // parents (especially those whose child isn't enrolled yet).
+  final int? startDate;
   final int createdAt;
   final int? updatedAt;
 
@@ -222,13 +228,18 @@ class NurseryCourse {
     required this.category,
     required this.ageGroup,
     this.isActive = true,
+    this.sessionCount = 0,
     this.lessonCount = 0,
     this.totalMinutes = 0,
+    this.startDate,
     required this.createdAt,
     this.updatedAt,
   });
 
   bool get isAllBranches => branchIds.isEmpty;
+
+  // Total sessions for attendance: declared count, or the content count.
+  int get totalSessions => sessionCount > 0 ? sessionCount : lessonCount;
 
   factory NurseryCourse.fromJson(Map<String, dynamic> json, {required String id}) {
     return NurseryCourse(
@@ -243,8 +254,10 @@ class NurseryCourse {
       category: CourseCategoryX.fromString(json['category']?.toString()),
       ageGroup: json['ageGroup']?.toString() ?? '',
       isActive: json['isActive'] != false,
+      sessionCount: _parseInt(json['sessionCount']) ?? 0,
       lessonCount: _parseInt(json['lessonCount']) ?? 0,
       totalMinutes: _parseInt(json['totalMinutes']) ?? 0,
+      startDate: _parseInt(json['startDate']),
       createdAt: _parseInt(json['createdAt']) ?? DateTime.now().millisecondsSinceEpoch,
       updatedAt: _parseInt(json['updatedAt']),
     );
@@ -260,12 +273,14 @@ class NurseryCourse {
       'category': category.name,
       'ageGroup': ageGroup,
       'isActive': isActive,
+      'sessionCount': sessionCount,
       'lessonCount': lessonCount,
       'totalMinutes': totalMinutes,
       'createdAt': createdAt,
     };
     if (branchId != null) m['branchId'] = branchId;
     if (coverUrl != null) m['coverUrl'] = coverUrl;
+    if (startDate != null) m['startDate'] = startDate;
     if (updatedAt != null) m['updatedAt'] = updatedAt;
     return m;
   }
@@ -282,8 +297,11 @@ class NurseryCourse {
     CourseCategory? category,
     String? ageGroup,
     bool? isActive,
+    int? sessionCount,
     int? lessonCount,
     int? totalMinutes,
+    int? startDate,
+    bool clearStartDate = false,
     int? createdAt,
     int? updatedAt,
   }) =>
@@ -299,8 +317,10 @@ class NurseryCourse {
         category: category ?? this.category,
         ageGroup: ageGroup ?? this.ageGroup,
         isActive: isActive ?? this.isActive,
+        sessionCount: sessionCount ?? this.sessionCount,
         lessonCount: lessonCount ?? this.lessonCount,
         totalMinutes: totalMinutes ?? this.totalMinutes,
+        startDate: clearStartDate ? null : (startDate ?? this.startDate),
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -316,6 +336,10 @@ class NurseryCourse {
 
   bool get isFree => price == 0;
   String get priceLabel => isFree ? 'مجاني' : '${price.toInt()} جنيه';
+
+  bool get hasStartDate => startDate != null;
+  DateTime? get startDateTime =>
+      startDate == null ? null : DateTime.fromMillisecondsSinceEpoch(startDate!);
 
   static int? _parseInt(dynamic v) {
     if (v == null) return null;

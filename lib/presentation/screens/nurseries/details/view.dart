@@ -93,33 +93,39 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
           SizedBox(height: 14.h),
           _label('nursery_phone_label'.tr),
           SizedBox(height: 6.h),
-          _field(controller.phoneCtrl, 'nursery_phone_hint'.tr,
-              keyboardType: TextInputType.phone),
+          _field(
+            controller.phoneCtrl,
+            'nursery_phone_hint'.tr,
+            keyboardType: TextInputType.phone,
+          ),
           SizedBox(height: 14.h),
           _label('nursery_address_label'.tr),
           SizedBox(height: 6.h),
           _field(controller.addressCtrl, 'nursery_address_hint'.tr),
           SizedBox(height: 20.h),
-          Obx(() => SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  onPressed:
-                      controller.savingInfo.value ? null : controller.saveInfo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
-                    elevation: 0,
+          Obx(
+            () => SizedBox(
+              width: double.infinity,
+              height: 50.h,
+              child: ElevatedButton(
+                onPressed: controller.savingInfo.value
+                    ? null
+                    : controller.saveInfo,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
-                  child: Text(
-                    'nursery_save_info_btn'.tr,
-                    style: context.typography.smSemiBold,
-                  ),
+                  elevation: 0,
                 ),
-              )),
+                child: Text(
+                  'nursery_save_info_btn'.tr,
+                  style: context.typography.smSemiBold,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -143,53 +149,67 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
           ),
           child: Text(
             'nursery_owners_empty'.tr,
-            style: context.typography.smRegular.copyWith(color: const Color(0xFF94A3B8), fontSize: 14),
+            style: context.typography.smRegular.copyWith(
+              color: const Color(0xFF94A3B8),
+              fontSize: 14,
+            ),
           ),
         );
       }
       return Column(
         children: controller.owners
-            .map((owner) => OwnerTile(
-                  owner: owner,
-                  onEdit: () => controller.openEditOwner(owner),
-                  onDelete: () => controller.confirmDeleteOwner(owner),
-                ))
+            .map(
+              (owner) => OwnerTile(
+                owner: owner,
+                onEdit: () => controller.openEditOwner(owner),
+                onDelete: () => controller.confirmDeleteOwner(owner),
+              ),
+            )
             .toList(),
       );
     });
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: context.typography.smMedium.copyWith(
-            fontSize: 14, color: const Color(0xFF475569)),
-      );
+    text,
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
+  );
 
-  Widget _field(TextEditingController ctrl, String hint,
-          {TextInputType keyboardType = TextInputType.text}) =>
-      TextField(
-        controller: ctrl,
-        keyboardType: keyboardType,
-        style: context.typography.smRegular.copyWith(color: const Color(0xFF1E293B)),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-          ),
-        ),
-      );
+  Widget _field(
+    TextEditingController ctrl,
+    String hint, {
+    TextInputType keyboardType = TextInputType.text,
+  }) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
+    controller: ctrl,
+    keyboardType: keyboardType,
+    style: context.typography.smRegular.copyWith(
+      color: const Color(0xFF1E293B),
+    ),
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+    ),
+  );
 }

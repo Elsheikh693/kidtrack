@@ -7,7 +7,6 @@ import 'widgets/profile_location_card.dart';
 import 'widgets/profile_branches.dart';
 import 'widgets/profile_login_bar.dart';
 import 'widgets/profile_overview.dart';
-import 'widgets/profile_packages.dart';
 
 class NurseryProfileView extends StatefulWidget {
   const NurseryProfileView({super.key});
@@ -110,8 +109,6 @@ class _NurseryProfileViewState extends State<NurseryProfileView> {
       ));
     }
     if (controller.hasBranches) {
-      // Reactive: each branch shows its own subscription prices once the
-      // catalog (branches + packages) loads. Joined by branch id, not name.
       sections.add(Obx(() {
         final branchViews = controller.branchViews;
         if (branchViews.isEmpty) return const SizedBox.shrink();
@@ -126,16 +123,6 @@ class _NurseryProfileViewState extends State<NurseryProfileView> {
         );
       }));
     }
-    // Any prices not attributable to a shown branch (name mismatch, or a
-    // nursery with no listed branches) still surface here so nothing is hidden.
-    sections.add(Obx(() {
-      final extras = controller.unattributedPackages;
-      if (extras.isEmpty) return const SizedBox.shrink();
-      return ProfileSection(
-        title: 'discovery_section_packages'.tr,
-        child: BranchPackageList(packages: extras),
-      );
-    }));
 
     // Wrap each section in a staggered fade + slide entrance.
     return [

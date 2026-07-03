@@ -23,6 +23,7 @@ class DashboardQuickLinks extends StatelessWidget {
           labelKey: 'chat_tab_label',
           color: const Color(0xFF6366F1),
           onTap: () => controller.openTab(_chatPage),
+          badge: () => controller.chatUnread,
         ),
         SizedBox(width: 12.w),
         _QuickLink(
@@ -49,12 +50,17 @@ class _QuickLink extends StatelessWidget {
     required this.labelKey,
     required this.color,
     required this.onTap,
+    this.badge,
   });
 
   final IconData icon;
   final String labelKey;
   final Color color;
   final VoidCallback onTap;
+
+  /// Optional live unread count, read inside an [Obx] so the badge updates as
+  /// messages arrive.
+  final int Function()? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +83,29 @@ class _QuickLink extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Container(
-                width: 46.w,
-                height: 46.w,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Icon(icon, color: color, size: 23.sp),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 46.w,
+                    height: 46.w,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    child: Icon(icon, color: color, size: 23.sp),
+                  ),
+                  if (badge != null)
+                    Positioned(
+                      top: -6.h,
+                      right: -6.w,
+                      child: Obx(() {
+                        final n = badge!();
+                        if (n <= 0) return const SizedBox.shrink();
+                        return ChatUnreadBadge(count: n);
+                      }),
+                    ),
+                ],
               ),
               SizedBox(height: 10.h),
               Text(

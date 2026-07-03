@@ -3,9 +3,9 @@ class ClassroomModel {
   final String nurseryId;
   // Empty list = available in all branches; otherwise restricted to these branch ids.
   final List<String> branchIds;
-  // Program/stage this classroom belongs to (KG1, KG2, Pre, ...).
-  // null = generic classroom available under any program.
-  final String? programId;
+  // Program/stage(s) this classroom belongs to (KG1, KG2, Pre, ...).
+  // Empty list = generic classroom available under any program.
+  final List<String> programIds;
   final String name;
   final String? shift; // 'morning' / 'evening' / 'both'
   final String? teacherId;
@@ -20,7 +20,7 @@ class ClassroomModel {
     this.key,
     required this.nurseryId,
     this.branchIds = const [],
-    this.programId,
+    this.programIds = const [],
     required this.name,
     this.shift,
     this.teacherId,
@@ -39,7 +39,7 @@ class ClassroomModel {
       key: key ?? json['key']?.toString(),
       nurseryId: json['nurseryId']?.toString() ?? '',
       branchIds: _parseBranchIds(json),
-      programId: json['programId']?.toString(),
+      programIds: _parseProgramIds(json),
       name: json['name']?.toString() ?? '',
       shift: json['shift']?.toString(),
       teacherId: json['teacherId']?.toString(),
@@ -58,7 +58,7 @@ class ClassroomModel {
     put('key', key);
     put('nurseryId', nurseryId);
     put('branchIds', branchIds);
-    put('programId', programId);
+    put('programIds', programIds);
     put('name', name);
     put('shift', shift);
     put('teacherId', teacherId);
@@ -73,14 +73,14 @@ class ClassroomModel {
 
   ClassroomModel copyWith({
     String? key, String? nurseryId, List<String>? branchIds,
-    String? programId, bool clearProgram = false,
+    List<String>? programIds,
     String? name, String? shift,
     String? teacherId, int? capacity, int? ageGroupMin, int? ageGroupMax,
     bool? isActive, int? createdAt, int? updatedAt,
   }) => ClassroomModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
     branchIds: branchIds ?? this.branchIds,
-    programId: clearProgram ? null : (programId ?? this.programId),
+    programIds: programIds ?? this.programIds,
     name: name ?? this.name,
     shift: shift ?? this.shift,
     teacherId: teacherId ?? this.teacherId, capacity: capacity ?? this.capacity,
@@ -95,6 +95,14 @@ class ClassroomModel {
   static List<String> _parseBranchIds(Map<String, dynamic> json) {
     if (json.containsKey('branchIds')) return _parseStringList(json['branchIds']);
     final legacy = json['branchId']?.toString() ?? '';
+    return legacy.isEmpty ? const [] : [legacy];
+  }
+
+  // Reads new `programIds` list; falls back to legacy single `programId` so old
+  // records (saved before multi-program support) keep working.
+  static List<String> _parseProgramIds(Map<String, dynamic> json) {
+    if (json.containsKey('programIds')) return _parseStringList(json['programIds']);
+    final legacy = json['programId']?.toString() ?? '';
     return legacy.isEmpty ? const [] : [legacy];
   }
 

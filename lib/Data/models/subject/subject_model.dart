@@ -13,7 +13,7 @@ class SubjectModel {
   const SubjectModel({
     this.key,
     required this.nurseryId,
-    required this.programId,
+    this.programId = '',
     required this.name,
     this.description,
     this.icon,

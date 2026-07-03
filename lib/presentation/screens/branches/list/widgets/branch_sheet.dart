@@ -47,7 +47,9 @@ class _BranchSheetState extends State<BranchSheet> with KeyboardSheetMixin {
       return;
     }
     final nurseryId = SessionService().nurseryId ?? '';
-    final id = isEdit ? (widget.initial!.key ?? const Uuid().v4()) : const Uuid().v4();
+    final id = isEdit
+        ? (widget.initial!.key ?? const Uuid().v4())
+        : const Uuid().v4();
     final branch = BranchModel(
       key: id,
       nurseryId: nurseryId,
@@ -101,9 +103,7 @@ class _BranchSheetState extends State<BranchSheet> with KeyboardSheetMixin {
             children: [
               _SheetHandle(),
               SizedBox(height: 20.h),
-              _SheetTitle(
-                text: isEdit ? 'branch_edit'.tr : 'branch_add'.tr,
-              ),
+              _SheetTitle(text: isEdit ? 'branch_edit'.tr : 'branch_add'.tr),
               SizedBox(height: 24.h),
               _FieldLabel('branch_name_label'.tr),
               SizedBox(height: 6.h),
@@ -111,7 +111,10 @@ class _BranchSheetState extends State<BranchSheet> with KeyboardSheetMixin {
               SizedBox(height: 16.h),
               _FieldLabel('branch_address_label'.tr),
               SizedBox(height: 6.h),
-              _InputField(controller: addressCtrl, hint: 'branch_address_hint'.tr),
+              _InputField(
+                controller: addressCtrl,
+                hint: 'branch_address_hint'.tr,
+              ),
               SizedBox(height: 16.h),
               _FieldLabel('branch_phone_label'.tr),
               SizedBox(height: 6.h),
@@ -148,7 +151,8 @@ class _SheetHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Container(
-      width: 40.w, height: 4.h,
+      width: 40.w,
+      height: 4.h,
       decoration: BoxDecoration(
         color: Colors.grey.shade300,
         borderRadius: BorderRadius.circular(4.r),
@@ -164,7 +168,8 @@ class _SheetTitle extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     style: context.typography.lgBold.copyWith(
-      fontSize: 18, color: const Color(0xFF1E293B),
+      fontSize: 18,
+      color: const Color(0xFF1E293B),
     ),
   );
 }
@@ -176,7 +181,8 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) => Text(
     text,
     style: context.typography.smMedium.copyWith(
-      fontSize: 14, color: const Color(0xFF475569),
+      fontSize: 14,
+      color: const Color(0xFF475569),
     ),
   );
 }
@@ -185,20 +191,27 @@ class _InputField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final TextInputType keyboardType;
-  const _InputField({required this.controller, required this.hint, this.keyboardType = TextInputType.text});
+  const _InputField({
+    required this.controller,
+    required this.hint,
+    this.keyboardType = TextInputType.text,
+  });
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     keyboardType: keyboardType,
     maxLines: 1,
     style: context.typography.smRegular.copyWith(
-      fontSize: 15, color: const Color(0xFF1E293B),
+      fontSize: 15,
+      color: const Color(0xFF1E293B),
     ),
     decoration: InputDecoration(
       hintText: hint,
       hintStyle: context.typography.smRegular.copyWith(
-        color: const Color(0xFFCBD5E1), fontSize: 14,
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
       ),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
@@ -233,10 +246,15 @@ class _SubmitButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14.r),
+        ),
         elevation: 0,
       ),
-      child: Text(label, style: context.typography.smSemiBold.copyWith(fontSize: 16)),
+      child: Text(
+        label,
+        style: context.typography.smSemiBold.copyWith(fontSize: 16),
+      ),
     ),
   );
 }

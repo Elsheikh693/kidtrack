@@ -42,7 +42,8 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
 
     final session = SessionService();
     final isNew = widget.existing == null;
-    final key = widget.existing?.key ??
+    final key =
+        widget.existing?.key ??
         'contact_${DateTime.now().millisecondsSinceEpoch}';
 
     final model = NurseryContactModel(
@@ -52,12 +53,13 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
       phone: phone,
       roleKey: _roleKey,
       order: widget.existing?.order ?? widget.nextOrder,
-      createdAt: widget.existing?.createdAt ??
-          DateTime.now().millisecondsSinceEpoch,
+      createdAt:
+          widget.existing?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
     );
 
-    final service =
-        Get.find<BaseService<NurseryContactModel>>(tag: 'nurseryContacts');
+    final service = Get.find<BaseService<NurseryContactModel>>(
+      tag: 'nurseryContacts',
+    );
     Loader.show();
     service.addData(
       item: model,
@@ -67,7 +69,8 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
         Loader.dismiss();
         if (status == ResponseStatus.success) {
           Loader.showSuccess(
-              isNew ? 'nursery_contact_saved'.tr : 'nursery_contact_updated'.tr);
+            isNew ? 'nursery_contact_saved'.tr : 'nursery_contact_updated'.tr,
+          );
           Get.back();
         } else {
           Loader.showError('nursery_contact_error'.tr);
@@ -77,25 +80,24 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
   }
 
   InputDecoration _decoration(String hintKey) => InputDecoration(
-        hintText: hintKey.tr,
-        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: AppColors.primary),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      );
+    hintText: hintKey.tr,
+    hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+    filled: true,
+    fillColor: const Color(0xFFF8FAFC),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: BorderSide(color: AppColors.primary),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -124,16 +126,18 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                 widget.existing == null
                     ? 'nursery_contact_add'.tr
                     : 'nursery_contact_edit'.tr,
-                style: context.typography.lgBold
-                    .copyWith(color: const Color(0xFF1E293B)),
+                style: context.typography.lgBold.copyWith(
+                  color: const Color(0xFF1E293B),
+                ),
               ),
               const SizedBox(height: 20),
 
               // ── Role ────────────────────────────────────────────────────
               Text(
                 'nursery_contact_role'.tr,
-                style: context.typography.xsMedium
-                    .copyWith(color: const Color(0xFF374151)),
+                style: context.typography.xsMedium.copyWith(
+                  color: const Color(0xFF374151),
+                ),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -147,7 +151,9 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 160),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: selected
                             ? c.withOpacity(0.12)
@@ -161,16 +167,19 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(NurseryContactModel.roleIcon(r),
-                              size: 16,
-                              color: selected ? c : const Color(0xFF94A3B8)),
+                          Icon(
+                            NurseryContactModel.roleIcon(r),
+                            size: 16,
+                            color: selected ? c : const Color(0xFF94A3B8),
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             NurseryContactModel.roleLabelKey(r).tr,
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight:
-                                  selected ? FontWeight.w700 : FontWeight.w500,
+                              fontWeight: selected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                               color: selected ? c : const Color(0xFF475569),
                             ),
                           ),
@@ -185,11 +194,13 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
               // ── Name / label ────────────────────────────────────────────
               Text(
                 'nursery_contact_name'.tr,
-                style: context.typography.xsMedium
-                    .copyWith(color: const Color(0xFF374151)),
+                style: context.typography.xsMedium.copyWith(
+                  color: const Color(0xFF374151),
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _nameCtrl,
                 focusNode: _nameFocus,
                 textInputAction: TextInputAction.next,
@@ -201,11 +212,13 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
               // ── Phone ───────────────────────────────────────────────────
               Text(
                 'nursery_contact_phone'.tr,
-                style: context.typography.xsMedium
-                    .copyWith(color: const Color(0xFF374151)),
+                style: context.typography.xsMedium.copyWith(
+                  color: const Color(0xFF374151),
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _phoneCtrl,
                 focusNode: _phoneFocus,
                 keyboardType: TextInputType.phone,
@@ -218,8 +231,10 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
 
               // ── Preview ─────────────────────────────────────────────────
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: accent.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
@@ -234,8 +249,11 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                         color: accent,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(NurseryContactModel.roleIcon(_roleKey),
-                          color: Colors.white, size: 20),
+                      child: Icon(
+                        NurseryContactModel.roleIcon(_roleKey),
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -249,8 +267,9 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                               _nameCtrl.text.isEmpty
                                   ? 'nursery_contact_preview'.tr
                                   : _nameCtrl.text,
-                              style: context.typography.smSemiBold
-                                  .copyWith(color: const Color(0xFF1E293B)),
+                              style: context.typography.smSemiBold.copyWith(
+                                color: const Color(0xFF1E293B),
+                              ),
                             ),
                             if (_phoneCtrl.text.isNotEmpty) ...[
                               const SizedBox(height: 2),
@@ -258,15 +277,20 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                                 _phoneCtrl.text,
                                 textDirection: TextDirection.ltr,
                                 style: const TextStyle(
-                                    fontSize: 12, color: Color(0xFF64748B)),
+                                  fontSize: 12,
+                                  color: Color(0xFF64748B),
+                                ),
                               ),
                             ],
                           ],
                         ),
                       ),
                     ),
-                    const Icon(Icons.chat_rounded,
-                        color: Color(0xFF25D366), size: 22),
+                    const Icon(
+                      Icons.chat_rounded,
+                      color: Color(0xFF25D366),
+                      size: 22,
+                    ),
                   ],
                 ),
               ),
@@ -280,7 +304,8 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     widget.existing == null

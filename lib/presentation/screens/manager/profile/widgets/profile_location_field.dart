@@ -1,6 +1,5 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
+import 'package:geolocator/geolocator.dart';
 import '../../../../../index/index_main.dart';
-import '../location_picker_view.dart';
 
 class ProfileLocationField extends StatelessWidget {
   const ProfileLocationField({super.key, required this.controller});
@@ -8,14 +7,29 @@ class ProfileLocationField extends StatelessWidget {
   final ManagerNurseryProfileController controller;
 
   Future<void> _pick() async {
-    final initial = controller.hasLocation
-        ? gmap.LatLng(controller.lat.value!, controller.lng.value!)
-        : null;
-    final result = await Get.to<gmap.LatLng>(
-      () => LocationPickerView(initial: initial),
-    );
-    if (result != null) {
-      controller.setLocation(result.latitude, result.longitude);
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      Loader.showError('tracking_location_denied'.tr);
+      await Geolocator.openLocationSettings();
+      return;
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      Loader.showError('tracking_location_denied'.tr);
+      return;
+    }
+    Loader.show();
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      controller.setLocation(pos.latitude, pos.longitude);
+      Loader.dismiss();
+    } catch (_) {
+      Loader.showError('home_loc_current_error'.tr);
     }
   }
 
@@ -48,7 +62,7 @@ class ProfileLocationField extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.grayMedium),
+            Icon(Icons.my_location_rounded, color: AppColors.primary),
           ],
         ),
       ),

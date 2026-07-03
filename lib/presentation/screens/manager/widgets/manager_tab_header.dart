@@ -1,7 +1,7 @@
 import '../../../../index/index_main.dart';
 
 /// Clean static header shared across the Branch Manager tabs.
-/// Title on the leading side, notification + settings actions trailing.
+/// Title on the leading side, notification action trailing.
 /// The white surface bleeds behind the status bar for a premium look.
 class ManagerTabHeader extends StatelessWidget {
   const ManagerTabHeader({
@@ -103,12 +103,6 @@ class ManagerTabHeader extends StatelessWidget {
           icon: Icons.notifications_none_rounded,
           accent: accent,
           onTap: () => Get.toNamed(notificationsView),
-        ),
-        const SizedBox(width: 10),
-        _HeaderAction(
-          icon: Icons.settings_outlined,
-          accent: accent,
-          onTap: () => Get.toNamed(settingsView),
         ),
       ],
     );

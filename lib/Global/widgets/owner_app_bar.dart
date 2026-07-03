@@ -2,7 +2,7 @@ import '../../index/index_main.dart';
 import '../../presentation/screens/owner/executive/widgets/owner_scope_switcher.dart';
 
 /// Plain static app bar for every owner screen. White, non-collapsing, with a
-/// title and two actions: notifications and settings. Drop it into
+/// title and a notifications action. Drop it into
 /// `Scaffold.appBar` — it implements [PreferredSizeWidget].
 ///
 /// When [showScopeSwitcher] is true the title is replaced by the global branch
@@ -53,11 +53,6 @@ class OwnerAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.notifications_outlined),
           color: AppColors.textDefault,
           onPressed: () => Get.toNamed(notificationsView),
-        ),
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          color: AppColors.textDefault,
-          onPressed: () => Get.toNamed(settingsView),
         ),
         const SizedBox(width: 4),
       ],

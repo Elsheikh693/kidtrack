@@ -9,9 +9,9 @@ class AddBranchManagerSheet extends StatefulWidget {
 }
 
 class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
-  final _branchCtrl  = TextEditingController();
+  final _branchCtrl = TextEditingController();
   final _managerCtrl = TextEditingController();
-  final _phoneCtrl   = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   static final _phoneRx = RegExp(r'^(010|011|012|015)\d{8}$');
 
@@ -81,9 +81,13 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('setup_add_branch_title'.tr,
-                        style: context.typography.mdBold.copyWith(
-                            fontSize: 17, color: const Color(0xFF1E293B))),
+                    child: Text(
+                      'setup_add_branch_title'.tr,
+                      style: context.typography.mdBold.copyWith(
+                        fontSize: 17,
+                        color: const Color(0xFF1E293B),
+                      ),
+                    ),
                   ),
                   GestureDetector(
                     onTap: () => Get.back(),
@@ -94,8 +98,11 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
                         color: Color(0xFFF1F5F9),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 18.sp, color: const Color(0xFF64748B)),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -113,29 +120,36 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _SheetField(
-                          controller: _branchCtrl,
-                          label: 'setup_branch_name_label'.tr,
-                          hint: 'setup_branch_name_hint'.tr,
-                          focusNode: _keyboardService.getFocusNode(_keys[0]),
-                          textInputAction: TextInputAction.next),
+                        controller: _branchCtrl,
+                        label: 'setup_branch_name_label'.tr,
+                        hint: 'setup_branch_name_hint'.tr,
+                        focusNode: _keyboardService.getFocusNode(_keys[0]),
+                        textInputAction: TextInputAction.next,
+                      ),
                       SizedBox(height: 16.h),
                       _SheetField(
-                          controller: _managerCtrl,
-                          label: 'setup_manager_name_label'.tr,
-                          hint: 'setup_manager_name_hint'.tr,
-                          focusNode: _keyboardService.getFocusNode(_keys[1]),
-                          textInputAction: TextInputAction.next),
+                        controller: _managerCtrl,
+                        label: 'setup_manager_name_label'.tr,
+                        hint: 'setup_manager_name_hint'.tr,
+                        focusNode: _keyboardService.getFocusNode(_keys[1]),
+                        textInputAction: TextInputAction.next,
+                      ),
                       SizedBox(height: 16.h),
                       _SheetField(
-                          controller: _phoneCtrl,
-                          label: 'setup_manager_phone_label'.tr,
-                          hint: 'setup_manager_phone_hint'.tr,
-                          keyboardType: TextInputType.phone,
-                          focusNode: _keyboardService.getFocusNode(_keys[2])),
+                        controller: _phoneCtrl,
+                        label: 'setup_manager_phone_label'.tr,
+                        hint: 'setup_manager_phone_hint'.tr,
+                        keyboardType: TextInputType.phone,
+                        focusNode: _keyboardService.getFocusNode(_keys[2]),
+                      ),
                       SizedBox(height: 8.h),
-                      Text('setup_manager_password_note'.tr,
-                          style: context.typography.xsRegular.copyWith(
-                              fontSize: 12, color: const Color(0xFF6B7280))),
+                      Text(
+                        'setup_manager_password_note'.tr,
+                        style: context.typography.xsRegular.copyWith(
+                          fontSize: 12,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -154,12 +168,16 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
                       backgroundColor: const Color(0xFF5E35B1),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r)),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('setup_add_btn'.tr,
-                        style: context.typography.smSemiBold
-                            .copyWith(fontSize: 16)),
+                    child: Text(
+                      'setup_add_btn'.tr,
+                      style: context.typography.smSemiBold.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -192,11 +210,16 @@ class _SheetField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: context.typography.smMedium.copyWith(
-                fontSize: 14, color: const Color(0xFF475569))),
+        Text(
+          label,
+          style: context.typography.smMedium.copyWith(
+            fontSize: 14,
+            color: const Color(0xFF475569),
+          ),
+        ),
         SizedBox(height: 6.h),
         TextField(
+          inputFormatters: const [EnglishDigitsFormatter()],
           controller: controller,
           focusNode: focusNode,
           keyboardType: keyboardType,
@@ -204,16 +227,22 @@ class _SheetField extends StatelessWidget {
           onSubmitted: textInputAction == TextInputAction.next
               ? (_) => FocusScope.of(context).nextFocus()
               : null,
-          style: context.typography.smRegular
-              .copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+          style: context.typography.smRegular.copyWith(
+            fontSize: 15,
+            color: const Color(0xFF1E293B),
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: context.typography.smRegular
-                .copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+            hintStyle: context.typography.smRegular.copyWith(
+              color: const Color(0xFFCBD5E1),
+              fontSize: 14,
+            ),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 14.h,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -224,8 +253,10 @@ class _SheetField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide:
-                  const BorderSide(color: Color(0xFF5E35B1), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF5E35B1),
+                width: 1.5,
+              ),
             ),
           ),
         ),

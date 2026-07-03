@@ -101,6 +101,11 @@ class SessionService {
 
   bool get isStaff => userType?.isStaffRole ?? false;
 
+  /// True only for users with a real record under the `staff` node (excludes
+  /// the owner, who lives in `users`). Use for anything scoped to the staff
+  /// node — e.g. where to store the FCM token.
+  bool get hasStaffRecord => userType?.hasStaffRecord ?? false;
+
   bool get isBusChaperone => userType == UserType.busChaperone;
 
   // ─── Init ─────────────────────────────────────────────────────────────────

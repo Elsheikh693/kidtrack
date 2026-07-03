@@ -9,6 +9,10 @@ class ManagerDashboardController extends GetxController {
   late final ManagerStaffController _staff;
   late final ManagerFinanceController _finance;
 
+  final _chatService = ChatService();
+  final _convos = <String, ChatConversationModel>{}.obs;
+  StreamSubscription<List<ChatConversationModel>>? _convoSub;
+
   @override
   void onInit() {
     super.onInit();
@@ -17,6 +21,27 @@ class ManagerDashboardController extends GetxController {
     _children = Get.find<ManagerChildrenController>();
     _staff = Get.find<ManagerStaffController>();
     _finance = Get.find<ManagerFinanceController>();
+    _convoSub = _chatService.watchConversations().listen((list) {
+      _convos.value = {for (final c in list) c.childId: c};
+    });
+  }
+
+  @override
+  void onClose() {
+    _convoSub?.cancel();
+    super.onClose();
+  }
+
+  /// Total unread chat messages across the manager's in-scope children only,
+  /// so the badge matches exactly what the chat inbox will show.
+  int get chatUnread {
+    var total = 0;
+    for (final child in _children.directory) {
+      final key = child.key;
+      if (key == null) continue;
+      total += _convos[key]?.unreadManager ?? 0;
+    }
+    return total;
   }
 
   bool get isLoading =>

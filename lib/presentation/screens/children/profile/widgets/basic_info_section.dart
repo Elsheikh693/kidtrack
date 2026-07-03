@@ -10,6 +10,11 @@ class BasicInfoSection extends StatelessWidget {
     if (child == null) return const SizedBox.shrink();
     return ProfileSectionCard(
       title: 'child_profile_basic_info'.tr,
+      actionLabel: 'child_details_edit_action'.tr,
+      onAction: () => showChildDetailsSheet(
+        child: child,
+        onSaved: controller.loadProfile,
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         child: Column(
@@ -29,6 +34,12 @@ class BasicInfoSection extends StatelessWidget {
             ProfileInfoRow(
               label: 'child_profile_nationality'.tr,
               value: child.nationality ?? '--',
+            ),
+            ProfileInfoRow(
+              label: 'child_profile_address'.tr,
+              value: (child.homeAddress?.trim().isNotEmpty ?? false)
+                  ? child.homeAddress!.trim()
+                  : '--',
             ),
           ],
         ),

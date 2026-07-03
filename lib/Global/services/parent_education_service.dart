@@ -144,6 +144,42 @@ class ParentEducationService {
     });
   }
 
+  // One-time read: guardian-visible teacher notes for a child within a date
+  // range. Used by the manager child-profile screen (no live stream needed).
+  Future<List<NoteModel>> getNotesForRange(
+    String nurseryId,
+    String childId, {
+    required int startMs,
+    required int endMs,
+  }) async {
+    if (nurseryId.isEmpty || childId.isEmpty) return [];
+    try {
+      final snap = await _db
+          .ref('platform/$nurseryId/notes')
+          .orderByChild('childId')
+          .equalTo(childId)
+          .get();
+      if (!snap.exists || snap.value == null) return [];
+      final data = snap.value as Map? ?? {};
+      return data.entries
+          .where((e) => e.value is Map)
+          .map((e) => NoteModel.fromJson(
+                Map<String, dynamic>.from(e.value as Map),
+                key: e.key.toString(),
+              ))
+          .where((n) => n.isVisibleToGuardian)
+          .where((n) {
+            final t = n.createdAt ?? 0;
+            return t >= startMs && t <= endMs;
+          })
+          .toList()
+        ..sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
+    } catch (e) {
+      AppLogger.error(_tag, 'getNotesForRange: $e');
+      return [];
+    }
+  }
+
   // Classroom name lookup (one-time read)
   Future<String> getClassroomName(String nurseryId, String classroomId) async {
     try {

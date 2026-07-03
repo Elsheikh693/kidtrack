@@ -23,11 +23,7 @@ class _SubjectListViewState extends State<SubjectListView> {
       child: Obx(() => Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(
-          title: controller.isLoading.value
-              ? 'subject_title'.tr
-              : controller.program == null
-                  ? 'subject_title'.tr
-                  : '${controller.program!.name} — ${'subject_title'.tr}',
+          title: 'subject_title'.tr,
           showNotificationDot: false,
           showFilterIcon: false,
         ),

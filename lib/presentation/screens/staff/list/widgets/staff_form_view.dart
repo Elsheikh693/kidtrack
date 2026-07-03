@@ -12,7 +12,6 @@ class _StaffFormViewState extends State<StaffFormView> {
 
   final _nameFocus = FocusNode();
   final _phoneFocus = FocusNode();
-  final _passwordFocus = FocusNode();
 
   @override
   void initState() {
@@ -24,7 +23,6 @@ class _StaffFormViewState extends State<StaffFormView> {
   void dispose() {
     _nameFocus.dispose();
     _phoneFocus.dispose();
-    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -54,8 +52,7 @@ class _StaffFormViewState extends State<StaffFormView> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 32.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,39 +78,10 @@ class _StaffFormViewState extends State<StaffFormView> {
                   hint: 'staff_form_phone_hint'.tr,
                   keyboardType: TextInputType.phone,
                   focusNode: _phoneFocus,
-                  textInputAction: controller.isEdit.value
-                      ? TextInputAction.done
-                      : TextInputAction.next,
-                  onSubmitted: (_) {
-                    if (!controller.isEdit.value) {
-                      _passwordFocus.requestFocus();
-                    } else {
-                      _phoneFocus.unfocus();
-                    }
-                  },
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _phoneFocus.unfocus(),
                 ),
                 SizedBox(height: 16.h),
-
-                // Password (create only)
-                Obx(() {
-                  if (controller.isEdit.value) return const SizedBox.shrink();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _FieldLabel('staff_form_password_label'.tr),
-                      SizedBox(height: 6.h),
-                      Obx(
-                        () => _PasswordField(
-                          controller: controller.passwordCtrl,
-                          focusNode: _passwordFocus,
-                          showPassword: controller.showPassword.value,
-                          onToggle: controller.showPassword.toggle,
-                        ),
-                      ),
-                      SizedBox(height: 16.h),
-                    ],
-                  );
-                }),
 
                 // Template
                 _FieldLabel('staff_form_template_label'.tr),
@@ -130,22 +98,27 @@ class _StaffFormViewState extends State<StaffFormView> {
                 ),
                 SizedBox(height: 16.h),
 
-                // Branch
-                _FieldLabel('staff_form_branch_label'.tr),
-                SizedBox(height: 6.h),
+                // Branch — hidden when there's only one branch (auto-selected)
                 Obx(() {
-                  if (controller.branches.isEmpty) {
-                    return _DisabledDropdown('staff_form_no_branches'.tr);
+                  if (controller.branches.length <= 1) {
+                    return const SizedBox.shrink();
                   }
-                  return _Dropdown<BranchModel?>(
-                    value: controller.selectedBranch.value,
-                    items: [null, ...controller.branches],
-                    itemLabel: (b) =>
-                        b == null ? 'staff_form_no_branch'.tr : b.name,
-                    onChanged: (b) => controller.selectedBranch.value = b,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FieldLabel('staff_form_branch_label'.tr),
+                      SizedBox(height: 6.h),
+                      _Dropdown<BranchModel?>(
+                        value: controller.selectedBranch.value,
+                        items: [null, ...controller.branches],
+                        itemLabel: (b) =>
+                            b == null ? 'staff_form_no_branch'.tr : b.name,
+                        onChanged: (b) => controller.selectedBranch.value = b,
+                      ),
+                      SizedBox(height: 16.h),
+                    ],
                   );
                 }),
-                SizedBox(height: 16.h),
 
                 // Shift
                 _FieldLabel('staff_form_shift_label'.tr),
@@ -239,10 +212,17 @@ class _InputField extends StatelessWidget {
     keyboardType: keyboardType,
     textInputAction: textInputAction,
     onSubmitted: onSubmitted,
-    style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+    inputFormatters: const [EnglishDigitsFormatter()],
+    style: context.typography.smRegular.copyWith(
+      fontSize: 15,
+      color: const Color(0xFF1E293B),
+    ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
       filled: true,
       fillColor: Colors.white,
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -287,7 +267,10 @@ class _Dropdown<T> extends StatelessWidget {
       child: DropdownButton<T>(
         value: value,
         isExpanded: true,
-        style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+        style: context.typography.smRegular.copyWith(
+          fontSize: 15,
+          color: const Color(0xFF1E293B),
+        ),
         items: items
             .map(
               (item) => DropdownMenuItem<T>(
@@ -298,81 +281,6 @@ class _Dropdown<T> extends StatelessWidget {
             .toList(),
         onChanged: onChanged,
       ),
-    ),
-  );
-}
-
-class _PasswordField extends StatelessWidget {
-  final TextEditingController controller;
-  final FocusNode? focusNode;
-  final bool showPassword;
-  final VoidCallback onToggle;
-
-  const _PasswordField({
-    required this.controller,
-    required this.showPassword,
-    required this.onToggle,
-    this.focusNode,
-  });
-
-  @override
-  Widget build(BuildContext context) => TextField(
-    controller: controller,
-    focusNode: focusNode,
-    obscureText: !showPassword,
-    textInputAction: TextInputAction.done,
-    onSubmitted: (_) => focusNode?.unfocus(),
-    style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
-    decoration: InputDecoration(
-      hintText: 'staff_form_password_hint'.tr,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      suffixIcon: IconButton(
-        icon: Icon(
-          showPassword
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          size: 20.sp,
-          color: const Color(0xFF94A3B8),
-        ),
-        onPressed: onToggle,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
-      ),
-    ),
-  );
-}
-
-class _DisabledDropdown extends StatelessWidget {
-  final String label;
-
-  const _DisabledDropdown(this.label);
-
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 52.h,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    alignment: AlignmentDirectional.centerStart,
-    padding: EdgeInsets.symmetric(horizontal: 16.w),
-    child: Text(
-      label,
-      style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
     ),
   );
 }

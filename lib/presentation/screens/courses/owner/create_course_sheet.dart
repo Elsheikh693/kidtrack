@@ -30,6 +30,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   final _ageCtrl = TextEditingController();
+  final _sessionsCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   CourseCategory _category = CourseCategory.language;
@@ -37,6 +38,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
   bool _removeCover = false;
   bool _saving = false;
   bool _isOpen = true;
+  DateTime? _startDate;
 
   List<BranchModel> _branches = [];
   final Set<String> _selectedBranchIds = {}; // empty = all branches
@@ -53,8 +55,10 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
       _descCtrl.text = e.description;
       _priceCtrl.text = e.price == 0 ? '' : e.price.toInt().toString();
       _ageCtrl.text = e.ageGroup;
+      _sessionsCtrl.text = e.sessionCount == 0 ? '' : e.sessionCount.toString();
       _category = e.category;
       _isOpen = e.isActive;
+      _startDate = e.startDateTime;
       _selectedBranchIds.addAll(e.branchIds);
     }
     _loadBranches();
@@ -75,6 +79,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
     _descCtrl.dispose();
     _priceCtrl.dispose();
     _ageCtrl.dispose();
+    _sessionsCtrl.dispose();
     super.dispose();
   }
 
@@ -89,11 +94,26 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
     }
   }
 
+  Future<void> _pickStartDate() async {
+    final now = DateTime.now();
+    final initial = _startDate ?? now;
+    final picked = await showAppDatePicker(
+      context,
+      initialDate: initial.isBefore(DateTime(now.year - 1)) ? now : initial,
+      minimumDate: DateTime(now.year - 1),
+      maximumDate: DateTime(now.year + 3),
+      showTodayButton: true,
+    );
+    if (picked != null) setState(() => _startDate = picked);
+  }
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
 
     final price = double.tryParse(_priceCtrl.text.trim()) ?? 0;
+    final sessions = int.tryParse(_sessionsCtrl.text.trim()) ?? 0;
+    final startMs = _startDate?.millisecondsSinceEpoch;
 
     bool ok;
     if (isEditing) {
@@ -104,8 +124,11 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
         price: price,
         category: _category,
         ageGroup: _ageCtrl.text.trim(),
+        sessionCount: sessions,
         isActive: _isOpen,
         branchIds: _selectedBranchIds.toList(),
+        startDate: startMs,
+        clearStartDate: startMs == null,
         newCoverImage: _pickedImage,
         removeCover: _removeCover,
       );
@@ -116,8 +139,10 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
         price: price,
         category: _category,
         ageGroup: _ageCtrl.text.trim(),
+        sessionCount: sessions,
         isActive: _isOpen,
         branchIds: _selectedBranchIds.toList(),
+        startDate: startMs,
         coverImage: _pickedImage,
       );
     }
@@ -223,10 +248,24 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                               controller: _ageCtrl,
                               label: 'الفئة العمرية',
                               hint: 'مثال: 3-6',
-                              textInputAction: TextInputAction.done,
+                              textInputAction: TextInputAction.next,
                             ),
                           ),
                         ],
+                      ),
+                      SizedBox(height: 14.h),
+                      _Field(
+                        controller: _sessionsCtrl,
+                        label: 'عدد الحصص',
+                        hint: 'مثال: 10',
+                        keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.done,
+                      ),
+                      SizedBox(height: 14.h),
+                      _StartDateField(
+                        date: _startDate,
+                        onTap: _pickStartDate,
+                        onClear: () => setState(() => _startDate = null),
                       ),
                     ],
                   ),
@@ -594,6 +633,76 @@ class _BranchChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─── Start date field ─────────────────────────────────────────────────────────
+
+class _StartDateField extends StatelessWidget {
+  const _StartDateField({
+    required this.date,
+    required this.onTap,
+    required this.onClear,
+  });
+
+  final DateTime? date;
+  final VoidCallback onTap;
+  final VoidCallback onClear;
+
+  static const _months = [
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  ];
+
+  String get _label =>
+      date == null ? '' : '${date!.day} ${_months[date!.month - 1]} ${date!.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDate = date != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('تاريخ بداية الكورس',
+            style: context.typography.xsMedium
+                .copyWith(color: AppColors.textSecondaryParagraph)),
+        SizedBox(height: 6.h),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundNeutral100,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.grayLight),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.event_rounded,
+                    size: 18.sp, color: AppColors.primary),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    hasDate ? _label : 'اختر تاريخ البداية',
+                    style: context.typography.smRegular.copyWith(
+                      color: hasDate
+                          ? AppColors.textDefault
+                          : AppColors.grayMedium,
+                    ),
+                  ),
+                ),
+                if (hasDate)
+                  GestureDetector(
+                    onTap: onClear,
+                    child: Icon(Icons.close_rounded,
+                        size: 18.sp, color: AppColors.grayMedium),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

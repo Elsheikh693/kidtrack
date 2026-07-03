@@ -9,6 +9,8 @@ import '../../../../Data/models/child_current_status/child_current_status_model.
 import '../../../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../../../Data/models/nursery_event/nursery_event_model.dart';
 import '../../../../Data/models/homework_submission/homework_submission_model.dart';
+import '../../../../Data/models/feed/nursery_post_model.dart';
+import '../../../../Global/services/feed_service.dart';
 import 'parent_daily_note.dart';
 import 'effective_child_status.dart';
 
@@ -46,6 +48,7 @@ class ParentDashboardController extends GetxController {
   StreamSubscription<List<EduHomework>>? _homeworkSub;
   StreamSubscription<List<HolidayModel>>? _holidaysSub;
   StreamSubscription<Set<int>>? _weekendSub;
+  StreamSubscription<List<NurseryPostModel>>? _latestPostSub;
 
   // ── Live child state ──────────────────────────────────────────────────────────
   final childCurrentStatus = Rxn<ChildCurrentStatusModel>();
@@ -68,6 +71,13 @@ class ParentDashboardController extends GetxController {
   // ── Events ────────────────────────────────────────────────────────────────────
   final nextEvent = Rxn<NurseryEventModel>();
   final isAttendingNextEvent = false.obs;
+
+  // ── Latest social post (home peek) ────────────────────────────────────────────
+  // Newest post that matches this parent's audience AND was created today.
+  // Self-clears at midnight because the "today" gate stops matching.
+  final latestPost = Rxn<NurseryPostModel>();
+  final _feedSvc = FeedService();
+  List<NurseryPostModel> _latestPostsRaw = const [];
 
   // ── Pending Invoices (Payment Reminders) ─────────────────────────────────────
   final pendingInvoices = <InvoiceModel>[].obs;
@@ -105,6 +115,43 @@ class ParentDashboardController extends GetxController {
     });
     _subscribeNextEvent();
     _subscribeHolidays();
+    _subscribeLatestPost();
+  }
+
+  // ── Latest social post subscription ─────────────────────────────────────────
+  void _subscribeLatestPost() {
+    _latestPostSub?.cancel();
+    _latestPostSub = _feedSvc.watchLatestPosts().listen((list) {
+      _latestPostsRaw = list;
+      _recomputeLatestPost();
+    });
+  }
+
+  // Pick the newest post that this parent is allowed to see and that was
+  // created today. Re-run whenever the active child changes (its classroom
+  // affects audience).
+  void _recomputeLatestPost() {
+    final now = DateTime.now();
+    NurseryPostModel? pick;
+    for (final p in _latestPostsRaw) {
+      final created = DateTime.fromMillisecondsSinceEpoch(p.createdAt);
+      if (!_isSameDay(created, now)) continue;
+      if (!_postMatchesAudience(p) || !_postMatchesBranch(p)) continue;
+      pick = p; // list is newest-first, so first match wins
+      break;
+    }
+    latestPost.value = pick;
+  }
+
+  bool _postMatchesAudience(NurseryPostModel p) {
+    if (p.classroomId == null || p.classroomId!.isEmpty) return true;
+    return p.classroomId == Get.find<ActiveChildService>().classroomId.value;
+  }
+
+  bool _postMatchesBranch(NurseryPostModel p) {
+    final myBranch = _session.branchId;
+    if (myBranch == null || myBranch.isEmpty) return true;
+    return p.isAllBranches || p.branchIds.contains(myBranch);
   }
 
   // Nursery-wide, so subscribed once (not per child/day).
@@ -128,6 +175,7 @@ class ParentDashboardController extends GetxController {
     _homeworkSub?.cancel();
     _holidaysSub?.cancel();
     _weekendSub?.cancel();
+    _latestPostSub?.cancel();
     super.onClose();
   }
 
@@ -212,6 +260,10 @@ class ParentDashboardController extends GetxController {
 
     await _loadClassroomName();
     isLoading.value = false;
+
+    // First-login gate: force the parent to complete the child's core profile
+    // (DOB, address, blood type, nationality) before they can use the app.
+    ChildProfileCompletionPrompt.maybeShow();
   }
 
   // ── Sibling switching ─────────────────────────────────────────────────────────
@@ -266,6 +318,10 @@ class ParentDashboardController extends GetxController {
     _startStreams();
     _loadClassroomName().then((_) => isLoading.value = false);
     _refreshEventAttendance();
+    _recomputeLatestPost();
+
+    // A switched-to sibling may also have an incomplete profile.
+    ChildProfileCompletionPrompt.maybeShow();
   }
 
   void _startStreams() {

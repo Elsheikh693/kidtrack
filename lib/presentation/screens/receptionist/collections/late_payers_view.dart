@@ -104,6 +104,27 @@ class _PayerTile extends StatelessWidget {
               _StatusBadge(isOverdue: payer.isOverdue),
             ],
           ),
+          if (payer.title.isNotEmpty) ...[
+            SizedBox(height: 4.h),
+            Row(
+              children: [
+                Icon(Icons.receipt_long_rounded, size: 13.sp, color: _accent),
+                SizedBox(width: 5.w),
+                Expanded(
+                  child: Text(
+                    payer.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typography.xsMedium.copyWith(
+                      color: _accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 4.h),
           Row(
             children: [

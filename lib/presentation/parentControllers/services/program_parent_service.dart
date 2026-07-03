@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import '../../../index/index_main.dart';
 
 class ProgramParentService {
@@ -18,6 +19,7 @@ class ProgramParentService {
       id: item.key ?? '',
       voidCallBack: callBack,
     );
+    await _syncInfoCache();
   }
 
   Future<void> update({
@@ -30,6 +32,7 @@ class ProgramParentService {
       id: item.key ?? '',
       voidCallBack: callBack,
     );
+    await _syncInfoCache();
   }
 
   Future<void> delete({
@@ -37,5 +40,27 @@ class ProgramParentService {
     required Function(ResponseStatus) callBack,
   }) async {
     await _service.deleteData(id: id, voidCallBack: callBack);
+    await _syncInfoCache();
+  }
+
+  /// Mirrors the canonical program names into `platform/info/{id}/programs`, the
+  /// denormalized cache Discovery reads pre-login. Called after every mutation
+  /// so the public profile and the manager's own editor never drift — no matter
+  /// which screen the change came from.
+  Future<void> _syncInfoCache() async {
+    final id = ApiConstants.nurseryId;
+    if (id.isEmpty) return;
+    final names = <String>[];
+    await _service.getData(
+      data: {},
+      voidCallBack: (list) {
+        for (final p in list) {
+          if (p == null || !p.isActive) continue;
+          final name = p.name.trim();
+          if (name.isNotEmpty && !names.contains(name)) names.add(name);
+        }
+      },
+    );
+    await FirebaseDatabase.instance.ref('platform/info/$id/programs').set(names);
   }
 }

@@ -322,11 +322,32 @@ class Binding implements Bindings {
       fromJson: (json) => PaymentCategoryModel.fromJson(json),
     );
 
+    // Cities (global, SuperAdmin managed)
+    BaseBinding.bindCrud<CityModel>(
+      tag: "cities",
+      baseUrl: () => ApiConstants.cities,
+      fromJson: (json) => CityModel.fromJson(json),
+    );
+
     // Expenses (accounts payable / vendor obligations)
     BaseBinding.bindCrud<ExpenseModel>(
       tag: "expenses",
       baseUrl: () => ApiConstants.expenses,
       fromJson: (json) => ExpenseModel.fromJson(json),
+    );
+
+    // Fee Categories (new finance module — revenue types)
+    BaseBinding.bindCrud<FeeCategoryModel>(
+      tag: "feeCategories",
+      baseUrl: () => ApiConstants.feeCategories,
+      fromJson: (json) => FeeCategoryModel.fromJson(json),
+    );
+
+    // Financial Transactions (new finance module — cash collection log)
+    BaseBinding.bindCrud<FinancialTransactionModel>(
+      tag: "financialTransactions",
+      baseUrl: () => ApiConstants.financialTransactions,
+      fromJson: (json) => FinancialTransactionModel.fromJson(json),
     );
 
     // 31. Notifications (scoped per user)
@@ -418,6 +439,13 @@ class Binding implements Bindings {
       tag: "supportRequests",
       baseUrl: () => ApiConstants.supportRequests,
       fromJson: (json) => SupportRequestModel.fromJson(json),
+    );
+
+    // 43b. App Reviews (pre-login KidTrack app ratings)
+    BaseBinding.bindCrud<AppReviewModel>(
+      tag: "appReviews",
+      baseUrl: () => ApiConstants.appReviews,
+      fromJson: (json) => AppReviewModel.fromJson(json),
     );
 
     // 44. Online admission applications (manager-side CRUD)
@@ -559,6 +587,20 @@ class Binding implements Bindings {
       () => InvoiceParentService(),
       fenix: true,
     );
+    Get.lazyPut<FeeCategoryParentService>(
+      () => FeeCategoryParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<FinancialTransactionParentService>(
+      () => FinancialTransactionParentService(),
+      fenix: true,
+    );
+    // Shared, stateless finance analytics (single source of truth for the
+    // owner + manager dashboards). No state, no fetch — controllers cache.
+    Get.lazyPut<FinanceAnalyticsService>(
+      () => FinanceAnalyticsService(),
+      fenix: true,
+    );
     Get.lazyPut<PaymentParentService>(
       () => PaymentParentService(),
       fenix: true,
@@ -575,12 +617,20 @@ class Binding implements Bindings {
       () => ContactInfoParentService(),
       fenix: true,
     );
+    Get.lazyPut<CityParentService>(
+      () => CityParentService(),
+      fenix: true,
+    );
     Get.lazyPut<AboutUsParentService>(
       () => AboutUsParentService(),
       fenix: true,
     );
     Get.lazyPut<SupportRequestParentService>(
       () => SupportRequestParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<AppReviewParentService>(
+      () => AppReviewParentService(),
       fenix: true,
     );
     Get.lazyPut<NurseryFeedbackParentService>(
@@ -681,8 +731,16 @@ class Binding implements Bindings {
     );
 
     // ─── Branch Manager — Finance ─────────────────────────────────────────
+    // Kept for the manager HOME dashboard aggregates (old-system, removed in
+    // Phase 4). The new finance dashboard uses FinanceDashboardController below.
     Get.lazyPut<ManagerFinanceController>(
       () => ManagerFinanceController(),
+      fenix: true,
+    );
+    // New shared finance dashboard — manager scope (own branch).
+    Get.lazyPut<FinanceDashboardController>(
+      () => FinanceDashboardController(isOwner: false),
+      tag: 'manager_finance',
       fenix: true,
     );
 
@@ -713,6 +771,12 @@ class Binding implements Bindings {
     // ─── Owner — Executive Dashboard ──────────────────────────────────────
     Get.lazyPut<OwnerExecutiveController>(
       () => OwnerExecutiveController(),
+      fenix: true,
+    );
+    // New shared finance dashboard — owner scope (network / branch via switcher).
+    Get.lazyPut<FinanceDashboardController>(
+      () => FinanceDashboardController(isOwner: true),
+      tag: 'owner_finance',
       fenix: true,
     );
 

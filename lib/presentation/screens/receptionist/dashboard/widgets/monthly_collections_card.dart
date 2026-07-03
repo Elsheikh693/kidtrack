@@ -175,7 +175,7 @@ class _Stat extends StatelessWidget {
                 ),
                 if (showChevron) ...[
                   SizedBox(width: 2.w),
-                  Icon(Icons.chevron_left_rounded, size: 16.sp, color: color),
+                  Icon(Icons.chevron_right_rounded, size: 16.sp, color: color),
                 ],
               ],
             ),

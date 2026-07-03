@@ -1,29 +1,51 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmap;
+import 'package:geolocator/geolocator.dart';
 import '../../../../../index/index_main.dart';
-import '../location_picker_view.dart';
 
-/// Manager-side editor for the nursery's branches.
-/// Lists existing branches with edit/delete and an "add branch" button that
-/// opens a form sheet.
+/// Manager-side editor for the nursery's canonical branches
+/// (platform/{nurseryId}/branches). Shows the branches created during owner
+/// setup, lets the manager enrich each one's contact/location details, add a
+/// new branch together with its manager account, or delete a branch.
 class ProfileBranchesEditor extends StatelessWidget {
   const ProfileBranchesEditor({super.key, required this.controller});
 
   final ManagerNurseryProfileController controller;
 
-  void _openForm({int? index}) {
-    final existing = index != null ? controller.branches[index] : null;
+  void _openDetails(BranchModel branch) {
     Get.bottomSheet(
-      _BranchFormSheet(
-        initial: existing,
-        onSave: (branch) {
-          if (index != null) {
-            controller.updateBranch(index, branch);
-          } else {
-            controller.addBranch(branch);
-          }
-        },
+      _BranchDetailsSheet(
+        initial: branch,
+        onSave: (updated) => controller.updateBranchDetails(updated),
       ),
       isScrollControlled: true,
+    );
+  }
+
+  void _openAdd() {
+    Get.bottomSheet(
+      _AddBranchSheet(
+        onSubmit: (name, managerName, phone) =>
+            controller.addBranchWithManager(
+          branchName: name,
+          managerName: managerName,
+          phone: phone,
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  void _confirmDelete(BuildContext context, BranchModel branch) {
+    Get.defaultDialog(
+      title: 'manager_branch_delete_title'.tr,
+      middleText: 'manager_branch_delete_confirm'.tr,
+      textConfirm: 'common_delete'.tr,
+      textCancel: 'common_cancel'.tr,
+      confirmTextColor: AppColors.white,
+      buttonColor: AppColors.errorForeground,
+      onConfirm: () {
+        Get.back();
+        controller.deleteBranch(branch.key ?? '');
+      },
     );
   }
 
@@ -33,25 +55,38 @@ class ProfileBranchesEditor extends StatelessWidget {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (int i = 0; i < controller.branches.length; i++) ...[
+          if (controller.branchesLoading.value)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Center(
+                child: SizedBox(
+                  width: 22.w,
+                  height: 22.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                ),
+              ),
+            ),
+          for (final branch in controller.branches) ...[
             _BranchTile(
-              branch: controller.branches[i],
-              onEdit: () => _openForm(index: i),
-              onDelete: () => controller.removeBranch(i),
+              branch: branch,
+              managerName: controller.managerForBranch(branch.key)?.name,
+              onEdit: () => _openDetails(branch),
+              onDelete: () => _confirmDelete(context, branch),
             ),
             SizedBox(height: 10.h),
           ],
           GestureDetector(
-            onTap: () => _openForm(),
+            onTap: _openAdd,
             child: Container(
               height: 48.h,
               decoration: BoxDecoration(
                 color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: AppColors.primary40,
-                  width: 1,
-                ),
+                border: Border.all(color: AppColors.primary40, width: 1),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -74,12 +109,14 @@ class ProfileBranchesEditor extends StatelessWidget {
 }
 
 class _BranchTile extends StatelessWidget {
-  final NurseryBranch branch;
+  final BranchModel branch;
+  final String? managerName;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _BranchTile({
     required this.branch,
+    required this.managerName,
     required this.onEdit,
     required this.onDelete,
   });
@@ -102,12 +139,44 @@ class _BranchTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  text: branch.name,
-                  textStyle: context.typography.smSemiBold
-                      .copyWith(color: AppColors.textDefault),
-                  maxLines: 1,
+                Row(
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        text: branch.name,
+                        textStyle: context.typography.smSemiBold
+                            .copyWith(color: AppColors.textDefault),
+                        maxLines: 1,
+                      ),
+                    ),
+                    if (branch.isMain) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: AppText(
+                          text: 'manager_branch_main_badge'.tr,
+                          textStyle: context.typography.xsRegular
+                              .copyWith(color: AppColors.primary),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
+                if ((managerName ?? '').isNotEmpty) ...[
+                  SizedBox(height: 2.h),
+                  AppText(
+                    text:
+                        '${'manager_branch_manager_label'.tr}: ${managerName!}',
+                    textStyle: context.typography.xsRegular
+                        .copyWith(color: AppColors.textSecondaryParagraph),
+                    maxLines: 1,
+                  ),
+                ],
                 if ((branch.address ?? '').isNotEmpty) ...[
                   SizedBox(height: 2.h),
                   AppText(
@@ -143,17 +212,19 @@ class _BranchTile extends StatelessWidget {
   }
 }
 
-class _BranchFormSheet extends StatefulWidget {
-  final NurseryBranch? initial;
-  final void Function(NurseryBranch) onSave;
+/// Edit sheet for an existing branch's contact + location details. Identity
+/// fields (key, isMain, nursery, manager) are preserved via copyWith.
+class _BranchDetailsSheet extends StatefulWidget {
+  final BranchModel initial;
+  final void Function(BranchModel) onSave;
 
-  const _BranchFormSheet({this.initial, required this.onSave});
+  const _BranchDetailsSheet({required this.initial, required this.onSave});
 
   @override
-  State<_BranchFormSheet> createState() => _BranchFormSheetState();
+  State<_BranchDetailsSheet> createState() => _BranchDetailsSheetState();
 }
 
-class _BranchFormSheetState extends State<_BranchFormSheet> {
+class _BranchDetailsSheetState extends State<_BranchDetailsSheet> {
   final _kb = HandleKeyboardService();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _addressCtrl;
@@ -165,13 +236,12 @@ class _BranchFormSheetState extends State<_BranchFormSheet> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.initial?.name ?? '');
-    _addressCtrl = TextEditingController(text: widget.initial?.address ?? '');
-    _phoneCtrl = TextEditingController(text: widget.initial?.phone ?? '');
-    _whatsappCtrl =
-        TextEditingController(text: widget.initial?.whatsapp ?? '');
-    _lat = widget.initial?.lat;
-    _lng = widget.initial?.lng;
+    _nameCtrl = TextEditingController(text: widget.initial.name);
+    _addressCtrl = TextEditingController(text: widget.initial.address ?? '');
+    _phoneCtrl = TextEditingController(text: widget.initial.phone ?? '');
+    _whatsappCtrl = TextEditingController(text: widget.initial.whatsapp ?? '');
+    _lat = widget.initial.lat;
+    _lng = widget.initial.lng;
   }
 
   @override
@@ -186,16 +256,33 @@ class _BranchFormSheetState extends State<_BranchFormSheet> {
   bool get _hasLocation => _lat != null && _lng != null;
 
   Future<void> _pickLocation() async {
-    final initial =
-        _hasLocation ? gmap.LatLng(_lat!, _lng!) : null;
-    final result = await Get.to<gmap.LatLng>(
-      () => LocationPickerView(initial: initial),
-    );
-    if (result != null) {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      Loader.showError('tracking_location_denied'.tr);
+      await Geolocator.openLocationSettings();
+      return;
+    }
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      Loader.showError('tracking_location_denied'.tr);
+      return;
+    }
+    Loader.show();
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      Loader.dismiss();
       setState(() {
-        _lat = result.latitude;
-        _lng = result.longitude;
+        _lat = pos.latitude;
+        _lng = pos.longitude;
       });
+    } catch (_) {
+      Loader.showError('home_loc_current_error'.tr);
     }
   }
 
@@ -205,8 +292,9 @@ class _BranchFormSheetState extends State<_BranchFormSheet> {
       Loader.showError('manager_branch_name_required'.tr);
       return;
     }
+    Get.back();
     widget.onSave(
-      NurseryBranch(
+      widget.initial.copyWith(
         name: name,
         address: _orNull(_addressCtrl.text),
         phone: _orNull(_phoneCtrl.text),
@@ -215,7 +303,6 @@ class _BranchFormSheetState extends State<_BranchFormSheet> {
         lng: _lng,
       ),
     );
-    Get.back();
   }
 
   String? _orNull(String v) {
@@ -245,88 +332,211 @@ class _BranchFormSheetState extends State<_BranchFormSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.grayLight,
-                  borderRadius: BorderRadius.circular(4.r),
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.grayLight,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            AppText(
-              text: widget.initial == null
-                  ? 'manager_branch_add'.tr
-                  : 'manager_branch_edit'.tr,
-              textStyle: context.typography.mdBold
-                  .copyWith(color: AppColors.textDefault),
-            ),
-            SizedBox(height: 16.h),
-            AppTextField(
-              controller: _nameCtrl,
-              labelText: 'manager_branch_name'.tr,
-            ),
-            SizedBox(height: 12.h),
-            AppTextField(
-              controller: _addressCtrl,
-              labelText: 'manager_branch_address'.tr,
-            ),
-            SizedBox(height: 12.h),
-            AppTextField(
-              controller: _phoneCtrl,
-              labelText: 'manager_branch_phone'.tr,
-              keyboardType: TextInputType.phone,
-            ),
-            SizedBox(height: 12.h),
-            AppTextField(
-              controller: _whatsappCtrl,
-              labelText: 'manager_branch_whatsapp'.tr,
-              keyboardType: TextInputType.phone,
-            ),
-            SizedBox(height: 12.h),
-            GestureDetector(
-              onTap: _pickLocation,
-              child: Container(
-                padding: EdgeInsets.all(16.r),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(color: AppColors.grayLight),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.location_on_rounded, color: AppColors.primary),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: AppText(
-                        text: _hasLocation
-                            ? '${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}'
-                            : 'manager_branch_location_hint'.tr,
-                        textStyle: context.typography.smRegular.copyWith(
-                          color: _hasLocation
-                              ? AppColors.textPrimaryParagraph
-                              : AppColors.textSecondaryParagraph,
+              SizedBox(height: 16.h),
+              AppText(
+                text: 'manager_branch_edit'.tr,
+                textStyle: context.typography.mdBold
+                    .copyWith(color: AppColors.textDefault),
+              ),
+              SizedBox(height: 16.h),
+              AppTextField(
+                controller: _nameCtrl,
+                labelText: 'manager_branch_name'.tr,
+              ),
+              SizedBox(height: 12.h),
+              AppTextField(
+                controller: _addressCtrl,
+                labelText: 'manager_branch_address'.tr,
+              ),
+              SizedBox(height: 12.h),
+              AppTextField(
+                controller: _phoneCtrl,
+                labelText: 'manager_branch_phone'.tr,
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: 12.h),
+              AppTextField(
+                controller: _whatsappCtrl,
+                labelText: 'manager_branch_whatsapp'.tr,
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: 12.h),
+              GestureDetector(
+                onTap: _pickLocation,
+                child: Container(
+                  padding: EdgeInsets.all(16.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(color: AppColors.grayLight),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.location_on_rounded, color: AppColors.primary),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: AppText(
+                          text: _hasLocation
+                              ? '${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}'
+                              : 'manager_branch_location_hint'.tr,
+                          textStyle: context.typography.smRegular.copyWith(
+                            color: _hasLocation
+                                ? AppColors.textPrimaryParagraph
+                                : AppColors.textSecondaryParagraph,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(Icons.chevron_right_rounded,
-                        color: AppColors.grayMedium),
-                  ],
+                      Icon(Icons.my_location_rounded, color: AppColors.primary),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 20.h),
-            PrimaryTextButton(
-              appButtonSize: AppButtonSize.large,
-              onTap: _save,
-              label: AppText(
-                text: 'manager_branch_save'.tr,
-                textStyle: context.typography.smSemiBold
-                    .copyWith(color: AppColors.white),
+              SizedBox(height: 20.h),
+              PrimaryTextButton(
+                appButtonSize: AppButtonSize.large,
+                onTap: _save,
+                label: AppText(
+                  text: 'manager_branch_save'.tr,
+                  textStyle: context.typography.smSemiBold
+                      .copyWith(color: AppColors.white),
+                ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Add sheet that creates a new branch together with its manager account
+/// (branch name + manager name + manager phone), mirroring the setup flow.
+class _AddBranchSheet extends StatefulWidget {
+  final void Function(String branchName, String managerName, String phone)
+      onSubmit;
+
+  const _AddBranchSheet({required this.onSubmit});
+
+  @override
+  State<_AddBranchSheet> createState() => _AddBranchSheetState();
+}
+
+class _AddBranchSheetState extends State<_AddBranchSheet> {
+  final _kb = HandleKeyboardService();
+  final _branchCtrl = TextEditingController();
+  final _managerCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+
+  static final _phoneRx = RegExp(r'^(010|011|012|015)\d{8}$');
+
+  @override
+  void dispose() {
+    _branchCtrl.dispose();
+    _managerCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final branchName = _branchCtrl.text.trim();
+    final managerName = _managerCtrl.text.trim();
+    final phone = _phoneCtrl.text.trim();
+    if (branchName.isEmpty) {
+      Loader.showError('setup_owner_branch_name_required'.tr);
+      return;
+    }
+    if (managerName.isEmpty) {
+      Loader.showError('setup_manager_name_required'.tr);
+      return;
+    }
+    if (!_phoneRx.hasMatch(phone)) {
+      Loader.showError('nursery_error_phone_invalid'.tr);
+      return;
+    }
+    Get.back();
+    widget.onSubmit(branchName, managerName, phone);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+          20.w,
+          14.h,
+          20.w,
+          MediaQuery.of(context).viewInsets.bottom + 20.h,
+        ),
+        child: KeyboardActions(
+          config: _kb.buildConfig(context, const []),
+          disableScroll: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.grayLight,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              AppText(
+                text: 'setup_add_branch_title'.tr,
+                textStyle: context.typography.mdBold
+                    .copyWith(color: AppColors.textDefault),
+              ),
+              SizedBox(height: 16.h),
+              AppTextField(
+                controller: _branchCtrl,
+                labelText: 'setup_branch_name_label'.tr,
+              ),
+              SizedBox(height: 12.h),
+              AppTextField(
+                controller: _managerCtrl,
+                labelText: 'setup_manager_name_label'.tr,
+              ),
+              SizedBox(height: 12.h),
+              AppTextField(
+                controller: _phoneCtrl,
+                labelText: 'setup_manager_phone_label'.tr,
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: 8.h),
+              AppText(
+                text: 'setup_manager_password_note'.tr,
+                textStyle: context.typography.xsRegular
+                    .copyWith(color: AppColors.textSecondaryParagraph),
+              ),
+              SizedBox(height: 20.h),
+              PrimaryTextButton(
+                appButtonSize: AppButtonSize.large,
+                onTap: _submit,
+                label: AppText(
+                  text: 'setup_add_btn'.tr,
+                  textStyle: context.typography.smSemiBold
+                      .copyWith(color: AppColors.white),
+                ),
+              ),
             ],
           ),
         ),

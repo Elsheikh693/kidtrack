@@ -6,6 +6,7 @@ enum DiscoverySort { nearest, lowestPrice, highestRated, mostPopular }
 
 class DiscoveryController extends GetxController {
   late final NurseryParentService _service;
+  late final CityParentService _cityService;
   final LocationManager _location = LocationManager();
 
   final RxList<NurseryModel> _all = <NurseryModel>[].obs;
@@ -25,6 +26,12 @@ class DiscoveryController extends GetxController {
   /// Max distance in km. Only effective when [useLocation] resolved a position.
   final RxnDouble distanceKm = RxnDouble();
 
+  /// Selected city filter (matches `NurseryModel.cityId`). null = all cities.
+  final RxnString cityId = RxnString();
+
+  /// The global city list (SuperAdmin managed), used to populate the dropdown.
+  final RxList<CityModel> cities = <CityModel>[].obs;
+
   final RxBool useLocation = false.obs;
   final RxBool locating = false.obs;
   final RxnDouble userLat = RxnDouble();
@@ -39,12 +46,21 @@ class DiscoveryController extends GetxController {
   void onInit() {
     super.onInit();
     _service = Get.find<NurseryParentService>();
+    _cityService = Get.find<CityParentService>();
     _searchWorker = debounce(
       searchQuery,
       (_) => _apply(),
       time: const Duration(milliseconds: 300),
     );
     loadData();
+    loadCities();
+  }
+
+  Future<void> loadCities() async {
+    await _cityService.getAll(callBack: (list) {
+      cities.assignAll(list.whereType<CityModel>().toList()
+        ..sort((a, b) => a.name.compareTo(b.name)));
+    });
   }
 
   @override
@@ -65,12 +81,14 @@ class DiscoveryController extends GetxController {
   bool get hasActiveFilter =>
       childAgeMonths.value != null ||
       priceRange.value != null ||
+      cityId.value != null ||
       (distanceKm.value != null && hasUserLocation);
 
   int get activeFilterCount {
     var n = 0;
     if (childAgeMonths.value != null) n++;
     if (priceRange.value != null) n++;
+    if (cityId.value != null) n++;
     if (distanceKm.value != null && hasUserLocation) n++;
     return n;
   }
@@ -112,10 +130,12 @@ class DiscoveryController extends GetxController {
     required int? age,
     required RangeValues? price,
     required double? distance,
+    required String? city,
   }) {
     childAgeMonths.value = age;
     priceRange.value = price;
     distanceKm.value = distance;
+    cityId.value = city;
     _apply();
   }
 
@@ -123,6 +143,7 @@ class DiscoveryController extends GetxController {
     childAgeMonths.value = null;
     priceRange.value = null;
     distanceKm.value = null;
+    cityId.value = null;
     _apply();
   }
 
@@ -180,6 +201,7 @@ class DiscoveryController extends GetxController {
     final q = searchQuery.value.trim().toLowerCase();
     final age = childAgeMonths.value;
     final pr = priceRange.value;
+    final city = cityId.value;
     final maxKm = distanceKm.value;
     final distanceActive = maxKm != null && hasUserLocation;
 
@@ -189,6 +211,7 @@ class DiscoveryController extends GetxController {
             (n.address?.toLowerCase().contains(q) ?? false);
         if (!match) return false;
       }
+      if (city != null && n.cityId != city) return false;
       if (age != null && !n.acceptsAgeMonths(age)) return false;
       if (pr != null) {
         final from = n.priceFrom, to = n.priceTo;

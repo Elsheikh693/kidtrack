@@ -84,6 +84,7 @@ export '../Global/Utils/firebase_remote_config_service.dart';
 // ─── Services ─────────────────────────────────────────────────────────────────
 export '../Global/services/update_status.dart';
 export '../Global/services/location_service.dart';
+export '../Global/services/branch_management_service.dart';
 export '../Global/services/session_service.dart';
 export '../Global/services/notification_stream_service.dart';
 export '../Global/services/access_watcher_service.dart';
@@ -91,6 +92,7 @@ export '../Global/services/access_control_service.dart';
 export '../Global/services/setup_local_check.dart';
 export '../Global/services/nursery_feedback_gate.dart';
 export '../Global/services/notification_send_service.dart';
+export '../Global/services/fcm_token_service.dart';
 export '../Global/services/active_child_service.dart';
 export '../Global/services/parent_engagement_service.dart';
 
@@ -163,7 +165,9 @@ export '../Data/models/audit_log/audit_log_model.dart';
 export '../Data/models/support_ticket/support_ticket_model.dart';
 export '../Data/models/contact_info/contact_info_model.dart';
 export '../Data/models/about_us/about_us_model.dart';
+export '../Data/models/city/city_model.dart';
 export '../Data/models/support_request/support_request_model.dart';
+export '../Data/models/app_review/app_review_model.dart';
 export '../Data/models/nursery_feedback/nursery_feedback_model.dart';
 export '../Data/models/online_application/online_application_model.dart';
 export '../Data/models/classroom/classroom_model.dart';
@@ -201,6 +205,8 @@ export '../Data/models/daily_care_log/daily_care_log_model.dart';
 export '../Data/models/invoice/invoice_model.dart';
 export '../Data/models/payment/payment_model.dart';
 export '../Data/models/expense/expense_model.dart';
+export '../Data/models/fee_category/fee_category_model.dart';
+export '../Data/models/financial_transaction/financial_transaction_model.dart';
 
 // ─── Data Layer — Data Sources ───────────────────────────────────────────────
 export '../Data/data_source/base_crud_repo.dart';
@@ -278,13 +284,17 @@ export 'package:kidtrack/presentation/parentControllers/services/announcement_pa
 export 'package:kidtrack/presentation/parentControllers/services/schedule_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/daily_care_log_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/invoice_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/fee_category_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/financial_transaction_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/payment_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/expense_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/audit_log_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/support_ticket_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/contact_info_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/about_us_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/city_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/support_request_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/app_review_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/nursery_feedback_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/online_application_parent_service.dart';
 export '../Global/services/online_application_submit_service.dart';
@@ -328,6 +338,7 @@ export 'package:kidtrack/presentation/screens/children/profile/widgets/parents_s
 export 'package:kidtrack/presentation/screens/children/profile/widgets/attendance_section.dart';
 export 'package:kidtrack/presentation/screens/children/profile/widgets/profile_filter_bar.dart';
 export 'package:kidtrack/presentation/screens/children/profile/widgets/activities_section.dart';
+export 'package:kidtrack/presentation/screens/children/profile/widgets/teacher_notes_section.dart';
 
 // ─── Programs Screens ─────────────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/programs/list/controller.dart';
@@ -430,6 +441,10 @@ export 'package:kidtrack/presentation/screens/owner/executive/models/owner_scope
 export 'package:kidtrack/presentation/screens/owner/executive/services/owner_scope_service.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/owner_finance_tab.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/owner_more_tab.dart';
+export 'package:kidtrack/presentation/screens/finance/services/finance_analytics_service.dart';
+export 'package:kidtrack/presentation/screens/finance/models/finance_summary.dart';
+export 'package:kidtrack/presentation/screens/finance/finance_dashboard_controller.dart';
+export 'package:kidtrack/presentation/screens/finance/finance_dashboard_body.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_dashboard_tab.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_children_tab.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_staff_tab.dart';
@@ -519,6 +534,7 @@ export 'package:kidtrack/presentation/screens/finance/categories/payment_categor
 export 'package:kidtrack/presentation/screens/finance/categories/widgets/category_sheet.dart';
 export 'package:kidtrack/Global/services/finance_service.dart';
 export 'package:kidtrack/Global/services/monthly_invoice_service.dart';
+export 'package:kidtrack/Global/services/additional_fee_service.dart';
 
 // ─── Nursery Contact Numbers (parent WhatsApp) ──────────────────────────────────
 export 'package:kidtrack/Data/models/nursery_contact/nursery_contact_model.dart';
@@ -623,6 +639,9 @@ export 'package:kidtrack/presentation/screens/settings/support/support_request_c
 export 'package:kidtrack/presentation/screens/settings/support/support_request_view.dart';
 export 'package:kidtrack/presentation/screens/settings/join_us/join_us_controller.dart';
 export 'package:kidtrack/presentation/screens/settings/join_us/join_us_view.dart';
+export 'package:kidtrack/presentation/screens/settings/app_review/app_review_controller.dart';
+export 'package:kidtrack/presentation/screens/settings/app_review/app_review_view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/cities/cities_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/platform_content_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/contact_info_form_controller.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/contact_info_form_view.dart';
@@ -631,9 +650,13 @@ export 'package:kidtrack/presentation/screens/super_admin/platform_content/about
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/support_requests_controller.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/support_requests_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/widgets/support_request_reply_sheet.dart';
+export 'package:kidtrack/presentation/screens/super_admin/platform_content/app_reviews_controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/platform_content/app_reviews_view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/platform_content/widgets/app_review_reply_sheet.dart';
 
 // ─── Shared Screens ───────────────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/shared/edit_profile_sheet.dart';
+export 'package:kidtrack/presentation/screens/shared/child_details_sheet.dart';
 export 'package:kidtrack/presentation/screens/shared/language_sheet.dart';
 export 'package:kidtrack/presentation/screens/shared/contact_sheet.dart';
 export 'package:kidtrack/presentation/screens/shared/logout_helper.dart';
@@ -734,6 +757,7 @@ export 'package:kidtrack/presentation/screens/chat/chat_list_view.dart';
 export 'package:kidtrack/presentation/screens/chat/chat_thread_controller.dart';
 export 'package:kidtrack/presentation/screens/chat/chat_thread_view.dart';
 export 'package:kidtrack/presentation/screens/chat/parent_chat_launcher.dart';
+export 'package:kidtrack/presentation/screens/chat/widgets/chat_unread_badge.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 export 'package:kidtrack/Data/models/nursery_event/nursery_event_model.dart';
@@ -748,6 +772,7 @@ export 'package:kidtrack/presentation/screens/holidays/holidays_view.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/collections_controller.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/late_payers_view.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/reception_payment_sheet.dart';
+export 'package:kidtrack/presentation/screens/receptionist/collections/create_fee_sheet.dart';
 export 'package:kidtrack/presentation/screens/parent/events/parent_events_controller.dart';
 export 'package:kidtrack/presentation/screens/parent/events/parent_events_view.dart';
 
@@ -758,6 +783,7 @@ export 'package:kidtrack/presentation/screens/courses/owner/owner_courses_contro
 export 'package:kidtrack/presentation/screens/courses/owner/course_lessons_view.dart';
 export 'package:kidtrack/presentation/screens/courses/owner/course_lessons_controller.dart';
 export 'package:kidtrack/presentation/screens/courses/parent/lesson_viewer_view.dart';
+export 'package:kidtrack/presentation/screens/receptionist/courses/receptionist_courses_tab.dart';
 
 // ── Evaluation Reasons ────────────────────────────────────────────────────────
 export 'package:kidtrack/Data/models/evaluation_reason/evaluation_reason_model.dart';

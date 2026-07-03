@@ -6,6 +6,7 @@ import '../../../../../index/index_main.dart';
 /// profile and that Discovery filters on.
 class ProfileOverview extends StatelessWidget {
   final NurseryModel nursery;
+
   const ProfileOverview({super.key, required this.nursery});
 
   @override
@@ -14,40 +15,35 @@ class ProfileOverview extends StatelessWidget {
 
     final age = _ageRangeLabel();
     if (age != null) {
-      rows.add(_OverviewRow(
-        icon: Icons.cake_rounded,
-        color: AppColors.primary,
-        label: 'discovery_overview_age'.tr,
-        value: age,
-      ));
-    }
-
-    if (nursery.priceFrom != null) {
-      rows.add(_OverviewRow(
-        icon: Icons.payments_rounded,
-        color: AppColors.activityGreen,
-        label: 'discovery_overview_price'.tr,
-        value: 'discovery_overview_price_value'.trParams({
-          'price': '${nursery.priceFrom!.round()} ${'currency'.tr}',
-        }),
-      ));
+      rows.add(
+        _OverviewRow(
+          icon: Icons.cake_rounded,
+          color: AppColors.primary,
+          label: 'discovery_overview_age'.tr,
+          value: age,
+        ),
+      );
     }
 
     if (nursery.applicationFeeFree) {
-      rows.add(_OverviewRow(
-        icon: Icons.card_giftcard_rounded,
-        color: AppColors.activityGreen,
-        label: 'discovery_overview_app_fee'.tr,
-        value: 'discovery_free_application'.tr,
-        valueColor: AppColors.activityGreen,
-      ));
+      rows.add(
+        _OverviewRow(
+          icon: Icons.card_giftcard_rounded,
+          color: AppColors.activityGreen,
+          label: 'discovery_overview_app_fee'.tr,
+          value: 'discovery_free_application'.tr,
+          valueColor: AppColors.activityGreen,
+        ),
+      );
     } else if (nursery.applicationFee != null) {
-      rows.add(_OverviewRow(
-        icon: Icons.description_rounded,
-        color: AppColors.primary,
-        label: 'discovery_overview_app_fee'.tr,
-        value: '${nursery.applicationFee!.round()} ${'currency'.tr}',
-      ));
+      rows.add(
+        _OverviewRow(
+          icon: Icons.description_rounded,
+          color: AppColors.primary,
+          label: 'discovery_overview_app_fee'.tr,
+          value: '${nursery.applicationFee!.round()} ${'currency'.tr}',
+        ),
+      );
     }
 
     if (rows.isEmpty) return const SizedBox.shrink();
@@ -136,8 +132,9 @@ class _OverviewRow extends StatelessWidget {
           Expanded(
             child: AppText(
               text: label,
-              textStyle: context.typography.smRegular
-                  .copyWith(color: AppColors.textSecondaryParagraph),
+              textStyle: context.typography.smRegular.copyWith(
+                color: AppColors.textSecondaryParagraph,
+              ),
             ),
           ),
           SizedBox(width: 10.w),

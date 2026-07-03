@@ -1,17 +1,18 @@
 import '../../../../index/index_main.dart';
 
+/// Parent's read-only payment history for the active child.
+///
+/// Built entirely on [FinancialTransactionModel] via a Child→Transactions read
+/// ([FinancialTransactionParentService.getByChild]) — the parent never touches
+/// the branch-wide node. The service filters client-side for now; once the RTDB
+/// `.indexOn: ["childId"]` rule is deployed it swaps to a server-side query
+/// WITHOUT any change here, because this controller already asks by child.
 class ParentInvoicesController extends GetxController {
-  final _service = Get.find<InvoiceParentService>();
+  final _service = Get.find<FinancialTransactionParentService>();
 
-  final RxList<InvoiceModel> items = <InvoiceModel>[].obs;
-  final RxList<InvoiceModel> _all = <InvoiceModel>[].obs;
+  final RxList<FinancialTransactionModel> items =
+      <FinancialTransactionModel>[].obs;
   final RxBool isLoading = true.obs;
-  final RxString selectedStatus = ''.obs;
-
-  // Summary
-  final RxDouble totalDue = 0.0.obs;
-  final RxDouble totalPaid = 0.0.obs;
-  final RxInt overdueCount = 0.obs;
 
   String get _childId => Get.find<ActiveChildService>().childId.value;
   Worker? _childWorker;
@@ -20,7 +21,6 @@ class ParentInvoicesController extends GetxController {
   void onInit() {
     super.onInit();
     loadData();
-    ever(selectedStatus, (_) => _filter());
     _childWorker = ever<String>(
       Get.find<ActiveChildService>().childId,
       (_) => loadData(),
@@ -33,53 +33,22 @@ class ParentInvoicesController extends GetxController {
     super.onClose();
   }
 
+  /// Total amount this child has paid across all recorded collections.
+  double get totalPaid => items.fold(0, (total, t) => total + t.amount);
+
+  /// Number of recorded payments.
+  int get count => items.length;
+
   Future<void> loadData() async {
     isLoading.value = true;
-    await _service.getAll(
-      callBack: (list) {
-        _all.value = list
-            .whereType<InvoiceModel>()
-            .where((i) => i.childId == _childId)
-            .toList()
-          ..sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
-        _computeSummary();
-        _filter();
-      },
-    );
-    isLoading.value = false;
-  }
-
-  void _computeSummary() {
-    totalDue.value = _all
-        .where((i) => i.status != 'paid' && i.status != 'cancelled')
-        .fold(0, (s, i) => s + i.totalAmount);
-    totalPaid.value = _all
-        .where((i) => i.status == 'paid')
-        .fold(0, (s, i) => s + i.totalAmount);
-    overdueCount.value = _all.where((i) => i.status == 'overdue').length;
-  }
-
-  void _filter() {
-    final s = selectedStatus.value;
-    if (s.isEmpty) {
-      items.value = List.from(_all);
-    } else {
-      items.value = _all.where((i) => i.status == s).toList();
+    final childId = _childId;
+    if (childId.isEmpty) {
+      items.clear();
+      isLoading.value = false;
+      return;
     }
-  }
-
-  void setStatus(String s) =>
-      selectedStatus.value = (selectedStatus.value == s) ? '' : s;
-
-  List<InvoiceModel> get pendingReminders {
-    final list = _all
-        .where((i) => i.status == 'pending' || i.status == 'overdue')
-        .toList()
-      ..sort((a, b) {
-        if (a.status == 'overdue' && b.status != 'overdue') return -1;
-        if (b.status == 'overdue' && a.status != 'overdue') return 1;
-        return (b.createdAt ?? 0).compareTo(a.createdAt ?? 0);
-      });
-    return list;
+    // Already sorted newest-first by the service.
+    items.value = await _service.getByChild(childId);
+    isLoading.value = false;
   }
 }

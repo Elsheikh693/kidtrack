@@ -31,6 +31,36 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFFD97706),
         route: classroomsView,
       ),
+      DashboardItem(
+        labelKey: 'owner_item_programs',
+        icon: Icons.library_books_rounded,
+        color: Color(0xFFB45309),
+        route: programsView,
+      ),
+      DashboardItem(
+        labelKey: 'owner_item_subjects',
+        icon: Icons.menu_book_rounded,
+        color: Color(0xFF0891B2),
+        route: subjectsView,
+      ),
+      DashboardItem(
+        labelKey: 'owner_item_courses',
+        icon: Icons.play_lesson_rounded,
+        color: Color(0xFF0891B2),
+        route: coursesView,
+      ),
+      DashboardItem(
+        labelKey: 'owner_item_branches',
+        icon: Icons.account_balance_rounded,
+        color: Color(0xFF7C3AED),
+        route: branchesView,
+      ),
+      DashboardItem(
+        labelKey: 'owner_item_packages',
+        icon: Icons.card_membership_rounded,
+        color: Color(0xFF6366F1),
+        route: nurseryPackagesView,
+      ),
     ],
   );
 
@@ -62,36 +92,6 @@ class OwnerMoreTab extends StatelessWidget {
         icon: Icons.reviews_rounded,
         color: Color(0xFFF5A623),
         route: nurseryFeedbackListView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_branches',
-        icon: Icons.account_balance_rounded,
-        color: Color(0xFF7C3AED),
-        route: branchesView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_packages',
-        icon: Icons.card_membership_rounded,
-        color: Color(0xFF6366F1),
-        route: nurseryPackagesView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_programs',
-        icon: Icons.library_books_rounded,
-        color: Color(0xFFB45309),
-        route: programsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_subjects',
-        icon: Icons.menu_book_rounded,
-        color: Color(0xFF0891B2),
-        route: subjectsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_courses',
-        icon: Icons.play_lesson_rounded,
-        color: Color(0xFF0891B2),
-        route: coursesView,
       ),
     ],
   );

@@ -351,7 +351,7 @@ class _AvailableList extends StatelessWidget {
           child: AvailableCourseCard(
             course: courses[i],
             isEnrolled: controller.isEnrolled(courses[i].id),
-            enrollment: controller.enrollmentFor(courses[i].id),
+            progress: controller.progressFor(courses[i]),
             index: i,
           ),
         ),
@@ -386,12 +386,11 @@ class _EnrolledList extends StatelessWidget {
       delegate: SliverChildBuilderDelegate(
         (_, i) {
           final course = enrolled[i];
-          final enrollment = controller.enrollmentFor(course.id)!;
           return StaggerItem(
             index: i,
             child: EnrolledCourseCard(
               course: course,
-              enrollment: enrollment,
+              attended: controller.attendedCount(course.id),
               index: i,
             ),
           );

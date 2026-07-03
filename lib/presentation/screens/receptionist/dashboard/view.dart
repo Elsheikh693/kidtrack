@@ -6,7 +6,7 @@ import 'widgets/inside_now_banner.dart';
 import 'widgets/pending_pickups_section.dart';
 import 'widgets/home_action_cards.dart';
 import 'widgets/active_events_section.dart';
-import 'widgets/monthly_collections_card.dart';
+import 'widgets/parent_activation_card.dart';
 
 const _accent = Color(0xFF0891B2);
 
@@ -60,7 +60,11 @@ class _ReceptionistDashboardViewState extends State<ReceptionistDashboardView> {
                           SizedBox(height: 22.h),
                           PendingPickupsSection(controller: controller),
                           SizedBox(height: 24.h),
-                          const MonthlyCollectionsCard(),
+                          // MonthlyCollectionsCard removed (Phase 4): it read the
+                          // LEGACY CollectionsController (Invoice-based) and led to
+                          // LatePayersView. All finance now flows through the new
+                          // FinancialTransaction system via the Finance tab.
+                          ParentActivationCard(controller: controller),
                           SizedBox(height: 24.h),
                           ActiveEventsSection(controller: controller),
                           SizedBox(height: 20.h),

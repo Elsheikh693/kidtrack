@@ -32,6 +32,12 @@ class NurseryModel {
   final int? reviewsCount;
   final int? childrenCount;
 
+  /// City this nursery belongs to. [cityId] links to the global `cities`
+  /// registry (stable across renames — used by the Discovery city filter);
+  /// [cityName] is denormalized for fast display without a lookup.
+  final String? cityId;
+  final String? cityName;
+
   // ─── Discovery filter facts ────────────────────────────────────────────────
   /// Accepted age range, stored in MONTHS (UI shows years/months).
   final int? minAgeMonths;
@@ -89,6 +95,8 @@ class NurseryModel {
     this.rating,
     this.reviewsCount,
     this.childrenCount,
+    this.cityId,
+    this.cityName,
     this.minAgeMonths,
     this.maxAgeMonths,
     this.applicationFee,
@@ -135,6 +143,8 @@ class NurseryModel {
       rating: _parseDouble(json['rating']),
       reviewsCount: _parseInt(json['reviewsCount']),
       childrenCount: _parseInt(json['childrenCount']),
+      cityId: json['cityId']?.toString(),
+      cityName: json['cityName']?.toString(),
       minAgeMonths: _parseInt(json['minAgeMonths']),
       maxAgeMonths: _parseInt(json['maxAgeMonths']),
       applicationFee: _parseDouble(json['applicationFee']),
@@ -175,6 +185,8 @@ class NurseryModel {
     put('rating', rating);
     put('reviewsCount', reviewsCount);
     put('childrenCount', childrenCount);
+    put('cityId', cityId);
+    put('cityName', cityName);
     put('minAgeMonths', minAgeMonths);
     put('maxAgeMonths', maxAgeMonths);
     put('applicationFee', applicationFee);
@@ -201,6 +213,7 @@ class NurseryModel {
     String? coverPhoto, List<String>? photos, String? description,
     double? lat, double? lng, double? rating, int? reviewsCount,
     int? childrenCount,
+    String? cityId, String? cityName,
     int? minAgeMonths, int? maxAgeMonths,
     double? applicationFee, bool? applicationFeeFree,
     double? priceFrom, double? priceTo,
@@ -223,6 +236,8 @@ class NurseryModel {
     lat: lat ?? this.lat, lng: lng ?? this.lng, rating: rating ?? this.rating,
     reviewsCount: reviewsCount ?? this.reviewsCount,
     childrenCount: childrenCount ?? this.childrenCount,
+    cityId: cityId ?? this.cityId,
+    cityName: cityName ?? this.cityName,
     minAgeMonths: minAgeMonths ?? this.minAgeMonths,
     maxAgeMonths: maxAgeMonths ?? this.maxAgeMonths,
     applicationFee: applicationFee ?? this.applicationFee,

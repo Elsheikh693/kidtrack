@@ -2,14 +2,10 @@ import '../../../../../index/index_main.dart';
 
 class SubjectSheet extends StatefulWidget {
   final SubjectModel? initial;
-  final ProgramModel? program;
-  final List<ProgramModel> programs;
 
   const SubjectSheet({
     super.key,
     this.initial,
-    this.program,
-    this.programs = const [],
   });
 
   @override
@@ -22,7 +18,6 @@ class _SubjectSheetState extends State<SubjectSheet> {
 
   final nameCtrl = TextEditingController();
   final descriptionCtrl = TextEditingController();
-  ProgramModel? selectedProgram;
 
   List<BranchModel> branches = [];
   final Set<String> selectedBranchIds = {}; // empty = all branches
@@ -32,7 +27,6 @@ class _SubjectSheetState extends State<SubjectSheet> {
   late final List<String> _keys;
 
   bool get isEdit => widget.initial != null;
-  bool get needsProgramPicker => widget.program == null && !isEdit;
 
   @override
   void initState() {
@@ -41,7 +35,6 @@ class _SubjectSheetState extends State<SubjectSheet> {
     _branchService = Get.find<BranchParentService>();
     _keyboardService = HandleKeyboardService();
     _keys = _keyboardService.generateKeys('subject_sheet', 2);
-    selectedProgram = widget.program;
     if (isEdit) {
       nameCtrl.text = widget.initial!.name;
       descriptionCtrl.text = widget.initial!.description ?? '';
@@ -72,17 +65,12 @@ class _SubjectSheetState extends State<SubjectSheet> {
       Loader.showError('subject_error_name'.tr);
       return;
     }
-    final p = selectedProgram;
-    if (p == null) {
-      Loader.showError('subject_error_program'.tr);
-      return;
-    }
     final nurseryId = SessionService().nurseryId ?? '';
     final id = isEdit ? (widget.initial!.key ?? const Uuid().v4()) : const Uuid().v4();
     final subject = SubjectModel(
       key: id,
       nurseryId: nurseryId,
-      programId: p.key ?? '',
+      programId: widget.initial?.programId ?? '',
       name: name,
       description: descriptionCtrl.text.trim().isEmpty ? null : descriptionCtrl.text.trim(),
       branchIds: selectedBranchIds.toList(),
@@ -175,16 +163,6 @@ class _SubjectSheetState extends State<SubjectSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (needsProgramPicker) ...[
-                        _FieldLabel('subject_program_label'.tr),
-                        SizedBox(height: 6.h),
-                        _ProgramDropdown(
-                          programs: widget.programs,
-                          selected: selectedProgram,
-                          onChanged: (p) => setState(() => selectedProgram = p),
-                        ),
-                        SizedBox(height: 16.h),
-                      ],
                       _FieldLabel('subject_name_label'.tr),
                       SizedBox(height: 6.h),
                       _InputField(
@@ -251,51 +229,6 @@ class _SubjectSheetState extends State<SubjectSheet> {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Program Dropdown ──────────────────────────────────────────────────────────
-
-class _ProgramDropdown extends StatelessWidget {
-  final List<ProgramModel> programs;
-  final ProgramModel? selected;
-  final void Function(ProgramModel?) onChanged;
-
-  const _ProgramDropdown({
-    required this.programs,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<ProgramModel>(
-      value: selected,
-      isExpanded: true,
-      decoration: InputDecoration(
-        hintText: 'subject_program_hint'.tr,
-        hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-      ),
-      items: programs
-          .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
-          .toList(),
-      onChanged: onChanged,
     );
   }
 }

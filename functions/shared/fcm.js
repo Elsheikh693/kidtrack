@@ -14,6 +14,16 @@ const INVALID_TOKEN_CODES = new Set([
   "messaging/registration-token-not-registered",
 ]);
 
+// iOS aligns notification text by the RECIPIENT device's language, so Arabic
+// copy shows left-aligned on an English-locale phone. Prefixing a Right-to-Left
+// Mark (U+200F) forces the bidi base direction to RTL → right alignment on every
+// device. Invisible; harmless on Android (already RTL via app locale).
+const RLM = "‏";
+function rtl(s) {
+  if (!s) return s;
+  return s.startsWith(RLM) ? s : RLM + s;
+}
+
 // FCM data payload values must all be strings.
 function stringifyData(data) {
   if (!data) return undefined;
@@ -31,7 +41,7 @@ async function sendToToken(token, { title, body, data }) {
   try {
     await admin.messaging().send({
       token,
-      notification: { title, body },
+      notification: { title: rtl(title), body: rtl(body) },
       data: stringifyData(data),
       android: { priority: "high" },
       apns: { headers: { "apns-priority": "10" } },

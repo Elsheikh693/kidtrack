@@ -79,6 +79,7 @@ class CreateEventController extends GetxController {
   final descCtrl = TextEditingController();
   final locationCtrl = TextEditingController();
   final timeCtrl = TextEditingController();
+  final priceCtrl = TextEditingController();
 
   final selectedDate = Rx<DateTime?>(null);
   final selectedCategory = EventCategory.fun.obs;
@@ -100,6 +101,12 @@ class CreateEventController extends GetxController {
       timeCtrl.text = editEvent!.timeStr ?? '';
       selectedDate.value = editEvent!.dateTime;
       selectedCategory.value = editEvent!.category;
+      if (editEvent!.hasPrice) {
+        final p = editEvent!.price!;
+        priceCtrl.text = p == p.roundToDouble()
+            ? p.toStringAsFixed(0)
+            : p.toString();
+      }
     }
   }
 
@@ -109,6 +116,7 @@ class CreateEventController extends GetxController {
     descCtrl.dispose();
     locationCtrl.dispose();
     timeCtrl.dispose();
+    priceCtrl.dispose();
     super.onClose();
   }
 
@@ -138,6 +146,8 @@ class CreateEventController extends GetxController {
     isLoading.value = true;
     Loader.show();
 
+    final price = _parsePrice();
+
     bool ok;
     if (editEvent == null) {
       ok = await _service.createEvent(
@@ -147,6 +157,7 @@ class CreateEventController extends GetxController {
         timeStr: timeCtrl.text.trim().isEmpty ? null : timeCtrl.text.trim(),
         location: locationCtrl.text.trim().isEmpty ? null : locationCtrl.text.trim(),
         category: selectedCategory.value,
+        price: price,
         coverImage: coverImage.value,
       );
     } else {
@@ -158,6 +169,7 @@ class CreateEventController extends GetxController {
         timeStr: timeCtrl.text.trim().isEmpty ? null : timeCtrl.text.trim(),
         location: locationCtrl.text.trim().isEmpty ? null : locationCtrl.text.trim(),
         category: selectedCategory.value,
+        price: price,
         newCoverImage: coverImage.value,
         removeCover: removeCover.value,
       );
@@ -166,5 +178,14 @@ class CreateEventController extends GetxController {
     Loader.dismiss();
     isLoading.value = false;
     return ok;
+  }
+
+  /// Parsed fee, or null when the field is empty/zero (a free event).
+  double? _parsePrice() {
+    final raw = priceCtrl.text.trim();
+    if (raw.isEmpty) return null;
+    final v = double.tryParse(raw);
+    if (v == null || v <= 0) return null;
+    return v;
   }
 }

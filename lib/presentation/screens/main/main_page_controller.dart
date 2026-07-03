@@ -126,6 +126,7 @@ class MainPageViewModel extends GetxController {
     const ReceptionistDashboardTab(),
     const ReceptionistCheckInView(),
     const ReceptionistChildrenTab(),
+    const ReceptionistCoursesTab(),
     const ReceptionistEventsView(),
     const ReceptionistFinanceTab(),
   ];

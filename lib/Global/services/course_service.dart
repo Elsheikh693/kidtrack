@@ -6,7 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../Data/models/nursery_course/nursery_course_model.dart';
+import '../../Data/models/course_enrollment/course_enrollment_model.dart';
+import '../../Data/models/notification/notification_model.dart';
+import '../Utils/logger.dart';
 import 'session_service.dart';
+import 'notification_send_service.dart';
 
 class CourseService {
   final _db = FirebaseDatabase.instance;
@@ -20,6 +24,10 @@ class CourseService {
       _db.ref('platform/$_nurseryId/courseLessons/$courseId');
   DatabaseReference _progressRef(String uid) =>
       _db.ref('platform/$_nurseryId/courseProgress/$uid');
+  DatabaseReference _enrollRef(String courseId) =>
+      _db.ref('platform/$_nurseryId/courseEnrollments/$courseId');
+  DatabaseReference _attendanceRef(String courseId) =>
+      _db.ref('platform/$_nurseryId/courseAttendance/$courseId');
 
   // ─── Watch active courses (parent) ────────────────────────────────────────
   Stream<List<NurseryCourse>> watchActiveCourses() {
@@ -89,6 +97,8 @@ class CourseService {
     required double price,
     required CourseCategory category,
     required String ageGroup,
+    int sessionCount = 0,
+    int? startDate,
     bool isActive = true,
     List<String> branchIds = const [],
     XFile? coverImage,
@@ -110,6 +120,8 @@ class CourseService {
         coverUrl: coverUrl,
         category: category,
         ageGroup: ageGroup,
+        sessionCount: sessionCount,
+        startDate: startDate,
         isActive: isActive,
         createdAt: DateTime.now().millisecondsSinceEpoch,
       );
@@ -128,6 +140,9 @@ class CourseService {
     required double price,
     required CourseCategory category,
     required String ageGroup,
+    int? sessionCount,
+    int? startDate,
+    bool clearStartDate = false,
     bool? isActive,
     List<String>? branchIds,
     XFile? newCoverImage,
@@ -148,6 +163,9 @@ class CourseService {
         price: price,
         category: category,
         ageGroup: ageGroup,
+        sessionCount: sessionCount ?? course.sessionCount,
+        startDate: startDate,
+        clearStartDate: clearStartDate,
         isActive: isActive ?? course.isActive,
         branchIds: branchIds ?? course.branchIds,
         coverUrl: coverUrl,
@@ -305,6 +323,262 @@ class CourseService {
         });
       }
     } catch (_) {}
+  }
+
+  // ─── Enrollment (reception) ───────────────────────────────────────────────
+
+  // All enrollments across every course, keyed courseId → set of enrolled
+  // childIds. Used by the parent Courses screen to decide (per active child)
+  // which courses the child is actually enrolled in by reception.
+  Stream<Map<String, Set<String>>> watchAllEnrollments() {
+    return _db.ref('platform/$_nurseryId/courseEnrollments').onValue.map((event) {
+      final data = event.snapshot.value;
+      final result = <String, Set<String>>{};
+      if (data is Map) {
+        for (final entry in data.entries) {
+          final childIds = <String>{};
+          if (entry.value is Map) {
+            for (final k in (entry.value as Map).keys) {
+              childIds.add(k.toString());
+            }
+          }
+          result[entry.key.toString()] = childIds;
+        }
+      }
+      return result;
+    });
+  }
+
+  Stream<List<CourseChildEnrollment>> watchEnrollments(String courseId) {
+    return _enrollRef(courseId).onValue.map((event) {
+      final data = event.snapshot.value;
+      if (data == null || data is! Map) return <CourseChildEnrollment>[];
+      final list = <CourseChildEnrollment>[];
+      for (final entry in (data as Map).entries) {
+        try {
+          final map = Map<String, dynamic>.from(entry.value as Map);
+          list.add(CourseChildEnrollment.fromJson(
+            map,
+            courseId: courseId,
+            childId: entry.key.toString(),
+          ));
+        } catch (_) {}
+      }
+      list.sort((a, b) => a.childName.compareTo(b.childName));
+      return list;
+    });
+  }
+
+  Future<void> enrollChild({
+    required String courseId,
+    required String childId,
+    required String childName,
+    String? childImage,
+  }) async {
+    final enrollment = CourseChildEnrollment(
+      courseId: courseId,
+      childId: childId,
+      childName: childName,
+      childImage: childImage,
+      enrolledAt: DateTime.now().millisecondsSinceEpoch,
+      enrolledBy: _session.userId,
+    );
+    await _enrollRef(courseId).child(childId).set(enrollment.toJson());
+  }
+
+  Future<void> unenrollChild(String courseId, String childId) async {
+    await _enrollRef(courseId).child(childId).remove();
+    // Clean up any attendance records for this child in this course.
+    final snap = await _attendanceRef(courseId).get();
+    if (snap.value is Map) {
+      final updates = <String, dynamic>{};
+      for (final entry in (snap.value as Map).entries) {
+        final key = entry.key.toString();
+        if (key.endsWith('_$childId')) updates[key] = null;
+      }
+      if (updates.isNotEmpty) await _attendanceRef(courseId).update(updates);
+    }
+  }
+
+  // ─── Session attendance (reception) ───────────────────────────────────────
+  Stream<List<CourseSessionAttendance>> watchAttendance(String courseId) {
+    return _attendanceRef(courseId).onValue.map(_parseAttendance);
+  }
+
+  // All attendance across every course, keyed courseId → records. Used by the
+  // parent Courses screen to show an at-a-glance track progress on each card.
+  Stream<Map<String, List<CourseSessionAttendance>>> watchAllAttendance() {
+    return _db.ref('platform/$_nurseryId/courseAttendance').onValue.map((event) {
+      final data = event.snapshot.value;
+      final result = <String, List<CourseSessionAttendance>>{};
+      if (data is Map) {
+        for (final entry in data.entries) {
+          final list = <CourseSessionAttendance>[];
+          if (entry.value is Map) {
+            for (final rec in (entry.value as Map).values) {
+              if (rec is Map) {
+                try {
+                  list.add(CourseSessionAttendance.fromJson(
+                      Map<String, dynamic>.from(rec)));
+                } catch (_) {}
+              }
+            }
+          }
+          result[entry.key.toString()] = list;
+        }
+      }
+      return result;
+    });
+  }
+
+  Future<List<CourseSessionAttendance>> getAttendanceOnce(String courseId) async {
+    try {
+      final snap = await _attendanceRef(courseId).get();
+      if (snap.value == null || snap.value is! Map) return [];
+      final list = <CourseSessionAttendance>[];
+      for (final entry in (snap.value as Map).entries) {
+        try {
+          final map = Map<String, dynamic>.from(entry.value as Map);
+          list.add(CourseSessionAttendance.fromJson(map));
+        } catch (_) {}
+      }
+      return list;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  List<CourseSessionAttendance> _parseAttendance(DatabaseEvent event) {
+    final data = event.snapshot.value;
+    if (data == null || data is! Map) return [];
+    final list = <CourseSessionAttendance>[];
+    for (final entry in (data as Map).entries) {
+      try {
+        final map = Map<String, dynamic>.from(entry.value as Map);
+        list.add(CourseSessionAttendance.fromJson(map));
+      } catch (_) {}
+    }
+    return list;
+  }
+
+  // Mark a child present (check-in) for a session. Overwrites the record.
+  Future<void> markSessionCheckIn({
+    required String courseId,
+    required int sessionIndex,
+    required String childId,
+  }) async {
+    final record = CourseSessionAttendance(
+      courseId: courseId,
+      sessionIndex: sessionIndex,
+      childId: childId,
+      status: CourseAttendanceStatus.present,
+      checkedInAt: DateTime.now().millisecondsSinceEpoch,
+      markedBy: _session.userId,
+    );
+    await _attendanceRef(courseId).child(record.storageKey).set(record.toJson());
+  }
+
+  // Mark a child absent for a session. Overwrites any existing record.
+  Future<void> markSessionAbsent({
+    required String courseId,
+    required int sessionIndex,
+    required String childId,
+  }) async {
+    final record = CourseSessionAttendance(
+      courseId: courseId,
+      sessionIndex: sessionIndex,
+      childId: childId,
+      status: CourseAttendanceStatus.absent,
+      markedBy: _session.userId,
+    );
+    await _attendanceRef(courseId).child(record.storageKey).set(record.toJson());
+  }
+
+  // Mark check-out time for a session the child already attended.
+  Future<void> markSessionCheckOut({
+    required String courseId,
+    required int sessionIndex,
+    required String childId,
+  }) async {
+    await _attendanceRef(courseId).child('${sessionIndex}_$childId').update({
+      'checkedOutAt': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  // Undo attendance for a session (removes the record entirely).
+  Future<void> clearSessionAttendance({
+    required String courseId,
+    required int sessionIndex,
+    required String childId,
+  }) async {
+    await _attendanceRef(courseId).child('${sessionIndex}_$childId').remove();
+  }
+
+  // Notify the child's parent that their child attended a course session,
+  // including the content of that session (the lesson mapped to it). Called
+  // by reception on a fresh check-in. Best-effort: silently no-ops if the
+  // child has no linked parent.
+  Future<void> notifySessionAttendance({
+    required NurseryCourse course,
+    required int sessionIndex,
+    required String childId,
+    required String childName,
+  }) async {
+    try {
+      final parentSnap = await _db
+          .ref('platform/$_nurseryId/children/$childId/parentId')
+          .get();
+      final parentId = parentSnap.value?.toString();
+      if (parentId == null || parentId.isEmpty) return;
+
+      // Resolve the session content: the lesson whose order maps to this
+      // session (session N == orderIndex N-1).
+      final lessons = await getLessons(course.id);
+      CourseLesson? lesson;
+      for (final l in lessons) {
+        if (l.orderIndex + 1 == sessionIndex) {
+          lesson = l;
+          break;
+        }
+      }
+
+      final body = StringBuffer(
+        'حضر $childName الحصة $sessionIndex من كورس «${course.title}»',
+      );
+      if (lesson != null) {
+        body.write('\nمحتوى الحصة: ${lesson.title}');
+        final detail = (lesson.textContent?.trim().isNotEmpty ?? false)
+            ? lesson.textContent!.trim()
+            : (lesson.description?.trim() ?? '');
+        if (detail.isNotEmpty) body.write('\n$detail');
+      }
+
+      await NotificationSendService().sendToUser(
+        parentId,
+        NotificationModel(
+          userId: parentId,
+          nurseryId: _nurseryId,
+          title: 'حضور الكورس',
+          body: body.toString(),
+          type: 'course_attendance',
+          entityId: course.id,
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('COURSE_NOTIF', 'notifySessionAttendance: $e');
+    }
+  }
+
+  // Per-child attendance in a course (parent track). Sorted by session index.
+  Stream<List<CourseSessionAttendance>> watchChildAttendance(
+    String courseId,
+    String childId,
+  ) {
+    return watchAttendance(courseId).map(
+      (list) => list.where((a) => a.childId == childId).toList()
+        ..sort((a, b) => a.sessionIndex.compareTo(b.sessionIndex)),
+    );
   }
 
   // ─── Image helpers ────────────────────────────────────────────────────────

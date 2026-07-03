@@ -2,67 +2,83 @@ import '../../../../../index/index_main.dart';
 
 /// Identity header for the More tab — manager name, branch, and avatar.
 class ManagerProfileCard extends StatelessWidget {
-  const ManagerProfileCard({super.key, required this.controller});
+  const ManagerProfileCard({super.key, required this.controller, this.onTap});
 
   final ManagerMoreController controller;
+
+  /// When provided, the whole card becomes tappable (e.g. to edit the profile)
+  /// and shows a trailing edit affordance.
+  final VoidCallback? onTap;
+
   static const _accent = Color(0xFF7C3AED);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.grayLight.withValues(alpha: 0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.grayLight.withValues(alpha: 0.5),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _Avatar(controller: controller),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.userName,
-                  style: context.typography.mdBold
-                      .copyWith(color: AppColors.textDefault),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Obx(
-                  () => Row(
-                    children: [
-                      Icon(Icons.apartment_rounded,
-                          size: 14, color: AppColors.grayMedium),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          controller.branchName.value.isEmpty
-                              ? 'manager_more_role'.tr
-                              : controller.branchName.value,
-                          style: context.typography.xsRegular.copyWith(
-                            color: AppColors.textSecondaryParagraph,
+          child: Row(
+            children: [
+              _Avatar(controller: controller),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      controller.userName,
+                      style: context.typography.mdBold
+                          .copyWith(color: AppColors.textDefault),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Obx(
+                      () => Row(
+                        children: [
+                          Icon(Icons.apartment_rounded,
+                              size: 14, color: AppColors.grayMedium),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              controller.branchName.value.isEmpty
+                                  ? 'manager_more_role'.tr
+                                  : controller.branchName.value,
+                              style: context.typography.xsRegular.copyWith(
+                                color: AppColors.textSecondaryParagraph,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.edit_outlined, size: 18, color: _accent),
               ],
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

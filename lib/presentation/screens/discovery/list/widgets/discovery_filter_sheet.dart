@@ -39,6 +39,7 @@ class _FilterSheetState extends State<_FilterSheet> {
   late int? _ageMonths;
   late RangeValues _price;
   late double? _distanceKm;
+  late String? _cityId;
 
   double get _minBound => widget.controller.priceBoundMin;
   double get _maxBound => widget.controller.priceBoundMax;
@@ -50,6 +51,7 @@ class _FilterSheetState extends State<_FilterSheet> {
     _ageMonths = c.childAgeMonths.value;
     _price = c.priceRange.value ?? RangeValues(_minBound, _maxBound);
     _distanceKm = c.distanceKm.value ?? 10;
+    _cityId = c.cityId.value;
   }
 
   @override
@@ -94,6 +96,27 @@ class _FilterSheetState extends State<_FilterSheet> {
                 ],
               ),
               SizedBox(height: 20.h),
+
+              // ── City ───────────────────────────────────────────────────
+              Obx(() {
+                if (widget.controller.cities.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _label(context, 'discovery_filter_city'.tr,
+                        Icons.location_city_rounded),
+                    SizedBox(height: 10.h),
+                    _CityDropdown(
+                      cities: widget.controller.cities,
+                      selectedId: _cityId,
+                      onChanged: (id) => setState(() => _cityId = id),
+                    ),
+                    SizedBox(height: 22.h),
+                  ],
+                );
+              }),
 
               // ── Child age ──────────────────────────────────────────────
               _label(context, 'discovery_filter_age'.tr, Icons.child_care_rounded),
@@ -287,6 +310,7 @@ class _FilterSheetState extends State<_FilterSheet> {
       _ageMonths = null;
       _price = RangeValues(_minBound, _maxBound);
       _distanceKm = 10;
+      _cityId = null;
     });
     widget.controller.clearFilters();
     Get.back();
@@ -300,8 +324,65 @@ class _FilterSheetState extends State<_FilterSheet> {
       price: priceActive ? _price : null,
       distance:
           widget.controller.hasUserLocation ? _distanceKm : null,
+      city: _cityId,
     );
     Get.back();
+  }
+}
+
+class _CityDropdown extends StatelessWidget {
+  final List<CityModel> cities;
+  final String? selectedId;
+  final ValueChanged<String?> onChanged;
+  const _CityDropdown({
+    required this.cities,
+    required this.selectedId,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final validId =
+        cities.any((c) => c.key == selectedId) ? selectedId : null;
+    return Container(
+      height: 52.h,
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundNeutral100,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: AppColors.borderNeutralPrimary.withValues(alpha: 0.5),
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String?>(
+          value: validId,
+          isExpanded: true,
+          icon: Icon(Icons.expand_more_rounded,
+              size: 18.sp, color: AppColors.grayMedium),
+          borderRadius: BorderRadius.circular(12.r),
+          items: [
+            DropdownMenuItem<String?>(
+              value: null,
+              child: AppText(
+                text: 'discovery_filter_city_any'.tr,
+                textStyle: context.typography.smMedium
+                    .copyWith(color: AppColors.textPrimaryParagraph),
+              ),
+            ),
+            ...cities.map((c) => DropdownMenuItem<String?>(
+                  value: c.key,
+                  child: AppText(
+                    text: c.name,
+                    textStyle: context.typography.smMedium
+                        .copyWith(color: AppColors.textPrimaryParagraph),
+                  ),
+                )),
+          ],
+          onChanged: onChanged,
+        ),
+      ),
+    );
   }
 }
 

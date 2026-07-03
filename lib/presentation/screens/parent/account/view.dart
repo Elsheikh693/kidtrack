@@ -66,41 +66,13 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   icon: Icons.forum_outlined,
                   iconColor: const Color(0xFF6366F1),
                   onTap: controller.navigateToChat,
-                ),
-                AccountMenuItem(
-                  labelKey: 'parent_account_pickup_section',
-                  icon: Icons.directions_car_outlined,
-                  iconColor: AppColors.blueForeground,
-                  onTap: controller.navigateToPickup,
+                  badge: Get.find<ActiveChildService>().chatUnread,
                 ),
                 AccountMenuItem(
                   labelKey: 'parent_account_finance',
                   icon: Icons.account_balance_wallet_outlined,
                   iconColor: const Color(0xFFD97706),
                   onTap: controller.navigateToFinance,
-                ),
-                AccountMenuItem(
-                  labelKey: 'parent_account_home_location',
-                  icon: Icons.location_on_outlined,
-                  iconColor: AppColors.primary,
-                  onTap: controller.navigateToHomeLocation,
-                ),
-              ],
-            ),
-            AccountMenuSection(
-              titleKey: 'parent_account_settings_section',
-              items: [
-                AccountMenuItem(
-                  labelKey: 'parent_account_notif',
-                  icon: Icons.notifications_outlined,
-                  iconColor: AppColors.yellowForeground,
-                  onTap: controller.navigateToNotifications,
-                ),
-                AccountMenuItem(
-                  labelKey: 'parent_account_theme',
-                  icon: Icons.palette_outlined,
-                  iconColor: const Color(0xFF7C3AED),
-                  onTap: controller.changeTheme,
                 ),
               ],
             ),
@@ -112,12 +84,6 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   icon: Icons.school_outlined,
                   iconColor: AppColors.successForeground,
                   onTap: controller.contactNursery,
-                ),
-                AccountMenuItem(
-                  labelKey: 'parent_account_contact_admin',
-                  icon: Icons.admin_panel_settings_outlined,
-                  iconColor: AppColors.primary,
-                  onTap: controller.contactAdmin,
                 ),
                 AccountMenuItem(
                   labelKey: 'parent_account_technical_support',

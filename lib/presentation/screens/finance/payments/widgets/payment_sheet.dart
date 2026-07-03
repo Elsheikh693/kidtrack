@@ -90,7 +90,9 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
               ),
               Text(
                 'payment_add'.tr,
-                style: context.typography.lgBold.copyWith(color: Color(0xFF1E293B)),
+                style: context.typography.lgBold.copyWith(
+                  color: Color(0xFF1E293B),
+                ),
               ),
               SizedBox(height: 20.h),
 
@@ -109,13 +111,17 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                 value: _childId,
                 hint: Text(
                   'payment_select_child'.tr,
-                  style: context.typography.xsRegular.copyWith(color: Color(0xFF94A3B8)),
+                  style: context.typography.xsRegular.copyWith(
+                    color: Color(0xFF94A3B8),
+                  ),
                 ),
                 items: widget.children
-                    .map((c) => DropdownMenuItem(
-                          value: c.key!,
-                          child: Text(c.fullName),
-                        ))
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c.key!,
+                        child: Text(c.fullName),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _childId = v),
                 decoration: _decoration('payment_select_child'.tr),
@@ -126,11 +132,17 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
               _label('payment_amount'.tr),
               SizedBox(height: 6.h),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: _decoration('payment_amount_hint'.tr).copyWith(
-                  prefixIcon: Icon(Icons.attach_money_rounded,
-                      color: const Color(0xFF94A3B8), size: 18.sp),
+                  prefixIcon: Icon(
+                    Icons.attach_money_rounded,
+                    color: const Color(0xFF94A3B8),
+                    size: 18.sp,
+                  ),
                 ),
               ),
               SizedBox(height: 16.h),
@@ -147,7 +159,8 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         margin: EdgeInsets.only(
-                            left: m != _methods.first ? 6.w : 0),
+                          left: m != _methods.first ? 6.w : 0,
+                        ),
                         padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
                           color: active
@@ -172,7 +185,11 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                             SizedBox(height: 4.h),
                             Text(
                               'payment_method_$m'.tr,
-                              style: context.typography.xsRegular.copyWith(color: active ? Colors.white : const Color(0xFF64748B)),
+                              style: context.typography.xsRegular.copyWith(
+                                color: active
+                                    ? Colors.white
+                                    : const Color(0xFF64748B),
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -188,6 +205,7 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
               _label('invoice_notes'.tr),
               SizedBox(height: 6.h),
               TextField(
+                inputFormatters: const [EnglishDigitsFormatter()],
                 controller: _notesCtrl,
                 maxLines: 2,
                 decoration: _decoration('payment_notes_hint'.tr),
@@ -204,7 +222,8 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r)),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
@@ -239,7 +258,9 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                 children: [
                   Text(
                     'payment_category'.tr,
-                    style: context.typography.mdBold.copyWith(color: Color(0xFF1E293B)),
+                    style: context.typography.mdBold.copyWith(
+                      color: Color(0xFF1E293B),
+                    ),
                   ),
                   SizedBox(height: 16.h),
                   // "No category" option
@@ -255,18 +276,20 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                       Get.back();
                     },
                   ),
-                  ...widget.categories.map((cat) => _CategoryOption(
-                        label: cat.name,
-                        color: Color(cat.colorValue),
-                        selected: _categoryKey == cat.key,
-                        onTap: () {
-                          setState(() {
-                            _categoryKey = cat.key;
-                            _selectedCategory = cat;
-                          });
-                          Get.back();
-                        },
-                      )),
+                  ...widget.categories.map(
+                    (cat) => _CategoryOption(
+                      label: cat.name,
+                      color: Color(cat.colorValue),
+                      selected: _categoryKey == cat.key,
+                      onTap: () {
+                        setState(() {
+                          _categoryKey = cat.key;
+                          _selectedCategory = cat;
+                        });
+                        Get.back();
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -290,26 +313,38 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
                   color: Color(_selectedCategory!.colorValue),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
-                child: Icon(Icons.wallet_rounded,
-                    color: Colors.white, size: 14.sp),
+                child: Icon(
+                  Icons.wallet_rounded,
+                  color: Colors.white,
+                  size: 14.sp,
+                ),
               ),
               SizedBox(width: 10.w),
               Text(
                 _selectedCategory!.name,
-                style: context.typography.smMedium.copyWith(color: Color(_selectedCategory!.colorValue)),
+                style: context.typography.smMedium.copyWith(
+                  color: Color(_selectedCategory!.colorValue),
+                ),
               ),
             ] else ...[
-              Icon(Icons.category_outlined,
-                  size: 18.sp, color: const Color(0xFF94A3B8)),
+              Icon(
+                Icons.category_outlined,
+                size: 18.sp,
+                color: const Color(0xFF94A3B8),
+              ),
               SizedBox(width: 10.w),
               Text(
                 'payment_cat_select'.tr,
-                style: context.typography.xsRegular.copyWith(color: Color(0xFF94A3B8)),
+                style: context.typography.xsRegular.copyWith(
+                  color: Color(0xFF94A3B8),
+                ),
               ),
             ],
             const Spacer(),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                color: Color(0xFF94A3B8)),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF94A3B8),
+            ),
           ],
         ),
       ),
@@ -317,31 +352,32 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
   }
 
   Widget _label(String text) => Text(
-        text,
-        style: context.typography.xsMedium.copyWith(color: Color(0xFF374151)),
-      );
+    text,
+    style: context.typography.xsMedium.copyWith(color: Color(0xFF374151)),
+  );
 
   InputDecoration _decoration(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: context.typography.xsRegular
-            .copyWith(fontSize: 13, color: const Color(0xFF94A3B8)),
-        filled: true,
-        fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.r),
-          borderSide: BorderSide(color: AppColors.primary),
-        ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      );
+    hintText: hint,
+    hintStyle: context.typography.xsRegular.copyWith(
+      fontSize: 13,
+      color: const Color(0xFF94A3B8),
+    ),
+    filled: true,
+    fillColor: const Color(0xFFF8FAFC),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10.r),
+      borderSide: BorderSide(color: AppColors.primary),
+    ),
+    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+  );
 }
 
 class _CategoryOption extends StatelessWidget {
@@ -367,9 +403,7 @@ class _CategoryOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? color.withOpacity(0.08) : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(
-            color: selected ? color : const Color(0xFFE2E8F0),
-          ),
+          border: Border.all(color: selected ? color : const Color(0xFFE2E8F0)),
         ),
         child: Row(
           children: [
@@ -383,7 +417,9 @@ class _CategoryOption extends StatelessWidget {
               label,
               style: selected
                   ? context.typography.smSemiBold.copyWith(color: color)
-                  : context.typography.smRegular.copyWith(color: Color(0xFF475569)),
+                  : context.typography.smRegular.copyWith(
+                      color: Color(0xFF475569),
+                    ),
             ),
             const Spacer(),
             if (selected)

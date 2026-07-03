@@ -1,8 +1,21 @@
+import 'dart:io';
+
 import '../../../index/index_main.dart';
 
 /// Pre-login settings hub reached from the Discovery screen's settings icon.
 class AppSettingsView extends StatelessWidget {
   const AppSettingsView({super.key});
+
+  Future<void> _openStore() async {
+    final url = Platform.isIOS ? Strings.urlIos : Strings.urlAndroid;
+    if (url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Loader.showError('contact_launch_error'.tr);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +63,22 @@ class AppSettingsView extends StatelessWidget {
                       title: 'settings_join'.tr,
                       subtitle: 'settings_join_sub'.tr,
                       onTap: () => Get.toNamed(joinUsView),
+                    ),
+                    SizedBox(height: 14.h),
+                    _SettingsTile(
+                      icon: Icons.favorite_rounded,
+                      iconColor: const Color(0xFFEC4899),
+                      title: 'settings_review'.tr,
+                      subtitle: 'settings_review_sub'.tr,
+                      onTap: () => Get.toNamed(appReviewView),
+                    ),
+                    SizedBox(height: 14.h),
+                    _SettingsTile(
+                      icon: Icons.star_rounded,
+                      iconColor: const Color(0xFFF59E0B),
+                      title: 'settings_rate_store'.tr,
+                      subtitle: 'settings_rate_store_sub'.tr,
+                      onTap: _openStore,
                     ),
                     if (!SessionService().isLoggedIn) ...[
                       SizedBox(height: 14.h),

@@ -63,7 +63,36 @@ class FeedPostCard extends StatelessWidget {
               ),
             ),
           if (post.photos.isNotEmpty) _PhotosGrid(urls: post.photos),
+          _SeenRow(count: post.seenCount),
           SizedBox(height: 4.h),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Seen count (manager insight) ─────────────────────────────────────────────
+
+class _SeenRow extends StatelessWidget {
+  const _SeenRow({required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 2.h),
+      child: Row(
+        children: [
+          Icon(Icons.visibility_outlined,
+              size: 16.sp, color: const Color(0xFF9CA3AF)),
+          SizedBox(width: 6.w),
+          Text(
+            count == 0
+                ? 'feed_seen_none'.tr
+                : 'feed_seen_count'.trParams({'n': '$count'}),
+            style: context.typography.xsMedium
+                .copyWith(color: const Color(0xFF9CA3AF)),
+          ),
         ],
       ),
     );

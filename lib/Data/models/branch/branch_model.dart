@@ -4,6 +4,7 @@ class BranchModel {
   final String name;
   final String? address;
   final String? phone;
+  final String? whatsapp;
   final double? lat;
   final double? lng;
   final bool isActive;
@@ -18,6 +19,7 @@ class BranchModel {
     required this.name,
     this.address,
     this.phone,
+    this.whatsapp,
     this.lat,
     this.lng,
     this.isActive = true,
@@ -36,6 +38,7 @@ class BranchModel {
       name: json['name']?.toString() ?? '',
       address: json['address']?.toString(),
       phone: json['phone']?.toString(),
+      whatsapp: json['whatsapp']?.toString(),
       lat: _parseDouble(json['lat']),
       lng: _parseDouble(json['lng']),
       isActive: _parseBool(json['isActive']),
@@ -54,6 +57,7 @@ class BranchModel {
     put('name', name);
     put('address', address);
     put('phone', phone);
+    put('whatsapp', whatsapp);
     put('lat', lat);
     put('lng', lng);
     data['isActive'] = isActive;
@@ -66,12 +70,14 @@ class BranchModel {
 
   BranchModel copyWith({
     String? key, String? nurseryId, String? name, String? address,
-    String? phone, double? lat, double? lng, bool? isActive, bool? isMain,
+    String? phone, String? whatsapp, double? lat, double? lng,
+    bool? isActive, bool? isMain,
     int? capacity, int? createdAt, int? updatedAt,
   }) => BranchModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
     name: name ?? this.name, address: address ?? this.address,
-    phone: phone ?? this.phone, lat: lat ?? this.lat, lng: lng ?? this.lng,
+    phone: phone ?? this.phone, whatsapp: whatsapp ?? this.whatsapp,
+    lat: lat ?? this.lat, lng: lng ?? this.lng,
     isActive: isActive ?? this.isActive, isMain: isMain ?? this.isMain,
     capacity: capacity ?? this.capacity,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,

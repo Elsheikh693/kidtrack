@@ -10,28 +10,22 @@ class AvailableCourseCard extends StatelessWidget {
     super.key,
     required this.course,
     required this.isEnrolled,
-    this.enrollment,
+    this.progress = 0.0,
     required this.index,
   });
 
   final NurseryCourse course;
   final bool isEnrolled;
-  final CourseEnrollment? enrollment;
+  final double progress;
   final int index;
 
   @override
   Widget build(BuildContext context) {
     final catColor = course.category.color;
     final accent = course.category.accentColor;
-    final progress = isEnrolled ? (enrollment?.progressFor(course) ?? 0) : 0.0;
 
     return GestureDetector(
-      onTap: () => showCourseDetail(
-        context,
-        course,
-        enrollment: enrollment,
-        onLessonCompleted: null,
-      ),
+      onTap: () => showCourseDetail(context, course, isEnrolled: isEnrolled),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 7, 16, 7),
         decoration: BoxDecoration(
@@ -131,7 +125,7 @@ class AvailableCourseCard extends StatelessWidget {
 
               // ── CTA / enrolled progress ──────────────────────────────────
               if (isEnrolled)
-                _ContinueBar(progress: progress.toDouble(), color: catColor)
+                _ContinueBar(progress: progress, color: catColor)
               else
                 _ExploreButton(color: catColor),
             ],

@@ -61,8 +61,9 @@ class _PackageSheetState extends State<PackageSheet> {
       callBack: (list) {
         _branches = list.whereType<BranchModel>().toList();
         if (isEdit && widget.initial!.branchId != null) {
-          _selectedBranch = _branches
-              .firstWhereOrNull((b) => b.key == widget.initial!.branchId);
+          _selectedBranch = _branches.firstWhereOrNull(
+            (b) => b.key == widget.initial!.branchId,
+          );
         }
       },
     );
@@ -89,10 +90,13 @@ class _PackageSheetState extends State<PackageSheet> {
       return;
     }
     final price = double.tryParse(priceCtrl.text.trim()) ?? 0;
-    final discountValue =
-        _discountEnabled ? (double.tryParse(discountCtrl.text.trim()) ?? 0) : 0.0;
+    final discountValue = _discountEnabled
+        ? (double.tryParse(discountCtrl.text.trim()) ?? 0)
+        : 0.0;
     final nurseryId = SessionService().nurseryId ?? '';
-    final id = isEdit ? (widget.initial!.key ?? const Uuid().v4()) : const Uuid().v4();
+    final id = isEdit
+        ? (widget.initial!.key ?? const Uuid().v4())
+        : const Uuid().v4();
     final item = PackageModel(
       key: id,
       nurseryId: nurseryId,
@@ -110,25 +114,31 @@ class _PackageSheetState extends State<PackageSheet> {
     );
     Loader.show();
     if (isEdit) {
-      await _service.update(item: item, callBack: (status) {
-        Loader.dismiss();
-        if (status == ResponseStatus.success) {
-          Loader.showSuccess('package_success_updated'.tr);
-          Get.back();
-        } else {
-          Loader.showError('package_error_failed'.tr);
-        }
-      });
+      await _service.update(
+        item: item,
+        callBack: (status) {
+          Loader.dismiss();
+          if (status == ResponseStatus.success) {
+            Loader.showSuccess('package_success_updated'.tr);
+            Get.back();
+          } else {
+            Loader.showError('package_error_failed'.tr);
+          }
+        },
+      );
     } else {
-      await _service.add(item: item, callBack: (status) {
-        Loader.dismiss();
-        if (status == ResponseStatus.success) {
-          Loader.showSuccess('package_success_added'.tr);
-          Get.back();
-        } else {
-          Loader.showError('package_error_failed'.tr);
-        }
-      });
+      await _service.add(
+        item: item,
+        callBack: (status) {
+          Loader.dismiss();
+          if (status == ResponseStatus.success) {
+            Loader.showSuccess('package_success_added'.tr);
+            Get.back();
+          } else {
+            Loader.showError('package_error_failed'.tr);
+          }
+        },
+      );
     }
   }
 
@@ -143,13 +153,14 @@ class _PackageSheetState extends State<PackageSheet> {
   Future<void> _pickOfferDate(bool isStart, void Function() refresh) async {
     final now = DateTime.now();
     final initialMs = isStart ? _offerStart : _offerEnd;
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await showAppDatePicker(
+      context,
       initialDate: initialMs != null
           ? DateTime.fromMillisecondsSinceEpoch(initialMs)
           : now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 3),
+      minimumDate: DateTime(now.year - 1),
+      maximumDate: DateTime(now.year + 3),
+      showTodayButton: true,
     );
     if (picked == null) return;
     final ms = picked.millisecondsSinceEpoch;
@@ -232,9 +243,13 @@ class _PackageSheetState extends State<PackageSheet> {
                 ),
                 child: Row(
                   children: [
-                    Text('package_final_price'.tr,
-                        style: context.typography.xsRegular.copyWith(
-                            fontSize: 13, color: const Color(0xFF475569))),
+                    Text(
+                      'package_final_price'.tr,
+                      style: context.typography.xsRegular.copyWith(
+                        fontSize: 13,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
                     const Spacer(),
                     if (fin < price) ...[
                       Text(
@@ -250,7 +265,8 @@ class _PackageSheetState extends State<PackageSheet> {
                     Text(
                       '${fin.toStringAsFixed(0)} ${'currency'.tr}',
                       style: context.typography.displaySmBold.copyWith(
-                          color: const Color(0xFF10B981)),
+                        color: const Color(0xFF10B981),
+                      ),
                     ),
                   ],
                 ),
@@ -317,7 +333,8 @@ class _PackageSheetState extends State<PackageSheet> {
                     child: Text(
                       isEdit ? 'package_edit_title'.tr : 'package_add_title'.tr,
                       style: context.typography.mdBold.copyWith(
-                          color: const Color(0xFF1E293B)),
+                        color: const Color(0xFF1E293B),
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -329,8 +346,11 @@ class _PackageSheetState extends State<PackageSheet> {
                         color: Color(0xFFF1F5F9),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 18.sp, color: const Color(0xFF64748B)),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -388,13 +408,41 @@ class _PackageSheetState extends State<PackageSheet> {
                       StatefulBuilder(
                         builder: (ctx, setS) => Column(
                           children: [
-                            _DurationOption(label: 'package_duration_monthly'.tr, value: 'monthly', selected: _duration, onTap: (v) { setS(() => _duration = v); }),
+                            _DurationOption(
+                              label: 'package_duration_monthly'.tr,
+                              value: 'monthly',
+                              selected: _duration,
+                              onTap: (v) {
+                                setS(() => _duration = v);
+                              },
+                            ),
                             SizedBox(height: 8.h),
-                            _DurationOption(label: 'package_duration_term'.tr, value: 'term', selected: _duration, onTap: (v) { setS(() => _duration = v); }),
+                            _DurationOption(
+                              label: 'package_duration_term'.tr,
+                              value: 'term',
+                              selected: _duration,
+                              onTap: (v) {
+                                setS(() => _duration = v);
+                              },
+                            ),
                             SizedBox(height: 8.h),
-                            _DurationOption(label: 'package_duration_yearly'.tr, value: 'yearly', selected: _duration, onTap: (v) { setS(() => _duration = v); }),
+                            _DurationOption(
+                              label: 'package_duration_yearly'.tr,
+                              value: 'yearly',
+                              selected: _duration,
+                              onTap: (v) {
+                                setS(() => _duration = v);
+                              },
+                            ),
                             SizedBox(height: 8.h),
-                            _DurationOption(label: 'package_duration_oneTime'.tr, value: 'oneTime', selected: _duration, onTap: (v) { setS(() => _duration = v); }),
+                            _DurationOption(
+                              label: 'package_duration_oneTime'.tr,
+                              value: 'oneTime',
+                              selected: _duration,
+                              onTap: (v) {
+                                setS(() => _duration = v);
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -417,10 +465,17 @@ class _PackageSheetState extends State<PackageSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('package_save'.tr, style: context.typography.smSemiBold.copyWith(fontSize: 16)),
+                    child: Text(
+                      'package_save'.tr,
+                      style: context.typography.smSemiBold.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -463,10 +518,15 @@ class _BranchDropdown extends StatelessWidget {
         child: DropdownButton<BranchModel?>(
           value: selected,
           isExpanded: true,
-          style: context.typography.smRegular.copyWith(color: const Color(0xFF1E293B)),
+          style: context.typography.smRegular.copyWith(
+            color: const Color(0xFF1E293B),
+          ),
           hint: Text(
             'setup_select_branch'.tr,
-            style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+            style: context.typography.smRegular.copyWith(
+              color: const Color(0xFFCBD5E1),
+              fontSize: 14,
+            ),
           ),
           items: branches
               .map((b) => DropdownMenuItem(value: b, child: Text(b.name)))
@@ -483,17 +543,22 @@ class _ReadonlyBox extends StatelessWidget {
   const _ReadonlyBox(this.label);
   @override
   Widget build(BuildContext context) => Container(
-        height: 52.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        alignment: AlignmentDirectional.centerStart,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Text(label,
-            style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14)),
-      );
+    height: 52.h,
+    decoration: BoxDecoration(
+      color: const Color(0xFFF8FAFC),
+      borderRadius: BorderRadius.circular(12.r),
+      border: Border.all(color: const Color(0xFFE2E8F0)),
+    ),
+    alignment: AlignmentDirectional.centerStart,
+    padding: EdgeInsets.symmetric(horizontal: 16.w),
+    child: Text(
+      label,
+      style: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
+    ),
+  );
 }
 
 class _DurationOption extends StatelessWidget {
@@ -501,7 +566,12 @@ class _DurationOption extends StatelessWidget {
   final String value;
   final String selected;
   final void Function(String) onTap;
-  const _DurationOption({required this.label, required this.value, required this.selected, required this.onTap});
+  const _DurationOption({
+    required this.label,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -511,15 +581,39 @@ class _DurationOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981).withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+          color: isSelected
+              ? const Color(0xFF10B981).withValues(alpha: 0.08)
+              : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: isSelected ? const Color(0xFF10B981) : const Color(0xFFE2E8F0), width: isSelected ? 1.5 : 1),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF10B981)
+                : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1,
+          ),
         ),
         child: Row(
           children: [
-            Icon(isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked, size: 18.sp, color: isSelected ? const Color(0xFF10B981) : const Color(0xFF94A3B8)),
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              size: 18.sp,
+              color: isSelected
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF94A3B8),
+            ),
             SizedBox(width: 10.w),
-            Text(label, style: context.typography.smRegular.copyWith(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? const Color(0xFF10B981) : const Color(0xFF475569))),
+            Text(
+              label,
+              style: context.typography.smRegular.copyWith(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF475569),
+              ),
+            ),
           ],
         ),
       ),
@@ -531,7 +625,13 @@ class _Label extends StatelessWidget {
   final String text;
   const _Label(this.text);
   @override
-  Widget build(BuildContext context) => Text(text, style: context.typography.smMedium.copyWith(fontSize: 14, color: const Color(0xFF475569)));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
+  );
 }
 
 class _DiscountTypeChip extends StatelessWidget {
@@ -539,7 +639,12 @@ class _DiscountTypeChip extends StatelessWidget {
   final String value;
   final String selected;
   final void Function(String) onTap;
-  const _DiscountTypeChip({required this.label, required this.value, required this.selected, required this.onTap});
+  const _DiscountTypeChip({
+    required this.label,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -550,11 +655,27 @@ class _DiscountTypeChip extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12.h),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981).withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+          color: isSelected
+              ? const Color(0xFF10B981).withValues(alpha: 0.08)
+              : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: isSelected ? const Color(0xFF10B981) : const Color(0xFFE2E8F0), width: isSelected ? 1.5 : 1),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF10B981)
+                : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1,
+          ),
         ),
-        child: Text(label, style: context.typography.smRegular.copyWith(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal, color: isSelected ? const Color(0xFF10B981) : const Color(0xFF475569))),
+        child: Text(
+          label,
+          style: context.typography.smRegular.copyWith(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected
+                ? const Color(0xFF10B981)
+                : const Color(0xFF475569),
+          ),
+        ),
       ),
     );
   }
@@ -565,14 +686,25 @@ class _OfferDateBox extends StatelessWidget {
   final String value;
   final VoidCallback onTap;
   final VoidCallback? onClear;
-  const _OfferDateBox({required this.label, required this.value, required this.onTap, this.onClear});
+  const _OfferDateBox({
+    required this.label,
+    required this.value,
+    required this.onTap,
+    this.onClear,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: context.typography.xsRegular.copyWith(fontSize: 12, color: const Color(0xFF94A3B8))),
+        Text(
+          label,
+          style: context.typography.xsRegular.copyWith(
+            fontSize: 12,
+            color: const Color(0xFF94A3B8),
+          ),
+        ),
         SizedBox(height: 6.h),
         GestureDetector(
           onTap: onTap,
@@ -586,15 +718,31 @@ class _OfferDateBox extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.event_rounded, size: 16.sp, color: const Color(0xFF94A3B8)),
+                Icon(
+                  Icons.event_rounded,
+                  size: 16.sp,
+                  color: const Color(0xFF94A3B8),
+                ),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: context.typography.xsRegular.copyWith(fontSize: 13, color: const Color(0xFF1E293B))),
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typography.xsRegular.copyWith(
+                      fontSize: 13,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
                 ),
                 if (onClear != null)
                   GestureDetector(
                     onTap: onClear,
-                    child: Icon(Icons.close_rounded, size: 15.sp, color: const Color(0xFF94A3B8)),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 15.sp,
+                      color: const Color(0xFF94A3B8),
+                    ),
                   ),
               ],
             ),
@@ -613,25 +761,49 @@ class _Field extends StatelessWidget {
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onChanged;
-  const _Field({required this.controller, required this.hint, this.keyboardType = TextInputType.text, this.maxLines = 1, this.focusNode, this.textInputAction, this.onChanged});
+  const _Field({
+    required this.controller,
+    required this.hint,
+    this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
+    this.focusNode,
+    this.textInputAction,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     focusNode: focusNode,
     keyboardType: keyboardType,
     maxLines: maxLines,
     textInputAction: textInputAction,
     onChanged: onChanged,
-    style: context.typography.smRegular.copyWith(color: const Color(0xFF1E293B)),
+    style: context.typography.smRegular.copyWith(
+      color: const Color(0xFF1E293B),
+    ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
-      filled: true, fillColor: const Color(0xFFF8FAFC),
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+      ),
     ),
   );
 }

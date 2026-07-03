@@ -120,12 +120,15 @@ const String contactUsView = "/ContactUsView";
 const String aboutUsView = "/AboutUsView";
 const String supportRequestView = "/SupportRequestView";
 const String joinUsView = "/JoinUsView";
+const String appReviewView = "/AppReviewView";
 
 // Platform content management (Super Admin)
 const String platformContentView = "/PlatformContentView";
 const String contactInfoFormView = "/ContactInfoFormView";
 const String aboutUsFormView = "/AboutUsFormView";
 const String supportRequestsAdminView = "/SupportRequestsAdminView";
+const String appReviewsAdminView = "/AppReviewsAdminView";
+const String citiesView = "/CitiesView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
@@ -234,6 +237,13 @@ class Routes {
       GetPage(
         name: joinUsView,
         page: () => const JoinUsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+      GetPage(
+        name: appReviewView,
+        page: () => const AppReviewView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -653,6 +663,22 @@ class Routes {
       GetPage(
         name: supportRequestsAdminView,
         page: () => const SupportRequestsAdminView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: appReviewsAdminView,
+        page: () => const AppReviewsAdminView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: citiesView,
+        page: () => const CitiesView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

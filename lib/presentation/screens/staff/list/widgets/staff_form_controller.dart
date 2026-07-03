@@ -13,7 +13,6 @@ class StaffFormController extends GetxController {
 
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
-  final passwordCtrl = TextEditingController();
   final salaryCtrl = TextEditingController();
   final nationalIdCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
@@ -26,7 +25,9 @@ class StaffFormController extends GetxController {
   final RxString selectedShift = 'morning'.obs; // morning / evening / both
   final RxList<BranchModel> branches = <BranchModel>[].obs;
   final RxBool isEdit = false.obs;
-  final RxBool showPassword = false.obs;
+
+  // Resolves before the first branch fetch completes, so submit() can wait.
+  late Future<void> _branchesReady;
 
   @override
   void onInit() {
@@ -35,9 +36,16 @@ class StaffFormController extends GetxController {
     _branchService = Get.find<BranchParentService>();
     _permService = Get.find<PermissionParentService>();
     _session = Get.find<SessionService>();
-    _loadBranches();
+    _branchesReady = _loadBranches();
     _prefill();
   }
+
+  /// The branch to persist: the user's pick, or — when the nursery has a single
+  /// branch — that branch automatically, so the staff member is never orphaned.
+  String? get _resolvedBranchId =>
+      (selectedBranch.value ??
+              (branches.length == 1 ? branches.first : null))
+          ?.key;
 
   void _prefill() {
     if (initialStaff == null) return;
@@ -66,6 +74,9 @@ class StaffFormController extends GetxController {
           selectedBranch.value = branches.firstWhereOrNull(
             (b) => b.key == initialStaff!.branchId,
           );
+        } else if (branches.length == 1) {
+          // Only one branch — no point making the user pick it.
+          selectedBranch.value = branches.first;
         }
       },
     );
@@ -79,6 +90,9 @@ class StaffFormController extends GetxController {
       Loader.showError('staff_form_name_required'.tr);
       return;
     }
+    // Make sure branches are loaded so single-branch auto-assignment applies
+    // even if the user submits before the fetch finishes.
+    await _branchesReady;
     if (isEdit.value && initialStaff != null) {
       await _update(name);
     } else {
@@ -96,7 +110,7 @@ class StaffFormController extends GetxController {
         phone: phoneCtrl.text.trim().nullIfEmpty,
         template: selectedTemplate.value,
         role: selectedTemplate.value.toUserType(),
-        branchId: selectedBranch.value?.key,
+        branchId: _resolvedBranchId,
         shift: selectedShift.value,
         salary: double.tryParse(salaryCtrl.text.trim()),
         hireDate: selectedHireDate.value?.millisecondsSinceEpoch,
@@ -115,14 +129,15 @@ class StaffFormController extends GetxController {
 
   Future<void> _create(String name) async {
     final phone = phoneCtrl.text.trim();
-    final password = passwordCtrl.text;
 
     if (phone.isEmpty) {
       Loader.showError('staff_form_phone_required'.tr);
       return;
     }
-    if (password.length < 6) {
-      Loader.showError('staff_form_password_short'.tr);
+    // The phone number doubles as the staff member's password. Firebase Auth
+    // requires a minimum of 6 characters.
+    if (phone.length < 6) {
+      Loader.showError('staff_form_phone_short'.tr);
       return;
     }
 
@@ -132,7 +147,7 @@ class StaffFormController extends GetxController {
     final email = '$phone@gmail.com';
     String firebaseUid;
     try {
-      firebaseUid = await _createFirebaseAuth(email, password);
+      firebaseUid = await _createFirebaseAuth(email, phone);
     } catch (e) {
       Loader.showError(e.toString());
       return;
@@ -145,7 +160,7 @@ class StaffFormController extends GetxController {
       item: StaffModel(
         uid: firebaseUid,
         nurseryId: nurseryId,
-        branchId: selectedBranch.value?.key,
+        branchId: _resolvedBranchId,
         shift: selectedShift.value,
         name: name,
         phone: phone.nullIfEmpty,
@@ -242,7 +257,6 @@ class StaffFormController extends GetxController {
   void onClose() {
     nameCtrl.dispose();
     phoneCtrl.dispose();
-    passwordCtrl.dispose();
     salaryCtrl.dispose();
     nationalIdCtrl.dispose();
     addressCtrl.dispose();

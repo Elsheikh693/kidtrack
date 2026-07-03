@@ -41,6 +41,21 @@ void main() {
 
     NotificationService().initCore();
 
+    // Re-attach the FCM token for a session restored from storage (app opened
+    // while already logged in). The token may have rotated while the app was
+    // closed, and the onTokenRefresh listener only lives for the current
+    // process — so re-persist it and re-arm the listener on every cold start.
+    // Guests have no server identity to write under, so skip them.
+    final session = SessionService();
+    final restoredUid = session.userId;
+    if (session.isLoggedIn && !session.isGuest && restoredUid != null) {
+      unawaited(FcmTokenService().attach(
+        uid: restoredUid,
+        isStaff: session.hasStaffRecord,
+        nurseryId: session.nurseryId,
+      ));
+    }
+
     // NOTE: we deliberately do NOT call FlutterNativeSplash.preserve()/remove().
     // preserve() calls RendererBinding.deferFirstFrame(), which holds Flutter's
     // first useful frame deferred. While deferred, every frame produced by a

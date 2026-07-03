@@ -84,6 +84,11 @@ class ApiConstants {
 
   static String get expenses => '$_n/expenses';
 
+  // ─── Finance (new revenue-log module) ─────────────────────────────────────
+  static String get feeCategories => '$_n/feeCategories';
+
+  static String get financialTransactions => '$_n/financialTransactions';
+
   static String get classroomActivities => '$_n/classroomActivities';
 
   static String get feed => '$_n/feed';
@@ -162,6 +167,14 @@ class ApiConstants {
   static const String contactInfo = 'contactInfo';
   static const String aboutUs = 'aboutUs';
   static const String supportRequests = 'supportRequests';
+
+  /// User ratings of the KidTrack app itself ("قولنا كلمة حلوة"), submitted
+  /// pre-login. NOT nursery-scoped (distinct from per-nursery `feedback`).
+  static const String appReviews = 'appReviews';
+
+  /// Platform-wide list of cities (SuperAdmin managed, read pre-login for the
+  /// Discovery city filter). NOT nursery-scoped.
+  static const String cities = 'cities';
 
   // ─── Platform billing (SuperAdmin → nursery subscription) ──────────────────
   /// Global root. Monthly subscription bills the platform charges each nursery,

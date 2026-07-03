@@ -45,13 +45,12 @@ class NurseryProfileController extends GetxController {
   }
 
   /// The branches to render, joined to their own packages by branch id — the
-  /// reliable key that every package references. Catalog branches are the
-  /// source of truth; we enrich each with the WhatsApp number from the matching
-  /// embedded profile branch (catalog branches don't store WhatsApp).
+  /// reliable key that every package references. Canonical catalog branches are
+  /// the single source of truth and now carry their own WhatsApp number. Falls
+  /// back to any legacy embedded profile branches only when no catalog data
+  /// exists.
   List<BranchView> get branchViews {
     if (catalogBranches.isEmpty) {
-      // No catalog data — fall back to embedded profile branches (no packages
-      // exist without the catalog anyway).
       return nursery.branches
           .map((b) => BranchView(
                 name: b.name,
@@ -65,27 +64,16 @@ class NurseryProfileController extends GetxController {
           .toList();
     }
     return catalogBranches.map((b) {
-      final whatsapp = _whatsappForBranchName(b.name);
       return BranchView(
         name: b.name,
         address: b.address,
         phone: b.phone,
-        whatsapp: whatsapp,
+        whatsapp: b.whatsapp,
         lat: b.lat,
         lng: b.lng,
         packages: packages.where((p) => p.branchId == b.key).toList(),
       );
     }).toList();
-  }
-
-  /// WhatsApp number for a catalog branch, looked up from the embedded profile
-  /// branch with the same name (only the embedded branch carries WhatsApp).
-  String? _whatsappForBranchName(String name) {
-    final target = name.trim();
-    for (final b in nursery.branches) {
-      if (b.name.trim() == target) return b.whatsapp;
-    }
-    return null;
   }
 
   bool get hasBranchViews => branchViews.isNotEmpty;
@@ -114,7 +102,7 @@ class NurseryProfileController extends GetxController {
   bool get hasWhatsapp =>
       (nursery.whatsapp ?? '').trim().isNotEmpty || hasPhone;
 
-  bool get hasBranches => nursery.branches.isNotEmpty;
+  bool get hasBranches => hasBranchViews;
 
   void call() {
     final phone = nursery.phone?.trim() ?? '';

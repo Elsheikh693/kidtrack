@@ -391,6 +391,12 @@ const _receptionistItems = [
     color: Color(0xFF2563EB),
   ),
   _NavItemData(
+    activeIcon: Icons.school_rounded,
+    inactiveIcon: Icons.school_outlined,
+    labelKey: 'reception_tab_courses',
+    color: Color(0xFF7C3AED),
+  ),
+  _NavItemData(
     activeIcon: Icons.celebration_rounded,
     inactiveIcon: Icons.celebration_outlined,
     labelKey: 'reception_tab_events',

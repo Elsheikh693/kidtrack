@@ -42,6 +42,70 @@ async function parentsOfChild(nurseryId, childId) {
   return [...ids];
 }
 
+// All parents of ACTIVE children in a branch (father + mother via
+// parentChildren, plus the child record's own parentId). Pass a falsy branchId
+// to broadcast to the whole nursery. Only two reads per nursery regardless of
+// how many children — safe for nursery-wide announcements (events / courses).
+async function parentsOfBranch(nurseryId, branchId) {
+  const parents = new Set();
+  const allowedChildIds = new Set();
+
+  try {
+    const childrenSnap = await db()
+      .ref(`platform/${nurseryId}/children`)
+      .once("value");
+
+    childrenSnap.forEach((c) => {
+      const v = c.val() || {};
+      if ((v.status || "active") !== "active") return;
+      if (branchId && v.branchId !== branchId) return;
+      allowedChildIds.add(c.key);
+      if (v.parentId) parents.add(v.parentId);
+    });
+  } catch (e) {
+    console.error(`❌ parentsOfBranch children error:`, e.message);
+  }
+
+  try {
+    const pcSnap = await db()
+      .ref(`platform/${nurseryId}/parentChildren`)
+      .once("value");
+
+    pcSnap.forEach((l) => {
+      const v = l.val() || {};
+      if (v.childId && allowedChildIds.has(v.childId) && v.parentId) {
+        parents.add(v.parentId);
+      }
+    });
+  } catch (e) {
+    console.error(`❌ parentsOfBranch parentChildren error:`, e.message);
+  }
+
+  return [...parents];
+}
+
+// All active branch managers for a branch (falsy branchId → all managers in the
+// nursery). Reads platform/{nid}/staff and filters by role.
+async function branchManagers(nurseryId, branchId) {
+  const uids = [];
+  try {
+    const snap = await db()
+      .ref(`platform/${nurseryId}/staff`)
+      .once("value");
+
+    snap.forEach((s) => {
+      const v = s.val() || {};
+      if (v.role !== "branchManager") return;
+      if (v.isActive === false) return;
+      if (branchId && v.branchId && v.branchId !== branchId) return;
+      uids.push(v.uid || s.key);
+    });
+  } catch (e) {
+    console.error(`❌ branchManagers error:`, e.message);
+  }
+  return uids;
+}
+
 // Child's first name for personalised copy — "طفلك" fallback.
 async function childFirstName(nurseryId, childId) {
   try {
@@ -56,4 +120,26 @@ async function childFirstName(nurseryId, childId) {
   }
 }
 
-module.exports = { parentsOfChild, childFirstName };
+// The parent's FIRST name so copy can address them directly ("أحمد 👋").
+// Reads the global users/{uid}/name. Returns "" when unknown so callers can
+// fall back to a nameless greeting.
+async function parentFirstName(uid) {
+  if (!uid) return "";
+  try {
+    const snap = await db().ref(`users/${uid}/name`).once("value");
+    const full = snap.val();
+    if (!full || !String(full).trim()) return "";
+    return String(full).trim().split(/\s+/)[0];
+  } catch (e) {
+    console.error(`❌ parentFirstName error:`, e.message);
+    return "";
+  }
+}
+
+module.exports = {
+  parentsOfChild,
+  parentsOfBranch,
+  branchManagers,
+  childFirstName,
+  parentFirstName,
+};

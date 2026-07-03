@@ -4,6 +4,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onFilterTap;
+  final VoidCallback? onSettingsTap;
   final bool? showNotificationDot;
   final bool showFilterIcon;
 
@@ -12,6 +13,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.onNotificationTap,
     this.onFilterTap,
+    this.onSettingsTap,
     this.showNotificationDot,
     this.showFilterIcon = true,
   });
@@ -54,6 +56,18 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               IconsConstants.filter,
               height: 27.h,
               width: 27.w,
+            ),
+          ),
+        ],
+        if (onSettingsTap != null) ...[
+          SizedBox(width: 14.w),
+          InkWell(
+            borderRadius: BorderRadius.circular(50),
+            onTap: onSettingsTap,
+            child: Icon(
+              Icons.settings_outlined,
+              size: 24.sp,
+              color: const Color(0xFF374151),
             ),
           ),
         ],

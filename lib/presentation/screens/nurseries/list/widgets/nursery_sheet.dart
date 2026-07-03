@@ -47,13 +47,25 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
     if (!isEdit) {
       final ownerName = ownerNameCtrl.text.trim();
       final ownerPhone = ownerPhoneCtrl.text.trim();
-      if (ownerName.isEmpty) { Loader.showError('nursery_error_owner_name'.tr); return; }
-      if (ownerPhone.isEmpty) { Loader.showError('nursery_error_owner_phone'.tr); return; }
-      if (!_phoneRx.hasMatch(ownerPhone)) { Loader.showError('nursery_error_phone_invalid'.tr); return; }
+      if (ownerName.isEmpty) {
+        Loader.showError('nursery_error_owner_name'.tr);
+        return;
+      }
+      if (ownerPhone.isEmpty) {
+        Loader.showError('nursery_error_owner_phone'.tr);
+        return;
+      }
+      if (!_phoneRx.hasMatch(ownerPhone)) {
+        Loader.showError('nursery_error_phone_invalid'.tr);
+        return;
+      }
       await _createWithOwner(ownerName, ownerName, ownerPhone, ownerPhone);
     } else {
       final name = nameCtrl.text.trim();
-      if (name.isEmpty) { Loader.showError('nursery_error_name'.tr); return; }
+      if (name.isEmpty) {
+        Loader.showError('nursery_error_name'.tr);
+        return;
+      }
       await _updateNursery(name);
     }
   }
@@ -96,7 +108,9 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
         key: nurseryId,
         name: name,
         phone: phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
-        address: addressCtrl.text.trim().isEmpty ? null : addressCtrl.text.trim(),
+        address: addressCtrl.text.trim().isEmpty
+            ? null
+            : addressCtrl.text.trim(),
         ownerId: ownerUid,
         isActive: true,
       );
@@ -204,7 +218,9 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6366F1),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
@@ -242,7 +258,10 @@ class _SheetLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: context.typography.smMedium.copyWith(fontSize: 14, color: const Color(0xFF475569)),
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
   );
 }
 
@@ -261,13 +280,19 @@ class _SheetField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     keyboardType: keyboardType,
     maxLines: maxLines,
-    style: context.typography.smRegular.copyWith(color: const Color(0xFF1E293B)),
+    style: context.typography.smRegular.copyWith(
+      color: const Color(0xFF1E293B),
+    ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),

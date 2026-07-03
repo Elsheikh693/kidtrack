@@ -1,5 +1,4 @@
 import '../../../../../index/index_main.dart';
-import 'profile_packages.dart';
 
 /// Vertical list of nursery branches. Each branch is a compact list-item card:
 /// an avatar, the name + address, and small trailing action buttons
@@ -140,10 +139,6 @@ class _BranchCard extends StatelessWidget {
               ],
             ],
           ),
-          if (branch.packages.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            BranchPackageList(packages: branch.packages),
-          ],
         ],
       ),
     );

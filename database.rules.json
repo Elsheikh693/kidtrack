@@ -182,6 +182,10 @@
           }
         },
 
+        "programs": {
+          ".indexOn": ["isActive", "branchId"]
+        },
+
         "subjects": {
           ".indexOn": ["isActive"]
         },

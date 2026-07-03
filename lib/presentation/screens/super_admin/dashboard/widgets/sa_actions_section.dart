@@ -43,6 +43,14 @@ class SaActionsSection extends StatelessWidget {
             subtitle: 'sa_content_subtitle'.tr,
             onTap: controller.goPlatformContent,
           ),
+          SizedBox(height: 12.h),
+          SaActionCard(
+            icon: Icons.location_city_rounded,
+            color: const Color(0xFFEA580C),
+            title: 'sa_cities_title'.tr,
+            subtitle: 'sa_cities_subtitle'.tr,
+            onTap: controller.goCities,
+          ),
         ],
       ),
     );

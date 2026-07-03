@@ -11,19 +11,15 @@ class ClassroomSheet extends StatefulWidget {
 class _ClassroomSheetState extends State<ClassroomSheet> {
   late final ClassroomParentService _service;
   late final BranchParentService _branchService;
-  late final StaffParentService _staffService;
   late final ProgramParentService _programService;
 
   final nameCtrl = TextEditingController();
   final capacityCtrl = TextEditingController();
 
   List<BranchModel> branches = [];
-  List<StaffModel> teachers = [];
   List<ProgramModel> programs = [];
   final Set<String> selectedBranchIds = {}; // empty = all branches
-  StaffModel? selectedTeacher;
-  ProgramModel? selectedProgram;
-  String selectedShift = 'morning'; // morning / evening / both
+  final Set<String> selectedProgramIds = {}; // empty = any program
   bool isLoadingLookups = true;
 
   late final HandleKeyboardService _keyboardService;
@@ -36,15 +32,14 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
     super.initState();
     _service = Get.find<ClassroomParentService>();
     _branchService = Get.find<BranchParentService>();
-    _staffService = Get.find<StaffParentService>();
     _programService = Get.find<ProgramParentService>();
     _keyboardService = HandleKeyboardService();
     _keys = _keyboardService.generateKeys('classroom_sheet', 2);
     if (isEdit) {
       nameCtrl.text = widget.initial!.name;
       capacityCtrl.text = widget.initial!.capacity?.toString() ?? '';
-      selectedShift = widget.initial!.shift ?? 'morning';
       selectedBranchIds.addAll(widget.initial!.branchIds);
+      selectedProgramIds.addAll(widget.initial!.programIds);
     }
     _loadLookups();
   }
@@ -55,23 +50,12 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
         branches = list.whereType<BranchModel>().toList();
       },
     );
-    await _staffService.getAll(
-      callBack: (list) {
-        teachers = list.whereType<StaffModel>().toList();
-        if (isEdit && widget.initial!.teacherId != null) {
-          selectedTeacher = teachers.firstWhereOrNull((s) => s.key == widget.initial!.teacherId);
-        }
-      },
-    );
     await _programService.getAll(
       callBack: (list) {
         programs = list
             .whereType<ProgramModel>()
             .where((p) => p.isActive)
             .toList();
-        if (isEdit && widget.initial!.programId != null) {
-          selectedProgram = programs.firstWhereOrNull((p) => p.key == widget.initial!.programId);
-        }
       },
     );
     if (mounted) setState(() => isLoadingLookups = false);
@@ -91,15 +75,15 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
       return;
     }
     final nurseryId = SessionService().nurseryId ?? '';
-    final id = isEdit ? (widget.initial!.key ?? const Uuid().v4()) : const Uuid().v4();
+    final id = isEdit
+        ? (widget.initial!.key ?? const Uuid().v4())
+        : const Uuid().v4();
     final classroom = ClassroomModel(
       key: id,
       nurseryId: nurseryId,
       branchIds: selectedBranchIds.toList(),
-      programId: selectedProgram?.key,
+      programIds: selectedProgramIds.toList(),
       name: name,
-      shift: selectedShift,
-      teacherId: selectedTeacher?.key,
       capacity: int.tryParse(capacityCtrl.text.trim()),
       isActive: widget.initial?.isActive ?? true,
     );
@@ -158,10 +142,13 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      isEdit ? 'classroom_edit_title'.tr : 'classroom_add_title'.tr,
+                      isEdit
+                          ? 'classroom_edit_title'.tr
+                          : 'classroom_add_title'.tr,
                       style: context.typography.mdBold.copyWith(
-                          fontSize: 17,
-                          color: const Color(0xFF1E293B)),
+                        fontSize: 17,
+                        color: const Color(0xFF1E293B),
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -173,8 +160,11 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                         color: Color(0xFFF1F5F9),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          size: 18.sp, color: const Color(0xFF64748B)),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                   ),
                   SizedBox(width: 8.w),
@@ -205,7 +195,8 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                       Text(
                         'classroom_branches_hint'.tr,
                         style: context.typography.smRegular.copyWith(
-                          fontSize: 12, color: const Color(0xFF94A3B8),
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -224,33 +215,27 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                       ),
                       SizedBox(height: 16.h),
                       _FieldLabel('classroom_program_label'.tr),
-                      SizedBox(height: 6.h),
-                      if (isLoadingLookups)
-                        _DisabledDropdown('classroom_program_none'.tr)
-                      else
-                        _ProgramDropdown(
-                          programs: programs,
-                          selected: selectedProgram,
-                          onChanged: (p) => setState(() => selectedProgram = p),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'classroom_program_hint'.tr,
+                        style: context.typography.smRegular.copyWith(
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
                         ),
-                      SizedBox(height: 16.h),
-                      _FieldLabel('classroom_form_shift_label'.tr),
-                      SizedBox(height: 6.h),
-                      _ShiftDropdown(
-                        selected: selectedShift,
-                        onChanged: (s) => setState(() => selectedShift = s),
                       ),
-                      SizedBox(height: 16.h),
-                      _FieldLabel('classroom_teacher_label'.tr),
-                      SizedBox(height: 6.h),
-                      if (isLoadingLookups)
-                        _DisabledDropdown('classroom_teacher_none'.tr)
-                      else
-                        _TeacherDropdown(
-                          teachers: teachers,
-                          selected: selectedTeacher,
-                          onChanged: (t) => setState(() => selectedTeacher = t),
-                        ),
+                      SizedBox(height: 8.h),
+                      _ProgramMultiSelect(
+                        loading: isLoadingLookups,
+                        programs: programs,
+                        selectedIds: selectedProgramIds,
+                        onToggle: (id) => setState(() {
+                          if (selectedProgramIds.contains(id)) {
+                            selectedProgramIds.remove(id);
+                          } else {
+                            selectedProgramIds.add(id);
+                          }
+                        }),
+                      ),
                       SizedBox(height: 16.h),
                       _FieldLabel('classroom_capacity_label'.tr),
                       SizedBox(height: 6.h),
@@ -277,10 +262,17 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('classroom_save'.tr, style: context.typography.smSemiBold.copyWith(fontSize: 16)),
+                    child: Text(
+                      'classroom_save'.tr,
+                      style: context.typography.smSemiBold.copyWith(
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -317,7 +309,8 @@ class _BranchMultiSelect extends StatelessWidget {
         child: Align(
           alignment: AlignmentDirectional.centerStart,
           child: SizedBox(
-            width: 20.w, height: 20.h,
+            width: 20.w,
+            height: 20.h,
             child: const CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
@@ -333,11 +326,13 @@ class _BranchMultiSelect extends StatelessWidget {
           selected: allSelected,
           onTap: onAllTap,
         ),
-        ...branches.map((b) => _BranchChip(
-              label: b.name,
-              selected: selectedIds.contains(b.key),
-              onTap: () => onToggle(b.key ?? ''),
-            )),
+        ...branches.map(
+          (b) => _BranchChip(
+            label: b.name,
+            selected: selectedIds.contains(b.key),
+            onTap: () => onToggle(b.key ?? ''),
+          ),
+        ),
       ],
     );
   }
@@ -347,172 +342,111 @@ class _BranchChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _BranchChip({required this.label, required this.selected, required this.onTap});
+  const _BranchChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primary.withValues(alpha: 0.1) : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: selected ? AppColors.primary : const Color(0xFFE2E8F0),
-              width: selected ? 1.5 : 1,
+    onTap: onTap,
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: selected
+            ? AppColors.primary.withValues(alpha: 0.1)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: selected ? AppColors.primary : const Color(0xFFE2E8F0),
+          width: selected ? 1.5 : 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+            size: 16.sp,
+            color: selected ? AppColors.primary : const Color(0xFF94A3B8),
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            label,
+            style: context.typography.smMedium.copyWith(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: selected ? AppColors.primary : const Color(0xFF475569),
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                selected ? Icons.check_circle_rounded : Icons.circle_outlined,
-                size: 16.sp,
-                color: selected ? AppColors.primary : const Color(0xFF94A3B8),
-              ),
-              SizedBox(width: 6.w),
-              Text(
-                label,
-                style: context.typography.smMedium.copyWith(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color: selected ? AppColors.primary : const Color(0xFF475569),
-                ),
-              ),
-            ],
+        ],
+      ),
+    ),
+  );
+}
+
+// ── Program multi-select (empty selection = any program) ──────────────────────
+
+class _ProgramMultiSelect extends StatelessWidget {
+  final bool loading;
+  final List<ProgramModel> programs;
+  final Set<String> selectedIds;
+  final void Function(String) onToggle;
+
+  const _ProgramMultiSelect({
+    required this.loading,
+    required this.programs,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return SizedBox(
+        height: 40.h,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: SizedBox(
+            width: 20.w,
+            height: 20.h,
+            child: const CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
       );
-}
-
-class _TeacherDropdown extends StatelessWidget {
-  final List<StaffModel> teachers;
-  final StaffModel? selected;
-  final ValueChanged<StaffModel?> onChanged;
-  const _TeacherDropdown({
-    required this.teachers,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) => _DropdownContainer(
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<StaffModel?>(
-        value: selected,
-        isExpanded: true,
-        hint: Text('classroom_teacher_none'.tr,
-            style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14)),
-        style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
-        items: [
-          DropdownMenuItem<StaffModel?>(
-            value: null,
-            child: Text('classroom_teacher_none'.tr),
+    }
+    if (programs.isEmpty) {
+      return Container(
+        height: 52.h,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        alignment: AlignmentDirectional.centerStart,
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Text(
+          'classroom_program_empty'.tr,
+          style: context.typography.smRegular.copyWith(
+            color: const Color(0xFFCBD5E1),
+            fontSize: 14,
           ),
-          ...teachers.map((t) => DropdownMenuItem(
-            value: t,
-            child: Text(t.name),
-          )),
-        ],
-        onChanged: onChanged,
-      ),
-    ),
-  );
-}
-
-class _ProgramDropdown extends StatelessWidget {
-  final List<ProgramModel> programs;
-  final ProgramModel? selected;
-  final ValueChanged<ProgramModel?> onChanged;
-  const _ProgramDropdown({
-    required this.programs,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) => _DropdownContainer(
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<ProgramModel?>(
-        value: selected,
-        isExpanded: true,
-        hint: Text('classroom_program_none'.tr,
-            style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14)),
-        style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
-        items: [
-          DropdownMenuItem<ProgramModel?>(
-            value: null,
-            child: Text('classroom_program_none'.tr),
-          ),
-          ...programs.map((p) => DropdownMenuItem(
-            value: p,
-            child: Text(p.name),
-          )),
-        ],
-        onChanged: onChanged,
-      ),
-    ),
-  );
-}
-
-class _ShiftDropdown extends StatelessWidget {
-  final String selected;
-  final ValueChanged<String> onChanged;
-  const _ShiftDropdown({required this.selected, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) => _DropdownContainer(
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: selected,
-        isExpanded: true,
-        style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
-        items: const ['morning', 'evening', 'both']
-            .map((s) => DropdownMenuItem(
-                  value: s,
-                  child: Text('shift_$s'.tr),
-                ))
-            .toList(),
-        onChanged: (s) {
-          if (s != null) onChanged(s);
-        },
-      ),
-    ),
-  );
-}
-
-class _DropdownContainer extends StatelessWidget {
-  final Widget child;
-  const _DropdownContainer({required this.child});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8FAFC),
-      borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    padding: EdgeInsets.symmetric(horizontal: 16.w),
-    child: child,
-  );
-}
-
-class _DisabledDropdown extends StatelessWidget {
-  final String label;
-  const _DisabledDropdown(this.label);
-
-  @override
-  Widget build(BuildContext context) => Container(
-    height: 52.h,
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8FAFC),
-      borderRadius: BorderRadius.circular(12.r),
-      border: Border.all(color: const Color(0xFFE2E8F0)),
-    ),
-    alignment: AlignmentDirectional.centerStart,
-    padding: EdgeInsets.symmetric(horizontal: 16.w),
-    child: Text(label, style: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14)),
-  );
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: programs
+          .map((p) => _BranchChip(
+                label: p.name,
+                selected: selectedIds.contains(p.key),
+                onTap: () => onToggle(p.key ?? ''),
+              ))
+          .toList(),
+    );
+  }
 }
 
 // ── Shared helpers (duplicated per file as per CLAUDE.md) ────────────────────
@@ -523,7 +457,10 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     text,
-    style: context.typography.smMedium.copyWith(fontSize: 14, color: const Color(0xFF475569)),
+    style: context.typography.smMedium.copyWith(
+      fontSize: 14,
+      color: const Color(0xFF475569),
+    ),
   );
 }
 
@@ -543,14 +480,21 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
+    inputFormatters: const [EnglishDigitsFormatter()],
     controller: controller,
     focusNode: focusNode,
     keyboardType: keyboardType,
     textInputAction: textInputAction,
-    style: context.typography.smRegular.copyWith(fontSize: 15, color: const Color(0xFF1E293B)),
+    style: context.typography.smRegular.copyWith(
+      fontSize: 15,
+      color: const Color(0xFF1E293B),
+    ),
     decoration: InputDecoration(
       hintText: hint,
-      hintStyle: context.typography.smRegular.copyWith(color: const Color(0xFFCBD5E1), fontSize: 14),
+      hintStyle: context.typography.smRegular.copyWith(
+        color: const Color(0xFFCBD5E1),
+        fontSize: 14,
+      ),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),

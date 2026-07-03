@@ -26,6 +26,11 @@ class ParentFeedController extends GetxController {
   StreamSubscription<List<NurseryPostModel>>? _pinnedSub;
   late final ScrollController scrollController;
 
+  // Posts already reported as seen this session — avoids re-writing on every
+  // pagination/stream tick. "Seen" = the parent opened the feed with the post
+  // in it (feeds the manager's per-post seen count).
+  final Set<String> _seenMarked = <String>{};
+
   // ── Computed ──────────────────────────────────────────────────────────────
 
   // A post is visible if it targets everyone (null classroomId) or this
@@ -86,9 +91,23 @@ class ParentFeedController extends GetxController {
 
   void _watchPinned() {
     _pinnedSub = _service.watchPinnedFeed().listen(
-      (list) => _pinnedPosts.value = list,
+      (list) {
+        _pinnedPosts.value = list;
+        _markSeen(list);
+      },
       onError: (_) {},
     );
+  }
+
+  // Report each post the parent can actually see (audience + branch) exactly
+  // once per session. Fire-and-forget writes inside the service.
+  void _markSeen(Iterable<NurseryPostModel> posts) {
+    for (final p in posts) {
+      if (_seenMarked.contains(p.id)) continue;
+      if (!_matchesAudience(p) || !_matchesBranch(p)) continue;
+      _seenMarked.add(p.id);
+      _service.markPostSeen(p.id);
+    }
   }
 
   Future<void> _loadFirst() async {
@@ -108,7 +127,10 @@ class ParentFeedController extends GetxController {
         beforeTimestamp: _cursor,
         pageSize: _pageSize,
       );
-      if (result.posts.isNotEmpty) _regularPosts.addAll(result.posts);
+      if (result.posts.isNotEmpty) {
+        _regularPosts.addAll(result.posts);
+        _markSeen(result.posts);
+      }
       if (result.cursor != null) _cursor = result.cursor;
       hasMore.value = result.hasMore;
     } finally {

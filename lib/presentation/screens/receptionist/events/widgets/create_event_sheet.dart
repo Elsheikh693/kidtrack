@@ -26,6 +26,7 @@ class _CreateEventSheetState extends State<CreateEventSheet>
   late final FocusNode _titleFocus;
   late final FocusNode _descFocus;
   late final FocusNode _locationFocus;
+  late final FocusNode _priceFocus;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _CreateEventSheetState extends State<CreateEventSheet>
     _titleFocus = kbNode();
     _descFocus = kbNode();
     _locationFocus = kbNode();
+    _priceFocus = kbNode();
   }
 
   @override
@@ -147,6 +149,20 @@ class _CreateEventSheetState extends State<CreateEventSheet>
                         focusNode: _locationFocus,
                         hint: 'event_field_location_hint'.tr,
                         icon: Icons.location_on_rounded,
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) =>
+                            FocusScope.of(context).requestFocus(_priceFocus),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      _label('event_field_price'.tr),
+                      _Field(
+                        controller: _ctrl.priceCtrl,
+                        focusNode: _priceFocus,
+                        hint: 'event_field_price_hint'.tr,
+                        icon: Icons.payments_rounded,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => FocusScope.of(context).unfocus(),
                       ),
@@ -368,6 +384,7 @@ class _Field extends StatelessWidget {
     this.maxLines = 1,
     this.textInputAction,
     this.onSubmitted,
+    this.keyboardType,
   });
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -376,6 +393,7 @@ class _Field extends StatelessWidget {
   final int maxLines;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -383,6 +401,7 @@ class _Field extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
       style: const TextStyle(

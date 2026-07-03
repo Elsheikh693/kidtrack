@@ -20,6 +20,20 @@ Future<void> showLogoutConfirm() async {
 Future<void> performLogout() async {
   Loader.show();
   try {
+    // Remove this device's FCM token BEFORE we lose the identity, so the
+    // signed-out device stops receiving this user's pushes (and the next user
+    // on this device starts clean).
+    try {
+      final session = SessionService();
+      await FcmTokenService().detach(
+        uid: session.userId,
+        isStaff: session.hasStaffRecord,
+        nurseryId: session.nurseryId,
+      );
+    } catch (_) {
+      // Best-effort — never block logout on token cleanup.
+    }
+
     try {
       await FirebaseAuth.instance.signOut();
     } catch (_) {

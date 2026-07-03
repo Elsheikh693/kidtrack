@@ -8,18 +8,13 @@ class OwnerSetupController extends GetxController {
   final branches = <BranchModel>[].obs;
   final managers = <StaffModel>[].obs;
 
-  late BranchParentService _branchService;
-  late StaffParentService _staffService;
-  late PermissionParentService _permService;
+  final BranchManagementService _mgmt = BranchManagementService();
   late SessionService _session;
 
   @override
   void onInit() {
     super.onInit();
-    _branchService  = Get.find<BranchParentService>();
-    _staffService   = Get.find<StaffParentService>();
-    _permService    = Get.find<PermissionParentService>();
-    _session        = Get.find<SessionService>();
+    _session = Get.find<SessionService>();
     _loadBranches();
     _loadManagers();
   }
@@ -27,23 +22,16 @@ class OwnerSetupController extends GetxController {
   // ── Load ──────────────────────────────────────────────────────────────────
 
   Future<void> _loadBranches() async {
-    await _branchService.getAll(callBack: (list) {
-      branches.value = list.whereType<BranchModel>().toList();
-    });
+    branches.value = await _mgmt.getBranches();
   }
 
   Future<void> _loadManagers() async {
-    await _staffService.getAll(callBack: (list) {
-      managers.value = list
-          .whereType<StaffModel>()
-          .where((s) => s.role == UserType.branchManager)
-          .toList();
-    });
+    managers.value = await _mgmt.getManagers();
   }
 
   /// Manager assigned to a given branch (one manager per branch in setup).
   StaffModel? managerForBranch(String? branchId) =>
-      managers.firstWhereOrNull((m) => m.branchId == branchId);
+      _mgmt.managerForBranch(managers, branchId);
 
   // ── Add branch + its manager together ──────────────────────────────────────
 
@@ -53,103 +41,29 @@ class OwnerSetupController extends GetxController {
     required String phone,
   }) async {
     Loader.show();
-    final nurseryId = _session.nurseryId ?? '';
-    final makeMain = branches.isEmpty;
-    final branchId = const Uuid().v4();
-    final email = '$phone@gmail.com';
-
-    // 1) Create the manager auth account first (password = phone).
-    String uid;
-    try {
-      uid = await _createFirebaseAuth(email, phone);
-    } catch (_) {
-      Loader.showError('setup_owner_manager_error'.tr);
-      return;
-    }
-
-    // 2) Create the branch.
-    if (makeMain) await _clearMainFlag();
-    bool branchOk = false;
-    await _branchService.add(
-      item: BranchModel(
-        key: branchId,
-        nurseryId: nurseryId,
-        name: branchName,
-        isMain: makeMain,
-      ),
-      callBack: (status) => branchOk = status == ResponseStatus.success,
+    final branchId = await _mgmt.addBranchWithManager(
+      branchName: branchName,
+      managerName: managerName,
+      phone: phone,
+      makeMain: branches.isEmpty,
     );
-    if (!branchOk) {
+    if (branchId == null) {
       Loader.showError('setup_owner_branch_error'.tr);
       return;
     }
-
-    // 3) Create the manager staff record + user node + permissions.
-    await _staffService.add(
-      item: StaffModel(
-        uid: uid,
-        nurseryId: nurseryId,
-        branchId: branchId,
-        name: managerName,
-        phone: phone.nullIfEmpty,
-        role: UserType.branchManager,
-        template: StaffTemplate.branchManager,
-      ),
-      callBack: (status) async {
-        if (status != ResponseStatus.success) {
-          Loader.showError('setup_owner_manager_error'.tr);
-          return;
-        }
-        await FirebaseDatabase.instance.ref('users/$uid').set({
-          'uid': uid,
-          'name': managerName,
-          'phone': phone,
-          'nurseryId': nurseryId,
-          'branchId': branchId,
-          'userType': UserType.branchManager.name,
-          'createdAt': DateTime.now().millisecondsSinceEpoch,
-        });
-        await _permService.add(
-          item: PermissionSetModel(
-            employeeId: uid,
-            permissions:
-                PermissionTemplates.forTemplate(StaffTemplate.branchManager),
-          ),
-          callBack: (_) {
-            _loadBranches();
-            _loadManagers();
-            Loader.showSuccess('setup_owner_branch_added'.tr);
-          },
-        );
-      },
-    );
+    await _loadBranches();
+    await _loadManagers();
+    Loader.showSuccess('setup_owner_branch_added'.tr);
   }
 
   Future<void> setMainBranch(String branchId) async {
-    final target = branches.firstWhereOrNull((b) => b.key == branchId);
-    if (target == null || target.isMain) return;
     Loader.show();
-    await _clearMainFlag();
-    await _branchService.update(
-      item: target.copyWith(isMain: true),
-      callBack: (status) {
-        Loader.dismiss();
-        if (status == ResponseStatus.success) {
-          _loadBranches();
-        } else {
-          Loader.showError('common_error'.tr);
-        }
-      },
-    );
-  }
-
-  Future<void> _clearMainFlag() async {
-    final mains = branches.where((b) => b.isMain).toList();
-    for (final b in mains) {
-      await _branchService.update(
-        item: b.copyWith(isMain: false),
-        callBack: (_) {},
-      );
+    final ok = await _mgmt.setMainBranch(branches, branchId);
+    Loader.dismiss();
+    if (ok) {
+      await _loadBranches();
+    } else {
+      Loader.showError('common_error'.tr);
     }
   }
 
@@ -157,42 +71,14 @@ class OwnerSetupController extends GetxController {
   Future<void> deleteBranch(String id) async {
     Loader.show();
     final manager = managerForBranch(id);
-    await _branchService.delete(
-      id: id,
-      callBack: (status) async {
-        if (status != ResponseStatus.success) {
-          Loader.showError('common_error'.tr);
-          return;
-        }
-        branches.removeWhere((b) => b.key == id);
-        if (manager != null) {
-          await _staffService.delete(id: manager.uid, callBack: (_) {});
-          await _permService.delete(id: manager.uid, callBack: (_) {});
-          await FirebaseDatabase.instance.ref('users/${manager.uid}').remove();
-          managers.removeWhere((m) => m.uid == manager.uid);
-        }
-        Loader.dismiss();
-      },
-    );
-  }
-
-  Future<String> _createFirebaseAuth(String email, String password) async {
-    final appName = 'setup_temp_${DateTime.now().millisecondsSinceEpoch}';
-    final secondaryApp = await Firebase.initializeApp(
-      name: appName,
-      options: Firebase.app().options,
-    );
-    try {
-      final auth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final cred = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      await auth.signOut();
-      return cred.user!.uid;
-    } finally {
-      await secondaryApp.delete();
+    final ok = await _mgmt.deleteBranchWithManager(branchId: id, manager: manager);
+    Loader.dismiss();
+    if (!ok) {
+      Loader.showError('common_error'.tr);
+      return;
     }
+    branches.removeWhere((b) => b.key == id);
+    if (manager != null) managers.removeWhere((m) => m.uid == manager.uid);
   }
 
   // ── Complete ──────────────────────────────────────────────────────────────
@@ -215,8 +101,4 @@ class OwnerSetupController extends GetxController {
       Loader.showError('common_error'.tr);
     }
   }
-}
-
-extension on String {
-  String? get nullIfEmpty => isEmpty ? null : this;
 }

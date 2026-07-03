@@ -54,6 +54,7 @@ class _ChildProfileViewState extends State<ChildProfileView> {
               ProfileFilterBar(controller: controller),
               AttendanceSection(controller: controller),
               ActivitiesSection(controller: controller),
+              ChildProfileTeacherNotesSection(controller: controller),
               const SizedBox(height: 32),
             ],
           );

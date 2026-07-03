@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import '../../../../index/index_main.dart';
 import '../../../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../../../Data/models/child_daily_event/child_daily_event_model.dart';
+import 'widgets/latest_post_card.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Parent Home — adaptive "story of the child's day"
@@ -133,8 +134,9 @@ class ParentHomeMockup extends StatelessWidget {
                       index: 2,
                       child: _AttentionStrip(controller: controller),
                     ),
-                    _NextEventCard(controller: controller),
                     SizedBox(height: 18.h),
+                    LatestPostCard(controller: controller),
+                    _NextEventCard(controller: controller),
                     const StaggerItem(
                       index: 3,
                       child: _ContactNurseryCard(),
@@ -183,14 +185,29 @@ class _ContactNurseryCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 46.w,
-              height: 46.w,
-              decoration: BoxDecoration(
-                color: _chat.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14.r),
-              ),
-              child: Icon(Icons.forum_rounded, color: _chat, size: 23.sp),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 46.w,
+                  height: 46.w,
+                  decoration: BoxDecoration(
+                    color: _chat.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child:
+                      Icon(Icons.forum_rounded, color: _chat, size: 23.sp),
+                ),
+                Positioned(
+                  top: -5.h,
+                  right: -5.w,
+                  child: Obx(() {
+                    final n = Get.find<ActiveChildService>().chatUnread.value;
+                    if (n <= 0) return const SizedBox.shrink();
+                    return ChatUnreadBadge(count: n);
+                  }),
+                ),
+              ],
             ),
             SizedBox(width: 13.w),
             Expanded(
@@ -1796,7 +1813,8 @@ class _AttentionStrip extends StatelessWidget {
     for (final inv in c.pendingInvoices) {
       final overdue = inv.status == 'overdue';
       final amount = ar(inv.totalAmount.toStringAsFixed(0));
-      final due = _fmtInboxDate(inv.dueDate);
+      final isFee = inv.key?.startsWith('fee_') == true;
+      final due = isFee ? '' : _fmtInboxDate(inv.dueDate);
       items.add(_InboxItem(
         color: overdue ? _kRed : _kAmber,
         icon: Icons.payments_rounded,
@@ -3844,18 +3862,18 @@ class _NextEventCard extends StatelessWidget {
       final color = event.category.color;
 
       return Padding(
-        padding: EdgeInsets.only(top: 18.h),
+        padding: EdgeInsets.only(bottom: 18.h),
         child: StaggerItem(
           index: 3,
           child: GestureDetector(
             onTap: () => Get.toNamed(parentEventsView),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(_kCardRadius.r),
+                borderRadius: BorderRadius.circular(14.r),
                 boxShadow: _kColoredShadow(color),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(_kCardRadius.r),
+                borderRadius: BorderRadius.circular(14.r),
                 child: Container(
                   padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(

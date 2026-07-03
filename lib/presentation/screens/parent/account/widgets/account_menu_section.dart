@@ -51,12 +51,16 @@ class AccountMenuItem {
   final VoidCallback? onTap;
   final bool isDestructive;
 
+  /// Optional live unread count shown as a badge before the chevron.
+  final RxInt? badge;
+
   const AccountMenuItem({
     required this.labelKey,
     required this.icon,
     required this.iconColor,
     this.onTap,
     this.isDestructive = false,
+    this.badge,
   });
 }
 
@@ -101,6 +105,15 @@ class _MenuTile extends StatelessWidget {
                 ),
               ),
             ),
+            if (item.badge != null)
+              Obx(() {
+                final n = item.badge!.value;
+                if (n <= 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChatUnreadBadge(count: n),
+                );
+              }),
             Icon(
               Icons.arrow_forward_ios_outlined,
               size: 14,

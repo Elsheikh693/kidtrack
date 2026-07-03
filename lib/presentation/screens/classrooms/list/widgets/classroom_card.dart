@@ -111,8 +111,10 @@ class _ClassroomInfo extends StatelessWidget {
           text: (ShiftScope.fromName(classroom.shift)?.labelKey ?? 'shift_morning').tr,
         ),
       ],
-      SizedBox(height: 2.h),
-      _InfoRow(icon: Icons.person_outline, text: teacherName),
+      if ((classroom.teacherId ?? '').isNotEmpty) ...[
+        SizedBox(height: 2.h),
+        _InfoRow(icon: Icons.person_outline, text: teacherName),
+      ],
       if (classroom.capacity != null) ...[
         SizedBox(height: 2.h),
         _InfoRow(

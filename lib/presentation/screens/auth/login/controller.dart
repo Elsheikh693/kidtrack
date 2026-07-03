@@ -14,8 +14,6 @@ class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  StreamSubscription<String>? _tokenSub;
-
   late final SessionService _session;
   late final FirebaseCredentialsService _credentials;
 
@@ -31,7 +29,6 @@ class LoginController extends GetxController {
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
-    _tokenSub?.cancel();
     super.onClose();
   }
 
@@ -53,9 +50,8 @@ class LoginController extends GetxController {
   void validateEmail(String value) {
     final v = value.trim();
     final isPhone = RegExp(r'^\d{9,15}$').hasMatch(v);
-    final isEmail = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(v);
     email.value = isPhone ? '$v@gmail.com' : v;
-    isEmailValid.value = v.isNotEmpty && (isPhone || isEmail);
+    isEmailValid.value = isPhone;
   }
 
   void validatePassword(String value) {
@@ -167,7 +163,7 @@ class LoginController extends GetxController {
       }
 
       // Staff active check + save branchId from staff record
-      if (user.userType?.isStaffRole == true && nurseryId.isNotEmpty) {
+      if (user.userType?.hasStaffRecord == true && nurseryId.isNotEmpty) {
         final staffSnap = await FirebaseDatabase.instance
             .ref('platform/$nurseryId/staff/$uid')
             .get();
@@ -202,7 +198,11 @@ class LoginController extends GetxController {
         unawaited(ParentEngagementService().markLogin());
       }
 
-      unawaited(_updateFcmToken(uid, isStaff: user.userType?.isStaffRole ?? false));
+      unawaited(FcmTokenService().attach(
+        uid: uid,
+        isStaff: user.userType?.hasStaffRecord ?? false,
+        nurseryId: _session.nurseryId,
+      ));
 
       isLoading.value = false;
       Loader.showSuccess('${'login_success'.tr}${user.name ?? ''}');
@@ -244,29 +244,5 @@ class LoginController extends GetxController {
     } catch (_) {
       return mainView;
     }
-  }
-
-  // ── FCM Token ─────────────────────────────────────────────────────────────
-  Future<void> _updateFcmToken(String uid, {required bool isStaff}) async {
-    try {
-      await NotificationService().initCore();
-      String? token = NotificationService().token;
-      token ??= await FirebaseMessaging.instance.getToken();
-      if (token == null) return;
-      _tokenSub?.cancel();
-      _tokenSub = FirebaseMessaging.instance.onTokenRefresh.listen((t) {
-        _saveToken(uid, t, isStaff: isStaff);
-      });
-      await _saveToken(uid, token, isStaff: isStaff);
-    } catch (_) {}
-  }
-
-  Future<void> _saveToken(String uid, String token, {required bool isStaff}) async {
-    final path = isStaff
-        ? 'platform/${_session.nurseryId ?? ''}/staff/$uid'
-        : 'users/$uid';
-    try {
-      await FirebaseDatabase.instance.ref(path).update({'fcmToken': token});
-    } catch (_) {}
   }
 }

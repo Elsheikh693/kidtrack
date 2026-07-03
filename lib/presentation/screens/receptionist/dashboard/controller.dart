@@ -42,6 +42,10 @@ class ReceptionistDashboardController extends GetxController {
   final insideNow = 0.obs;
   final totalClasses = 0.obs;
   final totalParents = 0.obs;
+  // Parent onboarding funnel (WhatsApp invitation → activation).
+  final parentsActivated = 0.obs;
+  final parentsAwaiting = 0.obs;
+  final parentsNotSent = 0.obs;
   final pendingEnrollments = 0.obs;
   final pendingPickupRequests = 0.obs;
   final overdueInvoices = 0.obs;
@@ -235,6 +239,21 @@ class ReceptionistDashboardController extends GetxController {
         ..clear()
         ..addEntries(parents.map((p) => MapEntry(p.uid, p.name)));
       totalParents.value = parents.length;
+
+      var activated = 0, awaiting = 0, notSent = 0;
+      for (final p in parents) {
+        switch (p.onboardingStatus) {
+          case ParentOnboardingStatus.activated:
+            activated++;
+          case ParentOnboardingStatus.sent:
+            awaiting++;
+          case ParentOnboardingStatus.notSent:
+            notSent++;
+        }
+      }
+      parentsActivated.value = activated;
+      parentsAwaiting.value = awaiting;
+      parentsNotSent.value = notSent;
     });
 
     await _waitingListSvc.getAll(callBack: (list) {

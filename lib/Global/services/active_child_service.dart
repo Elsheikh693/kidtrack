@@ -45,10 +45,37 @@ class ActiveChildService extends GetxService {
   /// 'having_meal', 'sleeping', 'pickup_requested', 'not_arrived'
   final childStatus = 'not_arrived'.obs;
 
+  /// Live unread messages from the nursery for the active child's conversation.
+  /// Drives the chat badge on the parent home card and account menu.
+  final chatUnread = 0.obs;
+
+  final _chatService = ChatService();
+  StreamSubscription<int>? _unreadSub;
+
   @override
   void onInit() {
     super.onInit();
     _restoreFromCache();
+    _watchUnread(childId.value);
+    // Re-point the unread stream whenever the active child switches.
+    ever(childId, _watchUnread);
+  }
+
+  @override
+  void onClose() {
+    _unreadSub?.cancel();
+    super.onClose();
+  }
+
+  void _watchUnread(String id) {
+    _unreadSub?.cancel();
+    if (id.isEmpty) {
+      chatUnread.value = 0;
+      return;
+    }
+    _unreadSub = _chatService
+        .watchUnread(id, 'parent')
+        .listen((n) => chatUnread.value = n);
   }
 
   // ── Cache restore (synchronous) ─────────────────────────────────────────────
@@ -166,6 +193,8 @@ class ActiveChildService extends GetxService {
     branchId.value    = '';
     children.clear();
     childStatus.value = 'not_arrived';
+    _unreadSub?.cancel();
+    chatUnread.value = 0;
     final s = StorageService();
     await s.remove(_kChildId);
     await s.remove(_kChildName);

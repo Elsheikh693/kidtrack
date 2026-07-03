@@ -123,8 +123,8 @@ class _ChildSheetState extends State<ChildSheet> {
         final branchOk =
             c.isAllBranches || c.branchIds.contains(selectedBranch!.key);
         final programOk = selectedProgram == null ||
-            c.programId == null ||
-            c.programId == selectedProgram!.key;
+            c.programIds.isEmpty ||
+            c.programIds.contains(selectedProgram!.key);
         return branchOk && programOk;
       }).toList();
     }

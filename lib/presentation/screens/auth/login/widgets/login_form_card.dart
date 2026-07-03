@@ -87,11 +87,12 @@ class LoginFormCard extends StatelessWidget {
                 controller: controller.emailController,
                 focusNode: emailFocusNode,
                 hintText: 'customer_login_phone_hint'.tr,
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
                 onChanged: controller.validateEmail,
+                formaters: [FilteringTextInputFormatter.digitsOnly],
                 prefixIcon: Icon(
-                  Icons.person_outline_rounded,
+                  Icons.phone_outlined,
                   size: 20.sp,
                   color: AppColors.textSecondaryParagraph,
                 ),
@@ -99,8 +100,7 @@ class LoginFormCard extends StatelessWidget {
                   if (v == null || v.trim().isEmpty) return 'login_error_email_required'.tr;
                   final t = v.trim();
                   final isPhone = RegExp(r'^\d{9,15}$').hasMatch(t);
-                  final isEmail = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(t);
-                  if (!isPhone && !isEmail) return 'login_error_email_invalid'.tr;
+                  if (!isPhone) return 'login_error_email_invalid'.tr;
                   return null;
                 },
               ),

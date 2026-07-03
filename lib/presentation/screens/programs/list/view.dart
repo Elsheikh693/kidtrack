@@ -53,7 +53,6 @@ class _ProgramListViewState extends State<ProgramListView> {
                 branchScope: controller.branchScopeLabel(controller.items[i]),
                 onEdit: () => controller.openEdit(controller.items[i]),
                 onDelete: () => controller.delete(controller.items[i]),
-                onSubjects: () => controller.openSubjects(controller.items[i]),
               ),
             ),
           );

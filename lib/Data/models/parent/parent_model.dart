@@ -1,3 +1,8 @@
+/// Where a parent sits in the WhatsApp onboarding funnel. Derived, not stored:
+/// notSent → no invitation persisted; sent → invitationSentAt set but the parent
+/// has never logged in; activated → the parent has logged in at least once.
+enum ParentOnboardingStatus { notSent, sent, activated }
+
 class ParentModel {
   final String? key;
   final String uid;
@@ -18,6 +23,11 @@ class ParentModel {
   final int activityViews;
   final int feedViews;
 
+  // Set when the receptionist sends the WhatsApp invitation. Together with
+  // loginCount it drives the onboarding funnel status (not sent → sent →
+  // activated) shown on the invitation screen.
+  final int? invitationSentAt;
+
   final int? createdAt;
   final int? updatedAt;
 
@@ -34,6 +44,7 @@ class ParentModel {
     this.loginCount = 0,
     this.activityViews = 0,
     this.feedViews = 0,
+    this.invitationSentAt,
     this.createdAt,
     this.updatedAt,
   });
@@ -54,6 +65,7 @@ class ParentModel {
       loginCount: _parseInt(json['loginCount']) ?? 0,
       activityViews: _parseInt(json['activityViews']) ?? 0,
       feedViews: _parseInt(json['feedViews']) ?? 0,
+      invitationSentAt: _parseInt(json['invitationSentAt']),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
     );
@@ -74,6 +86,7 @@ class ParentModel {
     data['loginCount'] = loginCount;
     data['activityViews'] = activityViews;
     data['feedViews'] = feedViews;
+    put('invitationSentAt', invitationSentAt);
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
     return data;
@@ -83,7 +96,7 @@ class ParentModel {
     String? key, String? uid, String? name, String? phone, String? email,
     String? profileImage, String? fcmToken, bool? isActive,
     int? lastActiveAt, int? loginCount, int? activityViews, int? feedViews,
-    int? createdAt, int? updatedAt,
+    int? invitationSentAt, int? createdAt, int? updatedAt,
   }) => ParentModel(
     key: key ?? this.key, uid: uid ?? this.uid, name: name ?? this.name,
     phone: phone ?? this.phone, email: email ?? this.email,
@@ -93,8 +106,15 @@ class ParentModel {
     loginCount: loginCount ?? this.loginCount,
     activityViews: activityViews ?? this.activityViews,
     feedViews: feedViews ?? this.feedViews,
+    invitationSentAt: invitationSentAt ?? this.invitationSentAt,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
+
+  ParentOnboardingStatus get onboardingStatus {
+    if (loginCount >= 1) return ParentOnboardingStatus.activated;
+    if (invitationSentAt != null) return ParentOnboardingStatus.sent;
+    return ParentOnboardingStatus.notSent;
+  }
 
   static int _now() => DateTime.now().millisecondsSinceEpoch;
   static bool _parseBool(dynamic v) {

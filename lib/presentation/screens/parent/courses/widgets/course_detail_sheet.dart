@@ -1,16 +1,23 @@
 import 'dart:async';
 import '../../../../../index/index_main.dart';
 import '../../../../../Data/models/nursery_course/nursery_course_model.dart';
+import '../../../../../Data/models/course_enrollment/course_enrollment_model.dart';
 import '../../../../../Global/services/course_service.dart';
 import '../../../courses/parent/lesson_viewer_view.dart';
+
+const _months = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+];
+
+String _formatDate(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 void showCourseDetail(
   BuildContext context,
   NurseryCourse course, {
-  CourseEnrollment? enrollment,
-  void Function(String lessonId)? onLessonCompleted,
+  bool isEnrolled = false,
 }) {
   showModalBottomSheet(
     context: context,
@@ -22,11 +29,7 @@ void showCourseDetail(
       duration: const Duration(milliseconds: 560),
       reverseDuration: const Duration(milliseconds: 280),
     ),
-    builder: (_) => CourseDetailSheet(
-      course: course,
-      enrollment: enrollment,
-      onLessonCompleted: onLessonCompleted,
-    ),
+    builder: (_) => CourseDetailSheet(course: course, isEnrolled: isEnrolled),
   );
 }
 
@@ -36,13 +39,11 @@ class CourseDetailSheet extends StatefulWidget {
   const CourseDetailSheet({
     super.key,
     required this.course,
-    this.enrollment,
-    this.onLessonCompleted,
+    this.isEnrolled = false,
   });
 
   final NurseryCourse course;
-  final CourseEnrollment? enrollment;
-  final void Function(String lessonId)? onLessonCompleted;
+  final bool isEnrolled;
 
   @override
   State<CourseDetailSheet> createState() => _CourseDetailSheetState();
@@ -54,16 +55,19 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
   List<CourseLesson> _lessons = [];
   bool _loading = true;
   StreamSubscription? _sub;
-  late CourseEnrollment? _enrollment;
+  StreamSubscription? _attendanceSub;
+  // sessionIndex (1-based) → attendance status (present / absent).
+  Map<int, CourseAttendanceStatus> _status = {};
 
   late final AnimationController _entrance;
   late final Animation<double> _scale;
   late final Animation<double> _fade;
 
+  bool get _enrolled => widget.isEnrolled;
+
   @override
   void initState() {
     super.initState();
-    _enrollment = widget.enrollment;
 
     _entrance = AnimationController(
       vsync: this,
@@ -82,12 +86,29 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
     _sub = _service.watchLessons(widget.course.id).listen((list) {
       if (mounted) setState(() { _lessons = list; _loading = false; });
     });
+
+    // Track is only meaningful when reception has enrolled the active child.
+    // Its status is driven by per-session attendance (present / absent).
+    final childId = Get.isRegistered<ActiveChildService>()
+        ? Get.find<ActiveChildService>().childId.value
+        : '';
+    if (_enrolled && childId.isNotEmpty) {
+      _attendanceSub = _service
+          .watchChildAttendance(widget.course.id, childId)
+          .listen((records) {
+        if (!mounted) return;
+        setState(() {
+          _status = {for (final r in records) r.sessionIndex: r.status};
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     _entrance.dispose();
     _sub?.cancel();
+    _attendanceSub?.cancel();
     super.dispose();
   }
 
@@ -97,15 +118,7 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
       lesson: lesson,
       lessonIndex: index,
       totalLessons: _lessons.length,
-      onCompleted: () {
-        widget.onLessonCompleted?.call(lesson.id);
-        if (mounted) {
-          setState(() {
-            _enrollment = (_enrollment ?? CourseEnrollment(courseId: widget.course.id))
-                .withCompleted(lesson.id);
-          });
-        }
-      },
+      onCompleted: () {},
     );
     Navigator.push(
       context,
@@ -113,10 +126,24 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
     );
   }
 
+  int get _presentCount =>
+      _status.values.where((s) => s == CourseAttendanceStatus.present).length;
+
+  // First session with no attendance record yet (child's standing point).
+  int get _currentSession {
+    if (!_enrolled) return 0;
+    for (var s = 1; s <= _lessons.length; s++) {
+      if (!_status.containsKey(s)) return s;
+    }
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final catColor    = widget.course.category.color;
     final accentColor = widget.course.category.accentColor;
+    final hasTrack    = _enrolled && !_loading && _lessons.isNotEmpty &&
+        widget.course.totalSessions > 0;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -161,12 +188,38 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
                     children: [
                       _HeroSection(
                         course: widget.course,
-                        enrollment: _enrollment,
+                        presentCount: _presentCount,
+                        showProgress: _enrolled,
                         lessons: _lessons,
                         catColor: catColor,
                         accentColor: accentColor,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
+
+                      // ── Enrolled → the track is the hero of this screen.
+                      if (hasTrack)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _TrackStandingCard(
+                            lessons: _lessons,
+                            status: _status,
+                            totalSessions: widget.course.totalSessions,
+                            catColor: catColor,
+                          ),
+                        ),
+
+                      // ── Not enrolled → tell them when the course starts.
+                      if (!_enrolled)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _StartDateBanner(
+                            course: widget.course,
+                            catColor: catColor,
+                            accentColor: accentColor,
+                          ),
+                        ),
+
+                      const SizedBox(height: 22),
 
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -188,8 +241,10 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
                             ),
                             const SizedBox(height: 24),
                             _SectionHeader(
-                              icon: Icons.format_list_numbered_rounded,
-                              title: 'course_detail_lessons'.tr,
+                              icon: _enrolled
+                                  ? Icons.timeline_rounded
+                                  : Icons.menu_book_rounded,
+                              title: _enrolled ? 'مسار الحصص' : 'محتوى الكورس',
                               color: catColor,
                             ),
                             const SizedBox(height: 14),
@@ -215,7 +270,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
                       else
                         _LessonsTrack(
                           lessons: _lessons,
-                          enrollment: _enrollment,
+                          status: _status,
+                          currentSession: _currentSession,
+                          enrolled: _enrolled,
                           catColor: catColor,
                           onTap: _openLesson,
                         ),
@@ -239,14 +296,16 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
 class _HeroSection extends StatelessWidget {
   const _HeroSection({
     required this.course,
-    required this.enrollment,
+    required this.presentCount,
+    required this.showProgress,
     required this.lessons,
     required this.catColor,
     required this.accentColor,
   });
 
   final NurseryCourse course;
-  final CourseEnrollment? enrollment;
+  final int presentCount;
+  final bool showProgress;
   final List<CourseLesson> lessons;
   final Color catColor;
   final Color accentColor;
@@ -254,8 +313,8 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lessonCount    = lessons.length;
-    final completedCount = enrollment?.completedCount() ?? 0;
-    final progress       = lessonCount == 0 ? 0.0 : completedCount / lessonCount;
+    final totalSessions  = course.totalSessions;
+    final progress       = totalSessions == 0 ? 0.0 : presentCount / totalSessions;
 
     return Container(
       width: double.infinity,
@@ -369,14 +428,14 @@ class _HeroSection extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (enrollment != null && lessonCount > 0) ...[
+                    if (showProgress && totalSessions > 0) ...[
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '$completedCount / $lessonCount ${'course_completed_lessons'.tr}',
+                              '$presentCount / $totalSessions ${'course_completed_lessons'.tr}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -407,6 +466,304 @@ class _HeroSection extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Start date banner (not-enrolled parents) ────────────────────────────────────
+// When reception hasn't enrolled the child, the parent can only see course
+// details and when the course starts.
+
+class _StartDateBanner extends StatelessWidget {
+  const _StartDateBanner({
+    required this.course,
+    required this.catColor,
+    required this.accentColor,
+  });
+
+  final NurseryCourse course;
+  final Color catColor;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDate = course.hasStartDate;
+    final dateLabel =
+        hasDate ? _formatDate(course.startDateTime!) : 'لم يُحدد بعد';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: catColor.withOpacity(0.14)),
+        boxShadow: [
+          BoxShadow(
+            color: catColor.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46, height: 46,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [catColor, accentColor],
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.event_available_rounded,
+                    color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'موعد بداية الكورس',
+                      style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600,
+                        color: AppColors.grayMedium,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasDate ? 'يبدأ في $dateLabel' : 'موعد البدء لم يُحدد بعد',
+                      style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w800,
+                        color: AppColors.textDefault,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: catColor.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded, size: 16, color: catColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'طفلك غير مُسجَّل في هذا الكورس بعد. تواصل مع الاستقبال للتسجيل ومتابعة الحصص.',
+                    style: TextStyle(
+                      fontSize: 12, height: 1.5,
+                      color: AppColors.textPrimaryParagraph,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Track standing card ───────────────────────────────────────────────────────
+// Attendance-driven "where does my child stand" summary. The hero of the sheet.
+
+class _TrackStandingCard extends StatelessWidget {
+  const _TrackStandingCard({
+    required this.lessons,
+    required this.status,
+    required this.totalSessions,
+    required this.catColor,
+  });
+
+  final List<CourseLesson> lessons;
+  final Map<int, CourseAttendanceStatus> status;
+  final int totalSessions;
+  final Color catColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final attended = status.values
+        .where((s) => s == CourseAttendanceStatus.present)
+        .length;
+    final absent = status.values
+        .where((s) => s == CourseAttendanceStatus.absent)
+        .length;
+    final progress = totalSessions == 0 ? 0.0 : attended / totalSessions;
+
+    // Next session with no record yet (their standing point).
+    int? nextSession;
+    for (var s = 1; s <= totalSessions; s++) {
+      if (!status.containsKey(s)) { nextSession = s; break; }
+    }
+    final done = nextSession == null;
+
+    String? nextTitle;
+    if (nextSession != null) {
+      for (final l in lessons) {
+        if (l.orderIndex + 1 == nextSession) { nextTitle = l.title; break; }
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: catColor.withOpacity(0.14)),
+        boxShadow: [
+          BoxShadow(
+            color: catColor.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Progress ring with attended / total.
+              SizedBox(
+                width: 60, height: 60,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 60, height: 60,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, v, __) => CircularProgressIndicator(
+                          value: v,
+                          strokeWidth: 5,
+                          backgroundColor: catColor.withOpacity(0.12),
+                          valueColor: AlwaysStoppedAnimation(catColor),
+                        ),
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$attended',
+                          style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w800,
+                            color: catColor, height: 1,
+                          ),
+                        ),
+                        Text(
+                          'من $totalSessions',
+                          style: TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w600,
+                            color: AppColors.grayMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      done ? 'انتهت حصص الكورس' : 'حصص حضرها طفلك',
+                      style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w800,
+                        color: AppColors.textDefault,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      done
+                          ? 'حضر طفلك $attended من $totalSessions حصة.'
+                          : 'حضر طفلك $attended من $totalSessions حصة — التالية الحصة رقم $nextSession',
+                      style: TextStyle(
+                        fontSize: 12, height: 1.5,
+                        color: AppColors.textPrimaryParagraph,
+                      ),
+                    ),
+                    if (absent > 0) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.cancel_rounded,
+                              size: 13, color: Color(0xFFDC2626)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'تغيّب عن $absent ${absent == 1 ? 'حصة' : 'حصص'}',
+                            style: const TextStyle(
+                              fontSize: 11.5, fontWeight: FontWeight.w700,
+                              color: Color(0xFFDC2626),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!done && nextTitle != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: catColor.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.play_circle_fill_rounded, size: 18, color: catColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'الحصة القادمة',
+                          style: TextStyle(
+                            fontSize: 10, fontWeight: FontWeight.w700,
+                            color: catColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          nextTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700,
+                            color: AppColors.textDefault,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -470,13 +827,17 @@ class _SectionHeader extends StatelessWidget {
 class _LessonsTrack extends StatelessWidget {
   const _LessonsTrack({
     required this.lessons,
-    required this.enrollment,
+    required this.status,
+    required this.currentSession,
+    required this.enrolled,
     required this.catColor,
     required this.onTap,
   });
 
   final List<CourseLesson> lessons;
-  final CourseEnrollment? enrollment;
+  final Map<int, CourseAttendanceStatus> status;
+  final int currentSession; // 0 = none
+  final bool enrolled;
   final Color catColor;
   final void Function(CourseLesson lesson, int index) onTap;
 
@@ -486,11 +847,14 @@ class _LessonsTrack extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: List.generate(lessons.length, (i) {
-          final lesson      = lessons[i];
-          final isCompleted = enrollment?.isCompleted(lesson.id) ?? false;
-          final isFirst     = i == 0;
-          final isLast      = i == lessons.length - 1;
-          final isCurrent   = !isCompleted && (i == 0 || (enrollment?.isCompleted(lessons[i - 1].id) ?? false));
+          final lesson  = lessons[i];
+          // Session index is 1-based; content item i maps to session i+1.
+          final s       = i + 1;
+          final st      = status[s];
+          final isPresent = st == CourseAttendanceStatus.present;
+          final isAbsent  = st == CourseAttendanceStatus.absent;
+          final isCurrent = enrolled && s == currentSession;
+          final isLast    = i == lessons.length - 1;
 
           return IntrinsicHeight(
             child: Row(
@@ -499,8 +863,9 @@ class _LessonsTrack extends StatelessWidget {
                 Column(
                   children: [
                     _StepCircle(
-                      index: i + 1,
-                      isCompleted: isCompleted,
+                      index: s,
+                      isPresent: isPresent,
+                      isAbsent: isAbsent,
                       isCurrent: isCurrent,
                       catColor: catColor,
                     ),
@@ -510,7 +875,7 @@ class _LessonsTrack extends StatelessWidget {
                           width: 2,
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
-                            color: isCompleted
+                            color: isPresent
                                 ? catColor.withOpacity(0.35)
                                 : AppColors.grayLight,
                             borderRadius: BorderRadius.circular(1),
@@ -525,7 +890,8 @@ class _LessonsTrack extends StatelessWidget {
                 Expanded(
                   child: _LessonTile(
                     lesson: lesson,
-                    isCompleted: isCompleted,
+                    isPresent: isPresent,
+                    isAbsent: isAbsent,
                     isCurrent: isCurrent,
                     catColor: catColor,
                     isLast: isLast,
@@ -546,19 +912,23 @@ class _LessonsTrack extends StatelessWidget {
 class _StepCircle extends StatelessWidget {
   const _StepCircle({
     required this.index,
-    required this.isCompleted,
+    required this.isPresent,
+    required this.isAbsent,
     required this.isCurrent,
     required this.catColor,
   });
 
   final int index;
-  final bool isCompleted;
+  final bool isPresent;
+  final bool isAbsent;
   final bool isCurrent;
   final Color catColor;
 
+  static const _absentColor = Color(0xFFDC2626);
+
   @override
   Widget build(BuildContext context) {
-    if (isCompleted) {
+    if (isPresent) {
       return TweenAnimationBuilder<double>(
         tween: Tween(begin: 0.6, end: 1),
         duration: const Duration(milliseconds: 400),
@@ -574,6 +944,18 @@ class _StepCircle extends StatelessWidget {
           ),
           child: const Icon(Icons.check_rounded, color: Colors.white, size: 18),
         ),
+      );
+    }
+
+    if (isAbsent) {
+      return Container(
+        width: 36, height: 36,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: _absentColor.withOpacity(0.12),
+          border: Border.all(color: _absentColor, width: 2),
+        ),
+        child: const Icon(Icons.close_rounded, color: _absentColor, size: 18),
       );
     }
 
@@ -615,7 +997,8 @@ class _StepCircle extends StatelessWidget {
 class _LessonTile extends StatelessWidget {
   const _LessonTile({
     required this.lesson,
-    required this.isCompleted,
+    required this.isPresent,
+    required this.isAbsent,
     required this.isCurrent,
     required this.catColor,
     required this.isLast,
@@ -623,14 +1006,32 @@ class _LessonTile extends StatelessWidget {
   });
 
   final CourseLesson lesson;
-  final bool isCompleted;
+  final bool isPresent;
+  final bool isAbsent;
   final bool isCurrent;
   final Color catColor;
   final bool isLast;
   final VoidCallback onTap;
 
+  static const _absentColor = Color(0xFFDC2626);
+
   @override
   Widget build(BuildContext context) {
+    final borderColor = isPresent
+        ? catColor.withOpacity(0.20)
+        : isAbsent
+            ? _absentColor.withOpacity(0.30)
+            : isCurrent
+                ? catColor.withOpacity(0.30)
+                : AppColors.grayLight;
+    final bgColor = isPresent
+        ? catColor.withOpacity(0.06)
+        : isAbsent
+            ? _absentColor.withOpacity(0.05)
+            : isCurrent
+                ? catColor.withOpacity(0.08)
+                : AppColors.white;
+
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
       child: GestureDetector(
@@ -639,18 +1040,10 @@ class _LessonTile extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isCompleted
-                ? catColor.withOpacity(0.06)
-                : isCurrent
-                    ? catColor.withOpacity(0.08)
-                    : AppColors.white,
+            color: bgColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isCompleted
-                  ? catColor.withOpacity(0.20)
-                  : isCurrent
-                      ? catColor.withOpacity(0.30)
-                      : AppColors.grayLight,
+              color: borderColor,
               width: isCurrent ? 1.5 : 1,
             ),
           ),
@@ -674,12 +1067,16 @@ class _LessonTile extends StatelessWidget {
                       lesson.title,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isCompleted || isCurrent ? FontWeight.w700 : FontWeight.w500,
-                        color: isCompleted
+                        fontWeight: isPresent || isCurrent || isAbsent
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isPresent
                             ? catColor
-                            : isCurrent
-                                ? AppColors.textDefault
-                                : AppColors.textPrimaryParagraph,
+                            : isAbsent
+                                ? _absentColor
+                                : isCurrent
+                                    ? AppColors.textDefault
+                                    : AppColors.textPrimaryParagraph,
                       ),
                     ),
                   ),
@@ -705,13 +1102,21 @@ class _LessonTile extends StatelessWidget {
                     ),
                   const SizedBox(width: 6),
                   Icon(
-                    isCompleted
+                    isPresent
                         ? Icons.check_circle_rounded
-                        : isCurrent
-                            ? Icons.play_circle_rounded
-                            : Icons.arrow_forward_ios,
-                    size: isCompleted || isCurrent ? 16 : 12,
-                    color: isCompleted || isCurrent ? catColor : AppColors.grayMedium,
+                        : isAbsent
+                            ? Icons.cancel_rounded
+                            : isCurrent
+                                ? Icons.play_circle_rounded
+                                : Icons.arrow_forward_ios,
+                    size: isPresent || isCurrent || isAbsent ? 16 : 12,
+                    color: isPresent
+                        ? catColor
+                        : isAbsent
+                            ? _absentColor
+                            : isCurrent
+                                ? catColor
+                                : AppColors.grayMedium,
                   ),
                 ],
               ),
@@ -722,20 +1127,23 @@ class _LessonTile extends StatelessWidget {
                   style: TextStyle(fontSize: 11, height: 1.4, color: AppColors.textPrimaryParagraph),
                 ),
               ],
-              if (isCurrent)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.play_arrow_rounded, size: 13, color: catColor),
-                      const SizedBox(width: 3),
-                      Text(
-                        'course_current_lesson'.tr,
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: catColor),
-                      ),
-                    ],
-                  ),
+              if (isPresent)
+                _FooterTag(
+                  icon: Icons.check_circle_rounded,
+                  label: 'تم الحضور',
+                  color: catColor,
+                )
+              else if (isAbsent)
+                const _FooterTag(
+                  icon: Icons.cancel_rounded,
+                  label: 'غاب',
+                  color: _absentColor,
+                )
+              else if (isCurrent)
+                _FooterTag(
+                  icon: Icons.schedule_rounded,
+                  label: 'الحصة القادمة',
+                  color: catColor,
                 ),
             ],
           ),
@@ -743,4 +1151,27 @@ class _LessonTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FooterTag extends StatelessWidget {
+  const _FooterTag({required this.icon, required this.label, required this.color});
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+            ),
+          ],
+        ),
+      );
 }
