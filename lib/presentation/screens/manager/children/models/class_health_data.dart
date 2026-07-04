@@ -3,10 +3,17 @@
 class ClassHealthData {
   final String classroomId;
   final String name;
-  final int capacity;
+
+  /// Configured capacity, or null when the classroom has no capacity set —
+  /// in that case we show the child count alone (never a fabricated ceiling).
+  final int? capacity;
   final int enrolled;
   final int pending;
   final bool hasTeacher;
+
+  /// Resolved name of the assigned teacher, or empty when none is assigned (or
+  /// the staff record couldn't be found for [hasTeacher]).
+  final String teacherName;
 
   /// A teacher currently has a running (status == 'active') activity in this
   /// classroom — a live signal, independent of the static teacher assignment.
@@ -19,16 +26,20 @@ class ClassHealthData {
     required this.enrolled,
     required this.pending,
     required this.hasTeacher,
+    this.teacherName = '',
     this.hasActiveActivity = false,
   });
 
-  double get fillRate => capacity > 0 ? enrolled / capacity : 0;
+  /// Whether a real capacity is configured. Drives the fill bar visibility.
+  bool get hasCapacity => capacity != null && capacity! > 0;
 
-  bool get isOverCapacity => capacity > 0 && enrolled > capacity;
+  double get fillRate => hasCapacity ? enrolled / capacity! : 0;
 
-  bool get isFull => capacity > 0 && enrolled >= capacity;
+  bool get isOverCapacity => hasCapacity && enrolled > capacity!;
 
-  bool get isAlmostFull => !isFull && fillRate >= 0.85;
+  bool get isFull => hasCapacity && enrolled >= capacity!;
+
+  bool get isAlmostFull => hasCapacity && !isFull && fillRate >= 0.85;
 
   /// Anything the manager should act on: missing teacher or over/at capacity.
   /// A running activity implies a teacher is present, so it isn't flagged as a

@@ -44,6 +44,8 @@ class OwnerMetricsService {
   Future<OwnerMetricsBundle> loadBundle() async {
     final invoicesF = _fetch<InvoiceModel>('invoices');
     final paymentsF = _fetch<PaymentModel>('payments');
+    final transactionsF =
+        _fetch<FinancialTransactionModel>('financialTransactions');
     final expensesF = _fetch<ExpenseModel>('expenses');
     final classroomsF = _fetch<ClassroomModel>('classrooms');
     final childrenF = _fetch<ChildModel>('children');
@@ -54,12 +56,13 @@ class OwnerMetricsService {
     final recentActivityF = _recentActivityClassroomIds();
 
     await Future.wait([
-      invoicesF, paymentsF, expensesF, classroomsF, childrenF,
+      invoicesF, paymentsF, transactionsF, expensesF, classroomsF, childrenF,
       enrollmentsF, waitingF, branchesF, staffF, recentActivityF,
     ]);
 
     final invoices = await invoicesF;
     final payments = await paymentsF;
+    final transactions = await transactionsF;
     final expenses = await expensesF;
     final classrooms = await classroomsF;
     final children = await childrenF;
@@ -85,6 +88,7 @@ class OwnerMetricsService {
       now: now,
       invoices: invoices,
       payments: payments,
+      transactions: transactions,
       expenses: expenses,
       classrooms: classrooms,
       children: children,
@@ -103,6 +107,7 @@ class OwnerMetricsService {
         now: now,
         invoices: invoices.where((i) => childBranch[i.childId] == id).toList(),
         payments: payments.where((p) => childBranch[p.childId] == id).toList(),
+        transactions: transactions.where((t) => t.branchId == id).toList(),
         expenses: expenses.where((e) => e.branchId == id).toList(),
         classrooms: classrooms.where((c) => c.isAllBranches || c.branchIds.contains(id)).toList(),
         children: children.where((c) => c.branchId == id).toList(),
@@ -141,6 +146,7 @@ class OwnerMetricsService {
     required DateTime now,
     required List<InvoiceModel> invoices,
     required List<PaymentModel> payments,
+    required List<FinancialTransactionModel> transactions,
     required List<ExpenseModel> expenses,
     required List<ClassroomModel> classrooms,
     required List<ChildModel> children,
@@ -195,11 +201,15 @@ class OwnerMetricsService {
         .toList();
 
     // ── Per-period flows ─────────────────────────────────────────────────────
-    double billedIn(DateTime m) => invoices
-        .where((i) => _inMonth(i.createdAt, m))
-        .fold(0.0, (s, i) => s + i.totalAmount);
-    double collectedIn(DateTime m) =>
-        payments.where((p) => _inMonth(p.paidAt, m)).fold(0.0, (s, p) => s + p.amount);
+    // The nursery runs on a pure cash log now (FinancialTransactionModel), not
+    // invoices/payments: what's collected IS the revenue, so "billed" and
+    // "collected" are the same figure. Mirrors the الماليات dashboard exactly.
+    double collectionsIn(DateTime m) => transactions
+        .where((t) =>
+            t.type == TransactionType.collection && _inMonth(t.date, m))
+        .fold(0.0, (s, t) => s + t.amount);
+    double billedIn(DateTime m) => collectionsIn(m);
+    double collectedIn(DateTime m) => collectionsIn(m);
     double expensesIn(DateTime m) => expenses
         .where((e) => _inMonth(e.dueDate ?? e.createdAt, m))
         .fold(0.0, (s, e) => s + e.amount);

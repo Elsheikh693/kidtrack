@@ -226,55 +226,35 @@ class FinanceSnapshotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pure cash log (no invoices): revenue = what was collected. Mirrors the
+    // الماليات dashboard — net profit · expenses · revenue.
     return _SnapshotShell(
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _MetricTile(
-                  labelKey: 'owner_fin_revenue',
-                  value: finance.expectedRevenue,
-                  color: AppColors.blueForeground,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _MetricTile(
-                  labelKey: 'owner_fin_collected',
-                  value: finance.collected,
-                  color: AppColors.successForeground,
-                ),
-              ),
-            ],
+          Expanded(
+            child: _MetricTile(
+              labelKey: 'finance_dash_net_profit',
+              value: finance.profit,
+              color: finance.profit < 0
+                  ? AppColors.errorForeground
+                  : AppColors.blueForeground,
+            ),
           ),
-          SizedBox(height: 10.h),
-          Row(
-            children: [
-              Expanded(
-                child: _MetricTile(
-                  labelKey: 'owner_fin_outstanding',
-                  value: finance.outstanding,
-                  color: AppColors.yellowForeground,
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _MetricTile(
-                  labelKey: 'owner_fin_profit',
-                  value: finance.profit,
-                  color: finance.profit < 0
-                      ? AppColors.errorForeground
-                      : AppColors.primary,
-                ),
-              ),
-            ],
+          SizedBox(width: 10.w),
+          Expanded(
+            child: _MetricTile(
+              labelKey: 'finance_dash_expenses',
+              value: finance.expenses,
+              color: AppColors.errorForeground,
+            ),
           ),
-          SizedBox(height: 16.h),
-          _ProgressLine(
-            labelKey: 'owner_fin_collection_rate',
-            percent: finance.collectionPercent,
-            color: AppColors.successForeground,
+          SizedBox(width: 10.w),
+          Expanded(
+            child: _MetricTile(
+              labelKey: 'finance_dash_revenue',
+              value: finance.collected,
+              color: AppColors.successForeground,
+            ),
           ),
         ],
       ),
@@ -413,56 +393,6 @@ class _StatTile extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ProgressLine extends StatelessWidget {
-  const _ProgressLine({
-    required this.labelKey,
-    required this.percent,
-    required this.color,
-  });
-
-  final String labelKey;
-  final int percent;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final clamped = (percent / 100).clamp(0.0, 1.0);
-    return Column(
-      children: [
-        Row(
-          children: [
-            Text(
-              labelKey.tr,
-              style: context.typography.xsRegular.copyWith(
-                color: AppColors.textDefault,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '$percent%',
-              style: context.typography.xsRegular.copyWith(
-                color: color.darken(0.08),
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8.h),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10.r),
-          child: LinearProgressIndicator(
-            value: clamped,
-            minHeight: 8.h,
-            backgroundColor: color.withValues(alpha: 0.12),
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-      ],
     );
   }
 }

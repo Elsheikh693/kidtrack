@@ -41,3 +41,11 @@ exports.onChatMessageCreated = onChatMessageCreated;
 const { midDayNudgeScan } = require("./engagement/midDayNudge");
 
 exports.midDayNudgeScan = midDayNudgeScan;
+
+// ============================================================
+// 🚪 WITHDRAW CHILD (callable — hard delete + parent/auth cleanup)
+// ============================================================
+
+const { withdrawChild } = require("./children/withdrawChild");
+
+exports.withdrawChild = withdrawChild;

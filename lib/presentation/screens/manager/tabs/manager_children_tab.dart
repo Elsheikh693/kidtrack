@@ -1,6 +1,7 @@
 import '../../../../index/index_main.dart';
 import '../widgets/manager_tab_header.dart';
 import '../children/widgets/children_overview_section.dart';
+import '../children/widgets/monthly_movement_section.dart';
 import '../children/widgets/classroom_health_section.dart';
 import '../children/widgets/child_directory_tile.dart';
 import '../children/widgets/children_shimmer.dart';
@@ -77,6 +78,8 @@ class _ManagerChildrenTabState extends State<ManagerChildrenTab> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 ChildrenOverviewSection(controller: controller),
+                const SizedBox(height: 24),
+                MonthlyMovementSection(controller: controller),
                 const SizedBox(height: 24),
                 ClassroomHealthSection(controller: controller),
               ]),

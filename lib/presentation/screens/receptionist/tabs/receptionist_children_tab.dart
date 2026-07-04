@@ -103,6 +103,11 @@ class _ChildrenTopBar extends StatelessWidget {
           ),
           const Spacer(),
           _IconBtn(
+            icon: Icons.forward_to_inbox_rounded,
+            onTap: () => Get.toNamed(bulkInvitationsView),
+          ),
+          const SizedBox(width: 14),
+          _IconBtn(
             icon: Icons.notifications_none_rounded,
             onTap: () => Get.toNamed(notificationsView),
           ),

@@ -31,6 +31,7 @@ class ChildProfileController extends GetxController {
   late final EnrollmentParentService     _enrollSvc;
   late final ClassroomParentService      _classroomSvc;
   late final ChildAttendanceParentService  _attendSvc;
+  late final ChildWithdrawalService      _withdrawalSvc;
 
   final _activitySvc = TeacherActivityService();
   final _eduSvc = ParentEducationService();
@@ -140,6 +141,7 @@ class ChildProfileController extends GetxController {
     _enrollSvc    = Get.find<EnrollmentParentService>();
     _classroomSvc = Get.find<ClassroomParentService>();
     _attendSvc    = Get.find<ChildAttendanceParentService>();
+    _withdrawalSvc = Get.find<ChildWithdrawalService>();
   }
 
   Future<void> loadProfile() async {
@@ -325,6 +327,43 @@ class ChildProfileController extends GetxController {
   }
 
   void goToAttendance() => Get.toNamed(checkInView);
+
+  // ─── Withdrawal ─────────────────────────────────────────────────────────────
+
+  /// Only enrollment-managing roles may withdraw a child. Teachers, nannies and
+  /// parents reach this screen read-only.
+  bool get canWithdraw {
+    final r = _session.effectiveRole;
+    return r == UserType.receptionist ||
+        r == UserType.owner ||
+        r == UserType.branchManager ||
+        r == UserType.superAdmin;
+  }
+
+  bool get isWithdrawn => child.value?.isWithdrawn ?? false;
+
+  /// Permanently withdraws the child. The server-side `withdrawChild` Cloud
+  /// Function hard-deletes the child record + all child-scoped data, logs the
+  /// withdrawal (so the manager's monthly-movement stat survives), and deletes
+  /// any parent left with no other children — including their Firebase Auth
+  /// account, so they can re-register elsewhere later. On success we pop back
+  /// to the list, which reloads and drops the now-deleted child.
+  Future<void> withdraw({required String reason}) async {
+    final current = child.value;
+    if (current == null || current.key == null) return;
+    Loader.show();
+    final ok = await _withdrawalSvc.withdrawChild(
+      childId: current.key!,
+      reason: reason,
+    );
+    Loader.dismiss();
+    if (ok) {
+      Loader.showSuccess('child_withdraw_success'.tr);
+      Get.back();
+    } else {
+      Loader.showError('child_withdraw_error'.tr);
+    }
+  }
 
   // ─── Date helpers ─────────────────────────────────────────────────────────
 

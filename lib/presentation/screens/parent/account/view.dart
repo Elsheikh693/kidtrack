@@ -59,15 +59,8 @@ class _ParentAccountViewState extends State<ParentAccountView> {
             AccountHeader(controller: controller),
             AccountChildCard(),
             AccountMenuSection(
-              titleKey: 'parent_account_children_section',
+              titleKey: 'parent_account_finance_section',
               items: [
-                AccountMenuItem(
-                  labelKey: 'chat_with_nursery',
-                  icon: Icons.forum_outlined,
-                  iconColor: const Color(0xFF6366F1),
-                  onTap: controller.navigateToChat,
-                  badge: Get.find<ActiveChildService>().chatUnread,
-                ),
                 AccountMenuItem(
                   labelKey: 'parent_account_finance',
                   icon: Icons.account_balance_wallet_outlined,
@@ -80,10 +73,11 @@ class _ParentAccountViewState extends State<ParentAccountView> {
               titleKey: 'parent_account_support_section',
               items: [
                 AccountMenuItem(
-                  labelKey: 'parent_account_contact_nursery',
-                  icon: Icons.school_outlined,
-                  iconColor: AppColors.successForeground,
-                  onTap: controller.contactNursery,
+                  labelKey: 'chat_with_nursery',
+                  icon: Icons.forum_outlined,
+                  iconColor: const Color(0xFF6366F1),
+                  onTap: controller.navigateToChat,
+                  badge: Get.find<ActiveChildService>().chatUnread,
                 ),
                 AccountMenuItem(
                   labelKey: 'parent_account_technical_support',

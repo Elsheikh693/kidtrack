@@ -46,6 +46,8 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                       onTap: () => showEditProfileSheet(isStaff: true),
                     ),
                     const SizedBox(height: 24),
+                    _nurseryProfileSection(),
+                    const SizedBox(height: 20),
                     _operationsSection(),
                     const SizedBox(height: 20),
                     Obx(() => _businessSection()),
@@ -63,17 +65,26 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     );
   }
 
+  /// Nursery public profile, surfaced on its own directly under the header.
+  Widget _nurseryProfileSection() {
+    return ManagerGridSection(
+      titleKey: 'owner_section_nursery',
+      tiles: [
+        ManagerGridTile(
+          icon: Icons.storefront_rounded,
+          color: AppColors.secondary80,
+          labelKey: 'manager_more_link_nursery_profile',
+          onTap: () => Get.toNamed(managerNurseryProfileView),
+        ),
+      ],
+    );
+  }
+
   /// Day-to-day running of the branch: people, classes and incoming families.
   Widget _operationsSection() {
     return ManagerGridSection(
       titleKey: 'manager_more_section_operations',
       tiles: [
-        ManagerGridTile(
-          icon: Icons.child_care_rounded,
-          color: AppColors.activityGreen,
-          labelKey: 'manager_more_link_children',
-          onTap: () => Get.toNamed(childrenView),
-        ),
         ManagerGridTile(
           icon: Icons.badge_rounded,
           color: AppColors.activityBlue,
@@ -122,6 +133,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'owner_item_packages',
           onTap: () => Get.toNamed(nurseryPackagesView),
         ),
+        ManagerGridTile(
+          icon: Icons.event_busy_rounded,
+          color: AppColors.activityOrange,
+          labelKey: 'manager_more_link_holidays',
+          onTap: () => Get.toNamed(holidaysView),
+        ),
       ],
     );
   }
@@ -131,6 +148,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     return ManagerGridSection(
       titleKey: 'owner_more_business',
       tiles: [
+        ManagerGridTile(
+          icon: Icons.child_care_rounded,
+          color: AppColors.activityGreen,
+          labelKey: 'manager_more_link_children',
+          onTap: () => Get.toNamed(childrenView),
+        ),
         ManagerGridTile(
           icon: Icons.payments_rounded,
           color: AppColors.activityGreen,
@@ -144,12 +167,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           badgeCount: controller.pendingApplications.value,
           onTap: () => Get.toNamed(managerApplicationsView)
               ?.then((_) => controller.loadPendingApplications()),
-        ),
-        ManagerGridTile(
-          icon: Icons.storefront_rounded,
-          color: AppColors.secondary80,
-          labelKey: 'manager_more_link_nursery_profile',
-          onTap: () => Get.toNamed(managerNurseryProfileView),
         ),
         ManagerGridTile(
           icon: Icons.reviews_rounded,
@@ -176,12 +193,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           color: AppColors.primary,
           labelKey: 'manager_more_link_notifications',
           onTap: () => Get.toNamed(notificationsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.event_busy_rounded,
-          color: AppColors.activityOrange,
-          labelKey: 'الإجازات',
-          onTap: () => Get.toNamed(holidaysView),
         ),
         ManagerGridTile(
           icon: Icons.support_agent_rounded,

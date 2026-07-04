@@ -212,6 +212,22 @@
 
         "evaluationReasons": {
           ".indexOn": ["isActive", "createdAt"]
+        },
+
+        "feeCategories": {
+          ".indexOn": ["isActive", "branchId"]
+        },
+
+        "expenses": {
+          ".indexOn": ["branchId", "categoryId", "status", "paidAt", "dueDate"]
+        },
+
+        "financialTransactions": {
+          ".indexOn": ["branchId", "childId", "categoryId", "collectedBy", "type", "date"]
+        },
+
+        "withdrawals": {
+          ".indexOn": ["branchId", "withdrawnAt", "childId"]
         }
 
       }

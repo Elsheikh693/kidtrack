@@ -51,7 +51,6 @@ class _NurseryProfileViewState extends State<NurseryProfileView> {
             ),
             ProfileLoginBar(
               onLogin: controller.goToLogin,
-              onApply: controller.goToApply,
             ),
           ],
         ),

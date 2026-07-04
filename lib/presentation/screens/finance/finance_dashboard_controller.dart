@@ -33,8 +33,13 @@ class FinanceDashboardController extends GetxController {
   // ─── Reactive report outputs ────────────────────────────────────────────────
   final Rx<FinanceSummary> summary = const FinanceSummary().obs;
   final RxList<CategoryRevenue> categories = <CategoryRevenue>[].obs;
+  final RxList<CategoryRevenue> expenseCategories = <CategoryRevenue>[].obs;
   final RxList<RecentCollection> recentCollections = <RecentCollection>[].obs;
   final RxList<RecentExpense> recentExpenses = <RecentExpense>[].obs;
+
+  // ─── "عرض الكل" category filters (null = all). Reset on month/scope change. ──
+  final RxnString collectionCategoryFilter = RxnString();
+  final RxnString expenseCategoryFilter = RxnString();
 
   final RxBool isLoading = true.obs;
 
@@ -145,6 +150,16 @@ class FinanceDashboardController extends GetxController {
       startMs: start,
       endMs: end,
     );
+    expenseCategories.value = _analytics.getExpenseCategorySummaries(
+      _expenseCache,
+      branchId: branchId,
+      startMs: start,
+      endMs: end,
+    );
+    // A month/scope change can drop the previously-selected category, so clear
+    // both filters to avoid an empty list under a stale selection.
+    collectionCategoryFilter.value = null;
+    expenseCategoryFilter.value = null;
     recentCollections.value = _analytics.getRecentCollections(
       _txCache,
       branchId: branchId,
@@ -179,6 +194,7 @@ class FinanceDashboardController extends GetxController {
       return false;
     }
     final expense = ExpenseModel(
+      key: const Uuid().v4(),
       nurseryId: _session.nurseryId ?? ApiConstants.nurseryId,
       branchId: (branchId != null && branchId.isNotEmpty) ? branchId : null,
       party: categoryLabel,
@@ -234,6 +250,7 @@ class FinanceDashboardController extends GetxController {
       _analytics.getRecentCollections(
         _txCache,
         branchId: scopeBranchId,
+        categoryId: collectionCategoryFilter.value,
         startMs: _startMs,
         endMs: _endMs,
         limit: 1 << 30,
@@ -242,8 +259,19 @@ class FinanceDashboardController extends GetxController {
   List<RecentExpense> allExpensesForPeriod() => _analytics.getRecentExpenses(
         _expenseCache,
         branchId: scopeBranchId,
+        categoryId: expenseCategoryFilter.value,
         startMs: _startMs,
         endMs: _endMs,
         limit: 1 << 30,
       );
+
+  void setCollectionCategoryFilter(String? categoryId) {
+    collectionCategoryFilter.value = categoryId;
+    revision.value++;
+  }
+
+  void setExpenseCategoryFilter(String? categoryId) {
+    expenseCategoryFilter.value = categoryId;
+    revision.value++;
+  }
 }

@@ -53,7 +53,6 @@ class CollectionsController extends GetxController {
   final sendingAll = false.obs;
 
   final _finance = FinanceService();
-  final _feeSvc = AdditionalFeeService();
 
   double get remainingTotal =>
       (expectedTotal.value - collectedTotal.value).clamp(0, double.infinity);
@@ -225,30 +224,6 @@ class CollectionsController extends GetxController {
       await loadData();
     } else {
       Loader.showError('invoice_paid_error'.tr);
-    }
-  }
-
-  /// Creates a broadcast "additional fee" (e.g. app subscription): bills every
-  /// active branch child, optionally notifies parents, then refreshes so the new
-  /// dues appear in this month's collection worklist.
-  Future<void> createFee({
-    required String title,
-    required double amount,
-    required bool notifyParents,
-  }) async {
-    Loader.show();
-    final count = await _feeSvc.createForAllChildren(
-      title: title,
-      amount: amount,
-      notifyParents: notifyParents,
-    );
-    Loader.dismiss();
-
-    if (count > 0) {
-      Loader.showSuccess('fee_created_success'.trParams({'count': '$count'}));
-      await loadData();
-    } else {
-      Loader.showError('fee_created_error'.tr);
     }
   }
 

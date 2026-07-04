@@ -9,18 +9,20 @@ class ReceptionCollectionController extends GetxController {
   late final ClassroomParentService _classroomService;
   late final ParentChildParentService _linkService;
   late final GuardianParentService _guardianService;
-  late final FeeCategoryParentService _categoryService;
+  late final PackageParentService _packageService;
   late final FinancialTransactionParentService _txService;
+  late final InvoiceParentService _invoiceService;
 
   final _session = SessionService();
+  final _finance = FinanceService();
 
   // ─── Directory (branch-scoped) ────────────────────────────────────────────
   final RxList<ChildModel> children = <ChildModel>[].obs;
   final RxMap<String, String> classroomNames = <String, String>{}.obs;
   final RxMap<String, String> parentNames = <String, String>{}.obs;
 
-  // ─── Fee categories the receptionist collects against ─────────────────────
-  final RxList<FeeCategoryModel> categories = <FeeCategoryModel>[].obs;
+  // ─── Packages the receptionist collects against (the branch's price list) ──
+  final RxList<PackageModel> packages = <PackageModel>[].obs;
 
   // ─── Selection + that child's history ─────────────────────────────────────
   final Rxn<ChildModel> selectedChild = Rxn<ChildModel>();
@@ -39,8 +41,9 @@ class ReceptionCollectionController extends GetxController {
     _classroomService = Get.find<ClassroomParentService>();
     _linkService = Get.find<ParentChildParentService>();
     _guardianService = Get.find<GuardianParentService>();
-    _categoryService = Get.find<FeeCategoryParentService>();
+    _packageService = Get.find<PackageParentService>();
     _txService = Get.find<FinancialTransactionParentService>();
+    _invoiceService = Get.find<InvoiceParentService>();
     loadData();
   }
 
@@ -73,7 +76,7 @@ class ReceptionCollectionController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
-    await Future.wait([_loadChildren(), _loadLookups(), _loadCategories()]);
+    await Future.wait([_loadChildren(), _loadLookups(), _loadPackages()]);
     isLoading.value = false;
   }
 
@@ -129,8 +132,32 @@ class ReceptionCollectionController extends GetxController {
     );
   }
 
-  Future<void> _loadCategories() async {
-    categories.value = await _categoryService.getActive();
+  /// Active packages this receptionist can collect against: their own branch's
+  /// packages plus any network-wide package (no branch pinned). These are the
+  /// exact price-list entries the owner/manager defined in "الباقات".
+  Future<void> _loadPackages() async {
+    final out = <PackageModel>[];
+    await _packageService.getAll(
+      callBack: (list) => out.addAll(list.whereType<PackageModel>()),
+    );
+    final bId = _session.branchId;
+    packages.value = out.where((p) => p.isActive && _packageInScope(p, bId)).toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  bool _packageInScope(PackageModel p, String? branchId) {
+    if (branchId == null || branchId.isEmpty) return true;
+    return p.branchId == null || p.branchId!.isEmpty || p.branchId == branchId;
+  }
+
+  /// The branch's monthly subscription package (first active monthly package in
+  /// scope), or null if none is set up. Drives the one-tap "renew" shortcut on
+  /// the directory list.
+  PackageModel? get monthlyPackage {
+    for (final p in packages) {
+      if (p.duration == 'monthly') return p;
+    }
+    return null;
   }
 
   // ─── Child selection + history ────────────────────────────────────────────
@@ -159,24 +186,29 @@ class ReceptionCollectionController extends GetxController {
 
   // ─── Save a collection ────────────────────────────────────────────────────
 
+  /// Records a collection for [child] (or the currently selected child when the
+  /// quick directory shortcut doesn't select one). Keeping [child] explicit lets
+  /// the reception directory renew a child inline without leaving the list.
   Future<bool> saveCollection({
-    required FeeCategoryModel category,
+    required PackageModel package,
     required double amount,
     String? notes,
+    ChildModel? child,
   }) async {
-    final child = selectedChild.value;
-    if (child == null || child.key == null || amount <= 0) {
+    final target = child ?? selectedChild.value;
+    if (target == null || target.key == null || amount <= 0) {
       Loader.showError('payment_fill_required'.tr);
       return false;
     }
 
     final tx = FinancialTransactionModel(
+      key: const Uuid().v4(),
       nurseryId: _session.nurseryId ?? ApiConstants.nurseryId,
-      branchId: child.branchId,
-      childId: child.key!,
-      childName: child.fullName,
-      categoryId: category.key ?? '',
-      categoryName: category.name,
+      branchId: target.branchId,
+      childId: target.key!,
+      childName: target.fullName,
+      categoryId: package.key ?? '',
+      categoryName: package.name,
       amount: amount,
       date: DateTime.now().millisecondsSinceEpoch,
       collectedBy: _session.userId,
@@ -194,11 +226,54 @@ class ReceptionCollectionController extends GetxController {
     Loader.dismiss();
 
     if (ok) {
+      // Recording a monthly-subscription collection settles that child's dues:
+      // flip their current-month invoice to "paid" so the guardian's "محتاج
+      // انتباهك" clears and المطلوب/المحصّل stay consistent with the cash log.
+      if (package.duration == 'monthly') {
+        await _markMonthlyInvoicePaid(target);
+      }
       Loader.showSuccess('collection_saved'.tr);
-      await _loadHistory(child.key!);
+      // Only reload the open history panel if we collected for the child that's
+      // currently expanded on screen.
+      if (selectedChild.value?.key == target.key) {
+        await _loadHistory(target.key!);
+      }
+      // Live-link: a fresh collection may clear a child off the "unpaid this
+      // month" list, so refresh that shared controller right away instead of
+      // waiting for an app restart.
+      if (Get.isRegistered<UnpaidSubscriptionController>()) {
+        Get.find<UnpaidSubscriptionController>().load();
+      }
     } else {
       Loader.showError('collection_save_failed'.tr);
     }
     return ok;
+  }
+
+  /// Marks the child's current-month monthly invoice
+  /// (`month_{childId}_{YYYYMM}`) as paid, if one exists and isn't already
+  /// settled. This is the bridge between the new cash-collection log and the old
+  /// invoice-based dues the guardian app still reads. No-op when the child has
+  /// no invoice this month (nothing is owed, so nothing to clear).
+  Future<void> _markMonthlyInvoicePaid(ChildModel child) async {
+    final childId = child.key;
+    if (childId == null) return;
+    final key = MonthlyInvoiceService.monthlyKey(childId, DateTime.now());
+
+    InvoiceModel? invoice;
+    await _invoiceService.getAll(
+      callBack: (list) {
+        for (final inv in list.whereType<InvoiceModel>()) {
+          if (inv.key == key) {
+            invoice = inv;
+            break;
+          }
+        }
+      },
+    );
+
+    final inv = invoice;
+    if (inv == null || inv.status == 'paid') return;
+    await _finance.markAsPaid(invoice: inv, paymentMethod: 'cash');
   }
 }

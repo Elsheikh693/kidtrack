@@ -56,12 +56,8 @@ class DashboardItemCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: item.color.darken(0.18),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
-                  ),
+                  style: context.typography.xsMedium
+                      .copyWith(color: item.color.darken(0.18)),
                 ),
               ),
             ],

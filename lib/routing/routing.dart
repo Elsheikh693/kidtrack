@@ -42,6 +42,7 @@ const String childProfileView = "/ChildProfileView";
 const String childRegistrationView = "/ChildRegistrationView";
 const String addChildView = "/AddChildView";
 const String parentAccountView = "/ParentAccountView";
+const String bulkInvitationsView = "/BulkInvitationsView";
 const String childMedicalView = "/ChildMedicalView";
 const String childDocumentsView = "/ChildDocumentsView";
 const String authorizedPickupView = "/AuthorizedPickupView";
@@ -393,6 +394,14 @@ class Routes {
       GetPage(
         name: parentAccountView,
         page: () => const RcParentAccountView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: bulkInvitationsView,
+        page: () => const BulkInvitationsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

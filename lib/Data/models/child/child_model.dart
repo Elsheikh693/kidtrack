@@ -19,6 +19,8 @@ class ChildModel {
   final double? homeLng;
   final String? homeAddress;
   final String? busChaperoneId; // staff uid of the assigned bus chaperone
+  final String? withdrawnReason; // why the child left (preset label + optional note)
+  final int? withdrawnAt; // when the child was marked withdrawn (ms since epoch)
   final int? createdAt;
   final int? updatedAt;
 
@@ -43,6 +45,8 @@ class ChildModel {
     this.homeLng,
     this.homeAddress,
     this.busChaperoneId,
+    this.withdrawnReason,
+    this.withdrawnAt,
     this.createdAt,
     this.updatedAt,
   });
@@ -51,6 +55,7 @@ class ChildModel {
 
   String get fullName => '$firstName $lastName';
   bool get hasImage => profileImage != null && profileImage!.isNotEmpty;
+  bool get isWithdrawn => status == 'withdrawn';
 
   factory ChildModel.fromJson(Map<String, dynamic> json, {String? key}) {
     return ChildModel(
@@ -74,6 +79,8 @@ class ChildModel {
       homeLng: _parseDouble(json['homeLng']),
       homeAddress: json['homeAddress']?.toString(),
       busChaperoneId: json['busChaperoneId']?.toString(),
+      withdrawnReason: json['withdrawnReason']?.toString(),
+      withdrawnAt: _parseInt(json['withdrawnAt']),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
     );
@@ -102,6 +109,8 @@ class ChildModel {
     put('homeLng', homeLng);
     put('homeAddress', homeAddress);
     put('busChaperoneId', busChaperoneId);
+    put('withdrawnReason', withdrawnReason);
+    put('withdrawnAt', withdrawnAt);
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
     return data;
@@ -115,6 +124,7 @@ class ChildModel {
     String? packageId, bool clearPackage = false,
     double? homeLat, double? homeLng, String? homeAddress,
     String? busChaperoneId, bool clearBusChaperone = false,
+    String? withdrawnReason, int? withdrawnAt, bool clearWithdrawal = false,
     int? createdAt, int? updatedAt,
   }) => ChildModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
@@ -130,6 +140,8 @@ class ChildModel {
     homeLat: homeLat ?? this.homeLat, homeLng: homeLng ?? this.homeLng,
     homeAddress: homeAddress ?? this.homeAddress,
     busChaperoneId: clearBusChaperone ? null : (busChaperoneId ?? this.busChaperoneId),
+    withdrawnReason: clearWithdrawal ? null : (withdrawnReason ?? this.withdrawnReason),
+    withdrawnAt: clearWithdrawal ? null : (withdrawnAt ?? this.withdrawnAt),
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
 

@@ -20,12 +20,6 @@ class OwnerMoreTab extends StatelessWidget {
         route: staffView,
       ),
       DashboardItem(
-        labelKey: 'owner_item_children',
-        icon: Icons.child_care_rounded,
-        color: Color(0xFF16A34A),
-        route: childrenView,
-      ),
-      DashboardItem(
         labelKey: 'owner_item_classrooms',
         icon: Icons.class_rounded,
         color: Color(0xFFD97706),
@@ -61,6 +55,26 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFF6366F1),
         route: nurseryPackagesView,
       ),
+      DashboardItem(
+        labelKey: 'manager_more_link_holidays',
+        icon: Icons.event_busy_rounded,
+        color: Color(0xFFD97706),
+        route: holidaysView,
+      ),
+    ],
+  );
+
+  static const _nurseryProfile = DashboardSection(
+    titleKey: 'owner_section_nursery',
+    titleIcon: Icons.storefront_rounded,
+    titleColor: Color(0xFFEC4899),
+    items: [
+      DashboardItem(
+        labelKey: 'manager_more_link_nursery_profile',
+        icon: Icons.storefront_rounded,
+        color: Color(0xFFEC4899),
+        route: managerNurseryProfileView,
+      ),
     ],
   );
 
@@ -69,6 +83,12 @@ class OwnerMoreTab extends StatelessWidget {
     titleIcon: Icons.business_center_rounded,
     titleColor: Color(0xFF7C3AED),
     items: [
+      DashboardItem(
+        labelKey: 'owner_item_children',
+        icon: Icons.child_care_rounded,
+        color: Color(0xFF16A34A),
+        route: childrenView,
+      ),
       DashboardItem(
         labelKey: 'billing_my_subscription',
         icon: Icons.payments_rounded,
@@ -80,12 +100,6 @@ class OwnerMoreTab extends StatelessWidget {
         icon: Icons.app_registration_rounded,
         color: Color(0xFF16A34A),
         route: managerApplicationsView,
-      ),
-      DashboardItem(
-        labelKey: 'manager_more_link_nursery_profile',
-        icon: Icons.storefront_rounded,
-        color: Color(0xFFEC4899),
-        route: managerNurseryProfileView,
       ),
       DashboardItem(
         labelKey: 'nursery_feedback_view_title',
@@ -111,6 +125,7 @@ class OwnerMoreTab extends StatelessWidget {
               delegate: SliverChildListDelegate([
                 _ProfileCard(session: session),
                 const SizedBox(height: 16),
+                const DashboardSectionWidget(section: _nurseryProfile),
                 const _SwitchViewCard(),
                 const SizedBox(height: 16),
                 const DashboardSectionWidget(section: _operations),
@@ -164,19 +179,14 @@ class _ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   session.currentUser?.displayName ?? '',
-                  style: TextStyle(
-                    color: AppColors.textDefault,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: context.typography.displaySmBold
+                      .copyWith(color: AppColors.textDefault),
                 ),
                 if ((session.currentUser?.phone ?? '').isNotEmpty)
                   Text(
                     session.currentUser!.phone!,
-                    style: TextStyle(
-                      color: AppColors.textSecondaryParagraph,
-                      fontSize: 12,
-                    ),
+                    style: context.typography.xsRegular
+                        .copyWith(color: AppColors.textSecondaryParagraph),
                   ),
               ],
             ),
@@ -187,10 +197,7 @@ class _ProfileCard extends StatelessWidget {
             label: Text('settings_edit_profile'.tr),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF7C3AED),
-              textStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              textStyle: context.typography.xsMedium,
             ),
           ),
         ],
@@ -307,11 +314,8 @@ class _Tile extends StatelessWidget {
             Expanded(
               child: Text(
                 labelKey.tr,
-                style: TextStyle(
-                  color: danger ? color : AppColors.textDefault,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: context.typography.smSemiBold
+                    .copyWith(color: danger ? color : AppColors.textDefault),
               ),
             ),
             if (!danger)

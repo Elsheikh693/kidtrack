@@ -53,15 +53,44 @@ class FinanceAnalyticsService extends GetxService {
     return byId.values.toList()..sort((a, b) => b.total.compareTo(a.total));
   }
 
-  /// The most recent collections, newest first (snapshots → no join).
+  /// Expenses grouped per category, highest-spending first — backs the expense
+  /// filter dropdown on the "عرض الكل" screen.
+  List<CategoryRevenue> getExpenseCategorySummaries(
+    List<ExpenseModel> expenses, {
+    String? branchId,
+    required int startMs,
+    required int endMs,
+  }) {
+    final byId = <String, CategoryRevenue>{};
+    for (final e in _scopeExpenses(expenses, branchId, startMs, endMs)) {
+      final id = e.categoryId ?? '';
+      final prev = byId[id];
+      final label = (e.categoryName != null && e.categoryName!.isNotEmpty)
+          ? e.categoryName!
+          : e.party;
+      byId[id] = CategoryRevenue(
+        categoryId: id,
+        categoryName: prev?.categoryName ?? label,
+        total: (prev?.total ?? 0) + e.amount,
+        transactionsCount: (prev?.transactionsCount ?? 0) + 1,
+      );
+    }
+    return byId.values.toList()..sort((a, b) => b.total.compareTo(a.total));
+  }
+
+  /// The most recent collections, newest first (snapshots → no join). Pass
+  /// [categoryId] to keep only that fee category.
   List<RecentCollection> getRecentCollections(
     List<FinancialTransactionModel> transactions, {
     String? branchId,
+    String? categoryId,
     required int startMs,
     required int endMs,
     int limit = 10,
   }) {
     final scoped = _scopeTx(transactions, branchId, startMs, endMs)
+        .where((t) => categoryId == null || t.categoryId == categoryId)
+        .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     return scoped
         .take(limit)
@@ -80,11 +109,14 @@ class FinanceAnalyticsService extends GetxService {
   List<RecentExpense> getRecentExpenses(
     List<ExpenseModel> expenses, {
     String? branchId,
+    String? categoryId,
     required int startMs,
     required int endMs,
     int limit = 5,
   }) {
     final scoped = _scopeExpenses(expenses, branchId, startMs, endMs)
+        .where((e) => categoryId == null || (e.categoryId ?? '') == categoryId)
+        .toList()
       ..sort((a, b) => _expenseDate(b).compareTo(_expenseDate(a)));
     return scoped
         .take(limit)
@@ -138,10 +170,16 @@ class FinanceAnalyticsService extends GetxService {
   int _expenseDate(ExpenseModel e) => e.paidAt ?? e.createdAt ?? e.dueDate ?? 0;
 
   String _expenseTitle(ExpenseModel e) {
+    final note = e.item?.trim();
+    // For the "other" category the label is generic, so the note the user
+    // typed is what actually identifies the expense — prefer it when present.
+    if (e.categoryId == 'exp_cat_other' && note != null && note.isNotEmpty) {
+      return note;
+    }
     if (e.categoryName != null && e.categoryName!.isNotEmpty) {
       return e.categoryName!;
     }
-    if (e.item != null && e.item!.trim().isNotEmpty) return e.item!.trim();
+    if (note != null && note.isNotEmpty) return note;
     return e.party;
   }
 }

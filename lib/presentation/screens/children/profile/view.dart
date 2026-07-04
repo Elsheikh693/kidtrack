@@ -1,5 +1,6 @@
 import '../../../../index/index_main.dart';
 import 'widgets/profile_shimmer.dart';
+import 'widgets/withdraw_section.dart';
 
 class ChildProfileView extends StatefulWidget {
   const ChildProfileView({super.key});
@@ -55,6 +56,7 @@ class _ChildProfileViewState extends State<ChildProfileView> {
               AttendanceSection(controller: controller),
               ActivitiesSection(controller: controller),
               ChildProfileTeacherNotesSection(controller: controller),
+              WithdrawSection(controller: controller),
               const SizedBox(height: 32),
             ],
           );

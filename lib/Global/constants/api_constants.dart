@@ -91,6 +91,11 @@ class ApiConstants {
 
   static String get classroomActivities => '$_n/classroomActivities';
 
+  /// Withdrawal log — one entry per child permanently withdrawn. Survives the
+  /// child's hard delete so the manager's monthly-movement stat can still count
+  /// departures. Written server-side by the `withdrawChild` Cloud Function.
+  static String get withdrawals => '$_n/withdrawals';
+
   static String get feed => '$_n/feed';
 
   /// Parent → nursery ratings, keyed by parentId: `feedback/{parentId}`.

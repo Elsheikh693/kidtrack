@@ -3,13 +3,11 @@ import '../../../../../index/index_main.dart';
 class DiscoveryNurseryCard extends StatelessWidget {
   final NurseryModel nursery;
   final VoidCallback onTap;
-  final VoidCallback onApply;
 
   const DiscoveryNurseryCard({
     super.key,
     required this.nursery,
     required this.onTap,
-    required this.onApply,
   });
 
   @override
@@ -104,14 +102,6 @@ class DiscoveryNurseryCard extends StatelessWidget {
         label: nursery.rating!.toStringAsFixed(1),
       ));
     }
-    if ((nursery.childrenCount ?? 0) > 0) {
-      chips.add(_InfoChip(
-        icon: Icons.child_care_rounded,
-        iconColor: AppColors.primary60,
-        label: 'discovery_children_count'
-            .trParams({'count': '${nursery.childrenCount}'}),
-      ));
-    }
     if (chips.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -196,38 +186,25 @@ class DiscoveryNurseryCard extends StatelessWidget {
   }
 
   Widget _detailsButton(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: PrimaryTextButton(
-            appButtonSize: AppButtonSize.large,
-            onTap: onApply,
-            leading: (c) =>
-                Icon(Icons.app_registration_rounded, size: 18.sp, color: c),
-            label: AppText(
-              text: 'apply_online_btn'.tr,
-              textStyle: context.typography.smSemiBold
-                  .copyWith(color: AppColors.white),
-            ),
-          ),
+    // Online application is disabled for now — the card exposes only the
+    // "view details" action, stretched full-width.
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        SizedBox(width: 10.w),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: AppText(
-              text: 'discovery_view_details'.tr,
-              textStyle: context.typography.smSemiBold
-                  .copyWith(color: AppColors.primary),
-            ),
-          ),
+        child: AppText(
+          text: 'discovery_view_details'.tr,
+          textStyle: context.typography.smSemiBold
+              .copyWith(color: AppColors.primary),
         ),
-      ],
+      ),
     );
   }
 }

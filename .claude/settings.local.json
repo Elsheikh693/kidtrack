@@ -14,7 +14,20 @@
       "Bash(grep -v '^$')",
       "Bash(git ls-tree *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(flutter analyze *)",
+      "Bash(dart analyze *)",
+      "Bash(dart format *)",
+      "Bash(node -c children/withdrawChild.js)",
+      "Bash(node -c index.js)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('database.rules.json','utf8'\\)\\); console.log\\('valid JSON ✓'\\)\")",
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")",
+      "Bash(grep -n \"class _TopBar\\\\|class _TopIcon\\\\|_TopIcon\\(\\\\|Row\\(\\\\s*$\" lib/presentation/screens/parent/dashboard/parent_home_mockup.dart)",
+      "Bash(grep -rn \"fee_monthly\\\\|'fee_'\\\\|\\\\\"fee_\\\\|fee_\\\\${\\\\|اشتراك تطبيق\\\\|app_subscription\\\\|appSubscription\\\\|platform_sub\\\\|منصة\" lib)",
+      "Bash(grep -rn ''\\\\''__TRACKED_VAR__'\\\\''' lib/)",
+      "Bash(git -C /Users/apple/kidtrack status)",
+      "Bash(git -C /Users/apple/kidtrack add -A)",
+      "Bash(git -C /Users/apple/kidtrack commit -m ' *)"
     ]
   }
 }

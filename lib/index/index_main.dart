@@ -427,6 +427,7 @@ export 'package:kidtrack/presentation/screens/guardian/list/widgets/guardian_shi
 export 'package:kidtrack/presentation/screens/guardian/list/widgets/guardian_sheet.dart';
 export 'package:kidtrack/presentation/screens/guardian/list/widgets/parent_create_sheet.dart';
 export 'package:kidtrack/Global/services/parent_account_service.dart';
+export 'package:kidtrack/Global/services/child_withdrawal_service.dart';
 
 // ─── Owner Screens ────────────────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/owner/dashboard/owner_dashboard_controller.dart';
@@ -445,6 +446,9 @@ export 'package:kidtrack/presentation/screens/finance/services/finance_analytics
 export 'package:kidtrack/presentation/screens/finance/models/finance_summary.dart';
 export 'package:kidtrack/presentation/screens/finance/finance_dashboard_controller.dart';
 export 'package:kidtrack/presentation/screens/finance/finance_dashboard_body.dart';
+export 'package:kidtrack/presentation/screens/finance/widgets/category_filter_bar.dart';
+export 'package:kidtrack/presentation/screens/finance/unpaid/unpaid_subscription_controller.dart';
+export 'package:kidtrack/presentation/screens/finance/unpaid/unpaid_subscription_card.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_dashboard_tab.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_children_tab.dart';
 export 'package:kidtrack/presentation/screens/manager/tabs/manager_staff_tab.dart';
@@ -534,7 +538,6 @@ export 'package:kidtrack/presentation/screens/finance/categories/payment_categor
 export 'package:kidtrack/presentation/screens/finance/categories/widgets/category_sheet.dart';
 export 'package:kidtrack/Global/services/finance_service.dart';
 export 'package:kidtrack/Global/services/monthly_invoice_service.dart';
-export 'package:kidtrack/Global/services/additional_fee_service.dart';
 
 // ─── Nursery Contact Numbers (parent WhatsApp) ──────────────────────────────────
 export 'package:kidtrack/Data/models/nursery_contact/nursery_contact_model.dart';
@@ -688,6 +691,8 @@ export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_das
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_children_tab.dart';
 export 'package:kidtrack/presentation/screens/receptionist/children/add_child/add_child_view.dart';
 export 'package:kidtrack/presentation/screens/receptionist/children/parent_account/parent_account_view.dart';
+export 'package:kidtrack/presentation/screens/receptionist/children/bulk_invitations/bulk_invitations_view.dart';
+export 'package:kidtrack/presentation/screens/receptionist/children/bulk_invitations/bulk_invitations_controller.dart';
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_parents_tab.dart';
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_classes_tab.dart';
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_operations_tab.dart';
@@ -772,7 +777,6 @@ export 'package:kidtrack/presentation/screens/holidays/holidays_view.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/collections_controller.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/late_payers_view.dart';
 export 'package:kidtrack/presentation/screens/receptionist/collections/reception_payment_sheet.dart';
-export 'package:kidtrack/presentation/screens/receptionist/collections/create_fee_sheet.dart';
 export 'package:kidtrack/presentation/screens/parent/events/parent_events_controller.dart';
 export 'package:kidtrack/presentation/screens/parent/events/parent_events_view.dart';
 

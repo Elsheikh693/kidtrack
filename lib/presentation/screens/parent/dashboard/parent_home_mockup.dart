@@ -137,10 +137,6 @@ class ParentHomeMockup extends StatelessWidget {
                     SizedBox(height: 18.h),
                     LatestPostCard(controller: controller),
                     _NextEventCard(controller: controller),
-                    const StaggerItem(
-                      index: 3,
-                      child: _ContactNurseryCard(),
-                    ),
                     SizedBox(height: 18.h),
                     // On a holiday there is no live day to track — hide the
                     // timeline so the header's "اليوم إجازة" reads clean.
@@ -162,85 +158,6 @@ class ParentHomeMockup extends StatelessWidget {
           );
         }),
       ));
-  }
-}
-
-// ─── Contact the nursery (chat with the manager) ──────────────────────────────
-
-class _ContactNurseryCard extends StatelessWidget {
-  const _ContactNurseryCard();
-
-  static const _chat = Color(0xFF6366F1);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: openParentChat,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(16.w, 15.h, 14.w, 15.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(_kCardRadius.r),
-          boxShadow: _kCardShadow,
-        ),
-        child: Row(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 46.w,
-                  height: 46.w,
-                  decoration: BoxDecoration(
-                    color: _chat.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child:
-                      Icon(Icons.forum_rounded, color: _chat, size: 23.sp),
-                ),
-                Positioned(
-                  top: -5.h,
-                  right: -5.w,
-                  child: Obx(() {
-                    final n = Get.find<ActiveChildService>().chatUnread.value;
-                    if (n <= 0) return const SizedBox.shrink();
-                    return ChatUnreadBadge(count: n);
-                  }),
-                ),
-              ],
-            ),
-            SizedBox(width: 13.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'chat_with_nursery'.tr,
-                    style: context.typography.mdBold.copyWith(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
-                      color: _kInk,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    'chat_home_card_subtitle'.tr,
-                    style: context.typography.xsRegular.copyWith(
-                      fontSize: 11.5,
-                      color: _kMuted,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14.sp, color: _kMuted),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -306,6 +223,13 @@ class _TopBar extends StatelessWidget {
             SizedBox(width: 10.w),
             const _AnimatedBrand(),
             const Spacer(),
+            _TopIcon(
+              icon: Icons.forum_rounded,
+              iconColor: const Color(0xFF6366F1),
+              chatBadge: true,
+              onTap: openParentChat,
+            ),
+            SizedBox(width: 10.w),
             _TopIcon(
               icon: Icons.chat_rounded,
               iconColor: const Color(0xFF25D366),
@@ -711,11 +635,15 @@ class _TopIcon extends StatelessWidget {
   const _TopIcon({
     required this.icon,
     this.badge = false,
+    this.chatBadge = false,
     this.onTap,
     this.iconColor,
   });
   final IconData icon;
   final bool badge;
+
+  /// Shows the live unread-message count for the in-app manager chat.
+  final bool chatBadge;
   final VoidCallback? onTap;
   final Color? iconColor;
 
@@ -733,6 +661,7 @@ class _TopIcon extends StatelessWidget {
       ),
       child: Stack(
         alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
           Icon(icon, size: 21.sp, color: iconColor ?? _kInk),
           if (badge)
@@ -747,6 +676,16 @@ class _TopIcon extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 1.5),
                 )),
+            ),
+          if (chatBadge)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: Obx(() {
+                final n = Get.find<ActiveChildService>().chatUnread.value;
+                if (n <= 0) return const SizedBox.shrink();
+                return ChatUnreadBadge(count: n);
+              }),
             ),
         ],
       ),
@@ -1407,6 +1346,11 @@ class _HeaderHero extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _glassAction(
+            Icons.forum_rounded,
+            openParentChat,
+            chatBadge: true,
+          ),
+          _glassAction(
             Icons.chat_rounded,
             openNurseryWhatsApp,
             svgString: _kWhatsAppSvg,
@@ -1426,7 +1370,7 @@ class _HeaderHero extends StatelessWidget {
   }
 
   Widget _glassAction(IconData icon, VoidCallback onTap,
-      {bool badge = false, String? svgString}) {
+      {bool badge = false, String? svgString, bool chatBadge = false}) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1457,6 +1401,17 @@ class _HeaderHero extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1),
                   )),
+              ),
+            // Live unread-count pill for the in-app manager chat.
+            if (chatBadge)
+              Positioned(
+                top: -8,
+                right: -9,
+                child: Obx(() {
+                  final n = Get.find<ActiveChildService>().chatUnread.value;
+                  if (n <= 0) return const SizedBox.shrink();
+                  return ChatUnreadBadge(count: n);
+                }),
               ),
           ],
         ),

@@ -131,22 +131,6 @@ class ChildListController extends GetxController {
     await _service.getAll(
       callBack: (list) {
         final all = list.whereType<ChildModel>().toList();
-        // TEMP DEBUG — diagnose why children are filtered out by scoping.
-        final bId = _session.branchId;
-        AppLogger.info('CHILD_SCOPE',
-            '===== SESSION ===== nursery=${_session.nurseryId} branch=$bId '
-            'shift=${_session.shift} isOwner=${_session.isOwner} '
-            'branchEmpty=${bId == null || bId.isEmpty}');
-        AppLogger.info('CHILD_SCOPE',
-            '===== CHILDREN (${all.length}) =====');
-        for (final c in all) {
-          final branchMatch = c.branchId == bId;
-          final shiftMatch = _session.seesShift(c.shift);
-          AppLogger.info('CHILD_SCOPE',
-              '${c.fullName} | branch=${c.branchId} (match=$branchMatch) | '
-              'shift=${c.shift} (match=$shiftMatch) | status=${c.status} '
-              '| inScope=${_inScope(c)}');
-        }
         _all.value = all.where(_inScope).toList()
           ..sort((a, b) => a.fullName.compareTo(b.fullName));
         _filter();
@@ -187,8 +171,9 @@ class ChildListController extends GetxController {
   Future<void> openProfile(ChildModel child) async {
     await Get.toNamed(childProfileView,
         arguments: {'childId': child.key ?? ''});
-    await Future.wait([_loadLookups(), _loadParents()]);
-    _filter();
+    // A withdrawal hard-deletes the child server-side, so reload from scratch
+    // to drop it from the list (partial lookup refresh wouldn't remove it).
+    await loadData();
   }
 
   // Full-page registration flow (receptionist): add child → parent account.

@@ -13,8 +13,12 @@ class ManagerChildrenController extends GetxController {
   final activeChildren = 0.obs;
   final presentNow = 0.obs;
   final newThisMonth = 0.obs;
+  final leftThisMonth = 0.obs;
   final occupancyRate = 0.obs;
   final unassignedCount = 0.obs;
+
+  /// Net enrollment movement for the current month (arrivals − departures).
+  int get netThisMonth => newThisMonth.value - leftThisMonth.value;
 
   // ─── Live Presence (today) ──────────────────────────────────────────────
   /// Children checked in today and still on-site (not yet picked up).
@@ -47,6 +51,7 @@ class ManagerChildrenController extends GetxController {
   late final AssessmentParentService _assessmentSvc;
   late final InvoiceParentService _invoiceSvc;
   late final GuardianParentService _guardianSvc;
+  late final StaffParentService _staffSvc;
 
   late Worker _searchWorker;
 
@@ -55,6 +60,7 @@ class ManagerChildrenController extends GetxController {
   StreamSubscription<DatabaseEvent>? _activitySub;
 
   final _classroomNames = <String, String>{};
+  final _teacherNames = <String, String>{};
   final _childNames = <String, String>{};
   final _childClassroom = <String, String?>{};
   final _branchChildKeys = <String>{};
@@ -91,6 +97,7 @@ class ManagerChildrenController extends GetxController {
     _assessmentSvc = Get.find<AssessmentParentService>();
     _invoiceSvc = Get.find<InvoiceParentService>();
     _guardianSvc = Get.find<GuardianParentService>();
+    _staffSvc = Get.find<StaffParentService>();
     _searchWorker = debounce(
       searchQuery,
       (_) => _filter(),
@@ -152,19 +159,23 @@ class ManagerChildrenController extends GetxController {
   Future<void> openChild(String childId) async {
     if (childId.isEmpty) return;
     await Get.toNamed(childProfileView, arguments: {'childId': childId});
+    // The child may have been withdrawn (hard-deleted) from the profile —
+    // reload so the directory and KPIs reflect the departure.
+    await loadData();
   }
 
   Future<void> loadData() async {
     isLoading.value = true;
     _riskReasons.clear();
-    // Phase 1: children + classrooms are independent — fetch together.
-    await Future.wait([_loadChildren(), _loadClassrooms()]);
+    // Phase 1: children, classrooms, and staff are independent — fetch together.
+    await Future.wait([_loadChildren(), _loadClassrooms(), _loadStaff()]);
     // Phase 2: these all depend on phase 1's data but not on each other.
     await Future.wait([
       _loadEnrollments(),
       _loadAttendance(),
       _loadRiskSources(),
       _loadOverdueFamilies(),
+      _loadWithdrawals(),
     ]);
     _buildRiskChildren();
     _filter();
@@ -173,12 +184,13 @@ class ManagerChildrenController extends GetxController {
 
   Future<void> _loadChildren() async {
     await _childSvc.getAll(callBack: (list) {
+      // Active roster for this branch/shift. Withdrawn children are hard-deleted
+      // server-side, so departures are counted from the withdrawals log instead
+      // (see [_loadWithdrawals]).
       final branch = list
           .whereType<ChildModel>()
-          .where((c) =>
-              c.branchId == branchId &&
-              c.status == 'active' &&
-              _session.seesShift(c.shift))
+          .where((c) => c.branchId == branchId && _session.seesShift(c.shift))
+          .where((c) => c.status == 'active')
           .toList()
         ..sort((a, b) => a.fullName.compareTo(b.fullName));
 
@@ -196,17 +208,45 @@ class ManagerChildrenController extends GetxController {
         ..addAll(branch.where((c) => c.key != null).map((c) => c.key!));
 
       final now = DateTime.now();
-      activeChildren.value = branch.length;
-      newThisMonth.value = branch.where((c) {
-        if (c.createdAt == null) return false;
-        final d = DateTime.fromMillisecondsSinceEpoch(c.createdAt!);
+      bool inThisMonth(int? ms) {
+        if (ms == null) return false;
+        final d = DateTime.fromMillisecondsSinceEpoch(ms);
         return d.year == now.year && d.month == now.month;
-      }).length;
+      }
+
+      activeChildren.value = branch.length;
+      newThisMonth.value =
+          branch.where((c) => inThisMonth(c.createdAt)).length;
       unassignedCount.value = branch
           .where((c) => c.classroomId == null || c.classroomId!.isEmpty)
           .length;
       directory.assignAll(branch);
     });
+  }
+
+  /// Departures for the current month, read from the withdrawal log (children
+  /// are hard-deleted on withdrawal, so we can't count them off the roster).
+  /// Counts log entries for this branch whose `withdrawnAt` falls in this month.
+  Future<void> _loadWithdrawals() async {
+    final now = DateTime.now();
+    int count = 0;
+    try {
+      final snap = await _db.ref(ApiConstants.withdrawals).get();
+      final root = snap.value;
+      if (root is Map) {
+        for (final entry in root.values) {
+          if (entry is! Map) continue;
+          if (entry['branchId']?.toString() != branchId) continue;
+          final ms = entry['withdrawnAt'];
+          if (ms is! int) continue;
+          final d = DateTime.fromMillisecondsSinceEpoch(ms);
+          if (d.year == now.year && d.month == now.month) count++;
+        }
+      }
+    } catch (_) {
+      // Log node may not exist yet (no withdrawals) — treat as zero.
+    }
+    leftThisMonth.value = count;
   }
 
   Future<void> _loadClassrooms() async {
@@ -220,6 +260,17 @@ class ManagerChildrenController extends GetxController {
         ..addEntries(
             rooms.where((c) => c.key != null).map((c) => MapEntry(c.key!, c.name)));
       _rooms = rooms;
+    });
+  }
+
+  Future<void> _loadStaff() async {
+    await _staffSvc.getAll(callBack: (list) {
+      _teacherNames
+        ..clear()
+        ..addEntries(list
+            .whereType<StaffModel>()
+            .where((s) => s.key != null)
+            .map((s) => MapEntry(s.key!, s.name)));
     });
   }
 
@@ -254,10 +305,11 @@ class ManagerChildrenController extends GetxController {
       return ClassHealthData(
         classroomId: id,
         name: cls.name,
-        capacity: cls.capacity ?? 20,
+        capacity: cls.capacity,
         enrolled: _enrolledByRoom[id] ?? 0,
         pending: _pendingByRoom[id] ?? 0,
         hasTeacher: (cls.teacherId ?? '').isNotEmpty,
+        teacherName: _teacherNames[cls.teacherId] ?? '',
         hasActiveActivity: _activeClassroomIds.contains(id),
       );
     }).toList()
@@ -271,7 +323,7 @@ class ManagerChildrenController extends GetxController {
         return b.fillRate.compareTo(a.fillRate);
       }));
 
-    final totalCap = classHealth.fold<int>(0, (acc, c) => acc + c.capacity);
+    final totalCap = classHealth.fold<int>(0, (acc, c) => acc + (c.capacity ?? 0));
     final totalEnrolled = classHealth.fold<int>(0, (acc, c) => acc + c.enrolled);
     occupancyRate.value =
         totalCap > 0 ? ((totalEnrolled / totalCap) * 100).round() : 0;

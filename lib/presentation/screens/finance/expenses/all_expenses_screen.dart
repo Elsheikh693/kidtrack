@@ -34,24 +34,37 @@ class AllExpensesScreen extends StatelessWidget {
         body: Obx(() {
           controller.revision.value; // rebuild trigger
           final items = controller.allExpensesForPeriod();
-          if (items.isEmpty) {
-            return Center(
-              child: Text(
-                'finance_dash_no_expenses'.tr,
-                style: context.typography.smRegular
-                    .copyWith(color: const Color(0xFF94A3B8)),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CategoryFilterBar(
+                options: controller.expenseCategories.toList(),
+                selectedId: controller.expenseCategoryFilter.value,
+                accent: const Color(0xFFDC2626),
+                onChanged: controller.setExpenseCategoryFilter,
               ),
-            );
-          }
-          return ListView.separated(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 90.h),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => SizedBox(height: 10.h),
-            itemBuilder: (_, i) => ExpenseTile(
-              item: items[i],
-              onDelete: () => _confirmDelete(context, controller, items[i]),
-            ),
+              Expanded(
+                child: items.isEmpty
+                    ? Center(
+                        child: Text(
+                          'finance_dash_no_expenses'.tr,
+                          style: context.typography.smRegular
+                              .copyWith(color: const Color(0xFF94A3B8)),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 90.h),
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => SizedBox(height: 10.h),
+                        itemBuilder: (_, i) => ExpenseTile(
+                          item: items[i],
+                          onDelete: () =>
+                              _confirmDelete(context, controller, items[i]),
+                        ),
+                      ),
+              ),
+            ],
           );
         }),
       ),

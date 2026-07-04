@@ -1,8 +1,8 @@
 import '../../../../../index/index_main.dart';
 import 'overview_kpi_card.dart';
 
-/// Top-of-tab snapshot: active children, who is present now, and new arrivals
-/// this month — three KPI tiles side by side.
+/// Top-of-tab live snapshot: the active roster and who is on-site right now —
+/// two KPI tiles side by side. Monthly movement lives in its own section.
 class ChildrenOverviewSection extends StatelessWidget {
   const ChildrenOverviewSection({super.key, required this.controller});
 
@@ -13,7 +13,7 @@ class ChildrenOverviewSection extends StatelessWidget {
     const spacing = 12.0;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = (constraints.maxWidth - spacing * 2) / 3;
+        final cardWidth = (constraints.maxWidth - spacing) / 2;
         return Obx(
           () => Wrap(
             spacing: spacing,
@@ -35,15 +35,6 @@ class ChildrenOverviewSection extends StatelessWidget {
                   value: '${controller.presentNow.value}',
                   icon: Icons.how_to_reg_rounded,
                   color: AppColors.activityBlue,
-                ),
-              ),
-              SizedBox(
-                width: cardWidth,
-                child: OverviewKpiCard(
-                  label: 'manager_children_kpi_new'.tr,
-                  value: '${controller.newThisMonth.value}',
-                  icon: Icons.fiber_new_rounded,
-                  color: AppColors.activityPurple,
                 ),
               ),
             ],

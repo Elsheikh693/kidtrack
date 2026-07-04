@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import '../../../index/index_main.dart';
 
 class GuardianParentService {
@@ -37,5 +38,19 @@ class GuardianParentService {
     required Function(ResponseStatus) callBack,
   }) async {
     await _service.deleteData(id: uid, voidCallBack: callBack);
+  }
+
+  /// Stamps the "WhatsApp invitation sent" timestamp on a guardian record.
+  /// Writes only that one field (never the full model) so concurrent login
+  /// telemetry the parent may set is not clobbered. Fire-and-forget: a failed
+  /// write must never block the receptionist while sending invitations.
+  Future<void> markInvitationSent(String uid) async {
+    final nurseryId = SessionService().nurseryId ?? '';
+    if (nurseryId.isEmpty || uid.isEmpty) return;
+    try {
+      await FirebaseDatabase.instance
+          .ref('platform/$nurseryId/parents/$uid')
+          .update({'invitationSentAt': ServerValue.timestamp});
+    } catch (_) {}
   }
 }

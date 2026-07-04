@@ -1,8 +1,8 @@
 import '../../../../../index/index_main.dart';
 import '../models/class_health_data.dart';
 
-/// One classroom's occupancy + staffing health. Surfaces the two things a
-/// manager acts on: missing teacher, and over/at capacity.
+/// One classroom's health as a compact grid tile: name, occupancy (children /
+/// capacity) with a fill bar, and the assigned teacher — or a missing-teacher flag.
 class ClassroomHealthCard extends StatelessWidget {
   const ClassroomHealthCard({super.key, required this.data});
 
@@ -17,8 +17,7 @@ class ClassroomHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -31,104 +30,104 @@ class ClassroomHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            data.name,
+            style: context.typography.smSemiBold
+                .copyWith(color: AppColors.textDefault),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
-                child: Text(
-                  data.name,
-                  style: context.typography.smSemiBold
-                      .copyWith(color: AppColors.textDefault),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
               Text(
-                '${data.enrolled}',
+                data.hasCapacity
+                    ? '${data.enrolled} / ${data.capacity}'
+                    : '${data.enrolled}',
                 style: context.typography.smSemiBold.copyWith(color: _barColor),
               ),
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 1),
+                child: Text(
+                  'manager_children_class_unit'.tr,
+                  style: context.typography.xsMedium
+                      .copyWith(color: AppColors.textSecondaryParagraph),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: data.fillRate.clamp(0.0, 1.0),
-              minHeight: 7,
-              backgroundColor: AppColors.backgroundNeutralDefault,
-              valueColor: AlwaysStoppedAnimation<Color>(_barColor),
+          // Fill bar only when a real capacity exists — otherwise there's no
+          // meaningful ceiling to show progress against.
+          if (data.hasCapacity) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: data.fillRate.clamp(0.0, 1.0),
+                minHeight: 7,
+                backgroundColor: AppColors.backgroundNeutralDefault,
+                valueColor: AlwaysStoppedAnimation<Color>(_barColor),
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              // A running activity means a teacher is present right now, so the
-              // live badge replaces the static teacher chip entirely.
-              if (data.hasActiveActivity)
-                _Chip(
-                  icon: Icons.play_circle_fill_rounded,
-                  label: 'manager_children_class_active_now'.tr,
-                  color: AppColors.activityGreen,
-                )
-              else
-                _Chip(
-                  icon: data.hasTeacher
-                      ? Icons.person_rounded
-                      : Icons.person_off_rounded,
-                  label: data.hasTeacher
-                      ? 'manager_children_class_has_teacher'.tr
-                      : 'manager_children_class_no_teacher'.tr,
-                  color: data.hasTeacher
-                      ? AppColors.activityGreen
-                      : AppColors.activityRed,
-                ),
-              if (data.isOverCapacity || data.isFull)
-                _Chip(
-                  icon: Icons.warning_amber_rounded,
-                  label: data.isOverCapacity
-                      ? 'manager_children_class_over'.tr
-                      : 'manager_children_class_full'.tr,
-                  color: AppColors.activityRed,
-                ),
-              if (data.pending > 0)
-                _Chip(
-                  icon: Icons.hourglass_bottom_rounded,
-                  label: 'manager_children_class_pending'
-                      .trParams({'count': '${data.pending}'}),
-                  color: AppColors.activityBlue,
-                ),
-            ],
-          ),
+          _TeacherLine(data: data),
         ],
       ),
     );
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.icon, required this.label, required this.color});
+/// Bottom line of the tile: the assigned teacher's name, a live-activity flag,
+/// or a red "no teacher" warning.
+class _TeacherLine extends StatelessWidget {
+  const _TeacherLine({required this.data});
 
-  final IconData icon;
-  final String label;
-  final Color color;
+  final ClassHealthData data;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 4),
-          Text(label, style: context.typography.xsMedium.copyWith(color: color)),
-        ],
-      ),
+    final IconData icon;
+    final String label;
+    final Color iconColor;
+    Color textColor = AppColors.textSecondaryParagraph;
+
+    if (data.teacherName.isNotEmpty) {
+      icon = Icons.person_rounded;
+      label = data.teacherName;
+      iconColor = data.hasActiveActivity
+          ? AppColors.activityGreen
+          : AppColors.activityBlue;
+      textColor = AppColors.textDefault;
+    } else if (data.hasActiveActivity) {
+      icon = Icons.play_circle_fill_rounded;
+      label = 'manager_children_class_active_now'.tr;
+      iconColor = textColor = AppColors.activityGreen;
+    } else if (data.hasTeacher) {
+      icon = Icons.person_rounded;
+      label = 'manager_children_class_has_teacher'.tr;
+      iconColor = textColor = AppColors.activityGreen;
+    } else {
+      icon = Icons.person_off_rounded;
+      label = 'manager_children_class_no_teacher'.tr;
+      iconColor = textColor = AppColors.activityRed;
+    }
+
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: iconColor),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            label,
+            style: context.typography.xsMedium.copyWith(color: textColor),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

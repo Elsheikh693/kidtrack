@@ -371,42 +371,40 @@ const _parentItems = [
   ),
 ];
 
+// Check-in and finance stay out of the bar — they're quick-action cards on the
+// home (check-in opens via route, finance via changePage(5)). Their pages stay
+// in the IndexedStack (indices 1/5) and remain reachable, so the visible items
+// here carry explicit pageIndex values to skip over them. The children list is
+// surfaced as its own tab (page index 2) so reception can browse a child and
+// open the profile (e.g. to withdraw them).
 const _receptionistItems = [
   _NavItemData(
     activeIcon: Icons.home_rounded,
     inactiveIcon: Icons.home_outlined,
     labelKey: 'reception_tab_dashboard',
     color: Color(0xFF0891B2),
-  ),
-  _NavItemData(
-    activeIcon: Icons.how_to_reg_rounded,
-    inactiveIcon: Icons.how_to_reg_outlined,
-    labelKey: 'reception_tab_checkin',
-    color: Color(0xFF16A34A),
+    pageIndex: 0,
   ),
   _NavItemData(
     activeIcon: Icons.child_care_rounded,
     inactiveIcon: Icons.child_care_outlined,
     labelKey: 'reception_tab_children',
-    color: Color(0xFF2563EB),
+    color: Color(0xFF16A34A),
+    pageIndex: 2,
   ),
   _NavItemData(
     activeIcon: Icons.school_rounded,
     inactiveIcon: Icons.school_outlined,
     labelKey: 'reception_tab_courses',
     color: Color(0xFF7C3AED),
+    pageIndex: 3,
   ),
   _NavItemData(
     activeIcon: Icons.celebration_rounded,
     inactiveIcon: Icons.celebration_outlined,
     labelKey: 'reception_tab_events',
     color: Color(0xFFF59E0B),
-  ),
-  _NavItemData(
-    activeIcon: Icons.account_balance_wallet_rounded,
-    inactiveIcon: Icons.account_balance_wallet_outlined,
-    labelKey: 'reception_tab_finance',
-    color: Color(0xFF7C3AED),
+    pageIndex: 4,
   ),
 ];
 

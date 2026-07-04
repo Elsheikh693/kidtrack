@@ -526,8 +526,16 @@ class Binding implements Bindings {
       () => ParentAccountService(),
       fenix: true,
     );
+    Get.lazyPut<ChildWithdrawalService>(
+      () => ChildWithdrawalService(),
+      fenix: true,
+    );
     Get.lazyPut<ParentChildParentService>(
       () => ParentChildParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<BulkInvitationsController>(
+      () => BulkInvitationsController(),
       fenix: true,
     );
     Get.lazyPut<ChildAttendanceParentService>(
@@ -599,6 +607,12 @@ class Binding implements Bindings {
     // owner + manager dashboards). No state, no fetch — controllers cache.
     Get.lazyPut<FinanceAnalyticsService>(
       () => FinanceAnalyticsService(),
+      fenix: true,
+    );
+    // Role-agnostic "unpaid monthly subscription" tracker — one shared instance
+    // behind the owner, manager AND reception dashboard cards. Scopes itself.
+    Get.lazyPut<UnpaidSubscriptionController>(
+      () => UnpaidSubscriptionController(),
       fenix: true,
     );
     Get.lazyPut<PaymentParentService>(

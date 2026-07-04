@@ -428,6 +428,13 @@ class ParentTopBar extends StatelessWidget {
             ),
           ),
           _ParentTopIcon(
+            icon: Icons.forum_rounded,
+            iconColor: const Color(0xFF6366F1),
+            chatBadge: true,
+            onTap: openParentChat,
+          ),
+          const SizedBox(width: 10),
+          _ParentTopIcon(
             icon: Icons.chat_rounded,
             iconColor: const Color(0xFF25D366),
             onTap: openNurseryWhatsApp,
@@ -452,11 +459,13 @@ class _ParentTopIcon extends StatelessWidget {
   const _ParentTopIcon({
     required this.icon,
     this.badge = false,
+    this.chatBadge = false,
     this.onTap,
     this.iconColor,
   });
   final IconData icon;
   final bool badge;
+  final bool chatBadge;
   final VoidCallback? onTap;
   final Color? iconColor;
 
@@ -474,6 +483,7 @@ class _ParentTopIcon extends StatelessWidget {
         ),
         child: Stack(
           alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
             Icon(icon, size: 21, color: iconColor ?? ParentTopBar._kInk),
             if (badge)
@@ -489,6 +499,16 @@ class _ParentTopIcon extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),
                 ),
+              ),
+            if (chatBadge)
+              Positioned(
+                top: -6,
+                right: -6,
+                child: Obx(() {
+                  final n = Get.find<ActiveChildService>().chatUnread.value;
+                  if (n <= 0) return const SizedBox.shrink();
+                  return ChatUnreadBadge(count: n);
+                }),
               ),
           ],
         ),

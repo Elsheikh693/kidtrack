@@ -120,12 +120,8 @@ class _SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               section.titleKey.tr,
-              style: TextStyle(
-                color: section.titleColor.darken(0.12),
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.3,
-              ),
+              style: context.typography.displaySmBold
+                  .copyWith(color: section.titleColor.darken(0.12)),
             ),
           ),
           Container(
@@ -136,11 +132,8 @@ class _SectionHeader extends StatelessWidget {
             ),
             child: Text(
               '${section.items.length}',
-              style: TextStyle(
-                color: section.titleColor.darken(0.05),
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
+              style: context.typography.xsMedium
+                  .copyWith(color: section.titleColor.darken(0.05)),
             ),
           ),
         ],

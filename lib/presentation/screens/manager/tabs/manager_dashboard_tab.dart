@@ -3,7 +3,6 @@ import '../dashboard/widgets/dashboard_hero.dart';
 import '../dashboard/widgets/dashboard_presence_card.dart';
 import '../dashboard/widgets/dashboard_quick_links.dart';
 import '../dashboard/widgets/dashboard_teachers_card.dart';
-import '../dashboard/widgets/dashboard_finance_summary.dart';
 import '../dashboard/widgets/dashboard_shimmer.dart';
 
 class ManagerDashboardTab extends StatefulWidget {
@@ -55,12 +54,11 @@ class _ManagerDashboardTabState extends State<ManagerDashboardTab> {
                 padding: EdgeInsets.fromLTRB(16.w, 18.h, 16.w, 100.h),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    DashboardPresenceCard(controller: controller),
                     DashboardQuickLinks(controller: controller),
                     SizedBox(height: 22.h),
+                    const UnpaidSubscriptionCard(),
+                    DashboardPresenceCard(controller: controller),
                     DashboardTeachersCard(controller: controller),
-                    SizedBox(height: 22.h),
-                    DashboardFinanceSummary(controller: controller),
                   ]),
                 ),
               ),

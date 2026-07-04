@@ -1,6 +1,5 @@
 import '../../../../../index/index_main.dart';
 import '../add_child/widgets/add_child_fields.dart';
-import 'parent_invitation_view.dart';
 import 'parent_status_chip.dart';
 
 class RcParentAccountView extends StatefulWidget {
@@ -59,9 +58,6 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
       .where((l) => l.childId == _childId)
       .map((l) => l.parentId)
       .toSet();
-
-  bool get _hasAnyGuardian =>
-      _links.any((l) => l.childId == _childId);
 
   Future<bool> _createGuardian(
     String relationship,
@@ -147,12 +143,6 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-    );
-  }
-
-  void _goToInvitations() {
-    Get.off(
-      () => ParentInvitationView(childId: _childId, childName: _childName),
     );
   }
 
@@ -254,26 +244,23 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
       color: Colors.white,
       border: Border(top: BorderSide(color: Color(0xFFEDF0F3))),
     ),
-    child: Obx(
-      () => SizedBox(
-        width: double.infinity,
-        height: 54.h,
-        child: ElevatedButton.icon(
-          onPressed: _hasAnyGuardian ? _goToInvitations : null,
-          icon: Icon(Icons.send_rounded, size: 20.sp),
-          label: Text(
-            'rc_parent_send_invites'.tr,
-            style: context.typography.mdBold.copyWith(fontSize: 16),
+    child: SizedBox(
+      width: double.infinity,
+      height: 54.h,
+      child: ElevatedButton.icon(
+        onPressed: () => Get.back(),
+        icon: Icon(Icons.check_rounded, size: 20.sp),
+        label: Text(
+          'rc_parent_done'.tr,
+          style: context.typography.mdBold.copyWith(fontSize: 16),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFFCBD5E1),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            elevation: 0,
-          ),
+          elevation: 0,
         ),
       ),
     ),

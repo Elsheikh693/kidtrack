@@ -26,7 +26,22 @@ class ClassroomHealthSection extends StatelessWidget {
           if (rooms.isEmpty)
             _EmptyClassrooms()
           else
-            ...rooms.map((r) => ClassroomHealthCard(data: r)),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 12.0;
+                final cardWidth = (constraints.maxWidth - spacing) / 2;
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: rooms
+                      .map((r) => SizedBox(
+                            width: cardWidth,
+                            child: ClassroomHealthCard(data: r),
+                          ))
+                      .toList(),
+                );
+              },
+            ),
         ],
       );
     });

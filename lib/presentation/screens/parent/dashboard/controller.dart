@@ -393,12 +393,31 @@ class ParentDashboardController extends GetxController {
   Future<void> _loadPendingInvoices() async {
     final childId = _activeChildId.value;
     if (childId.isEmpty) return;
+
+    // Months (YYYYMM) in which reception already recorded a cash collection for
+    // this child. A monthly-subscription invoice (month_… key) for one of these
+    // months is treated as settled — this reconciles the new collections log with
+    // the old invoice-based dues, self-healing even for payments recorded before
+    // the invoice was flipped to "paid".
+    final paidMonths = <String>{};
+    final txns =
+        await Get.find<FinancialTransactionParentService>().getByChild(childId);
+    for (final t in txns) {
+      final d = DateTime.fromMillisecondsSinceEpoch(t.date);
+      paidMonths.add('${d.year}${d.month.toString().padLeft(2, '0')}');
+    }
+
     final svc = Get.find<InvoiceParentService>();
     await svc.getAll(callBack: (list) {
       pendingInvoices.value = list
           .whereType<InvoiceModel>()
           .where((i) =>
               i.childId == childId &&
+              // The "additional fee" feature (fee_… invoices, e.g. an app
+              // subscription) was removed; hide any leftover legacy dues so the
+              // parent only sees live monthly-subscription obligations.
+              (i.key == null || !i.key!.startsWith('fee_')) &&
+              !_settledByCollection(i, paidMonths) &&
               (i.status == 'pending' || i.status == 'overdue'))
           .toList()
         ..sort((a, b) {
@@ -407,6 +426,14 @@ class ParentDashboardController extends GetxController {
           return (b.createdAt ?? 0).compareTo(a.createdAt ?? 0);
         });
     });
+  }
+
+  /// A monthly invoice key is `month_{childId}_{YYYYMM}`. It counts as paid when
+  /// reception logged any collection for this child in that same calendar month.
+  bool _settledByCollection(InvoiceModel invoice, Set<String> paidMonths) {
+    final key = invoice.key;
+    if (key == null || !key.startsWith('month_') || key.length < 6) return false;
+    return paidMonths.contains(key.substring(key.length - 6));
   }
 
   Future<void> refreshPendingInvoices() => _loadPendingInvoices();

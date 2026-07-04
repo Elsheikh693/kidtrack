@@ -2,6 +2,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../index/index_main.dart';
 import '../collections/reception_collection_controller.dart';
 import '../collections/reception_collection_sheet.dart';
+import '../collections/reception_directory_list.dart';
 
 const _accent = Color(0xFF7C3AED);
 const _bg = Color(0xFFF6F7FB);
@@ -38,6 +39,23 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
     if (controller.selectedChild.value == null) return;
     Get.bottomSheet(
       ReceptionCollectionSheet(controller: controller),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+    );
+  }
+
+  /// Quick renew from the directory: opens the sheet for [child] with the
+  /// monthly subscription pre-selected, without leaving the all-children list.
+  void _openRenewSheet(ChildModel child) {
+    Get.bottomSheet(
+      ReceptionCollectionSheet(
+        controller: controller,
+        child: child,
+        initialPackage: controller.monthlyPackage,
+      ),
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -91,6 +109,7 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
                   ? _SearchResults(
                       controller: controller,
                       onPick: controller.selectChild,
+                      onRenew: _openRenewSheet,
                     )
                   : _ChildFinanceView(
                       controller: controller,
@@ -161,7 +180,7 @@ class _SelectedChip extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.arrow_forward_rounded, size: 20.sp, color: _accent),
+            Icon(Icons.arrow_back_ios_new_rounded, size: 20.sp, color: _accent),
             SizedBox(width: 10.w),
             Expanded(
               child: Text(
@@ -187,39 +206,48 @@ class _SelectedChip extends StatelessWidget {
 class _SearchResults extends StatelessWidget {
   final ReceptionCollectionController controller;
   final ValueChanged<ChildModel> onPick;
-  const _SearchResults({required this.controller, required this.onPick});
+  final ValueChanged<ChildModel> onRenew;
+  const _SearchResults({
+    required this.controller,
+    required this.onPick,
+    required this.onRenew,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final q = controller.searchQuery.value.trim();
-    if (q.isEmpty) {
-      return _Hint(
-        icon: Icons.search_rounded,
-        title: 'collection_search_prompt'.tr,
-        hint: 'collection_search_prompt_hint'.tr,
-      );
-    }
-    final results = controller.filteredChildren;
-    if (results.isEmpty) {
-      return _Hint(
-        icon: Icons.person_off_outlined,
-        title: 'collection_no_child_found'.tr,
-        hint: 'collection_no_child_found_hint'.tr,
-      );
-    }
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-      itemCount: results.length,
-      separatorBuilder: (_, _) => SizedBox(height: 8.h),
-      itemBuilder: (_, i) {
-        final c = results[i];
-        return _ChildRow(
-          child: c,
-          subtitle: controller.classroomName(c.classroomId),
-          onTap: () => onPick(c),
+    return Obx(() {
+      final q = controller.searchQuery.value.trim();
+      if (q.isEmpty) {
+        // Default state: the full children directory with per-child quick
+        // actions (renew subscription / other payments).
+        return ReceptionDirectoryList(
+          controller: controller,
+          onOtherPayments: onPick,
+          onRenew: onRenew,
         );
-      },
-    );
+      }
+      final results = controller.filteredChildren;
+      if (results.isEmpty) {
+        return _Hint(
+          icon: Icons.person_off_outlined,
+          title: 'collection_no_child_found'.tr,
+          hint: 'collection_no_child_found_hint'.tr,
+        );
+      }
+      return ListView.separated(
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+        itemCount: results.length,
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
+        itemBuilder: (_, i) {
+          final c = results[i];
+          return _ChildRow(
+            child: c,
+            subtitle: controller.classroomName(c.classroomId),
+            onTap: () => onPick(c),
+          );
+        },
+      );
+    });
   }
 }
 
@@ -266,7 +294,7 @@ class _ChildRow extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_left_rounded, size: 24.sp, color: _muted),
+            Icon(Icons.chevron_right_rounded, size: 24.sp, color: _muted),
           ],
         ),
       ),

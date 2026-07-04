@@ -146,7 +146,6 @@ class _DiscoveryViewState extends State<DiscoveryView> {
                                     nursery: nursery,
                                     onTap: () =>
                                         controller.openProfile(nursery),
-                                    onApply: () => controller.applyTo(nursery),
                                   ),
                                 );
                               },

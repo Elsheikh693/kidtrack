@@ -15,87 +15,43 @@ class ReceptionistCoursesTab extends StatelessWidget {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              const _CoursesTopBar(),
-              Expanded(
-                child: Obx(() {
-                  if (c.isLoading.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (c.courses.isEmpty) {
-                    return const _EmptyState();
-                  }
-                  return CustomScrollView(
-                    slivers: [
-                      if (c.availableCategories.length > 1)
-                        SliverToBoxAdapter(child: _CategoryBar(controller: c)),
-                      SliverPadding(
-                        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
-                        sliver: SliverList.separated(
-                          itemCount: c.filtered.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12.h),
-                          itemBuilder: (_, i) {
-                            final course = c.filtered[i];
-                            return _CourseCard(
-                              course: course,
-                              enrolledCount: c.enrolledCount(course.id),
-                              onEnroll: () =>
-                                  Get.to(() => CourseEnrollView(course: course)),
-                              onSessions: () =>
-                                  Get.to(() => CourseSessionsView(course: course)),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                }),
+        appBar: HomeAppBar(
+          title: 'reception_tab_courses'.tr,
+          showFilterIcon: false,
+          onSettingsTap: () => Get.toNamed(settingsView),
+        ),
+        body: Obx(() {
+          if (c.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (c.courses.isEmpty) {
+            return const _EmptyState();
+          }
+          return CustomScrollView(
+            slivers: [
+              if (c.availableCategories.length > 1)
+                SliverToBoxAdapter(child: _CategoryBar(controller: c)),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
+                sliver: SliverList.separated(
+                  itemCount: c.filtered.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                  itemBuilder: (_, i) {
+                    final course = c.filtered[i];
+                    return _CourseCard(
+                      course: course,
+                      enrolledCount: c.enrolledCount(course.id),
+                      onEnroll: () =>
+                          Get.to(() => CourseEnrollView(course: course)),
+                      onSessions: () =>
+                          Get.to(() => CourseSessionsView(course: course)),
+                    );
+                  },
+                ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Reception-style top bar (title + notifications + settings) ───────────────
-
-class _CoursesTopBar extends StatelessWidget {
-  const _CoursesTopBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(22, 14, 22, 14),
-      child: Row(
-        children: [
-          const Text(
-            'الكورسات',
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
-              letterSpacing: -0.5,
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: () => Get.toNamed(notificationsView),
-            child: const Icon(Icons.notifications_none_rounded,
-                size: 25, color: Color(0xFF374151)),
-          ),
-          const SizedBox(width: 14),
-          GestureDetector(
-            onTap: () => Get.toNamed(settingsView),
-            child: const Icon(Icons.settings_outlined,
-                size: 25, color: Color(0xFF374151)),
-          ),
-        ],
+          );
+        }),
       ),
     );
   }

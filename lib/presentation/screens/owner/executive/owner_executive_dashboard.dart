@@ -76,6 +76,9 @@ class _OwnerExecutiveDashboardState extends State<OwnerExecutiveDashboard> {
         isNetwork: data.isNetwork,
       ),
 
+      SizedBox(height: 22.h),
+      const UnpaidSubscriptionCard(),
+
       // 4 ── Financial overview
       const ExecSectionLabel(
         titleKey: 'owner_exec_finance',

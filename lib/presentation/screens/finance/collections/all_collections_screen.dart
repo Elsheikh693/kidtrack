@@ -28,21 +28,33 @@ class AllCollectionsScreen extends StatelessWidget {
         body: Obx(() {
           controller.revision.value; // rebuild trigger
           final items = controller.allCollectionsForPeriod();
-          if (items.isEmpty) {
-            return Center(
-              child: Text(
-                'finance_dash_no_collections'.tr,
-                style: context.typography.smRegular
-                    .copyWith(color: const Color(0xFF94A3B8)),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CategoryFilterBar(
+                options: controller.categories.toList(),
+                selectedId: controller.collectionCategoryFilter.value,
+                accent: const Color(0xFF7C3AED),
+                onChanged: controller.setCollectionCategoryFilter,
               ),
-            );
-          }
-          return ListView.separated(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 40.h),
-            itemCount: items.length,
-            separatorBuilder: (_, _) => SizedBox(height: 10.h),
-            itemBuilder: (_, i) => CollectionTile(item: items[i]),
+              Expanded(
+                child: items.isEmpty
+                    ? Center(
+                        child: Text(
+                          'finance_dash_no_collections'.tr,
+                          style: context.typography.smRegular
+                              .copyWith(color: const Color(0xFF94A3B8)),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 40.h),
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => SizedBox(height: 10.h),
+                        itemBuilder: (_, i) => CollectionTile(item: items[i]),
+                      ),
+              ),
+            ],
           );
         }),
       ),

@@ -7,13 +7,26 @@ const _muted = Color(0xFF94A3B8);
 const _field = Color(0xFFF8FAFC);
 const _border = Color(0xFFE2E8F0);
 
-/// Records a single cash collection for the already-selected child. Pure
-/// [FeeCategoryModel] + [FinancialTransactionModel] flow: pick category →
-/// default amount pre-fills → edit if needed → optional note → save.
+/// Records a single cash collection for the already-selected child. Package
+/// driven: pick one of the branch's packages → its price pre-fills the amount →
+/// edit if needed → optional note → save.
 class ReceptionCollectionSheet extends StatefulWidget {
   final ReceptionCollectionController controller;
 
-  const ReceptionCollectionSheet({super.key, required this.controller});
+  /// When the directory renew shortcut opens the sheet, the child isn't the
+  /// controller's selected one — pass it explicitly so the header + save target
+  /// the right child without leaving the list.
+  final ChildModel? child;
+
+  /// Pre-selected package (e.g. the monthly subscription for a quick renew).
+  final PackageModel? initialPackage;
+
+  const ReceptionCollectionSheet({
+    super.key,
+    required this.controller,
+    this.child,
+    this.initialPackage,
+  });
 
   @override
   State<ReceptionCollectionSheet> createState() =>
@@ -21,9 +34,21 @@ class ReceptionCollectionSheet extends StatefulWidget {
 }
 
 class _ReceptionCollectionSheetState extends State<ReceptionCollectionSheet> {
-  FeeCategoryModel? _category;
+  PackageModel? _package;
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final pkg = widget.initialPackage;
+    if (pkg != null) {
+      _package = pkg;
+      if (pkg.finalPrice > 0) {
+        _amountCtrl.text = pkg.finalPrice.toStringAsFixed(0);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -32,19 +57,19 @@ class _ReceptionCollectionSheetState extends State<ReceptionCollectionSheet> {
     super.dispose();
   }
 
-  void _pickCategory(FeeCategoryModel cat) {
+  void _pickPackage(PackageModel pkg) {
     setState(() {
-      _category = cat;
-      if (cat.defaultAmount != null && cat.defaultAmount! > 0) {
-        _amountCtrl.text = cat.defaultAmount!.toStringAsFixed(0);
+      _package = pkg;
+      if (pkg.finalPrice > 0) {
+        _amountCtrl.text = pkg.finalPrice.toStringAsFixed(0);
       }
     });
   }
 
   Future<void> _submit() async {
     final amount = double.tryParse(_amountCtrl.text.trim()) ?? 0;
-    if (_category == null) {
-      Loader.showError('collection_pick_category'.tr);
+    if (_package == null) {
+      Loader.showError('collection_pick_package'.tr);
       return;
     }
     if (amount <= 0) {
@@ -52,16 +77,17 @@ class _ReceptionCollectionSheetState extends State<ReceptionCollectionSheet> {
       return;
     }
     final ok = await widget.controller.saveCollection(
-      category: _category!,
+      package: _package!,
       amount: amount,
       notes: _notesCtrl.text,
+      child: widget.child,
     );
     if (ok) Get.back();
   }
 
   @override
   Widget build(BuildContext context) {
-    final child = widget.controller.selectedChild.value;
+    final child = widget.child ?? widget.controller.selectedChild.value;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Padding(
@@ -125,10 +151,10 @@ class _ReceptionCollectionSheetState extends State<ReceptionCollectionSheet> {
 
               _label('payment_category'.tr),
               SizedBox(height: 8.h),
-              _CategoryGrid(
-                categories: widget.controller.categories,
-                selected: _category,
-                onSelect: _pickCategory,
+              _PackageGrid(
+                packages: widget.controller.packages,
+                selected: _package,
+                onSelect: _pickPackage,
               ),
               SizedBox(height: 18.h),
 
@@ -224,20 +250,20 @@ class _ReceptionCollectionSheetState extends State<ReceptionCollectionSheet> {
       );
 }
 
-class _CategoryGrid extends StatelessWidget {
-  final List<FeeCategoryModel> categories;
-  final FeeCategoryModel? selected;
-  final ValueChanged<FeeCategoryModel> onSelect;
+class _PackageGrid extends StatelessWidget {
+  final List<PackageModel> packages;
+  final PackageModel? selected;
+  final ValueChanged<PackageModel> onSelect;
 
-  const _CategoryGrid({
-    required this.categories,
+  const _PackageGrid({
+    required this.packages,
     required this.selected,
     required this.onSelect,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (categories.isEmpty) {
+    if (packages.isEmpty) {
       return Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 14.w),
@@ -247,7 +273,7 @@ class _CategoryGrid extends StatelessWidget {
           border: Border.all(color: _border),
         ),
         child: Text(
-          'collection_no_categories'.tr,
+          'collection_no_packages'.tr,
           textAlign: TextAlign.center,
           style: context.typography.xsRegular
               .copyWith(color: _muted, fontSize: 12.5),
@@ -257,12 +283,12 @@ class _CategoryGrid extends StatelessWidget {
     return Wrap(
       spacing: 8.w,
       runSpacing: 8.h,
-      children: categories.map((cat) {
-        final isSel = selected?.key == cat.key;
+      children: packages.map((pkg) {
+        final isSel = selected?.key == pkg.key;
         return GestureDetector(
-          onTap: () => onSelect(cat),
+          onTap: () => onSelect(pkg),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
             decoration: BoxDecoration(
               color: isSel ? _accent.withValues(alpha: 0.10) : _field,
               borderRadius: BorderRadius.circular(12.r),
@@ -278,12 +304,26 @@ class _CategoryGrid extends StatelessWidget {
                   Icon(Icons.check_circle_rounded, size: 16.sp, color: _accent),
                   SizedBox(width: 6.w),
                 ],
-                Text(
-                  cat.name,
-                  style: context.typography.smMedium.copyWith(
-                    color: isSel ? _accent : const Color(0xFF475569),
-                    fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
-                  ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pkg.name,
+                      style: context.typography.smMedium.copyWith(
+                        color: isSel ? _accent : const Color(0xFF475569),
+                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      '${pkg.finalPrice.toStringAsFixed(0)} ${'overdue_currency'.tr}',
+                      style: context.typography.xsRegular.copyWith(
+                        color: isSel ? _accent : _muted,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
