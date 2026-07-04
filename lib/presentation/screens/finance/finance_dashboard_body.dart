@@ -17,6 +17,7 @@ const _line = Color(0xFFEEF0F4);
 /// resolved by [tag], so owner and manager keep separate scoped instances.
 class FinanceDashboardBody extends StatelessWidget {
   final String tag;
+
   const FinanceDashboardBody({super.key, required this.tag});
 
   @override
@@ -52,6 +53,7 @@ class FinanceDashboardBody extends StatelessWidget {
 
 class _MonthBar extends StatelessWidget {
   final FinanceDashboardController controller;
+
   const _MonthBar({required this.controller});
 
   @override
@@ -66,7 +68,10 @@ class _MonthBar extends StatelessWidget {
       child: Row(
         children: [
           // In RTL the first child sits on the right → "previous/older" arrow.
-          _StepBtn(icon: Icons.chevron_right_rounded, onTap: controller.previousMonth),
+          _StepBtn(
+            icon: Icons.chevron_right_rounded,
+            onTap: controller.previousMonth,
+          ),
           Expanded(
             child: Text(
               controller.monthLabel,
@@ -93,7 +98,12 @@ class _StepBtn extends StatelessWidget {
   final IconData icon;
   final bool enabled;
   final VoidCallback onTap;
-  const _StepBtn({required this.icon, this.enabled = true, required this.onTap});
+
+  const _StepBtn({
+    required this.icon,
+    this.enabled = true,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +119,11 @@ class _StepBtn extends StatelessWidget {
               : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: Icon(icon,
-            size: 22.sp, color: enabled ? _accent : const Color(0xFFCBD5E1)),
+        child: Icon(
+          icon,
+          size: 22.sp,
+          color: enabled ? _accent : const Color(0xFFCBD5E1),
+        ),
       ),
     );
   }
@@ -120,6 +133,7 @@ class _StepBtn extends StatelessWidget {
 
 class _KpiTrio extends StatelessWidget {
   final FinanceSummary summary;
+
   const _KpiTrio({required this.summary});
 
   @override
@@ -170,6 +184,7 @@ class _KpiCard extends StatelessWidget {
   final double amount;
   final Color color;
   final IconData icon;
+
   const _KpiCard({
     required this.label,
     required this.amount,
@@ -224,8 +239,10 @@ class _KpiCard extends StatelessWidget {
             label,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: context.typography.xsRegular
-                .copyWith(color: _muted, fontSize: 11.5),
+            style: context.typography.xsRegular.copyWith(
+              color: _muted,
+              fontSize: 11.5,
+            ),
           ),
         ],
       ),
@@ -237,6 +254,7 @@ class _KpiCard extends StatelessWidget {
 
 class _RevenueSplit extends StatelessWidget {
   final List<CategoryRevenue> categories;
+
   const _RevenueSplit({required this.categories});
 
   @override
@@ -252,9 +270,7 @@ class _RevenueSplit extends StatelessWidget {
           Wrap(
             spacing: 10.w,
             runSpacing: 10.h,
-            children: categories
-                .map((c) => _CategoryCard(data: c))
-                .toList(),
+            children: categories.map((c) => _CategoryCard(data: c)).toList(),
           ),
       ],
     );
@@ -263,6 +279,7 @@ class _RevenueSplit extends StatelessWidget {
 
 class _CategoryCard extends StatelessWidget {
   final CategoryRevenue data;
+
   const _CategoryCard({required this.data});
 
   @override
@@ -283,8 +300,10 @@ class _CategoryCard extends StatelessWidget {
             data.categoryName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.typography.smSemiBold
-                .copyWith(color: _ink, fontSize: 14),
+            style: context.typography.smSemiBold.copyWith(
+              color: _ink,
+              fontSize: 14,
+            ),
           ),
           SizedBox(height: 8.h),
           Row(
@@ -303,18 +322,23 @@ class _CategoryCard extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 2.h),
                 child: Text(
                   'currency'.tr,
-                  style: context.typography.xsRegular
-                      .copyWith(color: _accent.withValues(alpha: 0.8), fontSize: 11),
+                  style: context.typography.xsRegular.copyWith(
+                    color: _accent.withValues(alpha: 0.8),
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ],
           ),
           SizedBox(height: 4.h),
           Text(
-            'finance_dash_operations'
-                .trParams({'count': '${data.transactionsCount}'}),
-            style: context.typography.xsRegular
-                .copyWith(color: _muted, fontSize: 11.5),
+            'finance_dash_operations'.trParams({
+              'count': '${data.transactionsCount}',
+            }),
+            style: context.typography.xsRegular.copyWith(
+              color: _muted,
+              fontSize: 11.5,
+            ),
           ),
         ],
       ),
@@ -327,6 +351,7 @@ class _CategoryCard extends StatelessWidget {
 class _RecentCollections extends StatelessWidget {
   final FinanceDashboardController controller;
   final String tag;
+
   const _RecentCollections({required this.controller, required this.tag});
 
   @override
@@ -344,10 +369,12 @@ class _RecentCollections extends StatelessWidget {
         if (items.isEmpty)
           _EmptyHint(text: 'finance_dash_no_collections'.tr)
         else
-          ...items.map((c) => Padding(
-                padding: EdgeInsets.only(bottom: 10.h),
-                child: CollectionTile(item: c),
-              )),
+          ...items.map(
+            (c) => Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: CollectionTile(item: c),
+            ),
+          ),
       ],
     );
   }
@@ -356,6 +383,7 @@ class _RecentCollections extends StatelessWidget {
 /// Shared collection row — used by the dashboard and the full list screen.
 class CollectionTile extends StatelessWidget {
   final RecentCollection item;
+
   const CollectionTile({super.key, required this.item});
 
   @override
@@ -382,8 +410,10 @@ class CollectionTile extends StatelessWidget {
               item.childName.trim().isEmpty
                   ? '؟'
                   : item.childName.trim().characters.first,
-              style: context.typography.mdBold
-                  .copyWith(color: _revenue, fontSize: 16),
+              style: context.typography.mdBold.copyWith(
+                color: _revenue,
+                fontSize: 16,
+              ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -397,30 +427,39 @@ class CollectionTile extends StatelessWidget {
                       : item.childName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.typography.smSemiBold
-                      .copyWith(color: _ink, fontSize: 14.5),
+                  style: context.typography.smSemiBold.copyWith(
+                    color: _ink,
+                    fontSize: 14.5,
+                  ),
                 ),
                 SizedBox(height: 2.h),
                 Text(
                   item.categoryName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.typography.xsRegular
-                      .copyWith(color: _muted, fontSize: 12),
+                  style: context.typography.xsRegular.copyWith(
+                    color: _muted,
+                    fontSize: 12,
+                  ),
                 ),
                 SizedBox(height: 4.h),
                 Row(
                   children: [
-                    Icon(Icons.person_outline_rounded,
-                        size: 12.sp, color: _muted),
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 12.sp,
+                      color: _muted,
+                    ),
                     SizedBox(width: 3.w),
                     Flexible(
                       child: Text(
                         '${'finance_dash_collected_by'.tr} ${item.collectedBy.isEmpty ? 'finance_unknown_staff'.tr : item.collectedBy}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: context.typography.xsRegular
-                            .copyWith(color: _muted, fontSize: 11),
+                        style: context.typography.xsRegular.copyWith(
+                          color: _muted,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],
@@ -443,8 +482,10 @@ class CollectionTile extends StatelessWidget {
               SizedBox(height: 4.h),
               Text(
                 DateFormat('d MMM', isAr ? 'ar' : 'en').format(item.date),
-                style: context.typography.xsRegular
-                    .copyWith(color: _muted, fontSize: 11),
+                style: context.typography.xsRegular.copyWith(
+                  color: _muted,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
@@ -459,6 +500,7 @@ class CollectionTile extends StatelessWidget {
 class _RecentExpenses extends StatelessWidget {
   final FinanceDashboardController controller;
   final String tag;
+
   const _RecentExpenses({required this.controller, required this.tag});
 
   @override
@@ -478,10 +520,12 @@ class _RecentExpenses extends StatelessWidget {
         if (items.isEmpty)
           _EmptyHint(text: 'finance_dash_no_expenses'.tr)
         else
-          ...items.map((e) => Padding(
-                padding: EdgeInsets.only(bottom: 10.h),
-                child: ExpenseTile(item: e),
-              )),
+          ...items.map(
+            (e) => Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: ExpenseTile(item: e),
+            ),
+          ),
       ],
     );
   }
@@ -489,6 +533,7 @@ class _RecentExpenses extends StatelessWidget {
 
 class _AddExpenseButton extends StatelessWidget {
   final FinanceDashboardController controller;
+
   const _AddExpenseButton({required this.controller});
 
   @override
@@ -528,6 +573,7 @@ class _AddExpenseButton extends StatelessWidget {
 class ExpenseTile extends StatelessWidget {
   final RecentExpense item;
   final VoidCallback? onDelete;
+
   const ExpenseTile({super.key, required this.item, this.onDelete});
 
   @override
@@ -549,8 +595,11 @@ class ExpenseTile extends StatelessWidget {
               color: _expense.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(Icons.receipt_long_rounded,
-                size: 20.sp, color: _expense),
+            child: Icon(
+              Icons.receipt_long_rounded,
+              size: 20.sp,
+              color: _expense,
+            ),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -561,15 +610,21 @@ class ExpenseTile extends StatelessWidget {
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.typography.smSemiBold
-                      .copyWith(color: _ink, fontSize: 14.5),
+                  style: context.typography.smSemiBold.copyWith(
+                    color: _ink,
+                    fontSize: 14.5,
+                  ),
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  DateFormat('d MMM yyyy', isAr ? 'ar' : 'en')
-                      .format(item.date),
-                  style: context.typography.xsRegular
-                      .copyWith(color: _muted, fontSize: 12),
+                  DateFormat(
+                    'd MMM yyyy',
+                    isAr ? 'ar' : 'en',
+                  ).format(item.date),
+                  style: context.typography.xsRegular.copyWith(
+                    color: _muted,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -588,8 +643,11 @@ class ExpenseTile extends StatelessWidget {
             GestureDetector(
               onTap: onDelete,
               behavior: HitTestBehavior.opaque,
-              child: Icon(Icons.delete_outline_rounded,
-                  size: 20.sp, color: _muted),
+              child: Icon(
+                Icons.delete_outline_rounded,
+                size: 20.sp,
+                color: _muted,
+              ),
             ),
           ],
         ],
@@ -604,6 +662,7 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final String? actionLabel;
   final VoidCallback? onAction;
+
   const _SectionTitle({required this.title, this.actionLabel, this.onAction});
 
   @override
@@ -626,8 +685,11 @@ class _SectionTitle extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: Text(
               actionLabel!,
-              style: context.typography.xsMedium
-                  .copyWith(color: _accent, fontSize: 13, fontWeight: FontWeight.w700),
+              style: context.typography.xsMedium.copyWith(
+                color: _accent,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
       ],
@@ -637,6 +699,7 @@ class _SectionTitle extends StatelessWidget {
 
 class _EmptyHint extends StatelessWidget {
   final String text;
+
   const _EmptyHint({required this.text});
 
   @override
@@ -652,7 +715,10 @@ class _EmptyHint extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: context.typography.xsRegular.copyWith(color: _muted, fontSize: 13),
+        style: context.typography.xsRegular.copyWith(
+          color: _muted,
+          fontSize: 13,
+        ),
       ),
     );
   }
