@@ -108,7 +108,7 @@ class AccessWatcherService extends GetxController {
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
 
-    Get.offAllNamed(loginView);
+    Get.offAllNamed(activationLandingView);
     await Future.delayed(const Duration(milliseconds: 400));
     Get.snackbar(
       '',

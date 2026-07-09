@@ -34,7 +34,7 @@ class MonthlyInvoiceService {
     await _childSvc.getAll(callBack: (list) {
       for (final c in list.whereType<ChildModel>()) {
         if (c.key == null || c.status != 'active') continue;
-        if (c.packageId == null || c.packageId!.isEmpty) continue;
+        if (c.packageIds.isEmpty) continue;
         if (branchId != null && branchId.isNotEmpty && c.branchId != branchId) {
           continue;
         }
@@ -63,20 +63,25 @@ class MonthlyInvoiceService {
         DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
 
     for (final child in children) {
-      final pkg = packages[child.packageId];
-      if (pkg == null || !pkg.isActive) continue; // package removed/inactive
+      // Only active packages bill; a child may hold several.
+      final childPkgs = child.packageIds
+          .map((id) => packages[id])
+          .whereType<PackageModel>()
+          .where((p) => p.isActive)
+          .toList();
+      if (childPkgs.isEmpty) continue; // all packages removed/inactive
 
       final key = monthlyKey(child.key!, month);
       if (existingKeys.contains(key)) continue;
 
-      final amount = pkg.monthlyDue;
+      final amount = childPkgs.fold<double>(0, (acc, p) => acc + p.monthlyDue);
       final invoice = InvoiceModel(
         key: key,
         nurseryId: nurseryId,
         childId: child.key!,
         parentId: child.parentId,
-        packageId: pkg.key,
-        title: pkg.name,
+        packageId: childPkgs.length == 1 ? childPkgs.first.key : null,
+        title: childPkgs.map((p) => p.name).join(' + '),
         amount: amount,
         totalAmount: amount,
         status: 'pending',

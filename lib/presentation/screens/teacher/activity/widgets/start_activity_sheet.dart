@@ -75,13 +75,14 @@ class _StartActivitySheetState extends State<StartActivitySheet>
 
   @override
   Widget build(BuildContext context) {
-    final maxH = MediaQuery.of(context).size.height * 0.75;
+    final media = MediaQuery.of(context);
+    final maxH = media.size.height * 0.85 - media.viewInsets.bottom;
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxH),
-        child: wrapWithKeyboard(
-          context: context,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxH),
           child: Container(
             decoration: const BoxDecoration(
               color: Colors.white,

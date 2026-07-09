@@ -49,3 +49,19 @@ exports.midDayNudgeScan = midDayNudgeScan;
 const { withdrawChild } = require("./children/withdrawChild");
 
 exports.withdrawChild = withdrawChild;
+
+// ============================================================
+// 🔑 ACTIVATE (callable, public) — activation code → custom token
+// ============================================================
+
+const { activate } = require("./auth/activate");
+
+exports.activate = activate;
+
+// ============================================================
+// 🏚️ DELETE NURSERY (callable — full cascade + owner/staff/parent auth cleanup)
+// ============================================================
+
+const { deleteNursery } = require("./nurseries/deleteNursery");
+
+exports.deleteNursery = deleteNursery;

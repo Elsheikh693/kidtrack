@@ -13,6 +13,48 @@ class MakeCall {
     }
   }
 
+  /// **🟢 Open a WhatsApp chat (WhatsApp or WhatsApp Business).**
+  /// Tries the `whatsapp://` scheme first so the installed WhatsApp app opens
+  /// directly, then falls back to the `https://wa.me` link (which lets the OS
+  /// pick WhatsApp / WhatsApp Business, or the browser as a last resort).
+  static Future<void> openWhatsApp(String phone, {String? message}) async {
+    final number = formatForWhatsApp(phone);
+    if (number.isEmpty) {
+      Loader.showError('contact_launch_error'.tr);
+      return;
+    }
+    final hasText = message != null && message.trim().isNotEmpty;
+    final encoded = hasText ? Uri.encodeComponent(message) : '';
+
+    // 1) Native scheme — opens the installed WhatsApp / WhatsApp Business app.
+    final appUri = Uri.parse(
+      'whatsapp://send?phone=$number${hasText ? '&text=$encoded' : ''}',
+    );
+    try {
+      if (await canLaunchUrl(appUri)) {
+        if (await launchUrl(appUri, mode: LaunchMode.externalApplication)) {
+          return;
+        }
+      }
+    } catch (_) {
+      // fall through to the https link
+    }
+
+    // 2) Universal link — no canLaunchUrl gate (https is always launchable).
+    final webUri = Uri.parse(
+      'https://wa.me/$number${hasText ? '?text=$encoded' : ''}',
+    );
+    try {
+      if (await launchUrl(webUri, mode: LaunchMode.externalApplication)) {
+        return;
+      }
+    } catch (_) {
+      // fall through to the error toast
+    }
+
+    Loader.showError('contact_launch_error'.tr);
+  }
+
   /// **🟢 Normalize a phone number to WhatsApp's required international format.**
   /// WhatsApp (`wa.me`) only accepts a full international number with no `+`,
   /// spaces or leading `0`. Egyptian local numbers like `01551061194` must be

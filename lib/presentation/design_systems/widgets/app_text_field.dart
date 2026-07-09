@@ -17,6 +17,7 @@ class AppTextField extends StatefulWidget {
     this.focusNode,
     this.showShadow = true,
     this.prefixIcon,
+    this.hintColor,
     this.keyboardType,
     this.readOnly,
     this.ontap,
@@ -41,6 +42,7 @@ class AppTextField extends StatefulWidget {
   final String? errorText; // Determines if there’s an error
   final Widget? suffixIcon;
   final Widget? prefixIcon;
+  final Color? hintColor;
   final TextInputType? keyboardType;
   final TextInputAction textInputAction;
   final int maxLines;
@@ -146,7 +148,7 @@ class _AppTextFieldState extends State<AppTextField> {
           labelText: widget.labelText,
           hintText: widget.hintText,
           hintStyle: context.typography.mdRegular.copyWith(
-            color: AppColors.textFieldPlaceholder,
+            color: widget.hintColor ?? AppColors.textFieldPlaceholder,
           ),
           filled: true,
           fillColor: Colors.transparent,

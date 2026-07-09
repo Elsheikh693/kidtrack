@@ -5,8 +5,16 @@ class ProgramParentService {
   final BaseService<ProgramModel> _service =
       Get.find<BaseService<ProgramModel>>(tag: 'programs');
 
-  Future<void> getAll({required Function(List<ProgramModel?>) callBack}) async {
-    await _service.getData(data: {}, voidCallBack: callBack);
+  /// [limit] caps the server-side result so existence probes fetch one row
+  /// instead of the whole list.
+  Future<void> getAll({
+    required Function(List<ProgramModel?>) callBack,
+    int? limit,
+  }) async {
+    await _service.getData(
+      data: limit == null ? const {} : FirebaseFilter.firstN(limit),
+      voidCallBack: callBack,
+    );
   }
 
   Future<void> add({

@@ -27,7 +27,24 @@
       "Bash(grep -rn ''\\\\''__TRACKED_VAR__'\\\\''' lib/)",
       "Bash(git -C /Users/apple/kidtrack status)",
       "Bash(git -C /Users/apple/kidtrack add -A)",
-      "Bash(git -C /Users/apple/kidtrack commit -m ' *)"
+      "Bash(git -C /Users/apple/kidtrack commit -m ' *)",
+      "Bash(git -C /Users/apple/kidtrack push origin main)",
+      "Bash(grep -E \"\\\\.dart$\")",
+      "Bash(sed -n '45,75p' lib/presentation/screens/discovery/apply/apply_success_view.dart)",
+      "Bash(sed -n '1,25p' lib/presentation/screens/settings/app_settings_view.dart)",
+      "Bash(flutter pub *)",
+      "Bash(node -c auth/activate.js)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('database.rules.json','utf8'\\)\\); console.log\\('rules JSON OK'\\)\")",
+      "Bash(pod update *)",
+      "Bash(curl -s https://pub.dev/api/packages/mobile_scanner)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('latest:', d['latest']['version']\\); print\\('recent:', [v['version'] for v in d['versions'][-12:]]\\)\")",
+      "Bash(PKG=$\\(find ~/.pub-cache/hosted/pub.dev -maxdepth 1 -name \"mobile_scanner-7*\" -type d | head -1\\); echo \"PKG=$PKG\"; echo \"=== MobileScanner widget onDetect? ===\"; grep -n \"this.onDetect\\\\|onDetect\\\\|VoidCallback\\\\|onDetectError\\\\|controller,\" \"$PKG/lib/src/mobile_scanner.dart\" | head -20)",
+      "Bash(pod install *)",
+      "Bash(grep -n '\"platform\"\\\\|\"info\"\\\\|\"staff\"\\\\|\"parents\"\\\\|\"users\"\\\\|\"activationCodes\"\\\\|\"children\"\\\\|$nid\\\\|$nurseryId\\\\|\\\\.indexOn' /Users/apple/kidtrack/database.rules.json)",
+      "Bash(node --check functions/nurseries/deleteNursery.js)",
+      "Bash(node --check functions/index.js)",
+      "Bash(npx eslint *)",
+      "Bash(git checkout *)"
     ]
   }
 }

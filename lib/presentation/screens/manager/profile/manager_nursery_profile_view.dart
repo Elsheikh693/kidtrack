@@ -2,7 +2,6 @@ import '../../../../index/index_main.dart';
 import 'widgets/profile_age_fee_editor.dart';
 import 'widgets/profile_cover_picker.dart';
 import 'widgets/profile_gallery_editor.dart';
-import 'widgets/profile_location_field.dart';
 import 'widgets/profile_branches_editor.dart';
 import 'widgets/profile_city_selector.dart';
 import 'widgets/profile_tag_editor.dart';
@@ -81,11 +80,6 @@ class _ManagerNurseryProfileViewState extends State<ManagerNurseryProfileView>
                 context,
                 'manager_profile_city'.tr,
                 ProfileCitySelector(controller: controller),
-              ),
-              _section(
-                context,
-                'manager_profile_location'.tr,
-                ProfileLocationField(controller: controller),
               ),
               _section(
                 context,

@@ -4,12 +4,16 @@ class OwnerTile extends StatelessWidget {
   final UserModel owner;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onShowCode;
+  final VoidCallback onSendWhatsApp;
 
   const OwnerTile({
     super.key,
     required this.owner,
     required this.onEdit,
     required this.onDelete,
+    required this.onShowCode,
+    required this.onSendWhatsApp,
   });
 
   @override
@@ -68,18 +72,49 @@ class OwnerTile extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            onPressed: onEdit,
-            icon: Icon(Icons.edit_outlined,
-                size: 20.sp, color: const Color(0xFF6366F1)),
+          _TileAction(
+            icon: Icons.chat_rounded,
+            color: const Color(0xFF25D366),
+            onTap: onSendWhatsApp,
           ),
-          IconButton(
-            onPressed: onDelete,
-            icon: Icon(Icons.delete_outline,
-                size: 20.sp, color: AppColors.errorForeground),
+          _TileAction(
+            icon: Icons.qr_code_rounded,
+            color: AppColors.primary,
+            onTap: onShowCode,
+          ),
+          _TileAction(
+            icon: Icons.edit_outlined,
+            color: const Color(0xFF6366F1),
+            onTap: onEdit,
+          ),
+          _TileAction(
+            icon: Icons.delete_outline,
+            color: AppColors.errorForeground,
+            onTap: onDelete,
           ),
         ],
       ),
     );
   }
+}
+
+/// Compact icon button so several actions fit on one owner row without wrapping.
+class _TileAction extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _TileAction({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        onPressed: onTap,
+        padding: EdgeInsets.zero,
+        visualDensity: VisualDensity.compact,
+        constraints: BoxConstraints(minWidth: 34.w, minHeight: 34.h),
+        icon: Icon(icon, size: 19.sp, color: color),
+      );
 }

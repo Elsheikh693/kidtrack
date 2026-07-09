@@ -342,6 +342,35 @@ class ChildProfileController extends GetxController {
 
   bool get isWithdrawn => child.value?.isWithdrawn ?? false;
 
+  /// Only enrollment-managing staff may change a child's shift — the same set
+  /// allowed to withdraw. Parents and teachers reach the profile read-only.
+  bool get canEditShift => canWithdraw;
+
+  /// Persists a new shift for the child (staff only) and reloads the profile so
+  /// the value shows immediately. No-ops when the shift is unchanged.
+  Future<void> updateShift(String shift) async {
+    final current = child.value;
+    if (current == null || current.key == null) return;
+    if (current.shift == shift) {
+      Get.back();
+      return;
+    }
+    Loader.show();
+    await _childSvc.update(
+      item: current.copyWith(shift: shift),
+      callBack: (status) {
+        Loader.dismiss();
+        if (status == ResponseStatus.success) {
+          Get.back();
+          loadProfile();
+          Loader.showSuccess('child_details_saved'.tr);
+        } else {
+          Loader.showError('common_error'.tr);
+        }
+      },
+    );
+  }
+
   /// Permanently withdraws the child. The server-side `withdrawChild` Cloud
   /// Function hard-deletes the child record + all child-scoped data, logs the
   /// withdrawal (so the manager's monthly-movement stat survives), and deletes

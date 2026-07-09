@@ -50,19 +50,39 @@ class NurseryListController extends GetxController {
     );
   }
 
+  /// Permanently removes a nursery and EVERYTHING tied to it — all its data,
+  /// every owner/staff/parent account (profile + Firebase Auth), activation codes
+  /// and notifications. Irreversible, so it always confirms first.
   Future<void> delete(NurseryModel nursery) async {
-    Loader.show();
-    await _service.delete(
-      id: nursery.key ?? '',
-      callBack: (status) {
-        Loader.dismiss();
-        if (status == ResponseStatus.success) {
-          Loader.showSuccess('nursery_success_deleted'.tr);
-          loadData();
-        } else {
-          Loader.showError('nursery_error_failed'.tr);
-        }
-      },
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('nursery_delete_title'.tr),
+        content: Text('nursery_delete_msg'.trParams({'name': nursery.name})),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('common_cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: Text(
+              'common_delete'.tr,
+              style: TextStyle(color: AppColors.errorForeground),
+            ),
+          ),
+        ],
+      ),
     );
+    if (confirmed != true) return;
+
+    Loader.show();
+    final ok = await _service.deleteCascade(nursery.key ?? '');
+    Loader.dismiss();
+    if (ok) {
+      Loader.showSuccess('nursery_success_deleted'.tr);
+      loadData();
+    } else {
+      Loader.showError('nursery_error_failed'.tr);
+    }
   }
 }

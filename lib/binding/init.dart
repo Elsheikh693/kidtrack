@@ -63,6 +63,15 @@ class Binding implements Bindings {
       fenix: true,
     );
 
+    Get.lazyPut<AuthBootstrapService>(
+      () => AuthBootstrapService(),
+      fenix: true,
+    );
+    Get.lazyPut<ActivationLoginService>(
+      () => ActivationLoginService(),
+      fenix: true,
+    );
+
     // ─── Session ──────────────────────────────────────────────────────────
     Get.put<SessionService>(SessionService(), permanent: true);
 
@@ -80,6 +89,9 @@ class Binding implements Bindings {
 
     // ─── Owner Scope (network vs branch level switch) ─────────────────────
     Get.put<OwnerScopeService>(OwnerScopeService(), permanent: true);
+
+    // ─── Deep links (QR scan → open app → auto-login) ─────────────────────
+    Get.put<DeepLinkService>(DeepLinkService(), permanent: true);
 
     // ═════════════════════════════════════════════════════════════════════
     // CRUD Bindings — 33 Models
@@ -202,6 +214,13 @@ class Binding implements Bindings {
       tag: "parentChildren",
       baseUrl: () => ApiConstants.parentChildren,
       fromJson: (json) => ParentChildModel.fromJson(json),
+    );
+
+    // 16b. Activation Codes (role-agnostic, global — code is the key)
+    BaseBinding.bindCrud<ActivationCodeModel>(
+      tag: "activationCodes",
+      baseUrl: () => ApiConstants.activationCodes,
+      fromJson: (json) => ActivationCodeModel.fromJson(json),
     );
 
     // 17. Child Attendance
@@ -534,6 +553,10 @@ class Binding implements Bindings {
       () => ParentChildParentService(),
       fenix: true,
     );
+    Get.lazyPut<ActivationParentService>(
+      () => ActivationParentService(),
+      fenix: true,
+    );
     Get.lazyPut<BulkInvitationsController>(
       () => BulkInvitationsController(),
       fenix: true,
@@ -797,6 +820,16 @@ class Binding implements Bindings {
     // ─── Platform Subscription Billing ────────────────────────────────────
     Get.lazyPut<PlatformBillingService>(
       () => PlatformBillingService(),
+      fenix: true,
+    );
+
+    // ─── KidTrack Feedback Campaigns ──────────────────────────────────────
+    Get.lazyPut<KidtrackCampaignService>(
+      () => KidtrackCampaignService(),
+      fenix: true,
+    );
+    Get.lazyPut<KidtrackFeedbackService>(
+      () => KidtrackFeedbackService(),
       fenix: true,
     );
     Get.lazyPut<MySubscriptionController>(

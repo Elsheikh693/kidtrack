@@ -20,6 +20,13 @@ class Strings {
   static const String urlAndroid =
       "https://play.google.com/store/apps/details?id=com.elsheikh.marketingwhats";
 
+  // ─── Activation deep link ─────────────────────────────────────────────────
+  // QR codes encode `${activationLinkBase}<CODE>`. Scanning it (camera) hits the
+  // Firebase Hosting landing page, which opens the app (universal/app link) or
+  // routes to the store. Keep in sync with firebase.json hosting rewrite + the
+  // apple-app-site-association / assetlinks paths (`/a/*`).
+  static const String activationLinkBase = "https://kidtrack-bed28.web.app/a/";
+
   // ─── Auth ─────────────────────────────────────────────────────────────────
   static const String signUp = "Sign Up";
   static const String signIn = "Log in";

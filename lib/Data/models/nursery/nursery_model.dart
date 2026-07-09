@@ -22,6 +22,12 @@ class NurseryModel {
   final int? createdAt;
   final int? updatedAt;
 
+  /// Links this nursery to a global KidTrack app-rating campaign
+  /// (`platform/kidtrackFeedbackCampaigns/{id}`). SuperAdmin-controlled: null
+  /// means no active survey. The parent prompt is live only when this is set
+  /// AND the linked campaign is enabled.
+  final String? kidtrackFeedbackCampaignId;
+
   // ─── Discovery / profile display fields ───────────────────────────────────
   final String? coverPhoto;
   final List<String> photos;
@@ -87,6 +93,7 @@ class NurseryModel {
     this.isListed = false,
     this.createdAt,
     this.updatedAt,
+    this.kidtrackFeedbackCampaignId,
     this.coverPhoto,
     this.photos = const [],
     this.description,
@@ -135,6 +142,8 @@ class NurseryModel {
       isListed: _parseBool(json['isListed'], fallback: false),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
+      kidtrackFeedbackCampaignId:
+          json['kidtrackFeedbackCampaignId']?.toString(),
       coverPhoto: json['coverPhoto']?.toString(),
       photos: _parseStringList(json['photos']),
       description: json['description']?.toString(),
@@ -177,6 +186,7 @@ class NurseryModel {
     data['isListed'] = isListed;
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
+    put('kidtrackFeedbackCampaignId', kidtrackFeedbackCampaignId);
     put('coverPhoto', coverPhoto);
     if (photos.isNotEmpty) data['photos'] = photos;
     put('description', description);
@@ -210,6 +220,7 @@ class NurseryModel {
     String? key, String? name, String? logo, String? phone, String? whatsapp,
     String? email, String? address, String? ownerId, List<String>? ownerIds,
     bool? isActive, bool? isListed, int? createdAt, int? updatedAt,
+    String? kidtrackFeedbackCampaignId,
     String? coverPhoto, List<String>? photos, String? description,
     double? lat, double? lng, double? rating, int? reviewsCount,
     int? childrenCount,
@@ -231,6 +242,8 @@ class NurseryModel {
     isActive: isActive ?? this.isActive,
     isListed: isListed ?? this.isListed,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
+    kidtrackFeedbackCampaignId:
+        kidtrackFeedbackCampaignId ?? this.kidtrackFeedbackCampaignId,
     coverPhoto: coverPhoto ?? this.coverPhoto, photos: photos ?? this.photos,
     description: description ?? this.description,
     lat: lat ?? this.lat, lng: lng ?? this.lng, rating: rating ?? this.rating,

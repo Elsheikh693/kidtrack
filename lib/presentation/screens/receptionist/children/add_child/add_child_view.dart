@@ -29,7 +29,7 @@ class _AddChildViewState extends State<AddChildView> {
   BranchModel? selectedBranch;
   ClassroomModel? selectedClassroom;
   ProgramModel? selectedProgram;
-  PackageModel? selectedPackage;
+  final List<PackageModel> selectedPackages = [];
   String selectedGender = 'male';
   String? selectedShift;
   bool isLoadingLookups = true;
@@ -155,7 +155,8 @@ class _AddChildViewState extends State<AddChildView> {
       status: 'active',
       shift: selectedShift,
       programId: selectedProgram?.key,
-      packageId: selectedPackage?.key,
+      packageIds:
+          selectedPackages.map((p) => p.key).whereType<String>().toList(),
     );
     Loader.show();
     await _service.add(
@@ -274,10 +275,18 @@ class _AddChildViewState extends State<AddChildView> {
               if (isLoadingLookups)
                 const ReadonlyField('...')
               else
-                AddChildPackageDropdown(
+                AddChildPackageSelector(
                   packages: packages,
-                  selected: selectedPackage,
-                  onChanged: (p) => setState(() => selectedPackage = p),
+                  selected: selectedPackages,
+                  onToggle: (p) => setState(() {
+                    final i =
+                        selectedPackages.indexWhere((s) => s.key == p.key);
+                    if (i >= 0) {
+                      selectedPackages.removeAt(i);
+                    } else {
+                      selectedPackages.add(p);
+                    }
+                  }),
                 ),
               SizedBox(height: 32.h),
               SubmitButton(label: 'child_register'.tr, onTap: _submit),

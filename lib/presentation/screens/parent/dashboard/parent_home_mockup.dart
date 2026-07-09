@@ -2287,7 +2287,7 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.child_care_rounded,
-        title: e.title ?? 'تغيّرت حالته',
+        title: e.title?.tr ?? 'تغيّرت حالته',
         caption: 'حالة الطفل',
         kind: _TLKind.childState,
         state: _TLState.done,

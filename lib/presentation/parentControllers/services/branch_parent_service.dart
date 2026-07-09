@@ -4,10 +4,16 @@ class BranchParentService {
   final BaseService<BranchModel> _service =
       Get.find<BaseService<BranchModel>>(tag: 'branches');
 
+  /// [limit] caps the server-side result so existence probes fetch one row
+  /// instead of the whole list.
   Future<void> getAll({
     required Function(List<BranchModel?>) callBack,
+    int? limit,
   }) async {
-    await _service.getData(data: {}, voidCallBack: callBack);
+    await _service.getData(
+      data: limit == null ? const {} : FirebaseFilter.firstN(limit),
+      voidCallBack: callBack,
+    );
   }
 
   Future<void> add({

@@ -119,13 +119,13 @@ class _AgeBox extends StatelessWidget {
   }
 }
 
-/// Modal wheel picker for years (0–6) + months (0–11).
+/// Modal wheel picker for years (0–10) + months (0–11).
 void showAgePickerSheet(
   BuildContext context, {
   required int initialMonths,
   required ValueChanged<int> onPicked,
 }) {
-  int years = (initialMonths ~/ 12).clamp(0, 6);
+  int years = (initialMonths ~/ 12).clamp(0, 10);
   int months = initialMonths % 12;
   showModalBottomSheet(
     context: context,
@@ -154,7 +154,7 @@ void showAgePickerSheet(
                     Expanded(
                       child: _Wheel(
                         unit: 'age_unit_years'.tr,
-                        count: 7,
+                        count: 11,
                         initial: years,
                         onChanged: (v) => years = v,
                       ),

@@ -14,7 +14,7 @@ class ChildModel {
   final String? shift; // morning, evening
   final String? parentId;
   final String? programId; // enrolled program/stage (KG1, KG2, Pre, ...)
-  final String? packageId; // subscribed fee package; drives monthly billing
+  final List<String> packageIds; // subscribed fee packages; drive monthly billing
   final double? homeLat;
   final double? homeLng;
   final String? homeAddress;
@@ -40,7 +40,7 @@ class ChildModel {
     this.shift,
     this.parentId,
     this.programId,
-    this.packageId,
+    this.packageIds = const [],
     this.homeLat,
     this.homeLng,
     this.homeAddress,
@@ -74,7 +74,7 @@ class ChildModel {
       shift: json['shift']?.toString(),
       parentId: json['parentId']?.toString(),
       programId: json['programId']?.toString(),
-      packageId: json['packageId']?.toString(),
+      packageIds: _parsePackageIds(json),
       homeLat: _parseDouble(json['homeLat']),
       homeLng: _parseDouble(json['homeLng']),
       homeAddress: json['homeAddress']?.toString(),
@@ -104,7 +104,7 @@ class ChildModel {
     put('shift', shift);
     put('parentId', parentId);
     put('programId', programId);
-    put('packageId', packageId);
+    if (packageIds.isNotEmpty) data['packageIds'] = packageIds;
     put('homeLat', homeLat);
     put('homeLng', homeLng);
     put('homeAddress', homeAddress);
@@ -121,7 +121,7 @@ class ChildModel {
     String? firstName, String? lastName, String? profileImage, String? gender,
     int? dateOfBirth, String? bloodType, String? nationality, String? status,
     String? shift, String? parentId, String? programId, bool clearProgram = false,
-    String? packageId, bool clearPackage = false,
+    List<String>? packageIds,
     double? homeLat, double? homeLng, String? homeAddress,
     String? busChaperoneId, bool clearBusChaperone = false,
     String? withdrawnReason, int? withdrawnAt, bool clearWithdrawal = false,
@@ -136,7 +136,7 @@ class ChildModel {
     shift: shift ?? this.shift,
     parentId: parentId ?? this.parentId,
     programId: clearProgram ? null : (programId ?? this.programId),
-    packageId: clearPackage ? null : (packageId ?? this.packageId),
+    packageIds: packageIds ?? this.packageIds,
     homeLat: homeLat ?? this.homeLat, homeLng: homeLng ?? this.homeLng,
     homeAddress: homeAddress ?? this.homeAddress,
     busChaperoneId: clearBusChaperone ? null : (busChaperoneId ?? this.busChaperoneId),
@@ -144,6 +144,21 @@ class ChildModel {
     withdrawnAt: clearWithdrawal ? null : (withdrawnAt ?? this.withdrawnAt),
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
+
+  // Reads new `packageIds` list, falling back to the legacy single `packageId`
+  // so children saved before multi-package support keep billing correctly.
+  static List<String> _parsePackageIds(Map<String, dynamic> json) {
+    final raw = json['packageIds'];
+    if (raw is List) {
+      return raw
+          .map((e) => e?.toString() ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    final single = json['packageId']?.toString();
+    if (single != null && single.isNotEmpty) return [single];
+    return const [];
+  }
 
   static int _now() => DateTime.now().millisecondsSinceEpoch;
   static int? _parseInt(dynamic v) {

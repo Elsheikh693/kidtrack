@@ -4,8 +4,16 @@ class SubjectParentService {
   final BaseService<SubjectModel> _service =
       Get.find<BaseService<SubjectModel>>(tag: 'subjects');
 
-  Future<void> getAll({required Function(List<SubjectModel?>) callBack}) async {
-    await _service.getData(data: {}, voidCallBack: callBack);
+  /// [limit] caps the server-side result so existence probes fetch one row
+  /// instead of the whole list.
+  Future<void> getAll({
+    required Function(List<SubjectModel?>) callBack,
+    int? limit,
+  }) async {
+    await _service.getData(
+      data: limit == null ? const {} : FirebaseFilter.firstN(limit),
+      voidCallBack: callBack,
+    );
   }
 
   Future<void> add({

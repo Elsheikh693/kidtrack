@@ -1,9 +1,11 @@
 import '../../../../index/index_main.dart';
+import 'activity_child_states_mixin.dart';
 
 
 enum EvalFilter { all, unevaluated, excellent, needsFollow, needsAttention }
 
-class TeacherActivityController extends GetxController {
+class TeacherActivityController extends GetxController
+    with ActivityChildStatesMixin {
   late final SessionService _session;
   late final TeacherActivityService _activityService;
   final _academicService = TeacherAcademicService();
@@ -36,8 +38,14 @@ class TeacherActivityController extends GetxController {
 
   StreamSubscription<ClassroomActivityModel?>? _activitySub;
 
+  @override
   String get nurseryId => _session.nurseryId ?? '';
+  @override
   String get teacherId => _session.userId ?? '';
+  @override
+  String get branchId => _session.branchId ?? '';
+  @override
+  List<ChildModel> get stateChildren => children;
   String get activeClassroomId => selectedClassroomId.value;
   String get _classroomId => selectedClassroomId.value;
   set _classroomId(String v) => selectedClassroomId.value = v;
@@ -64,6 +72,7 @@ class TeacherActivityController extends GetxController {
           _loadSubjects(),
           _loadAssignment(),
           _loadTodayCompleted(),
+          loadStateTemplates(),
         ]);
         await _loadTodaySchedule();
         _watchActivity();
@@ -134,6 +143,7 @@ class TeacherActivityController extends GetxController {
     children.value =
         await _activityService.loadChildren(nurseryId, _classroomId);
     await _loadPresentToday();
+    watchChildStates();
   }
 
   /// Recomputes the present set from live statuses — call when opening the
@@ -551,6 +561,7 @@ class TeacherActivityController extends GetxController {
   @override
   void onClose() {
     _activitySub?.cancel();
+    disposeChildStates();
     super.onClose();
   }
 }

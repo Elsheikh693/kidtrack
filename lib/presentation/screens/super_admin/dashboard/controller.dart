@@ -14,4 +14,6 @@ class SuperAdminDashboardController extends GetxController {
   void goBilling() => Get.toNamed(platformBillingView);
 
   void goCities() => Get.toNamed(citiesView);
+
+  void goFeedbackCampaigns() => Get.toNamed(kidtrackCampaignsView);
 }

@@ -60,10 +60,11 @@ class _StaffListViewState extends State<StaffListView> {
                 final staff = controller.staffList[i];
                 return StaffCard(
                   staff: staff,
-                  branchName: controller.branchName(staff.branchId),
                   onEdit: () => controller.openEdit(staff),
                   onToggleActive: () => controller.toggleActive(staff),
                   onPermissions: () => controller.openPermissions(staff),
+                  onGenerateCode: () => controller.generateActivationCode(staff),
+                  onSendWhatsApp: () => controller.sendActivationWhatsApp(staff),
                 );
               },
             ),

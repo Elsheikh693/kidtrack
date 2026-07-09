@@ -36,7 +36,7 @@ class MainPageViewModel extends GetxController {
         try {
           await FirebaseAuth.instance.signOut();
         } catch (_) {}
-        Get.offAllNamed(loginView);
+        Get.offAllNamed(activationLandingView);
         if (outcome.reasonKey != null) {
           await Future.delayed(const Duration(milliseconds: 400));
           Get.snackbar(

@@ -1,17 +1,25 @@
 import 'package:firebase_database/firebase_database.dart';
 import '../../../../index/index_main.dart';
+import 'nursery_feedback_admin_mixin.dart';
 
 /// SuperAdmin screen that drills into a single nursery: edit its info AND manage
 /// its owners (list / add / edit / delete). The nursery itself lives in the
 /// global registry ([ApiPaths.globalNurseries]); each owner is a `users/{uid}`
 /// record whose uid is referenced from the nursery's `ownerIds`.
-class NurseryDetailsController extends GetxController {
+class NurseryDetailsController extends GetxController
+    with NurseryFeedbackAdminMixin {
   final NurseryParentService _service = Get.find<NurseryParentService>();
 
+  @override
   final Rx<NurseryModel> nursery = const NurseryModel(name: '').obs;
   final RxList<UserModel> owners = <UserModel>[].obs;
   final RxBool loadingOwners = true.obs;
   final RxBool savingInfo = false.obs;
+
+  /// Set by [createOwner] when a fresh owner + code are minted; consumed by
+  /// [_openForm] once the form sheet closes, so the activation sheet opens on a
+  /// clean route instead of stacking under the closing form.
+  ({ActivationCodeModel code, String name, String? phone})? _pendingActivation;
 
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
@@ -27,6 +35,7 @@ class NurseryDetailsController extends GetxController {
       phoneCtrl.text = arg.phone ?? '';
       addressCtrl.text = arg.address ?? '';
       loadOwners();
+      loadFeedback();
     }
   }
 
@@ -126,6 +135,99 @@ class NurseryDetailsController extends GetxController {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
+    ).then((_) {
+      // Form closed — if a new owner was just created, show its login code now.
+      final pending = _pendingActivation;
+      _pendingActivation = null;
+      if (pending != null) {
+        openActivationSheet(
+          code: pending.code,
+          recipientName: pending.name,
+          phone: pending.phone,
+          nurseryName: nursery.value.name,
+          nurseryLogoUrl: nursery.value.logo,
+        );
+      }
+    });
+  }
+
+  /// Show (or lazily mint) an owner's durable activation code — the passwordless
+  /// login credential — so the super admin can deliver it or rotate it.
+  Future<void> showOwnerActivation(UserModel owner) async {
+    final uid = owner.uid;
+    if (uid == null) return;
+    final svc = Get.find<ActivationParentService>();
+
+    ActivationCodeModel? code;
+    await svc.getAll(
+      callBack: (list) {
+        code = list
+            .whereType<ActivationCodeModel>()
+            .where((c) => c.targetId == uid)
+            .firstOrNull;
+      },
+    );
+    code ??= await svc.generate(
+      role: 'owner',
+      targetId: uid,
+      nurseryId: nursery.value.key ?? '',
+      createdBy: SessionService().userId ?? '',
+      silent: true,
+    );
+
+    if (code == null) {
+      Loader.showError('activation_regenerate_error'.tr);
+      return;
+    }
+    await openActivationSheet(
+      code: code!,
+      recipientName: owner.name ?? '',
+      phone: owner.phone,
+      nurseryName: nursery.value.name,
+      nurseryLogoUrl: nursery.value.logo,
+    );
+  }
+
+  /// One-tap: deliver the owner's login code straight to their WhatsApp number.
+  Future<void> sendOwnerActivationWhatsApp(UserModel owner) async {
+    final uid = owner.uid;
+    final phone = owner.phone ?? '';
+    if (uid == null) return;
+    if (phone.trim().isEmpty) {
+      Loader.showError('activation_no_phone'.tr);
+      return;
+    }
+    final svc = Get.find<ActivationParentService>();
+
+    ActivationCodeModel? code;
+    await svc.getAll(
+      callBack: (list) {
+        code = list
+            .whereType<ActivationCodeModel>()
+            .where((c) => c.targetId == uid)
+            .firstOrNull;
+      },
+    );
+    code ??= await svc.generate(
+      role: 'owner',
+      targetId: uid,
+      nurseryId: nursery.value.key ?? '',
+      createdBy: SessionService().userId ?? '',
+      silent: true,
+    );
+
+    if (code == null) {
+      Loader.showError('activation_regenerate_error'.tr);
+      return;
+    }
+    launchWhatsApp(
+      phone,
+      message: buildActivationMessage(
+        role: 'owner',
+        name: owner.name ?? '',
+        code: code!.code,
+        nurseryName: nursery.value.name,
+      ),
     );
   }
 
@@ -178,6 +280,18 @@ class NurseryDetailsController extends GetxController {
       if (ok) {
         await _reloadNursery();
         await loadOwners();
+        // Mint the owner's passwordless login code; shown once the form closes.
+        final code = await Get.find<ActivationParentService>().generate(
+          role: 'owner',
+          targetId: ownerUid,
+          nurseryId: nurseryId,
+          createdBy: SessionService().userId ?? '',
+          silent: true,
+        );
+        if (code != null) {
+          _pendingActivation =
+              (code: code, name: ownerName, phone: ownerPhone);
+        }
         Loader.showSuccess('nursery_owner_added'.tr);
         return true;
       }

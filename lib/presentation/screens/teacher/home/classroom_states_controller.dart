@@ -1,10 +1,11 @@
-import 'dart:async';
 import '../../../../index/index_main.dart';
 import '../../../../Data/models/child_current_status/child_current_status_model.dart';
+import '../../../../Global/services/child_status_service.dart';
 
 class ClassroomStatesController extends GetxController {
   late final ChildStateService _stateService;
   late final SessionService _session;
+  final ChildStatusService _statusService = ChildStatusService();
 
   final RxBool isLoading = true.obs;
   final RxList<ChildModel> children = <ChildModel>[].obs;
@@ -63,6 +64,21 @@ class ClassroomStatesController extends GetxController {
         .listen((states) => childStates.value = states);
   }
 
+  /// Children ordered so present (checked-in) ones come first, keeping the
+  /// existing (name) order within each group.
+  List<ChildModel> get sortedChildren {
+    final present = <ChildModel>[];
+    final absent = <ChildModel>[];
+    for (final c in children) {
+      (isCheckedIn(c.key ?? '') ? present : absent).add(c);
+    }
+    return [...present, ...absent];
+  }
+
+  /// Number of children currently checked in.
+  int get presentCount =>
+      children.where((c) => isCheckedIn(c.key ?? '')).length;
+
   // Returns the current stateId for a child ('with_classroom' if none set)
   String stateIdFor(String childId) {
     final s = childStates[childId];
@@ -85,6 +101,27 @@ class ClassroomStatesController extends GetxController {
     return s.status == ChildStatus.checkedIn ||
         s.status == ChildStatus.havingMeal ||
         s.status == ChildStatus.sleeping;
+  }
+
+  /// Lets the teacher check a child in straight from the classroom-states sheet
+  /// — same effect as reception's check-in — for when a child arrived but
+  /// reception missed it.
+  Future<void> markChildPresent(String childId) async {
+    final child = children.firstWhereOrNull((c) => c.key == childId);
+    Loader.show();
+    final ok = await _statusService.checkInChild(
+      nurseryId: _nurseryId,
+      branchId: _branchId,
+      childId: childId,
+      receptionistId: _session.userId ?? '',
+      classroomId: child?.classroomId ?? _classroomId,
+    );
+    Loader.dismiss();
+    if (ok) {
+      Loader.showSuccess('checkin_success_added'.tr);
+    } else {
+      Loader.showError('checkin_error_failed'.tr);
+    }
   }
 
   Future<void> updateState(

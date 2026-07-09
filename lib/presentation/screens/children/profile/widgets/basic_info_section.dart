@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import 'child_shift_sheet.dart';
 
 class BasicInfoSection extends StatelessWidget {
   final ChildProfileController controller;
@@ -41,10 +42,53 @@ class BasicInfoSection extends StatelessWidget {
                   ? child.homeAddress!.trim()
                   : '--',
             ),
+            _shiftRow(context, child),
           ],
         ),
       ),
     );
+  }
+
+  Widget _shiftRow(BuildContext context, ChildModel child) {
+    final value = _shiftLabel(child.shift);
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              'child_profile_shift'.tr,
+              style: context.typography.xsRegular
+                  .copyWith(color: AppColors.textSecondaryParagraph),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: context.typography.xsRegular
+                  .copyWith(color: AppColors.textDefault),
+            ),
+          ),
+          if (controller.canEditShift)
+            Icon(Icons.edit_outlined,
+                size: 16, color: AppColors.textSecondaryParagraph),
+        ],
+      ),
+    );
+    if (!controller.canEditShift) return row;
+    return InkWell(
+      onTap: () => showChildShiftSheet(
+        controller: controller,
+        currentShift: child.shift,
+      ),
+      child: row,
+    );
+  }
+
+  String _shiftLabel(String? shift) {
+    final s = Shift.fromName(shift);
+    return s != null ? s.labelKey.tr : '--';
   }
 
   String _formatDate(int? ts) {

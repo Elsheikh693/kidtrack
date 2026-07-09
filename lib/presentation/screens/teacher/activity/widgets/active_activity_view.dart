@@ -2,6 +2,7 @@ import '../../../../../index/index_main.dart';
 import '../teacher_activity_controller.dart';
 import 'activity_header.dart';
 import 'activity_photos_section.dart';
+import 'activity_states_section.dart';
 
 class ActiveActivityView extends StatelessWidget {
   const ActiveActivityView({
@@ -57,6 +58,9 @@ class ActiveActivityView extends StatelessWidget {
                         child: _NoteCard(note: note),
                       );
                     }),
+
+                    // Children live states
+                    ActivityStatesSection(ctrl: ctrl),
                   ],
                 ),
               ),

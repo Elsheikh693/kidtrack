@@ -55,7 +55,7 @@ Future<void> performLogout() async {
   } finally {
     Loader.dismiss();
   }
-  Get.offAllNamed(nurseryDiscoveryView);
+  Get.offAllNamed(activationLandingView);
 }
 
 class _LogoutConfirmDialog extends StatelessWidget {

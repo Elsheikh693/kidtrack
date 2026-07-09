@@ -115,13 +115,13 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
         isActive: true,
       );
 
+      bool added = false;
       await _service.add(
         item: nursery,
         callBack: (status) async {
           Loader.dismiss();
           if (status == ResponseStatus.success) {
-            Loader.showSuccess('nursery_success_added'.tr);
-            Get.back();
+            added = true;
           } else {
             await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
             await secondaryAuth.currentUser?.delete();
@@ -129,6 +129,30 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
           }
         },
       );
+
+      if (added) {
+        // Mint the owner's durable login code (passwordless) and hand it to the
+        // super admin to deliver — same engine as reception→parent.
+        final code = await Get.find<ActivationParentService>().generate(
+          role: 'owner',
+          targetId: ownerUid,
+          nurseryId: nurseryId,
+          createdBy: SessionService().userId ?? '',
+          silent: true,
+        );
+        Loader.showSuccess('nursery_success_added'.tr);
+        Get.back(); // close this sheet first
+        if (code != null) {
+          // Not awaited: let `finally` tear down the secondary app now; the sheet
+          // lives on its own route.
+          unawaited(openActivationSheet(
+            code: code,
+            recipientName: ownerName,
+            phone: ownerPhone,
+            nurseryName: name,
+          ));
+        }
+      }
     } on FirebaseAuthException {
       Loader.dismiss();
       Loader.showError('nursery_error_auth_failed'.tr);

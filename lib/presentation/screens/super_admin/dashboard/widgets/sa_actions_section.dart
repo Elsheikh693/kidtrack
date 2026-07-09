@@ -8,18 +8,31 @@ class SaActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 32.h),
+      padding: EdgeInsets.fromLTRB(20.w, 26.h, 20.w, 32.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'sa_management_title'.tr,
-            style: context.typography.mdBold.copyWith(
-              fontSize: 18,
-              color: const Color(0xFF1E293B),
-            ),
+          Row(
+            children: [
+              Container(
+                width: 4.w,
+                height: 20.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1),
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'sa_management_title'.tr,
+                style: context.typography.mdBold.copyWith(
+                  fontSize: 18,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
           SaActionCard(
             icon: Icons.account_balance_rounded,
             color: const Color(0xFF6366F1),
@@ -50,6 +63,14 @@ class SaActionsSection extends StatelessWidget {
             title: 'sa_cities_title'.tr,
             subtitle: 'sa_cities_subtitle'.tr,
             onTap: controller.goCities,
+          ),
+          SizedBox(height: 12.h),
+          SaActionCard(
+            icon: Icons.feedback_rounded,
+            color: const Color(0xFFF59E0B),
+            title: 'sa_feedback_title'.tr,
+            subtitle: 'sa_feedback_subtitle'.tr,
+            onTap: controller.goFeedbackCampaigns,
           ),
         ],
       ),

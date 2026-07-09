@@ -42,6 +42,14 @@ class _BulkInvitationsViewState extends State<BulkInvitationsView> {
               size: 20.sp, color: const Color(0xFF374151)),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'rc_bulk_print_all'.tr,
+            icon: Icon(Icons.print_rounded,
+                size: 22.sp, color: AppColors.primary),
+            onPressed: controller.printAllCards,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Obx(() {
@@ -71,6 +79,8 @@ class _BulkInvitationsViewState extends State<BulkInvitationsView> {
                               row: controller.filtered[i],
                               onSend: () =>
                                   controller.send(controller.filtered[i]),
+                              onShowCode: () =>
+                                  controller.showActivation(controller.filtered[i]),
                             ),
                           ),
                         ),

@@ -17,6 +17,12 @@ class FirebaseFilter {
     this.limitToLast,
   });
 
+  /// Query params that fetch at most [n] rows ordered by key. Used for cheap
+  /// existence / first-record probes so a caller that only needs "is there any
+  /// record?" downloads a single row instead of the whole collection.
+  static Map<String, dynamic> firstN(int n) =>
+      FirebaseFilter(orderBy: r'$key', limitToFirst: n).toJson();
+
   // Convert to Map<String, dynamic> for the Firebase query parameters.
   // Values are JSON-encoded so they can be passed to your filtering functions.
   Map<String, dynamic> toJson() {

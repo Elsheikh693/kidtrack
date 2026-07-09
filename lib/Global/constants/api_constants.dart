@@ -165,6 +165,12 @@ class ApiConstants {
   // ─── Global Endpoints ─────────────────────────────────────────────────────
   static const String users = 'users';
   static const String superAdmins = 'superAdmins';
+
+  /// Global root for role-agnostic account-activation codes, keyed BY the code
+  /// itself: `activationCodes/{code}`. Global (not nursery-scoped) because it is
+  /// resolved BEFORE login — before the nursery/session is known.
+  static const String activationCodes = 'activationCodes';
+
   static const String auditLogs = 'auditLogs';
   static const String supportTickets = 'supportTickets';
 
@@ -181,6 +187,16 @@ class ApiConstants {
   /// Discovery city filter). NOT nursery-scoped.
   static const String cities = 'cities';
 
+  // ─── KidTrack app-rating campaigns (SuperAdmin → nursery survey) ───────────
+  /// Global registry of reusable app-rating campaigns, keyed by campaignId:
+  /// `kidtrackFeedbackCampaigns/{campaignId}`. NOT nursery-scoped.
+  static const String kidtrackFeedbackCampaigns = 'kidtrackFeedbackCampaigns';
+
+  /// Parent responses to an app-rating campaign, nursery-first for per-nursery
+  /// history: `platformFeedback/{nurseryId}/{campaignId}/{parentId}`.
+  static String platformFeedbackFor(String nurseryId, String campaignId) =>
+      'platformFeedback/$nurseryId/$campaignId';
+
   // ─── Platform billing (SuperAdmin → nursery subscription) ──────────────────
   /// Global root. Monthly subscription bills the platform charges each nursery,
   /// keyed by nursery then month: `platformBilling/{nurseryId}/{YYYYMM}`.
@@ -193,6 +209,10 @@ class ApiConstants {
   /// SuperAdmin billing to recount active children per branch, outside session
   /// scope).
   static String childrenFor(String nurseryId) => 'platform/$nurseryId/children';
+
+  /// A specific nursery's parents subtree, addressed by explicit id (used by
+  /// SuperAdmin feedback reminders / response-rate, outside session scope).
+  static String parentsFor(String nurseryId) => 'platform/$nurseryId/parents';
 
   static String notifications(String userId) => 'notifications/$userId';
 

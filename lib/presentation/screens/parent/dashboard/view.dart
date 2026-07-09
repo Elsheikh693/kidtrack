@@ -8,6 +8,7 @@ import 'widgets/daily_notes_section.dart';
 import 'widgets/dashboard_shimmer.dart';
 import 'parent_home_mockup.dart'; // TEMP: preview new home design
 import '../feedback/nursery_feedback_sheet.dart';
+import '../feedback/kidtrack_feedback_sheet.dart';
 
 class ParentDashboardView extends StatefulWidget {
   const ParentDashboardView({super.key});
@@ -23,9 +24,14 @@ class _ParentDashboardViewState extends State<ParentDashboardView> {
   void initState() {
     super.initState();
     controller = initController(() => ParentDashboardController());
-    // First app open → mandatory nursery feedback (skips if already rated).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) NurseryFeedbackPrompt.maybeShow();
+    // First app open → mandatory nursery feedback, then any live KidTrack
+    // app-rating campaign (each skips if already answered). Chained so the two
+    // mandatory sheets never stack on top of each other.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await NurseryFeedbackPrompt.maybeShow();
+      if (!mounted) return;
+      await KidtrackFeedbackPrompt.maybeShow();
     });
   }
 

@@ -11,12 +11,6 @@ class OwnerNurseryTab extends StatelessWidget {
     titleColor: AppColors.blueForeground,
     items: [
       DashboardItem(
-        labelKey: 'manager_more_link_nursery_profile',
-        icon: Icons.storefront_rounded,
-        color: AppColors.secondary80,
-        route: managerNurseryProfileView,
-      ),
-      DashboardItem(
         labelKey: 'owner_item_branches',
         icon: Icons.account_balance_rounded,
         color: AppColors.blueForeground,

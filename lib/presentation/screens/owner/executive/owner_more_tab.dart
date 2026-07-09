@@ -8,40 +8,16 @@ import '../dashboard/widgets/dashboard_section_widget.dart';
 class OwnerMoreTab extends StatelessWidget {
   const OwnerMoreTab({super.key});
 
-  static const _operations = DashboardSection(
-    titleKey: 'owner_more_operations',
-    titleIcon: Icons.tune_rounded,
-    titleColor: Color(0xFF2563EB),
+  static const _nurseryProfile = DashboardSection(
+    titleKey: 'owner_section_nursery',
+    titleIcon: Icons.storefront_rounded,
+    titleColor: Color(0xFFEC4899),
     items: [
       DashboardItem(
-        labelKey: 'owner_item_staff_list',
-        icon: Icons.people_alt_rounded,
-        color: Color(0xFF2563EB),
-        route: staffView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_classrooms',
-        icon: Icons.class_rounded,
-        color: Color(0xFFD97706),
-        route: classroomsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_programs',
-        icon: Icons.library_books_rounded,
-        color: Color(0xFFB45309),
-        route: programsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_subjects',
-        icon: Icons.menu_book_rounded,
-        color: Color(0xFF0891B2),
-        route: subjectsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_courses',
-        icon: Icons.play_lesson_rounded,
-        color: Color(0xFF0891B2),
-        route: coursesView,
+        labelKey: 'owner_item_setup_checklist',
+        icon: Icons.checklist_rounded,
+        color: Color(0xFF5E35B1),
+        route: setupChecklistView,
       ),
       DashboardItem(
         labelKey: 'owner_item_branches',
@@ -50,10 +26,30 @@ class OwnerMoreTab extends StatelessWidget {
         route: branchesView,
       ),
       DashboardItem(
-        labelKey: 'owner_item_packages',
-        icon: Icons.card_membership_rounded,
-        color: Color(0xFF6366F1),
-        route: nurseryPackagesView,
+        labelKey: 'owner_item_courses',
+        icon: Icons.play_lesson_rounded,
+        color: Color(0xFF0891B2),
+        route: coursesView,
+      ),
+    ],
+  );
+
+  static const _operations = DashboardSection(
+    titleKey: 'owner_more_operations',
+    titleIcon: Icons.tune_rounded,
+    titleColor: Color(0xFF2563EB),
+    items: [
+      DashboardItem(
+        labelKey: 'owner_item_children',
+        icon: Icons.child_care_rounded,
+        color: Color(0xFF16A34A),
+        route: childrenView,
+      ),
+      DashboardItem(
+        labelKey: 'nursery_feedback_view_title',
+        icon: Icons.reviews_rounded,
+        color: Color(0xFFF5A623),
+        route: nurseryFeedbackListView,
       ),
       DashboardItem(
         labelKey: 'manager_more_link_holidays',
@@ -64,31 +60,11 @@ class OwnerMoreTab extends StatelessWidget {
     ],
   );
 
-  static const _nurseryProfile = DashboardSection(
-    titleKey: 'owner_section_nursery',
-    titleIcon: Icons.storefront_rounded,
-    titleColor: Color(0xFFEC4899),
-    items: [
-      DashboardItem(
-        labelKey: 'manager_more_link_nursery_profile',
-        icon: Icons.storefront_rounded,
-        color: Color(0xFFEC4899),
-        route: managerNurseryProfileView,
-      ),
-    ],
-  );
-
   static const _business = DashboardSection(
     titleKey: 'owner_more_business',
     titleIcon: Icons.business_center_rounded,
     titleColor: Color(0xFF7C3AED),
     items: [
-      DashboardItem(
-        labelKey: 'owner_item_children',
-        icon: Icons.child_care_rounded,
-        color: Color(0xFF16A34A),
-        route: childrenView,
-      ),
       DashboardItem(
         labelKey: 'billing_my_subscription',
         icon: Icons.payments_rounded,
@@ -100,12 +76,6 @@ class OwnerMoreTab extends StatelessWidget {
         icon: Icons.app_registration_rounded,
         color: Color(0xFF16A34A),
         route: managerApplicationsView,
-      ),
-      DashboardItem(
-        labelKey: 'nursery_feedback_view_title',
-        icon: Icons.reviews_rounded,
-        color: Color(0xFFF5A623),
-        route: nurseryFeedbackListView,
       ),
     ],
   );
@@ -125,9 +95,9 @@ class OwnerMoreTab extends StatelessWidget {
               delegate: SliverChildListDelegate([
                 _ProfileCard(session: session),
                 const SizedBox(height: 16),
-                const DashboardSectionWidget(section: _nurseryProfile),
                 const _SwitchViewCard(),
                 const SizedBox(height: 16),
+                const DashboardSectionWidget(section: _nurseryProfile),
                 const DashboardSectionWidget(section: _operations),
                 const DashboardSectionWidget(section: _business),
                 const _AccountCard(),

@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import 'widgets/nursery_feedback_card.dart';
 
 class NurseryDetailsView extends StatefulWidget {
   const NurseryDetailsView({super.key});
@@ -48,6 +49,8 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
           padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
           children: [
             _infoCard(),
+            SizedBox(height: 20.h),
+            NurseryFeedbackCard(controller: controller),
             SizedBox(height: 20.h),
             Text(
               'nursery_owners_count'.tr,
@@ -163,6 +166,9 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
                 owner: owner,
                 onEdit: () => controller.openEditOwner(owner),
                 onDelete: () => controller.confirmDeleteOwner(owner),
+                onShowCode: () => controller.showOwnerActivation(owner),
+                onSendWhatsApp: () =>
+                    controller.sendOwnerActivationWhatsApp(owner),
               ),
             )
             .toList(),

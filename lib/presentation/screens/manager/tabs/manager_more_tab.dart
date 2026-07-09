@@ -71,10 +71,22 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
       titleKey: 'owner_section_nursery',
       tiles: [
         ManagerGridTile(
-          icon: Icons.storefront_rounded,
-          color: AppColors.secondary80,
-          labelKey: 'manager_more_link_nursery_profile',
-          onTap: () => Get.toNamed(managerNurseryProfileView),
+          icon: Icons.checklist_rounded,
+          color: AppColors.primary,
+          labelKey: 'owner_item_setup_checklist',
+          onTap: () => Get.toNamed(setupChecklistView),
+        ),
+        ManagerGridTile(
+          icon: Icons.account_balance_rounded,
+          color: AppColors.activityPurple,
+          labelKey: 'owner_item_branches',
+          onTap: () => Get.toNamed(branchesView),
+        ),
+        ManagerGridTile(
+          icon: Icons.play_lesson_rounded,
+          color: AppColors.activityPurple,
+          labelKey: 'manager_more_link_courses',
+          onTap: () => Get.toNamed(coursesView),
         ),
       ],
     );
@@ -86,58 +98,28 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
       titleKey: 'manager_more_section_operations',
       tiles: [
         ManagerGridTile(
-          icon: Icons.badge_rounded,
-          color: AppColors.activityBlue,
-          labelKey: 'manager_more_link_staff',
-          onTap: () => Get.toNamed(staffView),
-        ),
-        ManagerGridTile(
-          icon: Icons.meeting_room_rounded,
-          color: AppColors.activityOrange,
-          labelKey: 'manager_more_link_classrooms',
-          onTap: () => Get.toNamed(classroomsView),
-        ),
-        ManagerGridTile(
           icon: Icons.contact_phone_rounded,
           color: const Color(0xFF25D366),
           labelKey: 'owner_item_contact_numbers',
           onTap: () => Get.toNamed(nurseryContactsView),
         ),
         ManagerGridTile(
-          icon: Icons.play_lesson_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'manager_more_link_courses',
-          onTap: () => Get.toNamed(coursesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.library_books_rounded,
-          color: AppColors.activityAmberBrand,
-          labelKey: 'owner_item_programs',
-          onTap: () => Get.toNamed(programsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.menu_book_rounded,
-          color: AppColors.teal,
-          labelKey: 'owner_item_subjects',
-          onTap: () => Get.toNamed(subjectsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.account_balance_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'owner_item_branches',
-          onTap: () => Get.toNamed(branchesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.card_membership_rounded,
-          color: AppColors.primary,
-          labelKey: 'owner_item_packages',
-          onTap: () => Get.toNamed(nurseryPackagesView),
-        ),
-        ManagerGridTile(
           icon: Icons.event_busy_rounded,
           color: AppColors.activityOrange,
           labelKey: 'manager_more_link_holidays',
           onTap: () => Get.toNamed(holidaysView),
+        ),
+        ManagerGridTile(
+          icon: Icons.child_care_rounded,
+          color: AppColors.activityGreen,
+          labelKey: 'manager_more_link_children',
+          onTap: () => Get.toNamed(childrenView),
+        ),
+        ManagerGridTile(
+          icon: Icons.reviews_rounded,
+          color: AppColors.ratingStar,
+          labelKey: 'nursery_feedback_view_title',
+          onTap: () => Get.toNamed(nurseryFeedbackListView),
         ),
       ],
     );
@@ -148,12 +130,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     return ManagerGridSection(
       titleKey: 'owner_more_business',
       tiles: [
-        ManagerGridTile(
-          icon: Icons.child_care_rounded,
-          color: AppColors.activityGreen,
-          labelKey: 'manager_more_link_children',
-          onTap: () => Get.toNamed(childrenView),
-        ),
         ManagerGridTile(
           icon: Icons.payments_rounded,
           color: AppColors.activityGreen,
@@ -167,12 +143,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           badgeCount: controller.pendingApplications.value,
           onTap: () => Get.toNamed(managerApplicationsView)
               ?.then((_) => controller.loadPendingApplications()),
-        ),
-        ManagerGridTile(
-          icon: Icons.reviews_rounded,
-          color: AppColors.ratingStar,
-          labelKey: 'nursery_feedback_view_title',
-          onTap: () => Get.toNamed(nurseryFeedbackListView),
         ),
         ManagerGridTile(
           icon: Icons.assignment_rounded,

@@ -5,7 +5,8 @@ import '../index/index_main.dart';
 // Entry
 const String forceUpdateView = "/ForceUpdateView";
 const String onBoardView = "/OnBoardView";
-const String loginView = "/LoginView";
+const String activationLandingView = "/ActivationLandingView";
+const String activationCodeView = "/ActivationCodeView";
 // Nursery Discovery (pre-login)
 const String nurseryDiscoveryView = "/NurseryDiscoveryView";
 const String nurseryProfileView = "/NurseryProfileView";
@@ -130,6 +131,8 @@ const String aboutUsFormView = "/AboutUsFormView";
 const String supportRequestsAdminView = "/SupportRequestsAdminView";
 const String appReviewsAdminView = "/AppReviewsAdminView";
 const String citiesView = "/CitiesView";
+const String kidtrackCampaignsView = "/KidtrackCampaignsView";
+const String kidtrackFeedbackResponsesView = "/KidtrackFeedbackResponsesView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
@@ -141,6 +144,7 @@ const String managerPresenceView = "/ManagerPresenceView";
 // First-Login Setup
 const String ownerSetupView        = "/OwnerSetupView";
 const String managerSetupView      = "/ManagerSetupView";
+const String setupChecklistView    = "/SetupChecklistView";
 const String teacherOnboardingView = "/TeacherOnboardingView";
 const String teacherAcademicSettingsView = "/TeacherAcademicSettingsView";
 
@@ -176,8 +180,15 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 400),
       ),
       GetPage(
-        name: loginView,
-        page: () => const LoginView(),
+        name: activationLandingView,
+        page: () => const ActivationLandingView(),
+        binding: Binding(),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 350),
+      ),
+      GetPage(
+        name: activationCodeView,
+        page: () => const ActivationCodeView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 400),
@@ -693,6 +704,22 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      GetPage(
+        name: kidtrackCampaignsView,
+        page: () => const KidtrackCampaignsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: kidtrackFeedbackResponsesView,
+        page: () => const KidtrackFeedbackResponsesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Parent Requests History ────────────────────────────────────────────
       GetPage(
@@ -844,6 +871,18 @@ class Routes {
         name: managerSetupView,
         page: () => const ManagerSetupView(),
         binding: BindingsBuilder(() => Get.lazyPut(() => ManagerSetupController())),
+        transition: Transition.fade,
+        transitionDuration: const Duration(milliseconds: 400),
+        middlewares: guard,
+      ),
+
+      // ── First-Login Setup Checklist (owner + manager) ──────────────────────
+      GetPage(
+        name: setupChecklistView,
+        page: () => const SetupChecklistView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SetupChecklistController()),
+        ),
         transition: Transition.fade,
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: guard,
