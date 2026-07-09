@@ -44,7 +44,9 @@
       "Bash(node --check functions/nurseries/deleteNursery.js)",
       "Bash(node --check functions/index.js)",
       "Bash(npx eslint *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git commit *)",
+      "Bash(gh pr create --title 'feat\\(auth\\): passwordless activation-code onboarding & login' --body ' *)"
     ]
   }
 }
