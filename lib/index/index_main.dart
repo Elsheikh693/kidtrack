@@ -212,6 +212,7 @@ export '../Data/models/invoice/invoice_model.dart';
 export '../Data/models/payment/payment_model.dart';
 export '../Data/models/expense/expense_model.dart';
 export '../Data/models/fee_category/fee_category_model.dart';
+export '../Data/models/shift/shift_model.dart';
 export '../Data/models/financial_transaction/financial_transaction_model.dart';
 
 // ─── Data Layer — Data Sources ───────────────────────────────────────────────
@@ -295,6 +296,10 @@ export 'package:kidtrack/presentation/parentControllers/services/schedule_parent
 export 'package:kidtrack/presentation/parentControllers/services/daily_care_log_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/invoice_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/fee_category_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/shift_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/daily_assessment_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/topic_progress_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/academic_topic_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/financial_transaction_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/payment_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/expense_parent_service.dart';
@@ -546,6 +551,21 @@ export 'package:kidtrack/Data/models/payment_category/payment_category_model.dar
 export 'package:kidtrack/presentation/screens/finance/categories/payment_categories_controller.dart';
 export 'package:kidtrack/presentation/screens/finance/categories/payment_categories_view.dart';
 export 'package:kidtrack/presentation/screens/finance/categories/widgets/category_sheet.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/shifts_controller.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/shifts_view.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/widgets/shift_card.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/widgets/shift_sheet.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/reports_hub_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/attendance/weekly_attendance_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/attendance/weekly_attendance_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/evaluation/weekly_evaluation_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/evaluation/weekly_evaluation_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/learning/weekly_learning_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/learning/weekly_learning_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/financial/financial_report_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/financial/financial_report_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/monthly/monthly_report_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/monthly/monthly_report_view.dart';
 export 'package:kidtrack/Global/services/finance_service.dart';
 export 'package:kidtrack/Global/services/monthly_invoice_service.dart';
 
@@ -816,14 +836,19 @@ export 'package:kidtrack/presentation/screens/teacher/activity_reasons/evaluatio
 export 'package:kidtrack/presentation/screens/teacher/activity_reasons/evaluation_reasons_view.dart';
 
 // ── Child State Templates ─────────────────────────────────────────────────────
+export 'package:kidtrack/Data/models/child_state_template/child_state_option.dart';
 export 'package:kidtrack/Data/models/child_state_template/child_state_template_model.dart';
 export 'package:kidtrack/Global/services/child_state_service.dart';
 export 'package:kidtrack/Global/widgets/child_state_dropdown.dart';
+export 'package:kidtrack/Global/widgets/child_state_picker_sheet.dart';
+export 'package:kidtrack/Global/widgets/child_state_icons.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_state_template_parent_service.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/child_states_controller.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/child_states_view.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_card.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_sheet.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_classification_editor.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_option_editor_card.dart';
 export 'package:kidtrack/presentation/screens/teacher/home/classroom_states_controller.dart';
 export 'package:kidtrack/presentation/screens/teacher/schedule/teacher_weekly_schedule_controller.dart';
 export 'package:kidtrack/presentation/screens/teacher/schedule/teacher_weekly_schedule_view.dart';

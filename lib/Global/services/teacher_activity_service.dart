@@ -108,6 +108,21 @@ class TeacherActivityService {
     return classrooms;
   }
 
+  /// Display name of a staff member (e.g. the classroom's assigned teacher).
+  /// Returns '' when the id is empty or the record/name is missing, so callers
+  /// can simply hide the line.
+  Future<String> resolveStaffName(String nurseryId, String staffId) async {
+    if (staffId.isEmpty) return '';
+    try {
+      final snap =
+          await _db.ref('platform/$nurseryId/staff/$staffId/name').get();
+      final v = snap.value;
+      return v == null ? '' : v.toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<List<ChildModel>> loadChildren(
     String nurseryId,
     String classroomId,

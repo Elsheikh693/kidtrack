@@ -34,6 +34,7 @@ Future<void> showActivityDetailSheet(
 
 class _ActivityDetailSheet extends StatefulWidget {
   const _ActivityDetailSheet({required this.item, required this.homework});
+
   final DayTimelineItem item;
   final List<EduHomework> homework;
 
@@ -118,20 +119,24 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
       sections.add(_EvalBlock(eval: eval, reasons: reasons));
     }
     if (childNote != null && childNote.isNotEmpty) {
-      sections.add(_NoteBlock(
-        icon: Icons.chat_bubble_rounded,
-        title: 'تعليق المعلمة',
-        text: childNote,
-        color: const Color(0xFF7C3AED),
-      ));
+      sections.add(
+        _NoteBlock(
+          icon: Icons.chat_bubble_rounded,
+          title: 'تعليق المعلمة',
+          text: childNote,
+          color: const Color(0xFF7C3AED),
+        ),
+      );
     }
     if (groupNote != null && groupNote.isNotEmpty) {
-      sections.add(_NoteBlock(
-        icon: Icons.campaign_rounded,
-        title: 'ملاحظة عامة على النشاط',
-        text: groupNote,
-        color: const Color(0xFFD97706),
-      ));
+      sections.add(
+        _NoteBlock(
+          icon: Icons.campaign_rounded,
+          title: 'ملاحظة عامة على النشاط',
+          text: groupNote,
+          color: const Color(0xFFD97706),
+        ),
+      );
     }
     if (homework.isNotEmpty) {
       sections.add(_HomeworkBlock(items: homework));
@@ -158,7 +163,8 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
     final color = journalSubjectColor(item.subjectId ?? item.subjectName);
     final eventIcon = journalEventIcon(item.subjectName);
     final eval = item.evalLevel == null ? null : evalChipMeta(item.evalLevel!);
-    final showSubject = item.title.trim().toLowerCase() !=
+    final showSubject =
+        item.title.trim().toLowerCase() !=
         item.subjectName.trim().toLowerCase();
     final childNote = item.note?.trim();
     final groupNote = item.groupNote?.trim();
@@ -329,8 +335,11 @@ class _Header extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.schedule_rounded,
-                      size: 14, color: Colors.white),
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     timeRange,
@@ -423,12 +432,15 @@ class _EvalBlock extends StatelessWidget {
                 for (final r in reasons)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 11, vertical: 7),
+                      horizontal: 11,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: eval.color.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: eval.color.withValues(alpha: 0.18)),
+                        color: eval.color.withValues(alpha: 0.18),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -459,6 +471,7 @@ class _EvalBlock extends StatelessWidget {
 
 class _HomeworkBlock extends StatelessWidget {
   const _HomeworkBlock({required this.items});
+
   final List<EduHomework> items;
 
   @override
@@ -491,8 +504,11 @@ class _HomeworkBlock extends StatelessWidget {
                   color: accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.assignment_rounded,
-                    size: 16, color: accent),
+                child: const Icon(
+                  Icons.assignment_rounded,
+                  size: 16,
+                  color: accent,
+                ),
               ),
               const SizedBox(width: 10),
               const Text(
@@ -518,6 +534,7 @@ class _HomeworkBlock extends StatelessWidget {
 
 class _HomeworkRow extends StatelessWidget {
   const _HomeworkRow({required this.item});
+
   final EduHomework item;
 
   @override
@@ -650,6 +667,7 @@ class _NoteBlock extends StatelessWidget {
 
 class _PhotosBlock extends StatelessWidget {
   const _PhotosBlock({required this.urls, required this.color});
+
   final List<String> urls;
   final Color color;
 
@@ -717,7 +735,9 @@ class _PhotosBlock extends StatelessWidget {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                           );

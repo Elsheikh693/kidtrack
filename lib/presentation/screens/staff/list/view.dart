@@ -34,6 +34,17 @@ class _StaffListViewState extends State<StaffListView> {
             ),
           ),
           iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+          actions: [
+            Obx(
+              () => controller.staffList.isEmpty
+                  ? const SizedBox.shrink()
+                  : IconButton(
+                      onPressed: controller.printAllCards,
+                      tooltip: 'staff_print_cards'.tr,
+                      icon: const Icon(Icons.print_outlined),
+                    ),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: controller.openAdd,

@@ -259,19 +259,19 @@ const _teacherItems = [
     activeIcon: Icons.home_rounded,
     inactiveIcon: Icons.home_outlined,
     labelKey: 'teacher_tab_home',
-    color: Color(0xFF16A34A),
+    color: Color(0xFF7C3AED),
   ),
   _NavItemData(
     activeIcon: Icons.play_circle_rounded,
     inactiveIcon: Icons.play_circle_outline_rounded,
     labelKey: 'teacher_tab_activities',
-    color: Color(0xFF059669),
+    color: Color(0xFF7C3AED),
   ),
   _NavItemData(
     activeIcon: Icons.import_contacts_rounded,
     inactiveIcon: Icons.import_contacts_outlined,
     labelKey: 'teacher_tab_link_book',
-    color: Color(0xFF2563EB),
+    color: Color(0xFF7C3AED),
   ),
   // مخفي مؤقتاً: تاب الواجبات
   // _NavItemData(
@@ -368,6 +368,12 @@ const _parentItems = [
     inactiveIcon: Icons.local_library_outlined,
     labelKey: 'parent_tab_courses',
     color: Color(0xFF0891B2),
+  ),
+  _NavItemData(
+    activeIcon: Icons.insert_chart_rounded,
+    inactiveIcon: Icons.insert_chart_outlined_rounded,
+    labelKey: 'parent_tab_reports',
+    color: Color(0xFF16A34A),
   ),
 ];
 

@@ -19,6 +19,8 @@ class TeacherActivityController extends GetxController
   // classroomId → set of subjectIds assigned to that classroom (teacher matrix)
   final classroomSubjects = <String, Set<String>>{}.obs;
   final myClassrooms = <ClassroomModel>[].obs;
+  // Display name of the teacher assigned to the active classroom ('' = hide).
+  final currentTeacherName = ''.obs;
   final todayCompleted = <ClassroomActivityModel>[].obs;
   final todayScheduleSlots = <ScheduleModel>[].obs;
   final isLoading = true.obs;
@@ -73,6 +75,7 @@ class TeacherActivityController extends GetxController
           _loadAssignment(),
           _loadTodayCompleted(),
           loadStateTemplates(),
+          _loadTeacherName(),
         ]);
         await _loadTodaySchedule();
         _watchActivity();
@@ -87,7 +90,17 @@ class TeacherActivityController extends GetxController
     _activitySub?.cancel();
     _watchActivity();
     _loadChildren();
+    _loadTeacherName();
     _reloadTodayData();
+  }
+
+  /// Resolves the active classroom's assigned teacher name for the header.
+  Future<void> _loadTeacherName() async {
+    final cls = myClassrooms.firstWhereOrNull((c) => c.key == _classroomId);
+    currentTeacherName.value = await _activityService.resolveStaffName(
+      nurseryId,
+      cls?.teacherId ?? '',
+    );
   }
 
   void _watchActivity() {

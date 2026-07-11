@@ -138,6 +138,35 @@ class StaffListController extends GetxController {
     await _loadCodes();
   }
 
+  /// Builds one printable login card per in-scope staff member (QR + durable
+  /// code) and opens the share/print sheet — the staff equivalent of the
+  /// guardian print-all flow. Codes are minted on the fly for anyone without
+  /// one yet, so every card is usable straight away.
+  Future<void> printAllCards() async {
+    if (staffList.isEmpty) return;
+    Loader.show();
+    final cards = <ActivationCard>[];
+    for (final staff in staffList) {
+      final code = await _ensureCode(staff);
+      if (code == null) continue;
+      cards.add(ActivationCard(
+        code: code.code,
+        holderName: staff.name,
+        nurseryName: _nurseryName,
+      ));
+    }
+    Loader.dismiss();
+    if (cards.isEmpty) {
+      Loader.showError('activation_regenerate_error'.tr);
+      return;
+    }
+    try {
+      await shareActivationCardsPdf(cards: cards, nurseryLogoUrl: _nurseryLogo);
+    } catch (_) {
+      Loader.showError('activation_pdf_error'.tr);
+    }
+  }
+
   /// One-tap: deliver the staff member's login code straight to their WhatsApp.
   Future<void> sendActivationWhatsApp(StaffModel staff) async {
     final phone = staff.phone ?? '';

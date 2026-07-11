@@ -147,5 +147,6 @@ class MainPageViewModel extends GetxController {
     const ParentEducationView(),
     const ParentPostsView(),
     const ParentCoursesView(),
+    const ReportsHubView(),
   ];
 }

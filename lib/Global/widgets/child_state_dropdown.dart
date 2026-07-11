@@ -8,11 +8,17 @@ class ChildStateDropdown extends StatelessWidget {
     required this.currentId,
     required this.templates,
     required this.onChanged,
+    this.currentLabel,
   });
 
   final String currentId;
   final List<ChildStateTemplateModel> templates;
   final void Function(String stateId, String stateTitle) onChanged;
+
+  /// The child's stored state title (may include a chosen classification, e.g.
+  /// "الأكل — كله، نصه"). When provided, the pill shows it verbatim instead of
+  /// recomputing from the template name.
+  final String? currentLabel;
 
   static const _green = Color(0xFF16A34A);
   static const _amber = Color(0xFFD97706);
@@ -58,80 +64,18 @@ class ChildStateDropdown extends StatelessWidget {
 
   String _labelFor(String id) {
     if (id == kDefaultStateId) return 'child_state_default'.tr;
+    final stored = currentLabel?.trim() ?? '';
+    if (stored.isNotEmpty) return stored;
     final t = templates.where((t) => t.key == id).firstOrNull;
-    return t != null ? '${t.icon} ${t.title}' : 'child_state_default'.tr;
+    return t != null ? t.title : 'child_state_default'.tr;
   }
 
   void _showPicker(BuildContext context) {
-    final items = <({String id, String label})>[
-      (id: kDefaultStateId, label: 'child_state_default'.tr),
-      ...templates
-          .map((t) => (id: t.key ?? '', label: '${t.icon} ${t.title}')),
-    ];
-
     Get.bottomSheet(
-      Directionality(
-        textDirection: TextDirection.rtl,
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 10, bottom: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE2E8F0),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Text(
-                  'child_state_pick'.tr,
-                  style: context.typography.mdBold.copyWith(
-                    color: const Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-              const Divider(height: 1),
-              ListView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 24),
-                itemCount: items.length,
-                itemBuilder: (_, i) {
-                  final item = items[i];
-                  final selected = currentId == item.id;
-                  return ListTile(
-                    leading: selected
-                        ? const Icon(Icons.check_circle_rounded,
-                            color: _green, size: 20)
-                        : const SizedBox(width: 20),
-                    title: Text(
-                      item.label,
-                      style: context.typography.smMedium.copyWith(
-                        color: selected ? _green : const Color(0xFF1E293B),
-                        fontWeight:
-                            selected ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                    onTap: () {
-                      Get.back();
-                      if (item.id != currentId) {
-                        onChanged(item.id, item.label);
-                      }
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+      ChildStatePickerSheet(
+        currentId: currentId,
+        templates: templates,
+        onPick: onChanged,
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

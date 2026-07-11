@@ -28,12 +28,12 @@ class NoActivityCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: AppColors.activityGreen.withValues(alpha: 0.20),
+            color: AppColors.activityPurple.withValues(alpha: 0.20),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.activityGreen.withValues(alpha: 0.06),
+              color: AppColors.activityPurple.withValues(alpha: 0.06),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
@@ -47,12 +47,12 @@ class NoActivityCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.activityGreen.withValues(alpha: 0.08),
+                    color: AppColors.activityPurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
                     Icons.play_circle_outline_rounded,
-                    color: AppColors.activityGreen,
+                    color: AppColors.activityPurple,
                     size: 24,
                   ),
                 ),
@@ -85,7 +85,7 @@ class NoActivityCard extends StatelessWidget {
                     vertical: 9,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.activityGreen,
+                    color: AppColors.activityPurple,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -103,9 +103,9 @@ class NoActivityCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   backgroundColor:
-                      AppColors.activityGreen.withValues(alpha: 0.12),
+                      AppColors.activityPurple.withValues(alpha: 0.12),
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.activityGreen,
+                    AppColors.activityPurple,
                   ),
                   minHeight: 4,
                 ),

@@ -107,19 +107,19 @@ class _DefaultEvalPicker extends StatelessWidget {
     (
       EvalLevel.excellent,
       'teacher_end_eval_excellent',
-      '🟢',
+      Icons.sentiment_very_satisfied_rounded,
       AppColors.activityGreen,
     ),
     (
       EvalLevel.needsFollow,
       'teacher_end_eval_follow',
-      '🟡',
+      Icons.sentiment_neutral_rounded,
       AppColors.activityAmber,
     ),
     (
       EvalLevel.needsAttention,
       'teacher_end_eval_support',
-      '🔴',
+      Icons.sentiment_dissatisfied_rounded,
       AppColors.activityRed,
     ),
   ];
@@ -136,7 +136,7 @@ class _DefaultEvalPicker extends StatelessWidget {
               child: _DefaultButton(
                 level: _items[i].$1,
                 labelKey: _items[i].$2,
-                emoji: _items[i].$3,
+                icon: _items[i].$3,
                 color: _items[i].$4,
                 isSelected: selected == _items[i].$1,
                 onTap: () {
@@ -156,7 +156,7 @@ class _DefaultButton extends StatelessWidget {
   const _DefaultButton({
     required this.level,
     required this.labelKey,
-    required this.emoji,
+    required this.icon,
     required this.color,
     required this.isSelected,
     required this.onTap,
@@ -164,7 +164,7 @@ class _DefaultButton extends StatelessWidget {
 
   final EvalLevel level;
   final String labelKey;
-  final String emoji;
+  final IconData icon;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -175,10 +175,11 @@ class _DefaultButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: isSelected ? color : color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : color.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
@@ -186,9 +187,9 @@ class _DefaultButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    color: color.withValues(alpha: 0.28),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : null,
@@ -196,8 +197,23 @@ class _DefaultButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 22)),
-            const SizedBox(height: 5),
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 26,
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+            const SizedBox(height: 8),
             Text(
               labelKey.tr,
               style: context.typography.xsMedium.copyWith(
@@ -233,19 +249,19 @@ class _SummaryBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _SummaryChip(
-              emoji: '🟢',
+              icon: Icons.sentiment_very_satisfied_rounded,
               count: endCtrl.summaryCount(EvalLevel.excellent),
               color: AppColors.activityGreen,
             ),
             Container(width: 1, height: 18, color: Colors.grey.shade200),
             _SummaryChip(
-              emoji: '🟡',
+              icon: Icons.sentiment_neutral_rounded,
               count: endCtrl.summaryCount(EvalLevel.needsFollow),
               color: AppColors.activityAmber,
             ),
             Container(width: 1, height: 18, color: Colors.grey.shade200),
             _SummaryChip(
-              emoji: '🔴',
+              icon: Icons.sentiment_dissatisfied_rounded,
               count: endCtrl.summaryCount(EvalLevel.needsAttention),
               color: AppColors.activityRed,
             ),
@@ -258,12 +274,12 @@ class _SummaryBar extends StatelessWidget {
 
 class _SummaryChip extends StatelessWidget {
   const _SummaryChip({
-    required this.emoji,
+    required this.icon,
     required this.count,
     required this.color,
   });
 
-  final String emoji;
+  final IconData icon;
   final int count;
   final Color color;
 
@@ -272,7 +288,7 @@ class _SummaryChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 15)),
+        Icon(icon, size: 18, color: color),
         const SizedBox(width: 6),
         Text(
           '$count',

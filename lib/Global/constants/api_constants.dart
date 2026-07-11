@@ -144,6 +144,8 @@ class ApiConstants {
 
   static String get childStateTemplates => '$_n/childStateTemplates';
 
+  static String get shifts => '$_n/shifts';
+
   static String get nurseryContacts => '$_n/nurseryContacts';
 
   static String get onlineApplications => '$_n/onlineApplications';

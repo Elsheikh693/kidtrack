@@ -96,17 +96,17 @@ class EndChildTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _EvalMiniPill(
-              emoji: '🔴',
-              color: AppColors.activityRed,
-              isSelected: currentLevel == EvalLevel.needsAttention,
+              icon: Icons.sentiment_very_satisfied_rounded,
+              color: AppColors.activityGreen,
+              isSelected: currentLevel == EvalLevel.excellent,
               onTap: () {
                 HapticFeedback.selectionClick();
-                endCtrl.setChildEval(childId, EvalLevel.needsAttention);
+                endCtrl.setChildEval(childId, EvalLevel.excellent);
               },
             ),
             const SizedBox(width: 4),
             _EvalMiniPill(
-              emoji: '🟡',
+              icon: Icons.sentiment_neutral_rounded,
               color: AppColors.activityAmber,
               isSelected: currentLevel == EvalLevel.needsFollow,
               onTap: () {
@@ -116,12 +116,12 @@ class EndChildTile extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             _EvalMiniPill(
-              emoji: '🟢',
-              color: AppColors.activityGreen,
-              isSelected: currentLevel == EvalLevel.excellent,
+              icon: Icons.sentiment_dissatisfied_rounded,
+              color: AppColors.activityRed,
+              isSelected: currentLevel == EvalLevel.needsAttention,
               onTap: () {
                 HapticFeedback.selectionClick();
-                endCtrl.setChildEval(childId, EvalLevel.excellent);
+                endCtrl.setChildEval(childId, EvalLevel.needsAttention);
               },
             ),
             const SizedBox(width: 8),
@@ -175,12 +175,12 @@ class EndChildTile extends StatelessWidget {
 
 class _EvalMiniPill extends StatelessWidget {
   const _EvalMiniPill({
-    required this.emoji,
+    required this.icon,
     required this.color,
     required this.isSelected,
     required this.onTap,
   });
-  final String emoji;
+  final IconData icon;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -196,7 +196,7 @@ class _EvalMiniPill extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withValues(alpha: 0.12)
+              ? color.withValues(alpha: 0.14)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -204,7 +204,11 @@ class _EvalMiniPill extends StatelessWidget {
             width: isSelected ? 1.5 : 1,
           ),
         ),
-        child: Text(emoji, style: const TextStyle(fontSize: 13)),
+        child: Icon(
+          icon,
+          size: 19,
+          color: isSelected ? color : Colors.grey.shade400,
+        ),
       ),
     );
   }

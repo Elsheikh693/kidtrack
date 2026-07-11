@@ -39,14 +39,43 @@ class ActivityStatesSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    'teacher_activity_states_title'.tr,
-                    style: context.typography.smSemiBold
-                        .copyWith(color: const Color(0xFF1E293B)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'teacher_activity_states_title'.tr,
+                        style: context.typography.smSemiBold
+                            .copyWith(color: const Color(0xFF1E293B)),
+                      ),
+                      Obx(() {
+                        final name = ctrl.currentTeacherName.value;
+                        if (name.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.person_outline_rounded,
+                                  size: 13, color: Color(0xFF94A3B8)),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  '${'classroom_teacher_label'.tr}: $name',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.typography.xsRegular
+                                      .copyWith(color: const Color(0xFF94A3B8)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                 ),
+                // Present-now count (checked-in children), not the whole roster.
                 Obx(() => Text(
-                      '${ctrl.children.length}',
+                      '${ctrl.presentStateCount}',
                       style: context.typography.xsBold
                           .copyWith(color: _accent),
                     )),

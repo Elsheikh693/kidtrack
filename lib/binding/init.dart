@@ -362,6 +362,13 @@ class Binding implements Bindings {
       fromJson: (json) => FeeCategoryModel.fromJson(json),
     );
 
+    // Attendance shifts (dynamic — drives auto-late computation)
+    BaseBinding.bindCrud<ShiftModel>(
+      tag: "shifts",
+      baseUrl: () => ApiConstants.shifts,
+      fromJson: (json) => ShiftModel.fromJson(json),
+    );
+
     // Financial Transactions (new finance module — cash collection log)
     BaseBinding.bindCrud<FinancialTransactionModel>(
       tag: "financialTransactions",
@@ -622,6 +629,22 @@ class Binding implements Bindings {
       () => FeeCategoryParentService(),
       fenix: true,
     );
+    Get.lazyPut<ShiftParentService>(
+      () => ShiftParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<DailyAssessmentParentService>(
+      () => DailyAssessmentParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<TopicProgressParentService>(
+      () => TopicProgressParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<AcademicTopicParentService>(
+      () => AcademicTopicParentService(),
+      fenix: true,
+    );
     Get.lazyPut<FinancialTransactionParentService>(
       () => FinancialTransactionParentService(),
       fenix: true,
@@ -784,6 +807,42 @@ class Binding implements Bindings {
     // ─── Branch Manager — More ────────────────────────────────────────────
     Get.lazyPut<ManagerMoreController>(
       () => ManagerMoreController(),
+      fenix: true,
+    );
+
+    // ─── Nursery Settings — Shifts ────────────────────────────────────────
+    Get.lazyPut<ShiftsController>(
+      () => ShiftsController(),
+      fenix: true,
+    );
+
+    // ─── Parent — Weekly Attendance Report ────────────────────────────────
+    Get.lazyPut<WeeklyAttendanceController>(
+      () => WeeklyAttendanceController(),
+      fenix: true,
+    );
+
+    // ─── Parent — Weekly Evaluation Report ────────────────────────────────
+    Get.lazyPut<WeeklyEvaluationController>(
+      () => WeeklyEvaluationController(),
+      fenix: true,
+    );
+
+    // ─── Parent — Weekly Learning Report ──────────────────────────────────
+    Get.lazyPut<WeeklyLearningController>(
+      () => WeeklyLearningController(),
+      fenix: true,
+    );
+
+    // ─── Parent — Financial Report ────────────────────────────────────────
+    Get.lazyPut<FinancialReportController>(
+      () => FinancialReportController(),
+      fenix: true,
+    );
+
+    // ─── Parent — Monthly Report ──────────────────────────────────────────
+    Get.lazyPut<MonthlyReportController>(
+      () => MonthlyReportController(),
       fenix: true,
     );
 

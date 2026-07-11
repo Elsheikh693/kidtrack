@@ -50,7 +50,7 @@ class ActivityHeaderDelegate extends SliverPersistentHeaderDelegate {
         ),
         child: SafeArea(
           bottom: false,
-          child: progress > 0.7
+          child: progress > 0.5
               ? ActivityHeaderCollapsed(activity: activity)
               : ActivityHeaderExpanded(
                   activity: activity,

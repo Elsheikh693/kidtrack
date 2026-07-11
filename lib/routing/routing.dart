@@ -72,6 +72,12 @@ const String parentHomeView = "/ParentHomeView";
 const String parentOnboardingView = "/ParentOnboardingView";
 const String parentTodayScheduleView = "/ParentTodayScheduleView";
 const String parentPickupHistoryView = "/ParentPickupHistoryView";
+const String reportsHubView = "/ReportsHubView";
+const String weeklyAttendanceReportView = "/WeeklyAttendanceReportView";
+const String weeklyEvaluationReportView = "/WeeklyEvaluationReportView";
+const String weeklyLearningReportView = "/WeeklyLearningReportView";
+const String financialReportView = "/FinancialReportView";
+const String monthlyReportView = "/MonthlyReportView";
 const String parentHomeworkView = "/ParentHomeworkView";
 const String parentSubjectsAllView = "/ParentSubjectsAllView";
 const String parentClassPhotosView = "/ParentClassPhotosView";
@@ -81,6 +87,7 @@ const String parentHomeLocationView = "/ParentHomeLocationView";
 const String invoicesView = "/InvoicesView";
 const String paymentsView = "/PaymentsView";
 const String paymentCategoriesView = "/PaymentCategoriesView";
+const String shiftsView = "/ShiftsView";
 const String nurseryContactsView = "/NurseryContactsView";
 const String nurseryFeedbackListView = "/NurseryFeedbackListView";
 const String parentInvoicesView = "/ParentInvoicesView";
@@ -543,6 +550,66 @@ class Routes {
       GetPage(
         name: paymentCategoriesView,
         page: () => const PaymentCategoriesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Nursery Shifts ────────────────────────────────────────────────────
+      GetPage(
+        name: shiftsView,
+        page: () => const ShiftsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Parent Reports ────────────────────────────────────────────────────
+      GetPage(
+        name: reportsHubView,
+        page: () => const ReportsHubView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyAttendanceReportView,
+        page: () => const WeeklyAttendanceView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyEvaluationReportView,
+        page: () => const WeeklyEvaluationView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyLearningReportView,
+        page: () => const WeeklyLearningView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: financialReportView,
+        page: () => const FinancialReportView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: monthlyReportView,
+        page: () => const MonthlyReportView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

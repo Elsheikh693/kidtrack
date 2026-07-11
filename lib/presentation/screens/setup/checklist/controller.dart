@@ -17,6 +17,7 @@ class SetupChecklistController extends GetxController {
   late final NurseryParentService _nurseryService;
   late final BranchParentService _branchService;
   late final StaffParentService _staffService;
+  late final ShiftParentService _shiftService;
   late final ProgramParentService _programService;
   late final ClassroomParentService _classroomService;
   late final SubjectParentService _subjectService;
@@ -29,6 +30,7 @@ class SetupChecklistController extends GetxController {
     _nurseryService = Get.find<NurseryParentService>();
     _branchService = Get.find<BranchParentService>();
     _staffService = Get.find<StaffParentService>();
+    _shiftService = Get.find<ShiftParentService>();
     _programService = Get.find<ProgramParentService>();
     _classroomService = Get.find<ClassroomParentService>();
     _subjectService = Get.find<SubjectParentService>();
@@ -68,6 +70,7 @@ class SetupChecklistController extends GetxController {
         steps: [
           if (owner) _stepBranches,
           _stepStaff,
+          _stepShifts,
         ],
       ),
       SetupGroup(
@@ -103,6 +106,14 @@ class SetupChecklistController extends GetxController {
         subtitleKey: 'setup_hub_step_staff_sub',
         icon: Icons.groups_rounded,
         route: staffView,
+      );
+
+  SetupStep get _stepShifts => const SetupStep(
+        id: 'shifts',
+        titleKey: 'setup_hub_step_shifts_title',
+        subtitleKey: 'setup_hub_step_shifts_sub',
+        icon: Icons.schedule_rounded,
+        route: shiftsView,
       );
 
   SetupStep get _stepPrograms => const SetupStep(
@@ -185,6 +196,9 @@ class SetupChecklistController extends GetxController {
             ? staff
             : staff.where((s) => branchId.isEmpty || s.branchId == branchId);
         if (scoped.isNotEmpty) done.add('staff');
+      }),
+      _shiftService.getAll(callBack: (list) {
+        if (list.whereType<ShiftModel>().isNotEmpty) done.add('shifts');
       }),
       _programService.getAll(limit: 1, callBack: (list) {
         if (list.whereType<ProgramModel>().isNotEmpty) done.add('programs');

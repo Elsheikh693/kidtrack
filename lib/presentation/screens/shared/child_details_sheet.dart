@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../index/index_main.dart';
 
 const _bloodTypes = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
@@ -26,8 +28,8 @@ const _nationalities = [
 ];
 
 /// Bottom sheet where the parent completes / edits their child's core profile:
-/// date of birth, detailed address, blood type and nationality — the four
-/// fields stored directly on [ChildModel].
+/// profile photo, date of birth, detailed address, blood type and nationality —
+/// the fields stored directly on [ChildModel].
 ///
 /// In [mandatory] mode the sheet is non-dismissible (no close, no drag, back
 /// disabled) and is shown on the parent's first login when any field is empty.
@@ -53,7 +55,11 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
   String? _bloodType;
   String? _nationality;
   final _addressCtrl = TextEditingController();
+  File? _pickedImage;
   bool _saving = false;
+
+  late final HandleKeyboardService _keyboardService;
+  late final List<String> _keys;
 
   /// Nationality options, guaranteeing the child's current value is selectable
   /// even if it isn't one of the defaults.
@@ -68,6 +74,8 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
   @override
   void initState() {
     super.initState();
+    _keyboardService = HandleKeyboardService();
+    _keys = _keyboardService.generateKeys('child_details', 1);
     final c = widget.child;
     if (c.dateOfBirth != null) {
       _dob = DateTime.fromMillisecondsSinceEpoch(c.dateOfBirth!);
@@ -86,11 +94,25 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
     super.dispose();
   }
 
+  /// A photo is present when the parent just picked one, or the child already
+  /// has one stored — either satisfies the mandatory-photo rule.
+  bool get _hasPhoto => _pickedImage != null || widget.child.hasImage;
+
   bool get _isValid =>
+      _hasPhoto &&
       _dob != null &&
       _bloodType != null &&
       _addressCtrl.text.trim().isNotEmpty &&
       (_nationality?.trim().isNotEmpty ?? false);
+
+  Future<void> _pickImage() async {
+    FocusScope.of(context).unfocus();
+    await PickedImage().pickImage(
+      callBack: (file) async {
+        if (file != null && mounted) setState(() => _pickedImage = file);
+      },
+    );
+  }
 
   Future<void> _pickDob() async {
     FocusScope.of(context).unfocus();
@@ -111,7 +133,25 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
     setState(() => _saving = true);
     Loader.show();
 
+    // Upload the freshly picked photo first; abort the save if it fails so we
+    // never persist child data with a missing (mandatory) photo.
+    var imageUrl = widget.child.profileImage;
+    if (_pickedImage != null) {
+      imageUrl = await Get.find<ChildParentService>().uploadProfileImage(
+        nurseryId: widget.child.nurseryId,
+        childId: widget.child.key ?? '',
+        file: _pickedImage!,
+      );
+      if (imageUrl == null) {
+        Loader.dismiss();
+        if (mounted) setState(() => _saving = false);
+        Loader.showError('child_details_photo_upload_failed'.tr);
+        return;
+      }
+    }
+
     final updated = widget.child.copyWith(
+      profileImage: imageUrl,
       dateOfBirth: _dob!.millisecondsSinceEpoch,
       bloodType: _bloodType,
       nationality: _nationality!.trim(),
@@ -136,187 +176,280 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 44.w,
-                    height: 5.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(3.r),
-                    ),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: KeyboardActions(
+          config: _keyboardService.buildConfig(context, _keys),
+          disableScroll: true,
+          child: Column(
+            children: [
+              // ── Grabber ────────────────────────────────────────────────
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 44.w,
+                  height: 5.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(3.r),
                   ),
                 ),
-                SizedBox(height: 22.h),
-                Center(
-                  child: Container(
-                    width: 76.w,
-                    height: 76.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.child_care_rounded,
-                      color: AppColors.primary,
-                      size: 38.sp,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Center(
-                  child: Text(
-                    widget.mandatory
-                        ? 'child_details_complete_title'.tr
-                        : 'child_details_edit_title'.tr,
-                    style: context.typography.lgBold
-                        .copyWith(color: AppColors.textDefault),
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Center(
-                  child: Text(
-                    widget.mandatory
-                        ? 'child_details_complete_subtitle'
-                            .trParams({'name': widget.child.firstName})
-                        : 'child_details_edit_subtitle'.tr,
-                    textAlign: TextAlign.center,
-                    style: context.typography.smRegular.copyWith(
-                      color: AppColors.textSecondaryParagraph,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24.h),
-
-                // ── Date of birth ──────────────────────────────────────────
-                _FieldLabel('child_profile_dob'.tr),
-                SizedBox(height: 8.h),
-                _TapField(
-                  icon: Icons.cake_outlined,
-                  text: _dob != null
-                      ? '${_dob!.day}/${_dob!.month}/${_dob!.year}'
-                      : 'child_details_dob_hint'.tr,
-                  isPlaceholder: _dob == null,
-                  onTap: _pickDob,
-                ),
-                SizedBox(height: 18.h),
-
-                // ── Detailed address ───────────────────────────────────────
-                _FieldLabel('child_profile_address'.tr),
-                SizedBox(height: 8.h),
-                _TextInput(
-                  controller: _addressCtrl,
-                  hint: 'child_details_address_hint'.tr,
-                  icon: Icons.location_on_outlined,
-                  maxLines: 2,
-                  onChanged: (_) => setState(() {}),
-                ),
-                SizedBox(height: 18.h),
-
-                // ── Blood type ─────────────────────────────────────────────
-                _FieldLabel('child_profile_blood_type'.tr),
-                SizedBox(height: 8.h),
-                DropdownButtonFormField<String>(
-                  value: _bloodType,
-                  isExpanded: true,
-                  hint: Text(
-                    'child_details_blood_type_hint'.tr,
-                    style: context.typography.smRegular
-                        .copyWith(color: AppColors.grayMedium),
-                  ),
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  style: context.typography.smMedium
-                      .copyWith(color: AppColors.textDefault),
-                  decoration: _inputDecoration(
-                    context,
-                    prefixIcon: Icons.bloodtype_outlined,
-                  ),
-                  items: _bloodTypes
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _bloodType = v),
-                ),
-                SizedBox(height: 18.h),
-
-                // ── Nationality ────────────────────────────────────────────
-                _FieldLabel('child_profile_nationality'.tr),
-                SizedBox(height: 8.h),
-                DropdownButtonFormField<String>(
-                  value: _nationality,
-                  isExpanded: true,
-                  hint: Text(
-                    'child_details_nationality_hint'.tr,
-                    style: context.typography.smRegular
-                        .copyWith(color: AppColors.grayMedium),
-                  ),
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                  style: context.typography.smMedium
-                      .copyWith(color: AppColors.textDefault),
-                  decoration: _inputDecoration(
-                    context,
-                    prefixIcon: Icons.flag_outlined,
-                  ),
-                  items: _nationalityItems
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _nationality = v),
-                ),
-                SizedBox(height: 28.h),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (_isValid && !_saving) ? _save : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      disabledBackgroundColor:
-                          AppColors.primary.withValues(alpha: 0.4),
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(vertical: 15.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
+              ),
+              // ── Scrollable content ─────────────────────────────────────
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: _PhotoPicker(
+                          file: _pickedImage,
+                          imageUrl: widget.child.profileImage,
+                          onTap: _pickImage,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'child_details_save'.tr,
-                      style: context.typography.smSemiBold
-                          .copyWith(color: Colors.white, fontSize: 15),
-                    ),
-                  ),
-                ),
-                if (!widget.mandatory) ...[
-                  SizedBox(height: 6.h),
-                  Center(
-                    child: TextButton(
-                      onPressed: _saving ? null : Get.back,
-                      child: Text(
-                        'common_cancel'.tr,
+                      SizedBox(height: 16.h),
+                      Center(
+                        child: Text(
+                          widget.mandatory
+                              ? 'child_details_complete_title'.tr
+                              : 'child_details_edit_title'.tr,
+                          style: context.typography.lgBold
+                              .copyWith(color: AppColors.textDefault),
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Center(
+                        child: Text(
+                          widget.mandatory
+                              ? 'child_details_complete_subtitle'
+                                  .trParams({'name': widget.child.firstName})
+                              : 'child_details_edit_subtitle'.tr,
+                          textAlign: TextAlign.center,
+                          style: context.typography.smRegular.copyWith(
+                            color: AppColors.textSecondaryParagraph,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+
+                      // ── Date of birth ────────────────────────────────────
+                      _FieldLabel('child_profile_dob'.tr),
+                      SizedBox(height: 8.h),
+                      _TapField(
+                        icon: Icons.cake_outlined,
+                        text: _dob != null
+                            ? '${_dob!.day}/${_dob!.month}/${_dob!.year}'
+                            : 'child_details_dob_hint'.tr,
+                        isPlaceholder: _dob == null,
+                        onTap: _pickDob,
+                      ),
+                      SizedBox(height: 18.h),
+
+                      // ── Detailed address ─────────────────────────────────
+                      _FieldLabel('child_profile_address'.tr),
+                      SizedBox(height: 8.h),
+                      _TextInput(
+                        controller: _addressCtrl,
+                        hint: 'child_details_address_hint'.tr,
+                        icon: Icons.location_on_outlined,
+                        maxLines: 2,
+                        focusNode: _keyboardService.getFocusNode(_keys[0]),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      SizedBox(height: 18.h),
+
+                      // ── Blood type ───────────────────────────────────────
+                      _FieldLabel('child_profile_blood_type'.tr),
+                      SizedBox(height: 8.h),
+                      DropdownButtonFormField<String>(
+                        value: _bloodType,
+                        isExpanded: true,
+                        hint: Text(
+                          'child_details_blood_type_hint'.tr,
+                          style: context.typography.smRegular
+                              .copyWith(color: AppColors.grayMedium),
+                        ),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
                         style: context.typography.smMedium
-                            .copyWith(color: AppColors.grayMedium),
+                            .copyWith(color: AppColors.textDefault),
+                        decoration: _inputDecoration(
+                          context,
+                          prefixIcon: Icons.bloodtype_outlined,
+                        ),
+                        items: _bloodTypes
+                            .map((t) =>
+                                DropdownMenuItem(value: t, child: Text(t)))
+                            .toList(),
+                        onChanged: (v) => setState(() => _bloodType = v),
                       ),
-                    ),
+                      SizedBox(height: 18.h),
+
+                      // ── Nationality ──────────────────────────────────────
+                      _FieldLabel('child_profile_nationality'.tr),
+                      SizedBox(height: 8.h),
+                      DropdownButtonFormField<String>(
+                        value: _nationality,
+                        isExpanded: true,
+                        hint: Text(
+                          'child_details_nationality_hint'.tr,
+                          style: context.typography.smRegular
+                              .copyWith(color: AppColors.grayMedium),
+                        ),
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                        style: context.typography.smMedium
+                            .copyWith(color: AppColors.textDefault),
+                        decoration: _inputDecoration(
+                          context,
+                          prefixIcon: Icons.flag_outlined,
+                        ),
+                        items: _nationalityItems
+                            .map((t) =>
+                                DropdownMenuItem(value: t, child: Text(t)))
+                            .toList(),
+                        onChanged: (v) => setState(() => _nationality = v),
+                      ),
+                    ],
                   ),
-                ],
-              ],
-            ),
+                ),
+              ),
+              // ── Pinned actions ─────────────────────────────────────────
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: (_isValid && !_saving) ? _save : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            disabledBackgroundColor:
+                                AppColors.primary.withValues(alpha: 0.4),
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 15.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                          ),
+                          child: Text(
+                            'child_details_save'.tr,
+                            style: context.typography.smSemiBold
+                                .copyWith(color: Colors.white, fontSize: 15),
+                          ),
+                        ),
+                      ),
+                      if (!widget.mandatory)
+                        TextButton(
+                          onPressed: _saving ? null : Get.back,
+                          child: Text(
+                            'common_cancel'.tr,
+                            style: context.typography.smMedium
+                                .copyWith(color: AppColors.grayMedium),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+/// Circular tappable avatar used to pick / preview the child's mandatory photo.
+class _PhotoPicker extends StatelessWidget {
+  final File? file;
+  final String? imageUrl;
+  final VoidCallback onTap;
+
+  const _PhotoPicker({
+    required this.file,
+    required this.imageUrl,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = file != null || (imageUrl?.isNotEmpty ?? false);
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Stack(
+            children: [
+              Container(
+                width: 96.w,
+                height: 96.w,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    width: 1.5,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: file != null
+                    ? Image.file(file!, fit: BoxFit.cover)
+                    : (imageUrl?.isNotEmpty ?? false)
+                        ? AppNetworkImage(
+                            url: imageUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: _placeholder(),
+                          )
+                        : _placeholder(),
+              ),
+              PositionedDirectional(
+                bottom: 0,
+                end: 0,
+                child: Container(
+                  width: 30.w,
+                  height: 30.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Icon(
+                    Icons.camera_alt_rounded,
+                    size: 15.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          hasImage
+              ? 'child_details_photo_change'.tr
+              : 'child_details_photo_hint'.tr,
+          style: context.typography.xsMedium.copyWith(
+            color: hasImage ? AppColors.primary : AppColors.errorForeground,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _placeholder() => Icon(
+        Icons.add_a_photo_rounded,
+        color: AppColors.primary,
+        size: 34.sp,
+      );
 }
 
 InputDecoration _inputDecoration(BuildContext context, {IconData? prefixIcon}) {
@@ -358,6 +491,7 @@ class _TextInput extends StatelessWidget {
   final String hint;
   final IconData icon;
   final int maxLines;
+  final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
 
   const _TextInput({
@@ -365,6 +499,7 @@ class _TextInput extends StatelessWidget {
     required this.hint,
     required this.icon,
     this.maxLines = 1,
+    this.focusNode,
     this.onChanged,
   });
 
@@ -372,8 +507,11 @@ class _TextInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       maxLines: maxLines,
       onChanged: onChanged,
+      textInputAction: TextInputAction.done,
+      onSubmitted: (_) => FocusScope.of(context).unfocus(),
       style: context.typography.smMedium.copyWith(color: AppColors.textDefault),
       decoration: _inputDecoration(context, prefixIcon: icon).copyWith(
         hintText: hint,
@@ -457,8 +595,8 @@ Future<void> showChildDetailsSheet({
   );
 }
 
-/// Enforces the "complete your child's profile on first login" rule. The four
-/// core fields (DOB, address, blood type, nationality) live on [ChildModel];
+/// Enforces the "complete your child's profile on first login" rule. The core
+/// fields (photo, DOB, address, blood type, nationality) live on [ChildModel];
 /// when any is missing the parent is shown a mandatory sheet before they can
 /// use the app.
 class ChildProfileCompletionPrompt {
@@ -495,6 +633,7 @@ class ChildProfileCompletionPrompt {
   }
 
   static bool _isComplete(ChildModel c) =>
+      c.hasImage &&
       c.dateOfBirth != null &&
       (c.bloodType?.trim().isNotEmpty ?? false) &&
       (c.nationality?.trim().isNotEmpty ?? false) &&

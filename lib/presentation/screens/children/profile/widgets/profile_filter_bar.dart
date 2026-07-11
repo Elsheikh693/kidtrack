@@ -41,7 +41,7 @@ class ProfileFilterBar extends StatelessWidget {
             ),
             const Spacer(),
             _NavButton(
-              icon: Icons.chevron_left_rounded,
+              icon: Icons.chevron_right_rounded,
               enabled: true,
               onTap: controller.stepBack,
             ),
@@ -72,7 +72,7 @@ class ProfileFilterBar extends StatelessWidget {
               ),
             ),
             _NavButton(
-              icon: Icons.chevron_right_rounded,
+              icon: Icons.chevron_left_rounded,
               enabled: controller.canGoForward,
               onTap: controller.stepForward,
             ),

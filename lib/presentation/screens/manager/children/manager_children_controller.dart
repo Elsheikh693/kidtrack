@@ -331,16 +331,20 @@ class ManagerChildrenController extends GetxController {
 
   Future<void> _loadAttendance() async {
     await _attendanceSvc.getAll(callBack: (list) {
+      // Scope by the branch roster (childId) rather than the record's stored
+      // branchId. A teacher check-in can land with an empty branchId (their
+      // staff record may lack one), so filtering on the record's branch would
+      // silently drop those present children. Roster membership is the
+      // authoritative branch scope and a child belongs to exactly one branch.
       final records = list
           .whereType<ChildAttendanceModel>()
-          .where((a) => a.branchId == branchId)
+          .where((a) => _branchChildKeys.contains(a.childId))
           .toList();
 
       final today = records
           .where((a) =>
               a.date == _todayStr &&
-              (a.status == 'present' || a.status == 'late') &&
-              _branchChildKeys.contains(a.childId))
+              (a.status == 'present' || a.status == 'late'))
           .toList();
       final checkedOut = today.where((a) => a.checkOutTime != null).length;
       presentNow.value = (today.length - checkedOut).clamp(0, today.length);

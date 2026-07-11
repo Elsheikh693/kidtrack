@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import '../../../../index/index_main.dart';
 import '../../../../Data/models/child_current_status/child_current_status_model.dart';
+import '../../../../Global/services/child_status_service.dart';
 import 'child_attention_entry.dart';
 import 'child_preview.dart';
 import 'top_performer_entry.dart';
@@ -10,6 +11,7 @@ class TeacherHomeController extends GetxController {
   late final SessionService _session;
   late final TeacherActivityService _activityService;
   late final ChildStateService _childStateService;
+  final ChildStatusService _statusService = ChildStatusService();
   final TeacherAcademicService _academicService = TeacherAcademicService();
 
   final RxBool isLoading = true.obs;
@@ -19,6 +21,14 @@ class TeacherHomeController extends GetxController {
   final RxList<ClassroomModel> myClassrooms = <ClassroomModel>[].obs;
   final RxList<SubjectModel> mySubjects = <SubjectModel>[].obs;
   final RxMap<String, int> classroomChildCount = <String, int>{}.obs;
+
+  /// classroomId → children present (or late) today. Drives the attendance ring.
+  final RxMap<String, int> classroomPresentCount = <String, int>{}.obs;
+
+  /// classroomId → program/stage name (e.g. "KG1"). Drives the card badge.
+  final RxMap<String, String> classroomProgramName = <String, String>{}.obs;
+
+  /// classroomId → next upcoming scheduled slot today (subject + time).
 
   /// classroomId → a few children (name + image) for the avatar stack.
   final RxMap<String, List<ChildPreview>> classroomChildPreviews =
@@ -53,6 +63,12 @@ class TeacherHomeController extends GetxController {
 
   StreamSubscription<ClassroomActivityModel?>? _activitySub;
   StreamSubscription<Map<String, ChildCurrentStatusModel?>>? _statesSub;
+  StreamSubscription<Set<String>>? _presentSub;
+
+  // Latest snapshots from the two live streams; presence + attention are
+  // recomputed whenever either changes so the card and sheet stay in sync.
+  Map<String, ChildCurrentStatusModel?> _latestStates = const {};
+  Set<String> _presentTodayIds = const {};
 
   String get teacherName => _session.currentUser?.displayName ?? '';
   String get nurseryId => _session.nurseryId ?? '';
@@ -60,6 +76,15 @@ class TeacherHomeController extends GetxController {
 
   String get primaryClassroomName =>
       myClassrooms.isNotEmpty ? myClassrooms.first.name : '';
+
+  /// Reactive unread flag for the app-bar bell dot. Reads the shared stream
+  /// service's list so the dot updates live as notifications arrive/read.
+  bool get hasUnreadNotifications {
+    if (!Get.isRegistered<NotificationStreamService>()) return false;
+    return Get.find<NotificationStreamService>()
+        .notifications
+        .any((n) => !n.isRead);
+  }
 
   @override
   void onInit() {
@@ -76,8 +101,8 @@ class TeacherHomeController extends GetxController {
     if (myClassrooms.isNotEmpty) {
       _watchActivity();
       await Future.wait([
+        _loadProgramNames(),
         _loadChildrenCount(),
-        _loadPresentCount(),
         _loadTodaySummary(),
       ]);
     }
@@ -273,17 +298,41 @@ class TeacherHomeController extends GetxController {
 
   void _watchChildrenStates() {
     _statesSub?.cancel();
+    _presentSub?.cancel();
     final allIds = _classroomChildIds.values.expand((ids) => ids).toList();
     if (allIds.isEmpty || nurseryId.isEmpty) return;
 
+    // Live activity state (eating/sleeping/…) → drives the "attention" badges.
     _statesSub = _childStateService
         .watchChildrenStates(nurseryId, allIds)
         .listen(_onStatesUpdate);
+
+    // Dated attendance record → the single source of truth for "present today",
+    // shared with the classroom-states sheet and the reception dashboard.
+    _presentSub = _statusService
+        .watchPresentIdsForDay(nurseryId)
+        .listen(_onPresentUpdate);
   }
 
   void _onStatesUpdate(Map<String, ChildCurrentStatusModel?> states) {
+    _latestStates = states;
+    _recompute();
+  }
+
+  void _onPresentUpdate(Set<String> ids) {
+    _presentTodayIds = ids;
+    _recompute();
+  }
+
+  /// Recomputes attendance + attention from the two latest stream snapshots.
+  /// Presence is taken purely from the dated attendance set; the live status
+  /// cache only contributes the activity label (and only for present children,
+  /// so a stale prior-day status can never surface).
+  void _recompute() {
     final attention = <ChildAttentionEntry>[];
     final badgeCounts = <String, int>{};
+    final presentCounts = <String, int>{};
+    var presentTotal = 0;
 
     for (final entry in _classroomChildIds.entries) {
       final classroomId = entry.key;
@@ -294,12 +343,12 @@ class TeacherHomeController extends GetxController {
               ?.name ??
           '';
       int badge = 0;
+      int present = 0;
       for (final childId in childIds) {
-        final s = states[childId];
-        if (s == null) continue;
-        if (s.status == ChildStatus.checkedOut ||
-            s.status == ChildStatus.notArrived) continue;
-        final stateId = s.currentStateId ?? '';
+        if (!_presentTodayIds.contains(childId)) continue;
+        present++;
+        final s = _latestStates[childId];
+        final stateId = s?.currentStateId ?? '';
         if (stateId.isEmpty || stateId == kDefaultStateId) continue;
         badge++;
         attention.add(ChildAttentionEntry(
@@ -307,40 +356,38 @@ class TeacherHomeController extends GetxController {
           childName: _childNames[childId] ?? '',
           classroomId: classroomId,
           classroomName: classroomName,
-          stateTitle: s.currentStateTitle ?? stateId,
+          stateTitle: s?.currentStateTitle ?? stateId,
         ));
       }
       if (badge > 0) badgeCounts[classroomId] = badge;
+      presentCounts[classroomId] = present;
+      presentTotal += present;
     }
 
     attentionChildren.value = attention;
     classroomAttentionCount.value = badgeCounts;
+    classroomPresentCount.value = presentCounts;
+    presentToday.value = presentTotal;
   }
 
   void prepareClassroomStates(ClassroomModel classroom) {
     Get.find<ClassroomStatesController>().initForClassroom(classroom);
   }
 
-  Future<void> _loadPresentCount() async {
+  /// Resolves each classroom's first program id to its display name (KG1, …).
+  Future<void> _loadProgramNames() async {
     try {
-      final today = _todayKey();
-      final cIds = myClassrooms.map((c) => c.key ?? '').toSet();
-      final snap = await FirebaseDatabase.instance
-          .ref('platform/$nurseryId/childAttendance')
-          .orderByChild('date')
-          .equalTo(today)
-          .get();
-      if (!snap.exists || snap.value == null) {
-        presentToday.value = 0;
-        return;
+      final programs = await _academicService.loadPrograms();
+      final byId = {for (final p in programs) (p.key ?? ''): p.name};
+      final names = <String, String>{};
+      for (final c in myClassrooms) {
+        final pid = c.programIds.isNotEmpty ? c.programIds.first : '';
+        final name = byId[pid];
+        if (name != null && name.isNotEmpty) {
+          names[c.key ?? ''] = name;
+        }
       }
-      final data = snap.value as Map? ?? {};
-      presentToday.value = data.values
-          .where((v) =>
-              v is Map &&
-              cIds.contains(v['classroomId']?.toString()) &&
-              (v['status'] == 'present' || v['status'] == 'late'))
-          .length;
+      classroomProgramName.value = names;
     } catch (_) {}
   }
 
@@ -461,11 +508,6 @@ class TeacherHomeController extends GetxController {
     }
   }
 
-  String _todayKey() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-  }
-
   static int _todayStartMillis() {
     final now = DateTime.now();
     return DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
@@ -480,6 +522,7 @@ class TeacherHomeController extends GetxController {
   void onClose() {
     _activitySub?.cancel();
     _statesSub?.cancel();
+    _presentSub?.cancel();
     super.onClose();
   }
 }

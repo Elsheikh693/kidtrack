@@ -13,6 +13,9 @@ class ClassroomStatesController extends GetxController {
       <ChildStateTemplateModel>[].obs;
   final RxMap<String, ChildCurrentStatusModel?> childStates =
       <String, ChildCurrentStatusModel?>{}.obs;
+  // Present-today child IDs — the shared, date-scoped source of truth for
+  // attendance (see ChildStatusService.watchPresentIdsForDay).
+  final RxSet<String> presentIds = <String>{}.obs;
   final RxString classroomName = ''.obs;
 
   String _classroomId = '';
@@ -20,6 +23,7 @@ class ClassroomStatesController extends GetxController {
   String _branchId = '';
 
   StreamSubscription<Map<String, ChildCurrentStatusModel?>>? _statesSub;
+  StreamSubscription<Set<String>>? _presentSub;
 
   @override
   void onInit() {
@@ -35,13 +39,16 @@ class ClassroomStatesController extends GetxController {
     _branchId = _session.branchId ?? '';
 
     _statesSub?.cancel();
+    _presentSub?.cancel();
     children.clear();
     childStates.clear();
+    presentIds.clear();
     isLoading.value = true;
 
     await Future.wait([_loadChildren(), _loadTemplates()]);
 
     _watchStates();
+    _watchPresentToday();
     isLoading.value = false;
   }
 
@@ -62,6 +69,15 @@ class ClassroomStatesController extends GetxController {
     _statesSub = _stateService
         .watchChildrenStates(_nurseryId, ids)
         .listen((states) => childStates.value = states);
+  }
+
+  /// Presence comes from the dated attendance record — the same source the
+  /// reception dashboard and teacher home card use — so all three always agree.
+  void _watchPresentToday() {
+    if (_nurseryId.isEmpty) return;
+    _presentSub = _statusService
+        .watchPresentIdsForDay(_nurseryId)
+        .listen(presentIds.assignAll);
   }
 
   /// Children ordered so present (checked-in) ones come first, keeping the
@@ -94,14 +110,10 @@ class ClassroomStatesController extends GetxController {
     return s?.currentStateTitle ?? 'child_state_default'.tr;
   }
 
-  // true if child is currently checked in (state changes are relevant)
-  bool isCheckedIn(String childId) {
-    final s = childStates[childId];
-    if (s == null) return false;
-    return s.status == ChildStatus.checkedIn ||
-        s.status == ChildStatus.havingMeal ||
-        s.status == ChildStatus.sleeping;
-  }
+  // true if the child has a dated attendance record for today (present/late).
+  // Drives the presence dot, the present/absent line and present-first ordering
+  // — all from the same source as reception, never the stale status cache.
+  bool isCheckedIn(String childId) => presentIds.contains(childId);
 
   /// Lets the teacher check a child in straight from the classroom-states sheet
   /// — same effect as reception's check-in — for when a child arrived but
@@ -111,7 +123,10 @@ class ClassroomStatesController extends GetxController {
     Loader.show();
     final ok = await _statusService.checkInChild(
       nurseryId: _nurseryId,
-      branchId: _branchId,
+      // Stamp the child's own branch, not the teacher's session branch — a
+      // teacher's staff record may lack a branchId, and an empty branch on the
+      // attendance record makes the manager's branch-scoped counts drop it.
+      branchId: child?.branchId ?? _branchId,
       childId: childId,
       receptionistId: _session.userId ?? '',
       classroomId: child?.classroomId ?? _classroomId,
@@ -142,6 +157,7 @@ class ClassroomStatesController extends GetxController {
   @override
   void onClose() {
     _statesSub?.cancel();
+    _presentSub?.cancel();
     super.onClose();
   }
 }

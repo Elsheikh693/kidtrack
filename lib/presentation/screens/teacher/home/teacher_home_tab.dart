@@ -1,5 +1,4 @@
 import '../../../../index/index_main.dart';
-import 'child_preview.dart';
 import 'widgets/teacher_home_app_bar.dart';
 import 'widgets/active_activity_section.dart';
 import 'widgets/home_section_header.dart';
@@ -48,7 +47,7 @@ class _TeacherHomeTabState extends State<TeacherHomeTab> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: controller.refresh,
-      color: AppColors.activityGreen,
+      color: AppColors.activityPurple,
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
@@ -122,11 +121,14 @@ class _HomeBodyState extends State<_HomeBody> {
           final childCounts = Map<String, int>.of(
             controller.classroomChildCount,
           );
-          final previews = Map<String, List<ChildPreview>>.of(
-            controller.classroomChildPreviews,
+          final present = Map<String, int>.of(
+            controller.classroomPresentCount,
           );
-          final attention = Map<String, int>.of(
-            controller.classroomAttentionCount,
+          final programs = Map<String, String>.of(
+            controller.classroomProgramName,
+          );
+          final activityCounts = Map<String, int>.of(
+            controller.classroomActivitiesCount,
           );
           controller.assignment.value; // register subject assignment
 
@@ -135,7 +137,7 @@ class _HomeBodyState extends State<_HomeBody> {
             children: [
               HomeSectionHeader(
                 label: 'teacher_home_my_classrooms'.tr,
-                color: AppColors.activityBlue,
+                color: AppColors.activityPurple,
                 badge: classrooms.length.toString(),
               ),
               const SizedBox(height: 14),
@@ -145,11 +147,10 @@ class _HomeBodyState extends State<_HomeBody> {
                   child: ClassCard(
                     classroom: classrooms[i],
                     childCount: childCounts[classrooms[i].key ?? ''] ?? 0,
-                    previews: previews[classrooms[i].key ?? ''] ?? const [],
-                    subjects: controller.subjectsForClassroom(
-                      classrooms[i].key ?? '',
-                    ),
-                    attentionCount: attention[classrooms[i].key ?? ''] ?? 0,
+                    presentCount: present[classrooms[i].key ?? ''] ?? 0,
+                    programName: programs[classrooms[i].key ?? ''] ?? '',
+                    activitiesCount:
+                        activityCounts[classrooms[i].key ?? ''] ?? 0,
                     onTap: () => _openClass(classrooms[i]),
                   ),
                 ),

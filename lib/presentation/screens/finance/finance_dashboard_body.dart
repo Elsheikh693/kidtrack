@@ -67,11 +67,11 @@ class _MonthBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // First child sits on the right → "next/newer" arrow.
+          // RTL: first child sits on the right → "previous/older" arrow (points
+          // right, like the back button); the left arrow steps forward.
           _StepBtn(
-            icon: Icons.chevron_left_rounded,
-            enabled: controller.canGoForward,
-            onTap: controller.nextMonth,
+            icon: Icons.chevron_right_rounded,
+            onTap: controller.previousMonth,
           ),
           Expanded(
             child: Text(
@@ -85,8 +85,9 @@ class _MonthBar extends StatelessWidget {
             ),
           ),
           _StepBtn(
-            icon: Icons.chevron_right_rounded,
-            onTap: controller.previousMonth,
+            icon: Icons.chevron_left_rounded,
+            enabled: controller.canGoForward,
+            onTap: controller.nextMonth,
           ),
         ],
       ),

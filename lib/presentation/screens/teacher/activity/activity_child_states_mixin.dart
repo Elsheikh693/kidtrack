@@ -32,6 +32,12 @@ mixin ActivityChildStatesMixin on GetxController {
     return [...present, ...absent];
   }
 
+  /// How many children are currently checked in (present now). Matches the
+  /// "present" group [sortedStateChildren] floats to the top, and mirrors the
+  /// manager's "present now" semantics (on-site, excludes checked-out/absent).
+  int get presentStateCount =>
+      stateChildren.where((c) => isCheckedIn(c.key ?? '')).length;
+
   Future<void> loadStateTemplates() async {
     stateTemplates.value = await _stateService.loadActiveTemplates(nurseryId);
   }
@@ -80,7 +86,10 @@ mixin ActivityChildStatesMixin on GetxController {
     Loader.show();
     final ok = await _statusService.checkInChild(
       nurseryId: nurseryId,
-      branchId: branchId,
+      // Stamp the child's own branch, not the teacher's session branch — a
+      // teacher's staff record may lack a branchId, and an empty branch on the
+      // attendance record makes the manager's branch-scoped counts drop it.
+      branchId: child?.branchId ?? branchId,
       childId: childId,
       receptionistId: teacherId,
       classroomId: child?.classroomId,

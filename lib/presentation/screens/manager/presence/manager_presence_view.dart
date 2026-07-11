@@ -162,7 +162,7 @@ class _DateBar extends StatelessWidget {
         ),
         SizedBox(width: 8.w),
         _NavArrow(
-          icon: Icons.chevron_right_rounded,
+          icon: Icons.chevron_left_rounded,
           onTap: controller.isToday ? null : controller.goNextDay,
         ),
       ],

@@ -89,6 +89,7 @@ class ActivityStateCard extends StatelessWidget {
               ChildStateDropdown(
                 currentId: currentId,
                 templates: ctrl.stateTemplates,
+                currentLabel: ctrl.stateLabelFor(childId),
                 onChanged: (stateId, stateTitle) =>
                     ctrl.updateChildState(childId, stateId, stateTitle),
               ),

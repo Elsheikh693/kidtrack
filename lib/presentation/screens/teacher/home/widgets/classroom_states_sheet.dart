@@ -97,7 +97,7 @@ class _ClassroomStatesSheetState extends State<ClassroomStatesSheet> {
                           const SizedBox(width: 5),
                           Text(
                             '${controller.presentCount}/${controller.children.length}',
-                            style: context.typography.xsBold
+                            style: context.typography.smSemiBold
                                 .copyWith(color: _accent),
                           ),
                         ],

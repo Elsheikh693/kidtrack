@@ -15,7 +15,7 @@ class ActivityEndController extends GetxController {
   final childNotes = <String, String>{}.obs;
   final childReasons = <String, List<String>>{}.obs;
   final defaultEval = Rxn<EvalLevel>();
-  final showHomework = false.obs;
+  final showHomework = true.obs;
 
   final reasons = <EvaluationReasonModel>[].obs;
   final isLoadingReasons = true.obs;
@@ -61,8 +61,10 @@ class ActivityEndController extends GetxController {
     selectedSubjectName.value = activity.subjectName;
     childReasons.clear();
     defaultEval.value = null;
-    showHomework.value = false;
-    dueDate.value = null;
+    showHomework.value = true;
+    // Homework is enabled by default, so seed the due date up front (the
+    // showHomework listener won't fire when the value is unchanged).
+    dueDate.value = nextSchoolDay(_workingDays);
     hwTitleCtrl.clear();
     hwDescCtrl.clear();
   }

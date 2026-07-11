@@ -108,7 +108,7 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
               child: child == null
                   ? _SearchResults(
                       controller: controller,
-                      onPick: controller.selectChild,
+                      onHistory: controller.selectChild,
                       onRenew: _openRenewSheet,
                     )
                   : _ChildFinanceView(
@@ -205,11 +205,11 @@ class _SelectedChip extends StatelessWidget {
 
 class _SearchResults extends StatelessWidget {
   final ReceptionCollectionController controller;
-  final ValueChanged<ChildModel> onPick;
+  final ValueChanged<ChildModel> onHistory;
   final ValueChanged<ChildModel> onRenew;
   const _SearchResults({
     required this.controller,
-    required this.onPick,
+    required this.onHistory,
     required this.onRenew,
   });
 
@@ -219,10 +219,10 @@ class _SearchResults extends StatelessWidget {
       final q = controller.searchQuery.value.trim();
       if (q.isEmpty) {
         // Default state: the full children directory with per-child quick
-        // actions (renew subscription / other payments).
+        // actions (renew subscription / open payment history).
         return ReceptionDirectoryList(
           controller: controller,
-          onOtherPayments: onPick,
+          onHistory: onHistory,
           onRenew: onRenew,
         );
       }
@@ -234,71 +234,24 @@ class _SearchResults extends StatelessWidget {
           hint: 'collection_no_child_found_hint'.tr,
         );
       }
+      // Same compact card as the directory so search results look identical.
+      final canRenew = controller.monthlyPackage != null;
       return ListView.separated(
         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
         itemCount: results.length,
         separatorBuilder: (_, _) => SizedBox(height: 8.h),
         itemBuilder: (_, i) {
           final c = results[i];
-          return _ChildRow(
+          return CollectionChildCard(
             child: c,
             subtitle: controller.classroomName(c.classroomId),
-            onTap: () => onPick(c),
+            canRenew: canRenew,
+            onRenew: () => onRenew(c),
+            onHistory: () => onHistory(c),
           );
         },
       );
     });
-  }
-}
-
-class _ChildRow extends StatelessWidget {
-  final ChildModel child;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _ChildRow({
-    required this.child,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: _line),
-        ),
-        child: Row(
-          children: [
-            _Avatar(child: child),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    child.fullName,
-                    style: context.typography.smSemiBold
-                        .copyWith(color: _ink, fontSize: 14.5),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle,
-                    style: context.typography.xsRegular
-                        .copyWith(color: _muted, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, size: 24.sp, color: _muted),
-          ],
-        ),
-      ),
-    );
   }
 }
 

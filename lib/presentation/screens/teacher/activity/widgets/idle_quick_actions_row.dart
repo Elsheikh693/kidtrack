@@ -79,10 +79,7 @@ class _ActionBtn extends StatelessWidget {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: color.withValues(alpha: 0.14),
-              width: 1,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.14), width: 1),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

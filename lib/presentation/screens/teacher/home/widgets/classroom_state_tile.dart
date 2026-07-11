@@ -139,6 +139,7 @@ class ClassroomStateTile extends StatelessWidget {
               ChildStateDropdown(
                 currentId: currentId,
                 templates: controller.templates,
+                currentLabel: controller.stateLabelFor(childId),
                 onChanged: (stateId, stateTitle) =>
                     controller.updateState(childId, stateId, stateTitle),
               ),

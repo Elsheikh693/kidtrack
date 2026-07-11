@@ -23,6 +23,9 @@ class ChildStatusService {
   DatabaseReference _eventsRef(String nurseryId, String date, String childId) =>
       _db.ref('platform/$nurseryId/childDailyEvents/$date/$childId');
 
+  DatabaseReference _attendanceRef(String nurseryId) =>
+      _db.ref('platform/$nurseryId/childAttendance');
+
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -80,6 +83,46 @@ class ChildStatusService {
         controller.add([]);
       },
     );
+    return controller.stream;
+  }
+
+  /// The single source of truth for "present today" used across every screen
+  /// (teacher home card, classroom-states sheet, reception dashboard) so the
+  /// counts can never drift. Emits the live set of child IDs that have a dated
+  /// attendance record for [day] (defaults to today) with status present/late.
+  ///
+  /// Because this is date-scoped, a child checked in on a previous day and
+  /// never checked out is NOT reported today — the dated record acts as an
+  /// implicit daily reset, unlike the childCurrentStatus cache.
+  Stream<Set<String>> watchPresentIdsForDay(String nurseryId, [DateTime? day]) {
+    final date = _dateKey(day ?? DateTime.now());
+    final controller = StreamController<Set<String>>.broadcast();
+
+    final sub = _attendanceRef(nurseryId)
+        .orderByChild('date')
+        .equalTo(date)
+        .onValue
+        .listen(
+      (event) {
+        final ids = <String>{};
+        final data = event.snapshot.value;
+        if (data is Map) {
+          for (final v in data.values) {
+            if (v is! Map) continue;
+            final status = v['status']?.toString();
+            if (status != 'present' && status != 'late') continue;
+            final childId = v['childId']?.toString();
+            if (childId != null && childId.isNotEmpty) ids.add(childId);
+          }
+        }
+        controller.add(ids);
+      },
+      onError: (e) {
+        AppLogger.error(_tag, 'watchPresentIdsForDay: $e');
+        controller.add(<String>{});
+      },
+    );
+    controller.onCancel = () => sub.cancel();
     return controller.stream;
   }
 

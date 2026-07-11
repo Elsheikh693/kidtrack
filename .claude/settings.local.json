@@ -46,7 +46,14 @@
       "Bash(npx eslint *)",
       "Bash(git checkout *)",
       "Bash(git commit *)",
-      "Bash(gh pr create --title 'feat\\(auth\\): passwordless activation-code onboarding & login' --body ' *)"
+      "Bash(gh pr create --title 'feat\\(auth\\): passwordless activation-code onboarding & login' --body ' *)",
+      "Bash(grep -nA3 \"tag: \\\\\"nurseryInfo\\\\\"\" lib/binding/init.dart)",
+      "Bash(grep -rnA10 \"_nurserySvc.getAll\\\\|nurserySvc.getAll\\\\|NurseryParentService>\\(\\)\" lib/presentation)",
+      "Bash(grep -nA1 \"bindCrud<DailyAssessmentModel>\\\\|bindCrud<TopicProgressModel>\\\\|bindCrud<AcademicTopicModel>\\\\|bindCrud<SubjectModel>\\\\|bindCrud<InvoiceModel>\\\\|bindCrud<AssessmentModel>\" lib/binding/init.dart)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(python3 -c ' *)",
+      "Bash(git rev-list *)"
     ]
   }
 }
