@@ -14,9 +14,17 @@ class ChildListController extends GetxController {
   final RxMap<String, String> branchNames = <String, String>{}.obs;
   final RxMap<String, String> classroomNames = <String, String>{}.obs;
   final RxMap<String, String> parentNames = <String, String>{}.obs;
+  final RxMap<String, String> parentIds = <String, String>{}.obs;
   final RxMap<String, int> parentCounts = <String, int>{}.obs;
   final RxBool isLoading = true.obs;
   final RxString searchQuery = ''.obs;
+
+  // Live nursery↔parent conversations (per child) for the chat entry point on
+  // each card: drives the unread badge and lets staff message the guardian.
+  final _chatService = ChatService();
+  final RxMap<String, ChatConversationModel> chatConvos =
+      <String, ChatConversationModel>{}.obs;
+  StreamSubscription<List<ChatConversationModel>>? _convoSub;
 
   // null = all shifts; 'morning' | 'between' | 'evening'
   final RxnString selectedShift = RxnString();
@@ -34,6 +42,9 @@ class ChildListController extends GetxController {
     _linkService = Get.find<ParentChildParentService>();
     _guardianService = Get.find<GuardianParentService>();
     loadData();
+    _convoSub = _chatService.watchConversations().listen((list) {
+      chatConvos.value = {for (final c in list) c.childId: c};
+    });
     debounce(
       searchQuery,
       (_) => _filter(),
@@ -72,9 +83,21 @@ class ChildListController extends GetxController {
 
   @override
   void onClose() {
+    _convoSub?.cancel();
     searchCtrl.dispose();
     super.onClose();
   }
+
+  /// Unread messages from the guardian for [childId] (nursery/staff side).
+  int chatUnread(String? childId) =>
+      childId == null ? 0 : (chatConvos[childId]?.unreadManager ?? 0);
+
+  /// Opens the nursery↔guardian conversation for [child] (staff side).
+  Future<void> openChat(ChildModel child) => openStaffChat(
+        child: child,
+        parentId: parentIds[child.key] ?? child.parentId ?? '',
+        parentName: parentName(child.key),
+      );
 
   Future<void> _loadLookups() async {
     await _branchService.getAll(
@@ -109,6 +132,7 @@ class ChildListController extends GetxController {
     await _linkService.getAll(
       callBack: (list) {
         final map = <String, String>{};
+        final ids = <String, String>{};
         final counts = <String, int>{};
         for (final link in list.whereType<ParentChildModel>()) {
           final name = parentById[link.parentId];
@@ -117,9 +141,11 @@ class ChildListController extends GetxController {
           // Primary parent wins; otherwise first one found
           if (link.isPrimary || !map.containsKey(link.childId)) {
             map[link.childId] = name;
+            ids[link.childId] = link.parentId;
           }
         }
         parentNames.value = map;
+        parentIds.value = ids;
         parentCounts.value = counts;
       },
     );
@@ -139,9 +165,15 @@ class ChildListController extends GetxController {
     isLoading.value = false;
   }
 
+  /// When true, non-active children never enter the roster — a withdrawn child
+  /// is hard-deleted server-side, so it can't resurface under any filter.
+  /// Reception overrides this to hide any lingering inactive record entirely.
+  bool get showActiveOnly => false;
+
   /// Owner/super-admin see every branch; a branch manager (or receptionist)
   /// only sees their own branch and shift.
   bool _inScope(ChildModel c) {
+    if (showActiveOnly && c.status != 'active') return false;
     if (_session.isOwner || _session.isSuperAdmin) return true;
     final bId = _session.branchId;
     if (bId != null && bId.isNotEmpty && c.branchId != bId) return false;

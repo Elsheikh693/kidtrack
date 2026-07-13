@@ -243,7 +243,7 @@ class TeacherHomeController extends GetxController {
     if (cId.isEmpty) return;
     _activitySub?.cancel();
     _activitySub = _activityService
-        .watchActiveActivity(nurseryId, cId)
+        .watchActiveActivity(nurseryId, cId, teacherId: teacherId)
         .listen((a) => activeActivity.value = a);
   }
 

@@ -2,10 +2,15 @@ import '../../../../index/index_main.dart';
 
 const _accent = Color(0xFF7C3AED);
 const _overdue = Color(0xFFDC2626);
+const _partial = Color(0xFFD97706);
+const _green = Color(0xFF16A34A);
 const _bg = Color(0xFFF6F7FB);
 const _ink = Color(0xFF111827);
 const _muted = Color(0xFF8A93A4);
 const _line = Color(0xFFEEF0F4);
+
+/// Which slice of debtors a [LatePayersView] shows.
+enum LatePayersMode { owes, unpaid, partial }
 
 class LatePayersView extends StatefulWidget {
   /// When opened from the receptionist finance tab we pass that tab's
@@ -13,7 +18,15 @@ class LatePayersView extends StatefulWidget {
   /// from the home card (no arg) it falls back to the shared current-month one.
   final CollectionsController? controller;
 
-  const LatePayersView({super.key, this.controller});
+  /// Which bucket to render: everyone who owes (default), never-paid only, or
+  /// partially-paid only.
+  final LatePayersMode mode;
+
+  const LatePayersView({
+    super.key,
+    this.controller,
+    this.mode = LatePayersMode.owes,
+  });
 
   @override
   State<LatePayersView> createState() => _LatePayersViewState();
@@ -28,6 +41,18 @@ class _LatePayersViewState extends State<LatePayersView> {
     controller = widget.controller ?? initController(() => CollectionsController());
   }
 
+  String get _title => switch (widget.mode) {
+        LatePayersMode.unpaid => 'collections_unpaid_title'.tr,
+        LatePayersMode.partial => 'collections_partial_title'.tr,
+        LatePayersMode.owes => 'collections_late_title'.tr,
+      };
+
+  List<LatePayer> get _payers => switch (widget.mode) {
+        LatePayersMode.unpaid => controller.unpaidPayers,
+        LatePayersMode.partial => controller.partialPayers,
+        LatePayersMode.owes => controller.latePayers,
+      };
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -35,7 +60,7 @@ class _LatePayersViewState extends State<LatePayersView> {
       child: Scaffold(
         backgroundColor: _bg,
         appBar: HomeAppBar(
-          title: 'collections_late_title'.tr,
+          title: _title,
           showNotificationDot: false,
           showFilterIcon: false,
         ),
@@ -45,7 +70,7 @@ class _LatePayersViewState extends State<LatePayersView> {
               child: CircularProgressIndicator(color: _accent),
             );
           }
-          final payers = controller.latePayers;
+          final payers = _payers;
           if (payers.isEmpty) return const _EmptyState();
           return Column(
             children: [
@@ -101,9 +126,24 @@ class _PayerTile extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8.w),
-              _StatusBadge(isOverdue: payer.isOverdue),
+              _StatusBadge(payer: payer),
             ],
           ),
+          if (payer.isPartial) ...[
+            SizedBox(height: 6.h),
+            Text(
+              'collections_partial_progress'.trParams({
+                'paid': payer.paidSoFar.toStringAsFixed(0),
+                'remaining': payer.amount.toStringAsFixed(0),
+                'currency': 'overdue_currency'.tr,
+              }),
+              style: context.typography.xsMedium.copyWith(
+                color: _green,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           if (payer.title.isNotEmpty) ...[
             SizedBox(height: 4.h),
             Row(
@@ -310,14 +350,17 @@ class _CollectButton extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  final bool isOverdue;
-  const _StatusBadge({required this.isOverdue});
+  final LatePayer payer;
+  const _StatusBadge({required this.payer});
 
   @override
   Widget build(BuildContext context) {
-    final color = isOverdue ? _overdue : const Color(0xFFD97706);
-    final label =
-        (isOverdue ? 'collections_overdue_badge' : 'collections_due_badge').tr;
+    final (color, key) = payer.isPartial
+        ? (_partial, 'collections_partial_badge')
+        : payer.isOverdue
+            ? (_overdue, 'collections_overdue_badge')
+            : (const Color(0xFFD97706), 'collections_due_badge');
+    final label = key.tr;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(

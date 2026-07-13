@@ -303,7 +303,7 @@ class ParentLinkBookController extends GetxController {
             note: a.notes[childId],
             groupNote: a.groupNote,
             reasons: a.childReasons[childId] ?? const [],
-            photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+            photos: a.approvedUrlsForChild(childId),
           ));
     }
 
@@ -353,7 +353,7 @@ class ParentLinkBookController extends GetxController {
         note: a.notes[childId],
         reasons: a.childReasons[childId] ?? const [],
         groupNote: a.groupNote,
-        photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+        photos: a.approvedUrlsForChild(childId),
       );
       timelineByDay.putIfAbsent(dayKeyOf(a.startedAt), () => []).add(item);
     }

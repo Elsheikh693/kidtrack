@@ -2423,7 +2423,7 @@ _ActivityDetail _detailFromActivity(
     childName: c.childName,
     childNote: (childNote?.isNotEmpty == true) ? childNote : null,
     groupNote: (groupNote?.isNotEmpty == true) ? groupNote : null,
-    photoUrls: a.photos.values.toList(),
+    photoUrls: a.approvedUrlsForChild(childId),
   );
 }
 

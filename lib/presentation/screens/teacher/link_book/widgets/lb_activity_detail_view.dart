@@ -120,7 +120,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
     final timeLabel =
         '${startDt.hour.toString().padLeft(2, '0')}:${startDt.minute.toString().padLeft(2, '0')}';
     final durationMin = act.elapsed.inMinutes;
-    final photos = act.photos.values.toList();
+    final photos = act.allPhotoUrls;
     final childMap = {for (final c in widget.children) c.key!: c};
 
     final attentionIds = act.evaluations.entries

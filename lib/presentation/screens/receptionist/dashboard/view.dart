@@ -5,6 +5,7 @@ import 'widgets/inside_now_banner.dart';
 import 'widgets/pending_pickups_section.dart';
 import 'widgets/home_action_cards.dart';
 import 'widgets/active_events_section.dart';
+import '../../manager/media_approval/widgets/media_approval_banner.dart';
 
 const _accent = Color(0xFF0891B2);
 
@@ -53,6 +54,9 @@ class _ReceptionistDashboardViewState extends State<ReceptionistDashboardView> {
                         InsideNowBanner(controller: controller),
                         SizedBox(height: 16.h),
                         const HomeActionCards(),
+                        SizedBox(height: 18.h),
+                        const MediaApprovalBanner(),
+                        const AbsentTodaySection(previewLimit: 3),
                         SizedBox(height: 22.h),
                         const UnpaidSubscriptionCard(),
                         PendingPickupsSection(controller: controller),
@@ -137,6 +141,26 @@ class _HomeHeader extends StatelessWidget {
                   ],
                 ),
               ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _CircleIconBtn(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    // index 6 in _receptionistPages: the shared parent chat inbox.
+                    onTap: () => Get.find<MainPageViewModel>().changePage(6),
+                  ),
+                  Positioned(
+                    top: -4.h,
+                    right: -4.w,
+                    child: Obx(() {
+                      final n = controller.chatUnread;
+                      if (n <= 0) return const SizedBox.shrink();
+                      return ChatUnreadBadge(count: n);
+                    }),
+                  ),
+                ],
+              ),
+              SizedBox(width: 10.w),
               _CircleIconBtn(
                 icon: Icons.notifications_none_rounded,
                 onTap: () => Get.toNamed(notificationsView),

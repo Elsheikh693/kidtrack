@@ -111,7 +111,10 @@ class AuthBootstrapService {
           if (staffBranchId.isNotEmpty) {
             await _session.saveBranchId(staffBranchId);
           }
-          await _session.saveShift(staffData['shift']?.toString());
+          await _session.saveShifts(_readShiftIds(staffData));
+          await _session.saveReviewPhotos(
+            await _readReviewPhotosPermission(nurseryId, uid),
+          );
         }
       }
 
@@ -147,5 +150,36 @@ class AuthBootstrapService {
   // forced at first login, so every role lands on the main view after auth.
   Future<String> _resolveFirstLoginTarget(String uid, UserModel user) async {
     return mainView;
+  }
+
+  /// Reads whether this staff member was granted the "review activity photos"
+  /// permission from their permissionSets record. Owners/branch managers get it
+  /// implicitly in [SessionService.canReviewPhotos], so this only matters for
+  /// other staff (e.g. reception).
+  Future<bool> _readReviewPhotosPermission(String nurseryId, String uid) async {
+    try {
+      final snap = await FirebaseDatabase.instance
+          .ref('platform/$nurseryId/permissionSets/$uid/permissions/'
+              '${PermissionKeys.classroomReviewPhotos}')
+          .get();
+      return snap.exists && (snap.value == true || snap.value == 1);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Reads the staff record's shift list, migrating the legacy single `shift`
+  /// string ('both'/empty → no restriction) so old accounts keep resolving.
+  List<String> _readShiftIds(Map<String, dynamic> data) {
+    final raw = data['shiftIds'];
+    if (raw is List) {
+      return raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    if (raw is Map) {
+      return raw.values.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    final legacy = data['shift']?.toString();
+    if (legacy == null || legacy.isEmpty || legacy == 'both') return const [];
+    return [legacy];
   }
 }

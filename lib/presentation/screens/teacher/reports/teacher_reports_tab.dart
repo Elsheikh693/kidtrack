@@ -80,18 +80,26 @@ class TeacherReportsTab extends StatelessWidget {
 
 // ── Header ─────────────────────────────────────────────────────────────────────
 
+const _kArMonths = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+];
+
+/// Human date label: "اليوم" / "أمس" for the two most recent days, otherwise
+/// "day month".
+String _dateLabel(DateTime d) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final target = DateTime(d.year, d.month, d.day);
+  final diff = today.difference(target).inDays;
+  if (diff == 0) return 'teacher_report_today'.tr;
+  if (diff == 1) return 'teacher_report_yesterday'.tr;
+  return '${d.day} ${_kArMonths[d.month - 1]}';
+}
+
 class _Header extends StatelessWidget {
   const _Header({required this.ctrl});
   final TeacherReportsController ctrl;
-
-  static String _todayLabel() {
-    final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    return '${now.day} ${months[now.month - 1]}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,11 +115,11 @@ class _Header extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'teacher_tab_reports'.tr,
+                    'teacher_tab_work_log'.tr,
                     style: context.typography.lgBold,
                   ),
                   const Spacer(),
-                  _DateBadge(label: _todayLabel()),
+                  _DateNavigator(ctrl: ctrl),
                 ],
               ),
             ),
@@ -163,35 +171,108 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _DateBadge extends StatelessWidget {
-  const _DateBadge({required this.label});
-  final String label;
+class _DateNavigator extends StatelessWidget {
+  const _DateNavigator({required this.ctrl});
+  final TeacherReportsController ctrl;
+
+  Future<void> _pickDate(BuildContext context) async {
+    HapticFeedback.selectionClick();
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: ctrl.selectedDate.value,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year, now.month, now.day),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(primary: _kGreen),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) ctrl.selectDate(picked);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 13.sp,
-            color: const Color(0xFF64748B),
-          ),
-          SizedBox(width: 5.w),
-          Text(
-            label,
-            style: context.typography.smSemiBold.copyWith(
-              fontSize: 12,
-              color: const Color(0xFF334155),
+    return Obx(
+      () => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ArrowButton(
+              icon: Icons.chevron_right_rounded,
+              enabled: true,
+              onTap: ctrl.goToPreviousDay,
             ),
-          ),
-        ],
+            InkWell(
+              onTap: () => _pickDate(context),
+              borderRadius: BorderRadius.circular(8.r),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      size: 13.sp,
+                      color: const Color(0xFF64748B),
+                    ),
+                    SizedBox(width: 5.w),
+                    Text(
+                      _dateLabel(ctrl.selectedDate.value),
+                      style: context.typography.smSemiBold.copyWith(
+                        fontSize: 12,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            _ArrowButton(
+              icon: Icons.chevron_left_rounded,
+              enabled: !ctrl.isToday,
+              onTap: ctrl.goToNextDay,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ArrowButton extends StatelessWidget {
+  const _ArrowButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: enabled
+          ? () {
+              HapticFeedback.selectionClick();
+              onTap();
+            }
+          : null,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Padding(
+        padding: EdgeInsets.all(6.w),
+        child: Icon(
+          icon,
+          size: 18.sp,
+          color: enabled ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+        ),
       ),
     );
   }
@@ -265,7 +346,7 @@ class _StatsCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'ملخص اليوم',
+                  'teacher_report_summary'.tr,
                   style: context.typography.displaySmBold.copyWith(
                     color: Colors.white,
                     fontSize: 14,
@@ -282,7 +363,7 @@ class _StatsCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    'اليوم',
+                    _dateLabel(ctrl.selectedDate.value),
                     style: context.typography.xsMedium.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 11,

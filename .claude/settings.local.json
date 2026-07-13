@@ -53,7 +53,31 @@
       "mcp__visualize__read_me",
       "mcp__visualize__show_widget",
       "Bash(python3 -c ' *)",
-      "Bash(git rev-list *)"
+      "Bash(git rev-list *)",
+      "Bash(flutter --version)",
+      "Bash(rg -rn \"RcChildCard\\(|ChildDirectoryTile\\(\" lib --glob '*.dart')",
+      "Bash(rg -rn \"RcChildCard\\\\\\(|ChildDirectoryTile\\\\\\(\" lib --glob '*.dart')",
+      "Bash(grep -vE \"packages have newer|flutter pub|Got dependencies|available\\\\\\)|Resolving|^\\\\s*$\")",
+      "Bash(grep -vE \"packages have newer|flutter pub|Got dependencies|available\\\\\\)|Resolving|Downloading|^\\\\s*$\")",
+      "Bash(find ~/.pub-cache -path \"*keyboard_actions*/lib/keyboard_actions.dart\" 2>/dev/null | head -1)",
+      "Bash(grep -iE \"\\\\.dart$\")",
+      "Bash(grep '\\\\.dart$')",
+      "Bash(grep -n \"^  [A-Za-z].*{$\\\\|^  Future\\\\|^  void\\\\|^}\" lib/Global/services/auth_bootstrap_service.dart)",
+      "Bash(node -c engagement/absentShiftEnd.js)",
+      "Bash(git -C /Users/apple/kidtrack log --oneline -8)",
+      "Bash(git -C /Users/apple/kidtrack log --oneline -12)",
+      "Bash(node -c shared/audienceService.js)",
+      "Bash(node -c chat/chatNotifications.js)",
+      "Bash(curl -sL -o assets/fonts/NotoColorEmoji.ttf \"https://github.com/googlefonts/noto-emoji/raw/main/fonts/NotoColorEmoji.ttf\" --max-time 120)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(flutter devices *)",
+      "Bash(xcrun simctl *)",
+      "Bash(nohup flutter run -d 359DB009-63BC-427D-897E-F84A821C7504 -t emoji_check.dart --no-hot)",
+      "Bash(echo \"launched pid $!\")",
+      "Bash(pkill -f \"emoji_check.dart\")",
+      "Bash(echo \"killed harness: $?\")",
+      "Bash(grep -i \"\\\\.dart$\")",
+      "Bash(git reset *)"
     ]
   }
 }

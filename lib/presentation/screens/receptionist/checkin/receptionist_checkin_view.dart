@@ -299,7 +299,6 @@ class _CheckInCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = entry.child;
-    final initials = _initials(child.fullName);
     final isPresent = entry.isPresent;
     final isCheckedOutToday = entry.isCheckedOutToday;
 
@@ -325,19 +324,11 @@ class _CheckInCard extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: entry.statusColor.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: context.typography.mdBold.copyWith(color: entry.statusColor),
-                ),
-              ),
+            ChildAvatar(
+              name: child.fullName,
+              imageUrl: child.profileImage,
+              size: 48.w,
+              color: entry.statusColor,
             ),
             SizedBox(width: 12.w),
 
@@ -383,13 +374,6 @@ class _CheckInCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  static String _initials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}';
-    if (parts.isNotEmpty && parts[0].isNotEmpty) return parts[0][0];
-    return '?';
   }
 
   static String _fmtTime(DateTime t) {

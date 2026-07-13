@@ -19,6 +19,8 @@ class RcChildCard extends StatelessWidget {
   final int extraParents;
   final String classroomName;
   final VoidCallback onTap;
+  final VoidCallback onChat;
+  final int chatUnread;
 
   const RcChildCard({
     super.key,
@@ -27,6 +29,8 @@ class RcChildCard extends StatelessWidget {
     this.extraParents = 0,
     required this.classroomName,
     required this.onTap,
+    required this.onChat,
+    this.chatUnread = 0,
   });
 
   bool get _hasShift =>
@@ -140,6 +144,8 @@ class RcChildCard extends StatelessWidget {
                 ],
               ),
             ),
+            SizedBox(width: 6.w),
+            _ChatBtn(unread: chatUnread, onTap: onChat),
             SizedBox(width: 8.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -186,6 +192,46 @@ class RcChildCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChatBtn extends StatelessWidget {
+  final int unread;
+  final VoidCallback onTap;
+
+  const _ChatBtn({required this.unread, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: 18.sp,
+              color: AppColors.primary,
+            ),
+          ),
+          if (unread > 0)
+            Positioned(
+              top: -4.h,
+              right: -4.w,
+              child: ChatUnreadBadge(count: unread),
+            ),
+        ],
       ),
     );
   }

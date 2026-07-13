@@ -1,29 +1,26 @@
 import '../../../../index/index_main.dart';
 import '../../../../Global/services/parent_education_service.dart';
 
-class ChildProfileController extends GetxController {
+part 'profile_window_mixin.dart';
+
+/// Granularity of the profile attendance/activities window.
+enum ProfilePeriod { day, week, month }
+
+class ChildProfileController extends GetxController with ProfileWindowMixin {
   final child      = Rx<ChildModel?>(null);
   final parents    = <ParentModel>[].obs;
   final enrollment = Rx<EnrollmentModel?>(null);
   final classroom  = Rx<ClassroomModel?>(null);
 
-  // Attendance + activities + teacher notes, all scoped to the active window.
-  final recentAttendance = <ChildAttendanceModel>[].obs;
+  // Activities + teacher notes, scoped to the active window (attendance +
+  // the day/week/month window itself live in ProfileWindowMixin). Defaults to
+  // a single DAY so the manager reads one focused day.
   final activities = <ClassroomActivityModel>[].obs;
   final homework   = <HomeworkModel>[].obs;
   final teacherNotes = <NoteModel>[].obs;
 
   final isLoading = true.obs;
   final isRangeLoading = false.obs;
-
-  // ─── Filter ───────────────────────────────────────────────────────────────
-  // One window drives BOTH the absences row and the activities list. The user
-  // browses backwards a day or a week at a time, or jumps straight to any date
-  // via the picker; `anchorDate` is the last day shown, the window spans back
-  // from it. Defaults to a single DAY so the manager reads one focused day
-  // (a whole week at once was too much noise).
-  final filterByWeek = false.obs;
-  final anchorDate = DateTime.now().obs;
 
   late final ChildParentService          _childSvc;
   late final GuardianParentService       _parentSvc;
@@ -46,75 +43,9 @@ class ChildProfileController extends GetxController {
       ? '${child.value!.firstName} ${child.value!.lastName}'
       : '';
 
-  /// Weekly day off. Friday only for now (official holidays: TODO calendar).
-  static bool _isWeekend(DateTime d) => d.weekday == DateTime.friday;
-
   String get _nurseryId => _session.nurseryId ?? '';
   String get _classroomId =>
       enrollment.value?.classroomId ?? child.value?.classroomId ?? '';
-
-  int get _spanDays => filterByWeek.value ? 7 : 1;
-
-  DateTime get _anchorDay {
-    final a = anchorDate.value;
-    return DateTime(a.year, a.month, a.day);
-  }
-
-  DateTime get _windowStart => _anchorDay.subtract(Duration(days: _spanDays - 1));
-  int get _startMs => _windowStart.millisecondsSinceEpoch;
-  // End of the anchor day (exclusive boundary, minus 1ms to stay inclusive).
-  int get _endMs =>
-      _anchorDay.add(const Duration(days: 1)).millisecondsSinceEpoch - 1;
-
-  bool get canGoForward => _anchorDay.isBefore(_today);
-  static DateTime get _today {
-    final n = DateTime.now();
-    return DateTime(n.year, n.month, n.day);
-  }
-
-  /// Human label for the current window, e.g. "20 يونيو" or "14 – 20 يونيو".
-  String get rangeLabel {
-    if (!filterByWeek.value) return _dayLabel(_anchorDay);
-    final start = _windowStart;
-    final end = _anchorDay;
-    if (start.month == end.month) {
-      return '${start.day} – ${end.day} ${_arMonth(end)}';
-    }
-    return '${_dayLabel(start)} – ${_dayLabel(end)}';
-  }
-
-  /// Derived per-day attendance status across the window (oldest → newest).
-  /// Status: present | late | absent | holiday | not_arrived | future.
-  List<MapEntry<String, String>> get windowDaysStatus {
-    final todayKey = _dateStr(DateTime.now());
-    final result = <MapEntry<String, String>>[];
-    for (int i = _spanDays - 1; i >= 0; i--) {
-      final d = _anchorDay.subtract(Duration(days: i));
-      final key = _dateStr(d);
-      final rec = recentAttendance.where((a) => a.date == key).firstOrNull;
-      if (d.isAfter(_today)) {
-        result.add(MapEntry(key, 'future'));
-      } else if (rec != null) {
-        result.add(MapEntry(key, rec.status));
-      } else if (_isWeekend(d)) {
-        result.add(MapEntry(key, 'holiday'));
-      } else if (key == todayKey) {
-        result.add(MapEntry(key, 'not_arrived'));
-      } else {
-        result.add(MapEntry(key, 'absent'));
-      }
-    }
-    return result;
-  }
-
-  /// Number of absent school days in the current window.
-  int get absentCount =>
-      windowDaysStatus.where((e) => e.value == 'absent').length;
-
-  ChildAttendanceModel? get todayRecord {
-    final today = _dateStr(DateTime.now());
-    return recentAttendance.where((a) => a.date == today).firstOrNull;
-  }
 
   /// Homework attached to a given activity — matched by activityId first, then
   /// by subject as a fallback for homework created without an activity link.
@@ -156,8 +87,8 @@ class ChildProfileController extends GetxController {
     homework.clear();
     teacherNotes.clear();
     // Controller is a fenix singleton reused across opens — force the focused
-    // single-day view on every open (don't inherit a previous week selection).
-    filterByWeek.value = false;
+    // single-day view on every open (don't inherit a previous week/month selection).
+    period.value = ProfilePeriod.day;
     anchorDate.value = DateTime.now();
     // The child must load first — parent/class lookups fall back to fields on
     // child.value. Then resolve the classroom before the ranged reads, which
@@ -174,22 +105,44 @@ class ChildProfileController extends GetxController {
 
   // ─── Filter actions ─────────────────────────────────────────────────────────
 
-  Future<void> setWeekMode(bool week) async {
-    if (filterByWeek.value == week) return;
-    filterByWeek.value = week;
+  Future<void> setPeriod(ProfilePeriod value) async {
+    if (period.value == value) return;
+    period.value = value;
     await _loadRange();
   }
 
   Future<void> stepBack() async {
-    anchorDate.value = _anchorDay.subtract(Duration(days: _spanDays));
+    switch (period.value) {
+      case ProfilePeriod.day:
+        anchorDate.value = _anchorDay.subtract(const Duration(days: 1));
+        break;
+      case ProfilePeriod.week:
+        anchorDate.value = _anchorDay.subtract(const Duration(days: 7));
+        break;
+      case ProfilePeriod.month:
+        anchorDate.value = DateTime(_anchorDay.year, _anchorDay.month - 1, 1);
+        break;
+    }
     await _loadRange();
   }
 
   Future<void> stepForward() async {
     if (!canGoForward) return;
-    var next = _anchorDay.add(Duration(days: _spanDays));
-    if (next.isAfter(_today)) next = _today;
-    anchorDate.value = next;
+    switch (period.value) {
+      case ProfilePeriod.day:
+        var next = _anchorDay.add(const Duration(days: 1));
+        if (next.isAfter(_today)) next = _today;
+        anchorDate.value = next;
+        break;
+      case ProfilePeriod.week:
+        var next = _anchorDay.add(const Duration(days: 7));
+        if (next.isAfter(_today)) next = _today;
+        anchorDate.value = next;
+        break;
+      case ProfilePeriod.month:
+        anchorDate.value = DateTime(_anchorDay.year, _anchorDay.month + 1, 1);
+        break;
+    }
     await _loadRange();
   }
 
@@ -267,7 +220,7 @@ class ChildProfileController extends GetxController {
 
   Future<void> _loadAttendanceRange() {
     final startStr = _dateStr(_windowStart);
-    final endStr = _dateStr(_anchorDay);
+    final endStr = _dateStr(_windowEnd);
     return _attendSvc.getAll(callBack: (list) {
       recentAttendance.value = list.whereType<ChildAttendanceModel>()
           .where((a) =>
@@ -393,16 +346,4 @@ class ChildProfileController extends GetxController {
       Loader.showError('child_withdraw_error'.tr);
     }
   }
-
-  // ─── Date helpers ─────────────────────────────────────────────────────────
-
-  static String _dateStr(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-  static const _arMonths = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
-  static String _arMonth(DateTime d) => _arMonths[d.month - 1];
-  static String _dayLabel(DateTime d) => '${d.day} ${_arMonth(d)}';
 }

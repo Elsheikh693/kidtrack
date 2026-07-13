@@ -2,6 +2,7 @@ import '../../../../../index/index_main.dart';
 
 class StaffCard extends StatelessWidget {
   final StaffModel staff;
+  final List<String> shiftLabels;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onPermissions;
@@ -11,6 +12,7 @@ class StaffCard extends StatelessWidget {
   const StaffCard({
     super.key,
     required this.staff,
+    this.shiftLabels = const [],
     required this.onEdit,
     required this.onToggleActive,
     required this.onPermissions,
@@ -40,7 +42,7 @@ class StaffCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Info(staff: staff, color: color),
+            _Info(staff: staff, color: color, shiftLabels: shiftLabels),
             SizedBox(height: 12.h),
             Row(
               children: [
@@ -87,7 +89,12 @@ class StaffCard extends StatelessWidget {
 class _Info extends StatelessWidget {
   final StaffModel staff;
   final Color color;
-  const _Info({required this.staff, required this.color});
+  final List<String> shiftLabels;
+  const _Info({
+    required this.staff,
+    required this.color,
+    this.shiftLabels = const [],
+  });
 
   @override
   Widget build(BuildContext context) => Column(
@@ -113,10 +120,10 @@ class _Info extends StatelessWidget {
         _InfoRow(icon: Icons.phone_outlined, text: staff.phone!),
         SizedBox(height: 2.h),
       ],
-      if (staff.shift != null)
+      if (shiftLabels.isNotEmpty)
         _InfoRow(
-          icon: ShiftScope.fromName(staff.shift)?.icon ?? Icons.schedule,
-          text: (ShiftScope.fromName(staff.shift)?.labelKey ?? 'shift_morning').tr,
+          icon: Icons.schedule_rounded,
+          text: shiftLabels.join(' • '),
         ),
     ],
   );

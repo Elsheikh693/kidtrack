@@ -274,7 +274,7 @@ class LinkBookController extends GetxController {
     final heroText = _generateHeroText(child, participated, avgScore);
     final insights = _generateInsights(child, participated, activities, evals, avgScore);
     final photos = participated
-        .expand((a) => a.photos.values)
+        .expand((a) => a.allPhotoUrls)
         .toList();
 
     return ChildDailySummary(

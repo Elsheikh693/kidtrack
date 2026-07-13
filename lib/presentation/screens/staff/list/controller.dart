@@ -4,11 +4,13 @@ class StaffListController extends GetxController {
   late final StaffParentService _staffService;
   late final BranchParentService _branchService;
   late final ActivationParentService _activationService;
+  late final ShiftParentService _shiftService;
 
   final _session = SessionService();
 
   final RxList<StaffModel> staffList = <StaffModel>[].obs;
   final RxMap<String, String> branchNames = <String, String>{}.obs;
+  final RxMap<String, String> shiftNames = <String, String>{}.obs;
   final RxBool isLoading = true.obs;
 
   /// Durable activation code per staff account (targetId == staff.uid). A staff
@@ -24,10 +26,27 @@ class StaffListController extends GetxController {
     _staffService = Get.find<StaffParentService>();
     _branchService = Get.find<BranchParentService>();
     _activationService = Get.find<ActivationParentService>();
+    _shiftService = Get.find<ShiftParentService>();
     _loadBranches();
+    _loadShifts();
     _loadNurseryName();
     loadStaff();
   }
+
+  Future<void> _loadShifts() async {
+    final shifts = await _shiftService.getActive();
+    shiftNames.value = {
+      for (final s in shifts)
+        if (s.key != null) s.key!: s.name,
+    };
+  }
+
+  /// Resolves a staff member's shift keys to display names, dropping any that no
+  /// longer exist.
+  List<String> shiftLabelsFor(StaffModel s) => s.shiftIds
+      .map((id) => shiftNames[id])
+      .whereType<String>()
+      .toList();
 
   Future<void> _loadNurseryName() async {
     final sessionNurseryId = _session.nurseryId;
@@ -90,7 +109,7 @@ class StaffListController extends GetxController {
     if (_session.isOwner || _session.isSuperAdmin) return true;
     final bId = _session.branchId;
     if (bId != null && bId.isNotEmpty && s.branchId != bId) return false;
-    return _session.seesShift(s.shift);
+    return _session.seesAnyShift(s.shiftIds);
   }
 
   String branchName(String? id) => id == null

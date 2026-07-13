@@ -20,12 +20,17 @@ class SessionService {
   static const _guestIdKey = 'session_guest_id';
   static const _viewModeKey = 'session_view_mode';
   static const _actingBranchKey = 'session_acting_branch';
+  static const _reviewPhotosKey = 'session_review_photos';
 
   // ─── In-memory state ──────────────────────────────────────────────────────
   UserModel? _currentUser;
   String? _nurseryId;
   String? _branchId;
-  String? _shift; // 'morning' / 'evening' / 'both' — null = sees all shifts
+  List<String> _shiftIds = []; // ShiftModel keys — empty = sees all shifts
+  // Granted permission to review/approve activity photos. Owners and branch
+  // managers get it implicitly (see [canReviewPhotos]); other staff (e.g.
+  // reception) only when the owner turns it on for them.
+  bool _canReviewPhotos = false;
 
   // Temporary "act as" override. The real identity in [_currentUser] is never
   // touched — an owner stays `userType == owner` forever. [_viewMode] only
@@ -41,7 +46,7 @@ class SessionService {
 
   String? get branchId => _branchId;
 
-  String? get shift => _shift;
+  List<String> get shiftIds => _shiftIds;
 
   String? get userId => _currentUser?.uid ?? _currentUser?.guestId;
 
@@ -62,14 +67,14 @@ class SessionService {
   /// Only a real owner is allowed to switch into another view.
   bool get canSwitchRole => userType == UserType.owner;
 
-  /// True when the current user is not bound to a single shift (owner, or a
-  /// staff member assigned to 'both' shifts) and therefore sees everything.
-  bool get seesAllShifts => _shift == null || _shift == 'both';
+  /// True when the current user is not bound to any shift (owner, or a staff
+  /// member assigned to every shift) and therefore sees everything.
+  bool get seesAllShifts => _shiftIds.isEmpty;
 
-  /// Whether an entity tagged with [entityShift] is visible to the current
-  /// user. Unassigned ('both'/null) entities are visible to everyone so legacy
-  /// data is never hidden. A 'between' child spans both shifts, so it is also
-  /// visible to morning and evening staff alike.
+  /// Whether a single-shift entity tagged with [entityShift] is visible to the
+  /// current user. Unassigned ('both'/null) entities are visible to everyone so
+  /// legacy data is never hidden. A 'between' child spans both shifts, so it is
+  /// also visible to morning and evening staff alike.
   bool seesShift(String? entityShift) {
     if (seesAllShifts) return true;
     if (entityShift == null ||
@@ -78,7 +83,15 @@ class SessionService {
         entityShift == 'between') {
       return true;
     }
-    return entityShift == _shift;
+    return _shiftIds.contains(entityShift);
+  }
+
+  /// Whether a multi-shift entity (e.g. a staff member) is visible: true when
+  /// it shares at least one shift with the current user, or is unassigned.
+  bool seesAnyShift(List<String> entityShiftIds) {
+    if (seesAllShifts) return true;
+    if (entityShiftIds.isEmpty) return true;
+    return entityShiftIds.any(seesShift);
   }
 
   bool get isLoggedIn => _currentUser != null && !(_currentUser!.isGuest);
@@ -108,6 +121,11 @@ class SessionService {
 
   bool get isBusChaperone => userType == UserType.busChaperone;
 
+  /// Whether the current user may review & approve activity photos. Owners and
+  /// branch managers always can; other staff need the granted flag.
+  bool get canReviewPhotos =>
+      isOwner || userType == UserType.branchManager || _canReviewPhotos;
+
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
@@ -115,6 +133,7 @@ class SessionService {
     await _restoreNurseryId();
     await _restoreBranchId();
     await _restoreShift();
+    await _restoreReviewPhotos();
     await _restoreViewMode();
     AppLogger.info(
       'SESSION',
@@ -167,14 +186,28 @@ class SessionService {
 
   // ─── Save Shift ───────────────────────────────────────────────────────────
 
-  Future<void> saveShift(String? shift) async {
-    _shift = (shift != null && shift.isNotEmpty) ? shift : null;
-    if (_shift != null) {
-      await StorageService().setData(_shiftKey, {'id': _shift});
+  Future<void> saveShifts(List<String> shiftIds) async {
+    _shiftIds = shiftIds.where((s) => s.isNotEmpty).toList();
+    if (_shiftIds.isNotEmpty) {
+      await StorageService().setData(_shiftKey, {'ids': _shiftIds});
     } else {
       await StorageService().remove(_shiftKey);
     }
-    AppLogger.info('SESSION', 'Shift saved: ${_shift ?? '(all)'}');
+    AppLogger.info(
+      'SESSION',
+      'Shifts saved: ${_shiftIds.isEmpty ? '(all)' : _shiftIds.join(',')}',
+    );
+  }
+
+  // ─── Save Review-Photos permission ──────────────────────────────────────────
+
+  Future<void> saveReviewPhotos(bool granted) async {
+    _canReviewPhotos = granted;
+    if (granted) {
+      await StorageService().setData(_reviewPhotosKey, {'v': true});
+    } else {
+      await StorageService().remove(_reviewPhotosKey);
+    }
   }
 
   // ─── View Mode (Acting As) ──────────────────────────────────────────────────
@@ -233,7 +266,8 @@ class SessionService {
     _currentUser = null;
     _nurseryId = null;
     _branchId = null;
-    _shift = null;
+    _shiftIds = [];
+    _canReviewPhotos = false;
     _viewMode = null;
     _actingBranchId = null;
     ApiConstants.setNurseryId('');
@@ -241,6 +275,7 @@ class SessionService {
     await StorageService().remove(_nurseryIdKey);
     await StorageService().remove(_branchIdKey);
     await StorageService().remove(_shiftKey);
+    await StorageService().remove(_reviewPhotosKey);
     await StorageService().remove(_viewModeKey);
     await StorageService().remove(_actingBranchKey);
     AppLogger.info('SESSION', 'Session cleared — logged out');
@@ -283,10 +318,26 @@ class SessionService {
   Future<void> _restoreShift() async {
     try {
       final data = StorageService().getData(_shiftKey);
-      final id = data?['id'] as String?;
-      if (id != null && id.isNotEmpty) _shift = id;
+      if (data == null) return;
+      final ids = data['ids'];
+      if (ids is List) {
+        _shiftIds = ids.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+      } else {
+        // Legacy single-shift storage.
+        final id = data['id'] as String?;
+        if (id != null && id.isNotEmpty) _shiftIds = [id];
+      }
     } catch (e) {
       AppLogger.warning('SESSION', 'Could not restore shift: $e');
+    }
+  }
+
+  Future<void> _restoreReviewPhotos() async {
+    try {
+      final data = StorageService().getData(_reviewPhotosKey);
+      _canReviewPhotos = data?['v'] == true;
+    } catch (e) {
+      AppLogger.warning('SESSION', 'Could not restore reviewPhotos: $e');
     }
   }
 

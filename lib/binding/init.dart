@@ -5,6 +5,7 @@ import '../Global/services/pickup_realtime_service.dart';
 import '../presentation/screens/teacher/activity/activity_end_controller.dart';
 import '../presentation/screens/teacher/homework/homework_tab_controller.dart';
 import '../presentation/screens/teacher/reports/teacher_reports_controller.dart';
+import '../presentation/screens/manager/media_approval/media_approval_controller.dart';
 
 class Binding implements Bindings {
   @override
@@ -92,6 +93,12 @@ class Binding implements Bindings {
 
     // ─── Deep links (QR scan → open app → auto-login) ─────────────────────
     Get.put<DeepLinkService>(DeepLinkService(), permanent: true);
+
+    // ─── Parent notification preferences (attendance/activities toggles) ──
+    Get.put<NotificationPrefsService>(
+      NotificationPrefsService(),
+      permanent: true,
+    );
 
     // ═════════════════════════════════════════════════════════════════════
     // CRUD Bindings — 33 Models
@@ -488,7 +495,17 @@ class Binding implements Bindings {
       fromJson: (json) => NurseryFeedbackModel.fromJson(json),
     );
 
+    BaseBinding.bindCrud<WithdrawalLogModel>(
+      tag: "withdrawals",
+      baseUrl: () => ApiConstants.withdrawals,
+      fromJson: (json) => WithdrawalLogModel.fromJson(json),
+    );
+
     // ─── Parent Services ──────────────────────────────────────────────────
+    Get.lazyPut<WithdrawalParentService>(
+      () => WithdrawalParentService(),
+      fenix: true,
+    );
     Get.lazyPut<NotificationParentService>(
       () => NotificationParentService(),
       fenix: true,
@@ -661,6 +678,12 @@ class Binding implements Bindings {
       () => UnpaidSubscriptionController(),
       fenix: true,
     );
+    // Shared "absent today" list behind the reception home + children-tab
+    // sections. One instance, resolved by both AbsentTodaySection mounts.
+    Get.lazyPut<AbsentTodayController>(
+      () => AbsentTodayController(),
+      fenix: true,
+    );
     Get.lazyPut<PaymentParentService>(
       () => PaymentParentService(),
       fenix: true,
@@ -761,6 +784,10 @@ class Binding implements Bindings {
       fenix: true,
     );
     Get.lazyPut<TeacherActivityController>(() => TeacherActivityController());
+    Get.lazyPut<MediaApprovalController>(
+      () => MediaApprovalController(),
+      fenix: true,
+    );
     Get.lazyPut<ActivityEndController>(
       () => ActivityEndController(),
       fenix: true,
@@ -816,6 +843,12 @@ class Binding implements Bindings {
       fenix: true,
     );
 
+    // ─── Parent — Notification Preferences ────────────────────────────────
+    Get.lazyPut<NotificationPrefsController>(
+      () => NotificationPrefsController(),
+      fenix: true,
+    );
+
     // ─── Parent — Weekly Attendance Report ────────────────────────────────
     Get.lazyPut<WeeklyAttendanceController>(
       () => WeeklyAttendanceController(),
@@ -861,6 +894,16 @@ class Binding implements Bindings {
     // ─── Branch Manager — Teacher Reports (bottom-nav tab) ────────────────
     Get.lazyPut<ManagerTeacherReportsController>(
       () => ManagerTeacherReportsController(),
+      fenix: true,
+    );
+
+    // ─── Branch Manager — Live Teaching donut (home) + day drill-down ─────
+    Get.lazyPut<LiveTeachingController>(
+      () => LiveTeachingController(),
+      fenix: true,
+    );
+    Get.lazyPut<TeacherTodayController>(
+      () => TeacherTodayController(),
       fenix: true,
     );
 

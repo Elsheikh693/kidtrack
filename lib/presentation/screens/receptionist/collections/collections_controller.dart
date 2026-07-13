@@ -10,7 +10,15 @@ class LatePayer {
   final String? parentUserId;
   final String parentName;
   final String title;
+
+  /// Amount still owed (the remaining balance, not the invoice total).
   final double amount;
+
+  /// Amount already collected toward this invoice (0 for never-paid).
+  final double paidSoFar;
+
+  /// True when some — but not all — of the invoice has been collected.
+  final bool isPartial;
   final int? dueDate;
   final bool isOverdue;
 
@@ -22,8 +30,30 @@ class LatePayer {
     required this.parentName,
     required this.title,
     required this.amount,
+    this.paidSoFar = 0,
+    this.isPartial = false,
     required this.dueDate,
     required this.isOverdue,
+  });
+}
+
+/// One child whose fee for the selected month is already settled — shown in the
+/// "collected" and "all" drill-down lists behind the finance-tab summary.
+class PaidPayer {
+  final String childId;
+  final String childName;
+  final String parentName;
+  final double amount;
+
+  /// When the invoice was marked paid (falls back to dueDate).
+  final int? paidAt;
+
+  const PaidPayer({
+    required this.childId,
+    required this.childName,
+    required this.parentName,
+    required this.amount,
+    required this.paidAt,
   });
 }
 
@@ -43,8 +73,26 @@ class CollectionsController extends GetxController {
   final childrenCount = 0.obs;
   final familiesCount = 0.obs;
 
-  // ── Late payers (unpaid invoices this month) ────────────────────────────────
+  // ── Everyone who still owes this month (partial + never-paid), combined. ────
+  // Kept for the home-card drill-down and remind-all, which target all debtors.
   final latePayers = <LatePayer>[].obs;
+
+  // ── Split buckets driving the finance-tab summary cards + drill-downs ───────
+  /// Fully settled this month.
+  final paidPayers = <PaidPayer>[].obs;
+
+  /// Paid part of the due, still owe the rest.
+  final partialPayers = <LatePayer>[].obs;
+
+  /// Nothing collected yet.
+  final unpaidPayers = <LatePayer>[].obs;
+
+  /// Counts driving the finance-tab summary cards. Derived from the same lists
+  /// the drill-downs render, so the numbers always match what's inside.
+  int get fullyPaidCount => paidPayers.length;
+  int get partialCount => partialPayers.length;
+  int get unpaidCount => unpaidPayers.length;
+  int get totalPayersCount => fullyPaidCount + partialCount + unpaidCount;
 
   /// Raw invoice behind each late payer, so the receptionist can collect it.
   final _invoiceById = <String, InvoiceModel>{};
@@ -140,7 +188,9 @@ class CollectionsController extends GetxController {
       double collected = 0;
       final children = <String>{};
       final families = <String>{};
-      final late = <LatePayer>[];
+      final paid = <PaidPayer>[];
+      final partial = <LatePayer>[];
+      final unpaid = <LatePayer>[];
       final now = DateTime.now().millisecondsSinceEpoch;
       _invoiceById.clear();
 
@@ -153,35 +203,61 @@ class CollectionsController extends GetxController {
             primaryParent[inv.childId];
         if (parentId != null) families.add(parentId);
 
-        final paid = inv.status == 'paid';
-        if (paid) {
+        final cName = childName[inv.childId] ?? 'reception_unknown_child'.tr;
+        final pName = (parentId != null ? parentName[parentId] : null) ??
+            'reception_unknown_parent'.tr;
+
+        if (inv.isFullyPaid) {
           collected += inv.totalAmount;
+          paid.add(PaidPayer(
+            childId: inv.childId,
+            childName: cName,
+            parentName: pName,
+            amount: inv.totalAmount,
+            paidAt: inv.paidAt ?? inv.dueDate,
+          ));
         } else {
+          // Partial cash still counts toward what's been collected this month.
+          collected += inv.collectedAmount;
           if (inv.key != null) _invoiceById[inv.key!] = inv;
-          late.add(LatePayer(
+          final payer = LatePayer(
             invoiceId: inv.key ?? '',
             childId: inv.childId,
-            childName:
-                childName[inv.childId] ?? 'reception_unknown_child'.tr,
+            childName: cName,
             parentUserId: parentId,
-            parentName: (parentId != null ? parentName[parentId] : null) ??
-                'reception_unknown_parent'.tr,
+            parentName: pName,
             title: inv.title ?? '',
-            amount: inv.totalAmount,
+            amount: inv.remaining,
+            paidSoFar: inv.collectedAmount,
+            isPartial: inv.isPartiallyPaid,
             dueDate: inv.dueDate,
             isOverdue: inv.status == 'overdue' ||
                 (inv.dueDate != null && inv.dueDate! < now),
-          ));
+          );
+          if (inv.isPartiallyPaid) {
+            partial.add(payer);
+          } else {
+            unpaid.add(payer);
+          }
         }
       }
 
-      late.sort((a, b) => (a.dueDate ?? 0).compareTo(b.dueDate ?? 0));
+      int byDue(LatePayer a, LatePayer b) =>
+          (a.dueDate ?? 0).compareTo(b.dueDate ?? 0);
+      partial.sort(byDue);
+      unpaid.sort(byDue);
+      // Most-recently collected first.
+      paid.sort((a, b) => (b.paidAt ?? 0).compareTo(a.paidAt ?? 0));
 
       expectedTotal.value = expected;
       collectedTotal.value = collected;
       childrenCount.value = children.length;
       familiesCount.value = families.length;
-      latePayers.value = late;
+      paidPayers.value = paid;
+      partialPayers.value = partial;
+      unpaidPayers.value = unpaid;
+      // Everyone who still owes, unpaid first then partially-paid.
+      latePayers.value = [...unpaid, ...partial];
     });
 
     isLoading.value = false;

@@ -307,11 +307,6 @@ class _PresenceRow extends StatelessWidget {
   final bool showDivider;
   final VoidCallback onTap;
 
-  String get _initial {
-    final t = entry.name.trim();
-    return t.isEmpty ? '؟' : t.characters.first;
-  }
-
   @override
   Widget build(BuildContext context) {
     final timeMs = showingInside ? entry.checkInMs : entry.checkOutMs;
@@ -331,18 +326,11 @@ class _PresenceRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 38.w,
-              height: 38.w,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                _initial,
-                style: context.typography.smSemiBold.copyWith(color: accent),
-              ),
+            ChildAvatar(
+              name: entry.name,
+              imageUrl: entry.imageUrl,
+              size: 38.w,
+              color: accent,
             ),
             SizedBox(width: 12.w),
             Expanded(

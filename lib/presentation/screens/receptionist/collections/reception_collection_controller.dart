@@ -226,11 +226,12 @@ class ReceptionCollectionController extends GetxController {
     Loader.dismiss();
 
     if (ok) {
-      // Recording a monthly-subscription collection settles that child's dues:
-      // flip their current-month invoice to "paid" so the guardian's "محتاج
-      // انتباهك" clears and المطلوب/المحصّل stay consistent with the cash log.
+      // Recording a monthly-subscription collection applies this cash against
+      // that child's current-month invoice. A full amount settles it ("paid");
+      // a smaller amount leaves it "partial" with the remaining balance, so the
+      // guardian's "محتاج انتباهك" and المطلوب/المحصّل stay accurate.
       if (package.duration == 'monthly') {
-        await _markMonthlyInvoicePaid(target);
+        await _applyMonthlyPayment(target, amount);
       }
       Loader.showSuccess('collection_saved'.tr);
       // Only reload the open history panel if we collected for the child that's
@@ -250,12 +251,13 @@ class ReceptionCollectionController extends GetxController {
     return ok;
   }
 
-  /// Marks the child's current-month monthly invoice
-  /// (`month_{childId}_{YYYYMM}`) as paid, if one exists and isn't already
-  /// settled. This is the bridge between the new cash-collection log and the old
-  /// invoice-based dues the guardian app still reads. No-op when the child has
-  /// no invoice this month (nothing is owed, so nothing to clear).
-  Future<void> _markMonthlyInvoicePaid(ChildModel child) async {
+  /// Applies [amount] of collected cash against the child's current-month
+  /// monthly invoice (`month_{childId}_{YYYYMM}`), if one exists and isn't
+  /// already fully paid. Partial amounts leave the invoice "partial" with the
+  /// remaining balance; a full amount settles it. This is the bridge between the
+  /// cash-collection log and the invoice-based dues the guardian app reads.
+  /// No-op when the child has no invoice this month (nothing is owed).
+  Future<void> _applyMonthlyPayment(ChildModel child, double amount) async {
     final childId = child.key;
     if (childId == null) return;
     final key = MonthlyInvoiceService.monthlyKey(childId, DateTime.now());
@@ -273,7 +275,11 @@ class ReceptionCollectionController extends GetxController {
     );
 
     final inv = invoice;
-    if (inv == null || inv.status == 'paid') return;
-    await _finance.markAsPaid(invoice: inv, paymentMethod: 'cash');
+    if (inv == null || inv.isFullyPaid) return;
+    await _finance.recordPayment(
+      invoice: inv,
+      amount: amount,
+      paymentMethod: 'cash',
+    );
   }
 }

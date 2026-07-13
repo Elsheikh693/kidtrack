@@ -15,9 +15,10 @@ class ParentEducationService {
   final _db = FirebaseDatabase.instance;
   final _activitySvc = TeacherActivityService();
 
-  // Today's activity photos for a classroom (real-time aggregation)
+  // Today's activity photos for a classroom (real-time aggregation).
+  // Only approved photos the given child may see (classroom-wide or targeted).
   Stream<List<String>> watchTodayPhotos(
-      String nurseryId, String classroomId) {
+      String nurseryId, String classroomId, String childId) {
     if (nurseryId.isEmpty || classroomId.isEmpty) return Stream.value([]);
     final todayStart = _todayStartMillis();
     return _db
@@ -37,7 +38,7 @@ class ParentEducationService {
           e.value as Map,
           key: e.key.toString(),
         );
-        photos.addAll(act.photos.values);
+        photos.addAll(act.approvedUrlsForChild(childId));
       }
       return photos;
     });
@@ -47,7 +48,7 @@ class ParentEducationService {
   // time (never the whole history at once). Each photo carries the activity's
   // title + timestamp.
   Stream<List<ClassPhoto>> watchPhotosForDay(
-      String nurseryId, String classroomId, DateTime day) {
+      String nurseryId, String classroomId, DateTime day, String childId) {
     if (nurseryId.isEmpty || classroomId.isEmpty) {
       return Stream.value(const []);
     }
@@ -76,11 +77,14 @@ class ParentEducationService {
         final label = (act.subjectName?.isNotEmpty == true)
             ? act.subjectName!
             : act.title;
-        for (final url in act.photos.values) {
+        for (final p in act.photos.values) {
+          // Only approved photos this child may see.
+          if (!p.isApproved || !p.visibleTo(childId)) continue;
           result.add(ClassPhoto(
-            url: url,
+            url: p.url,
             takenAt: act.startedAt,
             activityTitle: label,
+            isPrivate: !p.isClassroomWide,
           ));
         }
       }
@@ -480,11 +484,16 @@ class ClassPhoto {
     required this.url,
     required this.takenAt,
     required this.activityTitle,
+    this.isPrivate = false,
   });
 
   final String url;
   final int takenAt;
   final String activityTitle;
+
+  /// True when the photo was targeted to specific children (a "private moment")
+  /// rather than shared classroom-wide.
+  final bool isPrivate;
 
   DateTime get date => DateTime.fromMillisecondsSinceEpoch(takenAt);
 

@@ -98,7 +98,7 @@ class _ActivityCard extends StatelessWidget {
         (activity.childReasons[childId] ?? const []).where((r) => r.trim().isNotEmpty).toList();
     final note = activity.notes[childId]?.trim();
     final groupNote = activity.groupNote?.trim();
-    final photos = activity.photos.values.where((u) => u.isNotEmpty).toList();
+    final photos = activity.approvedUrlsForChild(childId);
 
     return Container(
       decoration: BoxDecoration(

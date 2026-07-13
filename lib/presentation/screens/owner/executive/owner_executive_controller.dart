@@ -20,8 +20,17 @@ class OwnerExecutiveController extends GetxController {
   final OwnerMetricsCache _cache = OwnerMetricsCache();
   final OwnerInsightService _insights = OwnerInsightService();
   final OwnerScopeService _scopeService = Get.find<OwnerScopeService>();
+  late final WithdrawalParentService _withdrawalSvc;
 
   final Rxn<OwnerDashboardData> data = Rxn<OwnerDashboardData>();
+
+  /// This month's withdrawals for the CURRENT scope (network → all branches, or
+  /// a single branch), newest first — the surviving log with each child's exit
+  /// reason. Backs the tappable "withdrawn this month" card.
+  final withdrawnThisMonth = <WithdrawalLogModel>[].obs;
+
+  /// Raw withdrawal log (every branch). Re-sliced by scope + month on rebuild.
+  List<WithdrawalLogModel> _allWithdrawals = const [];
 
   /// Cold start with nothing cached — the only time the shimmer shows.
   final RxBool isFirstLoading = false.obs;
@@ -40,6 +49,7 @@ class OwnerExecutiveController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _withdrawalSvc = Get.find<WithdrawalParentService>();
     _scopeWorker = ever(_scopeService.scope, (_) => _rebuild());
     _boot();
   }
@@ -71,9 +81,11 @@ class OwnerExecutiveController extends GetxController {
       final results = await Future.wait([
         _metrics.loadBundle(),
         _fetchTargets(),
+        _fetchWithdrawals(),
       ]);
       _bundle = results[0] as OwnerMetricsBundle;
       _targets = results[1] as Map<String, BranchTargetModel>;
+      _allWithdrawals = results[2] as List<WithdrawalLogModel>;
       _rebuild();
       await _cache.write(_bundle!);
     } finally {
@@ -95,6 +107,41 @@ class OwnerExecutiveController extends GetxController {
       scopeLabel: _scopeService.currentLabel,
       targets: _targets,
     );
+    _sliceWithdrawals(scope);
+  }
+
+  /// Keeps only this month's withdrawals for the current scope (all branches when
+  /// on the network view), newest first — so the count and its reasons list stay
+  /// in sync as the owner switches scope.
+  void _sliceWithdrawals(OwnerScope scope) {
+    final now = DateTime.now();
+    final entries = _allWithdrawals
+        .where((w) => scope.isNetwork || w.branchId == scope.branchId)
+        .where((w) {
+      final d = w.withdrawnDate;
+      return d != null && d.year == now.year && d.month == now.month;
+    }).toList()
+      ..sort((a, b) => (b.withdrawnAt ?? 0).compareTo(a.withdrawnAt ?? 0));
+    withdrawnThisMonth.assignAll(entries);
+  }
+
+  /// Opens the read-only list of this month's withdrawn children with reasons.
+  void openWithdrawnList() {
+    Get.bottomSheet(
+      WithdrawnChildrenSheet(entries: withdrawnThisMonth.toList()),
+      isScrollControlled: true,
+    );
+  }
+
+  Future<List<WithdrawalLogModel>> _fetchWithdrawals() {
+    final completer = Completer<List<WithdrawalLogModel>>();
+    _withdrawalSvc.getAll(
+      callBack: (list) {
+        if (completer.isCompleted) return;
+        completer.complete(list.whereType<WithdrawalLogModel>().toList());
+      },
+    );
+    return completer.future;
   }
 
   Future<Map<String, BranchTargetModel>> _fetchTargets() {

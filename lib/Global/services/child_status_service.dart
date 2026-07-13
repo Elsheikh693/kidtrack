@@ -126,6 +126,46 @@ class ChildStatusService {
     return controller.stream;
   }
 
+  /// Live, full attendance records for [day] (defaults to today). Unlike
+  /// [watchPresentIdsForDay] — which emits only the present *id set* — this
+  /// keeps every field (check-in/out times, status), so a caller can derive who
+  /// is still on-site vs. already picked up and build an activity feed. Powers
+  /// the reception & manager dashboards in real time off the exact same
+  /// `childAttendance` node the check-in / check-out path writes to.
+  Stream<List<ChildAttendanceModel>> watchAttendanceForDay(String nurseryId,
+      [DateTime? day]) {
+    final date = _dateKey(day ?? DateTime.now());
+    final controller =
+        StreamController<List<ChildAttendanceModel>>.broadcast();
+
+    final sub = _attendanceRef(nurseryId)
+        .orderByChild('date')
+        .equalTo(date)
+        .onValue
+        .listen(
+      (event) {
+        final records = <ChildAttendanceModel>[];
+        final data = event.snapshot.value;
+        if (data is Map) {
+          data.forEach((key, value) {
+            if (value is! Map) return;
+            records.add(ChildAttendanceModel.fromJson(
+              Map<String, dynamic>.from(value),
+              key: key.toString(),
+            ));
+          });
+        }
+        controller.add(records);
+      },
+      onError: (e) {
+        AppLogger.error(_tag, 'watchAttendanceForDay: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
   // ── Internal write helper ──────────────────────────────────────────────────
 
   Future<bool> _write({

@@ -1,7 +1,8 @@
 import '../../../../../index/index_main.dart';
 
-/// A single tappable grid cell inside a More-tab section card: a rounded
-/// colored icon with its label underneath. Compact enough to fit three across.
+/// A single tappable row inside a More-tab section card: a rounded colored icon
+/// chip, the label, an optional count badge, and a trailing chevron. Rendered
+/// full-width so sparse sections still read as clean, filled list rows.
 class ManagerGridTile extends StatelessWidget {
   const ManagerGridTile({
     super.key,
@@ -22,58 +23,48 @@ class ManagerGridTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16.r),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+        child: Row(
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 52.w,
-                  height: 52.w,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                  child: Icon(icon, color: color, size: 24.sp),
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(icon, color: color, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                labelKey.tr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.smSemiBold
+                    .copyWith(color: AppColors.textDefault),
+              ),
+            ),
+            if (badgeCount > 0) ...[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                constraints: BoxConstraints(minWidth: 20.w),
+                decoration: BoxDecoration(
+                  color: AppColors.activityRed,
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
-                if (badgeCount > 0)
-                  Positioned(
-                    top: -4.h,
-                    right: -4.w,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6.w,
-                        vertical: 1.h,
-                      ),
-                      constraints: BoxConstraints(minWidth: 18.w),
-                      decoration: BoxDecoration(
-                        color: AppColors.activityRed,
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: AppColors.white, width: 1.5),
-                      ),
-                      child: Text(
-                        '$badgeCount',
-                        textAlign: TextAlign.center,
-                        style: context.typography.xsMedium
-                            .copyWith(color: AppColors.white),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              labelKey.tr,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.typography.xsMedium
-                  .copyWith(color: AppColors.textDefault, height: 1.2),
-            ),
+                child: Text(
+                  '$badgeCount',
+                  textAlign: TextAlign.center,
+                  style: context.typography.xsMedium
+                      .copyWith(color: AppColors.white),
+                ),
+              ),
+              SizedBox(width: 8.w),
+            ],
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 14.sp, color: AppColors.grayMedium),
           ],
         ),
       ),

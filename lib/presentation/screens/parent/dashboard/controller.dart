@@ -262,8 +262,11 @@ class ParentDashboardController extends GetxController {
     isLoading.value = false;
 
     // First-login gate: force the parent to complete the child's core profile
-    // (DOB, address, blood type, nationality) before they can use the app.
-    ChildProfileCompletionPrompt.maybeShow();
+    // (DOB, address, blood type, nationality) before they can use the app, then
+    // prompt once for notification preferences (chained so the two mandatory
+    // sheets never stack).
+    await ChildProfileCompletionPrompt.maybeShow();
+    await NotificationPrefsPrompt.maybeShow();
   }
 
   // ── Sibling switching ─────────────────────────────────────────────────────────
@@ -320,8 +323,10 @@ class ParentDashboardController extends GetxController {
     _refreshEventAttendance();
     _recomputeLatestPost();
 
-    // A switched-to sibling may also have an incomplete profile.
-    ChildProfileCompletionPrompt.maybeShow();
+    // A switched-to sibling may also have an incomplete profile; chain the
+    // notification-prefs prompt after it (self-guards once configured).
+    ChildProfileCompletionPrompt.maybeShow()
+        .then((_) => NotificationPrefsPrompt.maybeShow());
   }
 
   void _startStreams() {
@@ -417,8 +422,12 @@ class ParentDashboardController extends GetxController {
               // subscription) was removed; hide any leftover legacy dues so the
               // parent only sees live monthly-subscription obligations.
               (i.key == null || !i.key!.startsWith('fee_')) &&
-              !_settledByCollection(i, paidMonths) &&
-              (i.status == 'pending' || i.status == 'overdue'))
+              // Still owes money (includes partially-paid invoices, which show
+              // their remaining balance). The transaction-based reconciliation
+              // is only a fallback for legacy invoices that were never updated
+              // with a paidAmount — don't let it hide a real partial balance.
+              i.hasOutstanding &&
+              !(i.paidAmount <= 0.5 && _settledByCollection(i, paidMonths)))
           .toList()
         ..sort((a, b) {
           if (a.status == 'overdue' && b.status != 'overdue') return -1;
@@ -527,12 +536,14 @@ class ParentDashboardController extends GetxController {
   void _subscribePhotos() {
     final nurseryId = _session.nurseryId ?? '';
     final classroomId = _activeClassroomId.value;
+    final childId = _activeChildId.value;
     if (nurseryId.isEmpty || classroomId.isEmpty) return;
     _photosSub?.cancel();
     final stream = isToday
-        ? _eduSvc.watchTodayPhotos(nurseryId, classroomId)
+        ? _eduSvc.watchTodayPhotos(nurseryId, classroomId, childId)
         : _eduSvc
-            .watchPhotosForDay(nurseryId, classroomId, selectedDate.value)
+            .watchPhotosForDay(
+                nurseryId, classroomId, selectedDate.value, childId)
             .map((list) => list.map((p) => p.url).toList());
     _photosSub = stream.listen((urls) => todayPhotos.assignAll(urls));
   }

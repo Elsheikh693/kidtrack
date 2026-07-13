@@ -110,6 +110,8 @@ class _ManagerChildrenTabState extends State<ManagerChildrenTab> {
           ),
         );
       }
+      // Touch chatConvos so the badges rebuild live as messages arrive.
+      controller.chatConvos.length;
       return ListView.builder(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
@@ -120,6 +122,8 @@ class _ManagerChildrenTabState extends State<ManagerChildrenTab> {
             child: c,
             classroomName: controller.classroomName(c.classroomId),
             onTap: () => controller.openChild(c.key ?? ''),
+            onChat: () => controller.openChat(c),
+            chatUnread: controller.chatUnread(c.key),
           );
         },
       );

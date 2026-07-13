@@ -2,8 +2,8 @@ import '../../../../index/index_main.dart';
 import '../dashboard/widgets/dashboard_hero.dart';
 import '../dashboard/widgets/dashboard_presence_card.dart';
 import '../dashboard/widgets/dashboard_quick_links.dart';
-import '../dashboard/widgets/dashboard_teachers_card.dart';
 import '../dashboard/widgets/dashboard_shimmer.dart';
+import '../media_approval/widgets/media_approval_banner.dart';
 
 class ManagerDashboardTab extends StatefulWidget {
   const ManagerDashboardTab({super.key});
@@ -55,10 +55,11 @@ class _ManagerDashboardTabState extends State<ManagerDashboardTab> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     DashboardQuickLinks(controller: controller),
-                    SizedBox(height: 22.h),
+                    SizedBox(height: 18.h),
+                    const MediaApprovalBanner(),
                     const UnpaidSubscriptionCard(),
                     DashboardPresenceCard(controller: controller),
-                    DashboardTeachersCard(controller: controller),
+                    LiveTeachingCard(dashboard: controller),
                   ]),
                 ),
               ),

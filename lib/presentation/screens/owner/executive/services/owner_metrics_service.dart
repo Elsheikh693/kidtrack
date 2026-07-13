@@ -160,15 +160,17 @@ class OwnerMetricsService {
     final today = DateTime(now.year, now.month, now.day);
 
     // ── Current-state finance (accounts receivable "as of now") ──────────────
-    bool unpaid(InvoiceModel i) => i.status == 'pending' || i.status == 'overdue';
-    final outstanding = invoices.where(unpaid).fold(0.0, (s, i) => s + i.totalAmount);
+    // Accounts receivable folds each invoice's REMAINING balance, so a
+    // partially-paid invoice only contributes what's still owed.
+    bool unpaid(InvoiceModel i) => i.hasOutstanding;
+    final outstanding = invoices.where(unpaid).fold(0.0, (s, i) => s + i.remaining);
 
     bool overdueNow(InvoiceModel i) =>
         unpaid(i) &&
         i.dueDate != null &&
         DateTime.fromMillisecondsSinceEpoch(i.dueDate!).isBefore(today);
     final overdueList = invoices.where(overdueNow).toList();
-    final overdueAmount = overdueList.fold(0.0, (s, i) => s + i.totalAmount);
+    final overdueAmount = overdueList.fold(0.0, (s, i) => s + i.remaining);
 
     final cutoff60 = today.subtract(const Duration(days: 60));
     final over60 = overdueList
@@ -176,7 +178,7 @@ class OwnerMetricsService {
             DateTime.fromMillisecondsSinceEpoch(i.dueDate!).isBefore(cutoff60))
         .toList();
     final overdue60Families = over60.map((i) => i.childId).toSet().length;
-    final overdue60Amount = over60.fold(0.0, (s, i) => s + i.totalAmount);
+    final overdue60Amount = over60.fold(0.0, (s, i) => s + i.remaining);
 
     // ── Current-state occupancy ──────────────────────────────────────────────
     final activeChildrenNow = children.where((c) => c.status == 'active').length;

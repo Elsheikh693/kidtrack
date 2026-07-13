@@ -101,9 +101,6 @@ class _ChildTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = child.name.trim().isNotEmpty
-        ? child.name.trim().characters.first
-        : '?';
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -123,22 +120,10 @@ class _ChildTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                initial,
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+            ChildAvatar(
+              name: child.name,
+              imageUrl: child.image,
+              size: 46,
             ),
             const SizedBox(width: 12),
             Expanded(

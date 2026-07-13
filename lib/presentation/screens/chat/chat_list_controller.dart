@@ -152,28 +152,9 @@ class ChatListController extends GetxController {
 
   /// Opens the conversation for [child], building the meta the thread needs to
   /// upsert on the first message.
-  Future<void> openThread(ChildModel child) async {
-    final childId = child.key ?? '';
-    if (childId.isEmpty) return;
-    final meta = ChatConversationModel(
-      childId: childId,
-      childName: child.fullName,
-      childImage: child.profileImage,
-      classroomId: child.classroomId,
-      branchId: child.branchId,
-      parentId: parentIds[childId] ?? child.parentId ?? '',
-      parentName: parentName(childId),
-    );
-    await _chatService.markRead(childId, 'manager');
-    Get.toNamed(
-      chatThreadView,
-      arguments: {
-        'meta': meta,
-        'senderRole': 'manager',
-        'title': child.fullName,
-        'subtitle': parentName(childId),
-        'image': child.profileImage,
-      },
-    );
-  }
+  Future<void> openThread(ChildModel child) => openStaffChat(
+        child: child,
+        parentId: parentIds[child.key] ?? child.parentId ?? '',
+        parentName: parentName(child.key),
+      );
 }

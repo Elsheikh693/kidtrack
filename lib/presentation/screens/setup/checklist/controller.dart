@@ -14,7 +14,6 @@ class SetupChecklistController extends GetxController {
   final groups = <SetupGroup>[].obs;
   final doneIds = <String>{}.obs;
 
-  late final NurseryParentService _nurseryService;
   late final BranchParentService _branchService;
   late final StaffParentService _staffService;
   late final ShiftParentService _shiftService;
@@ -27,7 +26,6 @@ class SetupChecklistController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _nurseryService = Get.find<NurseryParentService>();
     _branchService = Get.find<BranchParentService>();
     _staffService = Get.find<StaffParentService>();
     _shiftService = Get.find<ShiftParentService>();
@@ -58,17 +56,11 @@ class SetupChecklistController extends GetxController {
   // ── Structure ───────────────────────────────────────────────────────────────
 
   void _buildGroups() {
-    final owner = _isOwner;
     groups.value = [
-      if (owner)
-        SetupGroup(
-          titleKey: 'setup_hub_group_nursery',
-          steps: [_stepNurseryProfile],
-        ),
       SetupGroup(
         titleKey: 'setup_hub_group_branches',
         steps: [
-          if (owner) _stepBranches,
+          _stepBranches,
           _stepStaff,
           _stepShifts,
         ],
@@ -83,14 +75,6 @@ class SetupChecklistController extends GetxController {
       ),
     ];
   }
-
-  SetupStep get _stepNurseryProfile => const SetupStep(
-        id: 'nursery_profile',
-        titleKey: 'setup_hub_step_profile_title',
-        subtitleKey: 'setup_hub_step_profile_sub',
-        icon: Icons.storefront_rounded,
-        route: managerNurseryProfileView,
-      );
 
   SetupStep get _stepBranches => const SetupStep(
         id: 'branches',
@@ -173,20 +157,9 @@ class SetupChecklistController extends GetxController {
       // — so they fetch a single row, not the collection. Staff (always filtered
       // by role) and packages/staff for a non-owner (filtered by branch) fetch in
       // full, since a trimmed row might not match the filter.
-      if (_isOwner)
-        _nurseryService.getAll(limit: 1, callBack: (list) {
-          final nurseries = list.whereType<NurseryModel>();
-          if (nurseries.isNotEmpty) {
-            final n = nurseries.first;
-            final hasAddress = n.address?.trim().isNotEmpty ?? false;
-            final hasLogo = n.logo?.trim().isNotEmpty ?? false;
-            if (hasAddress && hasLogo) done.add('nursery_profile');
-          }
-        }),
-      if (_isOwner)
-        _branchService.getAll(limit: 1, callBack: (list) {
-          if (list.whereType<BranchModel>().isNotEmpty) done.add('branches');
-        }),
+      _branchService.getAll(limit: 1, callBack: (list) {
+        if (list.whereType<BranchModel>().isNotEmpty) done.add('branches');
+      }),
       _staffService.getAll(callBack: (list) {
         final staff = list.whereType<StaffModel>().where(
               (s) =>

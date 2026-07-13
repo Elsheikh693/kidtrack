@@ -145,7 +145,7 @@ class _ReminderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${invoice.totalAmount.toStringAsFixed(0)} ${'currency'.tr}',
+                  '${invoice.remaining.toStringAsFixed(0)} ${'currency'.tr}',
                   style: context.typography.mdBold.copyWith(color: color, fontSize: 16),
                 ),
                 SizedBox(height: 6.h),

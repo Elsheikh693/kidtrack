@@ -109,6 +109,8 @@ class ManagerDashboardController extends GetxController {
       _children.loadData(),
       _staff.loadData(),
       _finance.loadData(),
+      // Keep the live-teaching donut fresh on pull-to-refresh too.
+      Get.find<LiveTeachingController>().loadData(),
     ]);
   }
 }

@@ -120,19 +120,10 @@ class _StaffFormViewState extends State<StaffFormView> {
                   );
                 }),
 
-                // Shift
+                // Shifts — multi-select (a staff member may work several)
                 _FieldLabel('staff_form_shift_label'.tr),
                 SizedBox(height: 6.h),
-                Obx(
-                  () => _Dropdown<String>(
-                    value: controller.selectedShift.value,
-                    items: const ['morning', 'evening', 'both'],
-                    itemLabel: (s) => 'shift_$s'.tr,
-                    onChanged: (s) {
-                      if (s != null) controller.selectedShift.value = s;
-                    },
-                  ),
-                ),
+                _ShiftChips(controller: controller),
                 SizedBox(height: 32.h),
 
                 // Submit
@@ -240,6 +231,69 @@ class _InputField extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _ShiftChips extends StatelessWidget {
+  final StaffFormController controller;
+
+  const _ShiftChips({required this.controller});
+
+  @override
+  Widget build(BuildContext context) => Obx(() {
+    if (controller.shifts.isEmpty) {
+      return Text(
+        'staff_form_shifts_empty'.tr,
+        style: context.typography.smRegular.copyWith(
+          fontSize: 13,
+          color: const Color(0xFF94A3B8),
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: controller.shifts.map((shift) {
+        final id = shift.key ?? '';
+        final selected = controller.isShiftSelected(id);
+        return GestureDetector(
+          onTap: () => controller.toggleShift(id),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFF6366F1) : Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: selected
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  selected
+                      ? Icons.check_circle_rounded
+                      : Icons.circle_outlined,
+                  size: 16.r,
+                  color: selected ? Colors.white : const Color(0xFFCBD5E1),
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  shift.name,
+                  style: context.typography.smMedium.copyWith(
+                    fontSize: 14,
+                    color: selected ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  });
 }
 
 class _Dropdown<T> extends StatelessWidget {

@@ -2,6 +2,7 @@ import '../../../../index/index_main.dart';
 import 'models/owner_dashboard_data.dart';
 import 'widgets/executive_widgets.dart';
 import 'widgets/owner_exec_shimmer.dart';
+import 'widgets/owner_withdrawn_card.dart';
 
 /// The owner's home tab. A DECISION surface, not an operations console:
 /// Daily Brief → Needs Attention → Business Snapshot (incl. growth) → Finance.
@@ -75,6 +76,7 @@ class _OwnerExecutiveDashboardState extends State<OwnerExecutiveDashboard> {
         growth: data.growth,
         isNetwork: data.isNetwork,
       ),
+      OwnerWithdrawnCard(controller: controller),
 
       SizedBox(height: 22.h),
       const UnpaidSubscriptionCard(),

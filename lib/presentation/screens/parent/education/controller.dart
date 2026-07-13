@@ -541,7 +541,7 @@ class ParentEducationController extends GetxController {
               note: a.notes[childId],
               reasons: a.childReasons[childId] ?? const [],
               groupNote: a.groupNote,
-              photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+              photos: a.approvedUrlsForChild(childId),
             ))
         .toList()
       ..sort((a, b) => a.startedAt.compareTo(b.startedAt));

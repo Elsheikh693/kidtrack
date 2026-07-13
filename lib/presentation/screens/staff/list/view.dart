@@ -71,6 +71,7 @@ class _StaffListViewState extends State<StaffListView> {
                 final staff = controller.staffList[i];
                 return StaffCard(
                   staff: staff,
+                  shiftLabels: controller.shiftLabelsFor(staff),
                   onEdit: () => controller.openEdit(staff),
                   onToggleActive: () => controller.toggleActive(staff),
                   onPermissions: () => controller.openPermissions(staff),

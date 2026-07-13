@@ -71,7 +71,50 @@ class AccessWatcherService extends GetxController {
     }
     if (AccessControlService.isExplicitlyInactive(snap)) {
       _forceLogout('access_denied_account_deactivated');
+      return;
     }
+    _syncStaffScope(snap);
+  }
+
+  /// Keeps the session's branch/shift in lock-step with the live staff record.
+  /// Login seeds these once; without this, an admin moving a staff member to a
+  /// different branch (or changing their shift) wouldn't reflect until the next
+  /// full re-login — the stale branch would keep scoping their screens.
+  void _syncStaffScope(DataSnapshot snap) {
+    final session = SessionService();
+    if (session.userType?.hasStaffRecord != true) return;
+
+    final raw = snap.value;
+    if (raw is! Map) return;
+    final data = Map<String, dynamic>.from(raw);
+
+    final branchId = data['branchId']?.toString() ?? '';
+    if (branchId.isNotEmpty && branchId != session.branchId) {
+      session.saveBranchId(branchId);
+      AppLogger.info('ACCESS_WATCHER', 'Branch synced from staff record → $branchId');
+    }
+
+    final shiftIds = _readShiftIds(data);
+    if (shiftIds.join(',') != session.shiftIds.join(',')) {
+      session.saveShifts(shiftIds);
+      AppLogger.info(
+          'ACCESS_WATCHER', 'Shifts synced from staff record → $shiftIds');
+    }
+  }
+
+  /// Reads the staff record's shift list, migrating the legacy single `shift`
+  /// string ('both'/empty → no restriction) so old records keep syncing.
+  List<String> _readShiftIds(Map<String, dynamic> data) {
+    final raw = data['shiftIds'];
+    if (raw is List) {
+      return raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    if (raw is Map) {
+      return raw.values.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    final legacy = data['shift']?.toString();
+    if (legacy == null || legacy.isEmpty || legacy == 'both') return const [];
+    return [legacy];
   }
 
   void _onNursery(DatabaseEvent event) {

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../index/index_main.dart';
+import '../collections/monthly_collection_summary.dart';
 import '../collections/reception_collection_controller.dart';
 import '../collections/reception_collection_sheet.dart';
 import '../collections/reception_directory_list.dart';
@@ -218,12 +219,22 @@ class _SearchResults extends StatelessWidget {
     return Obx(() {
       final q = controller.searchQuery.value.trim();
       if (q.isEmpty) {
-        // Default state: the full children directory with per-child quick
-        // actions (renew subscription / open payment history).
-        return ReceptionDirectoryList(
-          controller: controller,
-          onHistory: onHistory,
-          onRenew: onRenew,
+        // Default state: this month's collection summary on top, then the full
+        // children directory with per-child quick actions (renew subscription /
+        // open payment history).
+        return Column(
+          children: [
+            SizedBox(height: 8.h),
+            const MonthlyCollectionSummary(),
+            SizedBox(height: 4.h),
+            Expanded(
+              child: ReceptionDirectoryList(
+                controller: controller,
+                onHistory: onHistory,
+                onRenew: onRenew,
+              ),
+            ),
+          ],
         );
       }
       final results = controller.filteredChildren;

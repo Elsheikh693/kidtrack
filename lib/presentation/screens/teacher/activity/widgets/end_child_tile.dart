@@ -73,16 +73,11 @@ class EndChildTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 15,
-              backgroundColor: _avatarColor.withValues(alpha: 0.12),
-              child: Text(
-                child.firstName.isNotEmpty ? child.firstName[0] : '?',
-                style: context.typography.xsMedium.copyWith(
-                  color: _avatarColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+            ChildAvatar(
+              name: child.fullName,
+              imageUrl: child.profileImage,
+              size: 30,
+              color: _avatarColor,
             ),
             const SizedBox(width: 10),
             Expanded(

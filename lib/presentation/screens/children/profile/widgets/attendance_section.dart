@@ -40,21 +40,84 @@ class AttendanceSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: days.length > 3
-                    ? MainAxisAlignment.spaceBetween
-                    : MainAxisAlignment.start,
-                children: [
-                  for (final e in days)
-                    Padding(
-                      padding: EdgeInsets.only(left: days.length <= 3 ? 14 : 0),
-                      child: _DayDot(dateKey: e.key, status: e.value),
+              // A whole month is too many dots to line up, so summarise it as
+              // present / late / absent totals instead of a per-day row.
+              if (controller.isMonthView)
+                Row(
+                  children: [
+                    _StatChip(
+                      label: 'حضر',
+                      count: controller.presentCount,
+                      color: const Color(0xFF16A34A),
                     ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    _StatChip(
+                      label: 'متأخر',
+                      count: controller.lateCount,
+                      color: const Color(0xFFD97706),
+                    ),
+                    const SizedBox(width: 8),
+                    _StatChip(
+                      label: 'غاب',
+                      count: absent,
+                      color: const Color(0xFFDC2626),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisAlignment: days.length > 3
+                      ? MainAxisAlignment.spaceBetween
+                      : MainAxisAlignment.start,
+                  children: [
+                    for (final e in days)
+                      Padding(
+                        padding:
+                            EdgeInsets.only(left: days.length <= 3 ? 14 : 0),
+                        child: _DayDot(dateKey: e.key, status: e.value),
+                      ),
+                  ],
+                ),
             ],
           );
         }),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final Color color;
+  const _StatChip({
+    required this.label,
+    required this.count,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$count',
+              style: context.typography.mdBold.copyWith(color: color),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: context.typography.xsMedium.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
     );
   }

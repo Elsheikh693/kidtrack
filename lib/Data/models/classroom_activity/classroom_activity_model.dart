@@ -1,3 +1,7 @@
+import 'activity_photo_model.dart';
+
+export 'activity_photo_model.dart';
+
 enum EvalLevel {
   excellent,      // 🟢 ممتاز
   needsFollow,    // 🟡 يحتاج متابعة
@@ -38,8 +42,8 @@ class ClassroomActivityModel {
   final Map<String, String> notes;
   // childId → list of selected reason titles (structured evaluation reasons)
   final Map<String, List<String>> childReasons;
-  // photoId → downloadUrl
-  final Map<String, String> photos;
+  // photoId → ActivityPhoto (url + approval + audience)
+  final Map<String, ActivityPhoto> photos;
   // general note for the whole class
   final String? groupNote;
   final int? createdAt;
@@ -87,6 +91,25 @@ class ClassroomActivityModel {
     return EvalLevel.fromKey(v);
   }
 
+  // ── Photo helpers ──────────────────────────────────────────────────────────
+
+  /// Every photo URL regardless of approval — staff/teacher-facing views.
+  List<String> get allPhotoUrls =>
+      photos.values.map((p) => p.url).where((u) => u.isNotEmpty).toList();
+
+  /// Approved photo URLs a specific child's guardian may see (classroom-wide or
+  /// targeted to that child) — the guardian-facing filter.
+  List<String> approvedUrlsForChild(String childId) => photos.values
+      .where((p) => p.isApproved && p.visibleTo(childId))
+      .map((p) => p.url)
+      .where((u) => u.isNotEmpty)
+      .toList();
+
+  bool get hasPendingPhotos => photos.values.any((p) => !p.isApproved);
+
+  int get pendingPhotoCount =>
+      photos.values.where((p) => !p.isApproved).length;
+
   factory ClassroomActivityModel.fromJson(Map<dynamic, dynamic> json,
       {String? key}) {
     Map<String, String> _parseMap(dynamic raw) {
@@ -111,7 +134,7 @@ class ClassroomActivityModel {
       evaluations: _parseMap(json['evaluations']),
       notes: _parseMap(json['notes']),
       childReasons: _parseReasonsMap(json['childReasons']),
-      photos: _parseMap(json['photos']),
+      photos: _parsePhotos(json['photos']),
       groupNote: json['groupNote']?.toString(),
       createdAt: _parseInt(json['createdAt']),
       childIds: _parseStringList(json['childIds']),
@@ -142,7 +165,11 @@ class ClassroomActivityModel {
           e.key: {for (int i = 0; i < e.value.length; i++) '$i': e.value[i]},
       };
     }
-    if (photos.isNotEmpty) data['photos'] = photos;
+    if (photos.isNotEmpty) {
+      data['photos'] = {
+        for (final e in photos.entries) e.key: e.value.toJson(),
+      };
+    }
     put('groupNote', groupNote);
     put('createdAt', createdAt ?? _now());
     if (childIds.isNotEmpty) data['childIds'] = childIds;
@@ -163,7 +190,7 @@ class ClassroomActivityModel {
     Map<String, String>? evaluations,
     Map<String, String>? notes,
     Map<String, List<String>>? childReasons,
-    Map<String, String>? photos,
+    Map<String, ActivityPhoto>? photos,
     String? groupNote,
     int? createdAt,
     List<String>? childIds,
@@ -193,6 +220,14 @@ class ClassroomActivityModel {
     if (v == null) return null;
     if (v is int) return v;
     return int.tryParse(v.toString());
+  }
+
+  static Map<String, ActivityPhoto> _parsePhotos(dynamic raw) {
+    if (raw == null || raw is! Map) return {};
+    return {
+      for (final e in (raw as Map).entries)
+        e.key.toString(): ActivityPhoto.fromValue(e.key.toString(), e.value),
+    };
   }
 
   static Map<String, List<String>> _parseReasonsMap(dynamic raw) {

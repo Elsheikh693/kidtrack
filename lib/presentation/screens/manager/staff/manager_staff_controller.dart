@@ -113,7 +113,7 @@ class ManagerStaffController extends GetxController {
           .where((s) =>
               s.branchId == branchId &&
               s.isActive &&
-              _session.seesShift(s.shift))
+              _session.seesAnyShift(s.shiftIds))
           .toList()
         ..sort((a, b) => a.name.compareTo(b.name));
 

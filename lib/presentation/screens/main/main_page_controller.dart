@@ -129,11 +129,15 @@ class MainPageViewModel extends GetxController {
     const ReceptionistCoursesTab(),
     const ReceptionistEventsView(),
     const ReceptionistFinanceTab(),
+    // index 6: shared staff↔guardian chat inbox (same threads the manager uses).
+    const ManagerChatTab(),
   ];
   static final _teacherPages = <Widget>[
     const TeacherHomeTab(),
     const TeacherActivityTab(),
-    const TeacherLinkBookTab(),
+    const TeacherReportsTab(),
+    // مخفي مؤقتاً: دفتر التواصل
+    // const TeacherLinkBookTab(),
     // مخفي مؤقتاً: صفحة الواجبات
     // const TeacherHomeworkTab(),
   ];
@@ -146,7 +150,8 @@ class MainPageViewModel extends GetxController {
     const ParentDashboardView(),
     const ParentEducationView(),
     const ParentPostsView(),
-    const ParentCoursesView(),
+    // مخفي مؤقتاً: تاب الكورسات
+    // const ParentCoursesView(),
     const ReportsHubView(),
   ];
 }

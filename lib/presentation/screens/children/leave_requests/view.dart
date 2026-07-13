@@ -57,6 +57,9 @@ class _ChildLeaveRequestViewState extends State<ChildLeaveRequestView> {
                       childName: controller.childName(
                         controller.items[i].childId,
                       ),
+                      childImage: controller.childImage(
+                        controller.items[i].childId,
+                      ),
                       onEdit: () => controller.openEdit(controller.items[i]),
                       onDelete: () => controller.delete(controller.items[i]),
                       onApprove: () => controller.updateStatus(

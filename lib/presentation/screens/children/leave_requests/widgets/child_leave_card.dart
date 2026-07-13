@@ -3,6 +3,7 @@ import '../../../../../index/index_main.dart';
 class ChildLeaveCard extends StatelessWidget {
   final ChildLeaveRequestModel item;
   final String childName;
+  final String? childImage;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onApprove;
@@ -12,6 +13,7 @@ class ChildLeaveCard extends StatelessWidget {
     super.key,
     required this.item,
     required this.childName,
+    this.childImage,
     required this.onEdit,
     required this.onDelete,
     required this.onApprove,
@@ -63,6 +65,13 @@ class ChildLeaveCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                ChildAvatar(
+                  name: childName,
+                  imageUrl: childImage,
+                  size: 40,
+                  color: _statusColor,
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     childName,

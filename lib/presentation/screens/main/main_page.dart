@@ -268,9 +268,9 @@ const _teacherItems = [
     color: Color(0xFF7C3AED),
   ),
   _NavItemData(
-    activeIcon: Icons.import_contacts_rounded,
-    inactiveIcon: Icons.import_contacts_outlined,
-    labelKey: 'teacher_tab_link_book',
+    activeIcon: Icons.event_note_rounded,
+    inactiveIcon: Icons.event_note_outlined,
+    labelKey: 'teacher_tab_work_log',
     color: Color(0xFF7C3AED),
   ),
   // مخفي مؤقتاً: تاب الواجبات
@@ -363,12 +363,13 @@ const _parentItems = [
     labelKey: 'parent_tab_posts',
     color: Color(0xFFEC4899),
   ),
-  _NavItemData(
-    activeIcon: Icons.local_library_rounded,
-    inactiveIcon: Icons.local_library_outlined,
-    labelKey: 'parent_tab_courses',
-    color: Color(0xFF0891B2),
-  ),
+  // مخفي مؤقتاً: تاب الكورسات
+  // _NavItemData(
+  //   activeIcon: Icons.local_library_rounded,
+  //   inactiveIcon: Icons.local_library_outlined,
+  //   labelKey: 'parent_tab_courses',
+  //   color: Color(0xFF0891B2),
+  // ),
   _NavItemData(
     activeIcon: Icons.insert_chart_rounded,
     inactiveIcon: Icons.insert_chart_outlined_rounded,
@@ -398,19 +399,27 @@ const _receptionistItems = [
     color: Color(0xFF16A34A),
     pageIndex: 2,
   ),
-  _NavItemData(
-    activeIcon: Icons.school_rounded,
-    inactiveIcon: Icons.school_outlined,
-    labelKey: 'reception_tab_courses',
-    color: Color(0xFF7C3AED),
-    pageIndex: 3,
-  ),
+  // مخفي مؤقتاً: تاب الكورسات (الصفحة ما زالت في الـ stack لكن غير ظاهرة في الشريط)
+  // _NavItemData(
+  //   activeIcon: Icons.school_rounded,
+  //   inactiveIcon: Icons.school_outlined,
+  //   labelKey: 'reception_tab_courses',
+  //   color: Color(0xFF7C3AED),
+  //   pageIndex: 3,
+  // ),
   _NavItemData(
     activeIcon: Icons.celebration_rounded,
     inactiveIcon: Icons.celebration_outlined,
     labelKey: 'reception_tab_events',
     color: Color(0xFFF59E0B),
     pageIndex: 4,
+  ),
+  _NavItemData(
+    activeIcon: Icons.chat_bubble_rounded,
+    inactiveIcon: Icons.chat_bubble_outline_rounded,
+    labelKey: 'reception_tab_chat',
+    color: Color(0xFF7C3AED),
+    pageIndex: 6,
   ),
 ];
 

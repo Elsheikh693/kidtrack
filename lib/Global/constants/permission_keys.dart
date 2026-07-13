@@ -22,6 +22,7 @@ abstract class PermissionKeys {
   static const classroomView = 'classroom.view';
   static const classroomManage = 'classroom.manage';
   static const classroomPosts = 'classroom.posts';
+  static const classroomReviewPhotos = 'classroom.review_photos';
 
   // ── Daily Care ────────────────────────────────────────────
   static const dailyCareView = 'daily_care.view';
@@ -82,6 +83,7 @@ abstract class PermissionKeys {
     classroomView,
     classroomManage,
     classroomPosts,
+    classroomReviewPhotos,
     dailyCareView,
     dailyCareLog,
     staffView,

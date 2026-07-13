@@ -41,8 +41,10 @@ class ActiveActivityView extends StatelessWidget {
                     // Photos card
                     Obx(() => ActivityPhotosSection(
                           photos: ctrl.activeActivity.value?.photos ?? {},
+                          children: ctrl.children,
                           onAdd: ctrl.uploadActivityPhoto,
                           onDelete: ctrl.removeActivityPhoto,
+                          onSetAudience: ctrl.setPhotoAudience,
                           isUploading: ctrl.isUploadingPhoto.value,
                         )),
                     const SizedBox(height: 14),

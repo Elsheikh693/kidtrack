@@ -91,6 +91,12 @@ class _ParentAccountViewState extends State<ParentAccountView> {
               titleKey: 'parent_account_title',
               items: [
                 AccountMenuItem(
+                  labelKey: 'notif_prefs_menu_item',
+                  icon: Icons.notifications_active_outlined,
+                  iconColor: AppColors.primary,
+                  onTap: controller.navigateToNotificationPrefs,
+                ),
+                AccountMenuItem(
                   labelKey: 'parent_account_logout',
                   icon: Icons.logout_rounded,
                   iconColor: AppColors.errorForeground,

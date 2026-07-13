@@ -100,3 +100,49 @@ class ChildStateTemplateModel {
         .toList();
   }
 }
+
+/// The states seeded the first time the child-states settings screen is opened
+/// (when the nursery has none yet). Titles/option labels are localization keys
+/// resolved to the active locale at seed time; the owner can edit or delete
+/// them afterwards. `الأكل` ships with its evaluation tree (أكل → الكل/النص/الربع,
+/// لم يأكل); `النوم` and `الحمام` stay simple.
+class ChildStateDefaults {
+  ChildStateDefaults._();
+
+  static const List<
+      ({
+        String key,
+        String titleKey,
+        String icon,
+        List<({String labelKey, List<String> subLabelKeys})> options,
+      })> seed = [
+    (
+      key: 'eat',
+      titleKey: 'child_state_default_eat',
+      icon: 'food',
+      options: [
+        (
+          labelKey: 'child_state_default_eat_ate',
+          subLabelKeys: [
+            'child_state_default_eat_all',
+            'child_state_default_eat_half',
+            'child_state_default_eat_quarter',
+          ],
+        ),
+        (labelKey: 'child_state_default_eat_none', subLabelKeys: []),
+      ],
+    ),
+    (
+      key: 'sleep',
+      titleKey: 'child_state_default_sleep',
+      icon: 'sleep',
+      options: [],
+    ),
+    (
+      key: 'toilet',
+      titleKey: 'child_state_default_toilet',
+      icon: 'toilet',
+      options: [],
+    ),
+  ];
+}

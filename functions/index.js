@@ -43,6 +43,14 @@ const { midDayNudgeScan } = require("./engagement/midDayNudge");
 exports.midDayNudgeScan = midDayNudgeScan;
 
 // ============================================================
+// 📭 ABSENT AT SHIFT END (scheduled — auto-message parents of absent children)
+// ============================================================
+
+const { absentShiftEndScan } = require("./engagement/absentShiftEnd");
+
+exports.absentShiftEndScan = absentShiftEndScan;
+
+// ============================================================
 // 🚪 WITHDRAW CHILD (callable — hard delete + parent/auth cleanup)
 // ============================================================
 

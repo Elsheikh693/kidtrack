@@ -22,6 +22,7 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
 
   String _nurseryId = '';
   String _classroomId = '';
+  String _childId = '';
 
   String get _classroomName =>
       (Get.arguments as Map?)?['classroomName'] as String? ?? '';
@@ -42,7 +43,9 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
     final now = DateTime.now();
     _selectedDay = DateTime(now.year, now.month, now.day);
     _nurseryId = SessionService().nurseryId ?? '';
-    _classroomId = Get.find<ActiveChildService>().classroomId.value;
+    final activeChild = Get.find<ActiveChildService>();
+    _classroomId = activeChild.classroomId.value;
+    _childId = activeChild.childId.value;
     _bindDay();
   }
 
@@ -66,7 +69,7 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
 
     setState(() => _loading = true);
     _sub = _edu
-        .watchPhotosForDay(_nurseryId, _classroomId, _selectedDay)
+        .watchPhotosForDay(_nurseryId, _classroomId, _selectedDay, _childId)
         .listen((photos) {
       if (!mounted) return;
       setState(() {

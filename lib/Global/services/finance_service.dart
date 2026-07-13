@@ -4,17 +4,29 @@ class FinanceService {
   final _invoiceService = Get.find<BaseService<InvoiceModel>>(tag: 'invoices');
   final _paymentService = Get.find<BaseService<PaymentModel>>(tag: 'payments');
 
-  Future<bool> markAsPaid({
+  /// Records a payment of [amount] against [invoice]. Supports partial
+  /// collection: the amount is added to the invoice's running [paidAmount] and
+  /// the status becomes 'paid' once fully covered, otherwise 'partial'. A
+  /// [PaymentModel] is written for the actual amount collected (not the total).
+  Future<bool> recordPayment({
     required InvoiceModel invoice,
+    required double amount,
     required String paymentMethod,
     String? receivedByName,
   }) async {
+    if (amount <= 0) return false;
+
     final session = SessionService();
     final now = DateTime.now().millisecondsSinceEpoch;
     final name = receivedByName ?? session.currentUser?.displayName;
 
+    final newPaid =
+        (invoice.collectedAmount + amount).clamp(0, invoice.totalAmount).toDouble();
+    final fullyPaid = newPaid >= invoice.totalAmount - 0.5;
+
     final updated = invoice.copyWith(
-      status: 'paid',
+      paidAmount: newPaid,
+      status: fullyPaid ? 'paid' : 'partial',
       paidAt: now,
       paidBy: name,
       paymentMethod: paymentMethod,
@@ -36,7 +48,7 @@ class FinanceService {
       invoiceId: invoice.key ?? '',
       childId: invoice.childId,
       parentId: invoice.parentId,
-      amount: invoice.totalAmount,
+      amount: amount,
       method: paymentMethod,
       receivedBy: name,
       paidAt: now,
@@ -51,6 +63,22 @@ class FinanceService {
     );
 
     return paymentOk;
+  }
+
+  /// Settles the whole remaining balance of [invoice] in one shot (the "collect
+  /// the rest" / mark-paid action). No-op if already fully paid.
+  Future<bool> markAsPaid({
+    required InvoiceModel invoice,
+    required String paymentMethod,
+    String? receivedByName,
+  }) async {
+    if (invoice.isFullyPaid) return true;
+    return recordPayment(
+      invoice: invoice,
+      amount: invoice.remaining,
+      paymentMethod: paymentMethod,
+      receivedByName: receivedByName,
+    );
   }
 
   Future<List<InvoiceModel>> getChildInvoices(String childId) async {

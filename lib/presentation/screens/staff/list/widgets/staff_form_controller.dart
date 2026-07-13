@@ -9,6 +9,7 @@ class StaffFormController extends GetxController {
   late StaffParentService _staffService;
   late BranchParentService _branchService;
   late PermissionParentService _permService;
+  late ShiftParentService _shiftService;
   late SessionService _session;
 
   final nameCtrl = TextEditingController();
@@ -22,7 +23,8 @@ class StaffFormController extends GetxController {
 
   final Rx<StaffTemplate> selectedTemplate = StaffTemplate.teacher.obs;
   final Rx<BranchModel?> selectedBranch = Rx(null);
-  final RxString selectedShift = 'morning'.obs; // morning / evening / both
+  final RxList<ShiftModel> shifts = <ShiftModel>[].obs;
+  final RxList<String> selectedShiftIds = <String>[].obs;
   final RxList<BranchModel> branches = <BranchModel>[].obs;
   final RxBool isEdit = false.obs;
 
@@ -35,9 +37,25 @@ class StaffFormController extends GetxController {
     _staffService = Get.find<StaffParentService>();
     _branchService = Get.find<BranchParentService>();
     _permService = Get.find<PermissionParentService>();
+    _shiftService = Get.find<ShiftParentService>();
     _session = Get.find<SessionService>();
     _branchesReady = _loadBranches();
+    _loadShifts();
     _prefill();
+  }
+
+  Future<void> _loadShifts() async {
+    shifts.value = await _shiftService.getActive();
+  }
+
+  bool isShiftSelected(String id) => selectedShiftIds.contains(id);
+
+  void toggleShift(String id) {
+    if (selectedShiftIds.contains(id)) {
+      selectedShiftIds.remove(id);
+    } else {
+      selectedShiftIds.add(id);
+    }
   }
 
   /// The branch to persist: the user's pick, or — when the nursery has a single
@@ -53,7 +71,7 @@ class StaffFormController extends GetxController {
     nameCtrl.text = initialStaff!.name;
     phoneCtrl.text = initialStaff!.phone ?? '';
     selectedTemplate.value = initialStaff!.template;
-    selectedShift.value = initialStaff!.shift ?? 'morning';
+    selectedShiftIds.assignAll(initialStaff!.shiftIds);
     if (initialStaff!.salary != null) {
       salaryCtrl.text = initialStaff!.salary!.toStringAsFixed(0);
     }
@@ -111,7 +129,7 @@ class StaffFormController extends GetxController {
         template: selectedTemplate.value,
         role: selectedTemplate.value.toUserType(),
         branchId: _resolvedBranchId,
-        shift: selectedShift.value,
+        shiftIds: selectedShiftIds.toList(),
         salary: double.tryParse(salaryCtrl.text.trim()),
         hireDate: selectedHireDate.value?.millisecondsSinceEpoch,
         nationalId: nationalIdCtrl.text.trim().nullIfEmpty,
@@ -161,7 +179,7 @@ class StaffFormController extends GetxController {
         uid: firebaseUid,
         nurseryId: nurseryId,
         branchId: _resolvedBranchId,
-        shift: selectedShift.value,
+        shiftIds: selectedShiftIds.toList(),
         name: name,
         phone: phone.nullIfEmpty,
         template: selectedTemplate.value,

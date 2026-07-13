@@ -7,13 +7,23 @@ class TeacherReportsController extends GetxController {
   final isLoading = true.obs;
   final classrooms = <ClassroomModel>[].obs;
   final selectedClassroomId = 'all'.obs;
-  // classroomId → completed activities for today
+  // The day whose completed activities are shown. Defaults to today; the header
+  // date navigator moves it back/forward (never into the future).
+  final selectedDate = DateTime.now().obs;
+  // classroomId → completed activities for the selected day
   final _activitiesMap = <String, List<ClassroomActivityModel>>{};
   // classroomId → children
   final _childrenMap = <String, List<ChildModel>>{};
   final _refreshTrigger = 0.obs;
 
   String get nurseryId => _session.nurseryId ?? '';
+
+  /// True when the selected day is today — used to disable the "next day" arrow.
+  bool get isToday {
+    final now = DateTime.now();
+    final d = selectedDate.value;
+    return d.year == now.year && d.month == now.month && d.day == now.day;
+  }
 
   @override
   void onInit() {
@@ -31,24 +41,61 @@ class TeacherReportsController extends GetxController {
       return;
     }
     classrooms.value = await _service.resolveClassrooms(nurseryId, uid);
+    await _loadActivities();
+    isLoading.value = false;
+  }
+
+  /// Reloads only the completed activities for the current [selectedDate],
+  /// keeping the already-resolved classroom list.
+  Future<void> _loadActivities() async {
     for (final c in classrooms) {
       await _loadForClassroom(c.key ?? '');
     }
     _refreshTrigger.value++;
-    isLoading.value = false;
   }
 
   Future<void> _loadForClassroom(String classroomId) async {
     if (classroomId.isEmpty) return;
+    final d = selectedDate.value;
+    final dayStart = DateTime(d.year, d.month, d.day).millisecondsSinceEpoch;
+    final dayEnd = dayStart + const Duration(days: 1).inMilliseconds - 1;
     final results = await Future.wait([
-      _service.getTodayCompleted(nurseryId, classroomId),
+      _service.getCompletedForDateRange(
+        nurseryId,
+        classroomId,
+        startMs: dayStart,
+        endMs: dayEnd,
+        teacherId: _session.userId,
+      ),
       _service.loadChildren(nurseryId, classroomId),
     ]);
-    _activitiesMap[classroomId] = results[0] as List<ClassroomActivityModel>;
+    final activities = results[0] as List<ClassroomActivityModel>
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    _activitiesMap[classroomId] = activities;
     _childrenMap[classroomId] = results[1] as List<ChildModel>;
   }
 
   void selectClassroom(String id) => selectedClassroomId.value = id;
+
+  /// Switches the shown day and reloads. Ignores requests for future days.
+  Future<void> selectDate(DateTime date) async {
+    final today = DateTime.now();
+    final normalized = DateTime(date.year, date.month, date.day);
+    final todayNorm = DateTime(today.year, today.month, today.day);
+    if (normalized.isAfter(todayNorm)) return;
+    selectedDate.value = normalized;
+    isLoading.value = true;
+    await _loadActivities();
+    isLoading.value = false;
+  }
+
+  Future<void> goToPreviousDay() =>
+      selectDate(selectedDate.value.subtract(const Duration(days: 1)));
+
+  Future<void> goToNextDay() {
+    if (isToday) return Future.value();
+    return selectDate(selectedDate.value.add(const Duration(days: 1)));
+  }
 
   List<ClassroomActivityModel> get displayedActivities {
     _refreshTrigger.value; // reactive dependency

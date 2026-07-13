@@ -172,24 +172,26 @@ class ManagerFinanceController extends GetxController {
 
       // Live aggregates for the home dashboard (across all months).
       final unpaid = _branchInvoices.where(_isUnpaid).toList();
+      // Outstanding folds each invoice's REMAINING balance, so a partially-paid
+      // invoice only contributes what's still owed.
       outstandingTotal.value =
-          unpaid.fold<double>(0, (acc, inv) => acc + inv.totalAmount);
+          unpaid.fold<double>(0, (acc, inv) => acc + inv.remaining);
       overdueTotal.value = unpaid
           .where((inv) => _isOverdue(inv, nowMs))
-          .fold<double>(0, (acc, inv) => acc + inv.totalAmount);
+          .fold<double>(0, (acc, inv) => acc + inv.remaining);
 
-      // Collected this month — derived from paid invoices using the SAME
-      // month + status logic as the payments ledger (_rebuildMonth), so the
-      // home card and the payments screen never diverge.
+      // Collected this month — folds each invoice's collected amount (full or
+      // partial) using the SAME month logic as the payments ledger
+      // (_rebuildMonth), so the home card and the payments screen never diverge.
       collectedThisMonth.value = _branchInvoices
-          .where((inv) => inv.status == 'paid')
+          .where((inv) => inv.collectedAmount > 0)
           .where((inv) {
             final ms = inv.dueDate ?? inv.createdAt;
             if (ms == null) return false;
             final d = DateTime.fromMillisecondsSinceEpoch(ms);
             return d.year == now.year && d.month == now.month;
           })
-          .fold<double>(0, (acc, inv) => acc + inv.totalAmount);
+          .fold<double>(0, (acc, inv) => acc + inv.collectedAmount);
 
       final debtParents = <String>{};
       for (final inv in unpaid) {
@@ -216,9 +218,9 @@ class ManagerFinanceController extends GetxController {
 
       billed.update(inv.childId, (v) => v + inv.totalAmount,
           ifAbsent: () => inv.totalAmount);
-      if (inv.status == 'paid') {
-        collected.update(inv.childId, (v) => v + inv.totalAmount,
-            ifAbsent: () => inv.totalAmount);
+      if (inv.collectedAmount > 0) {
+        collected.update(inv.childId, (v) => v + inv.collectedAmount,
+            ifAbsent: () => inv.collectedAmount);
       }
       if (inv.dueDate != null) {
         earliestDue.update(
@@ -265,10 +267,10 @@ class ManagerFinanceController extends GetxController {
     }));
   }
 
-  bool _isUnpaid(InvoiceModel inv) =>
-      inv.status == 'pending' || inv.status == 'overdue';
+  bool _isUnpaid(InvoiceModel inv) => inv.hasOutstanding;
 
   bool _isOverdue(InvoiceModel inv, int nowMs) =>
-      inv.status == 'overdue' ||
-      (inv.status == 'pending' && inv.dueDate != null && inv.dueDate! < nowMs);
+      inv.hasOutstanding &&
+      (inv.status == 'overdue' ||
+          (inv.dueDate != null && inv.dueDate! < nowMs));
 }

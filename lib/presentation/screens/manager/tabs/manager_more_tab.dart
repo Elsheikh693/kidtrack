@@ -50,7 +50,7 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                     const SizedBox(height: 20),
                     _operationsSection(),
                     const SizedBox(height: 20),
-                    Obx(() => _businessSection()),
+                    _businessSection(),
                     const SizedBox(height: 20),
                     _settingsSection(),
                     const SizedBox(height: 24),
@@ -76,18 +76,8 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'owner_item_setup_checklist',
           onTap: () => Get.toNamed(setupChecklistView),
         ),
-        ManagerGridTile(
-          icon: Icons.account_balance_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'owner_item_branches',
-          onTap: () => Get.toNamed(branchesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.play_lesson_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'manager_more_link_courses',
-          onTap: () => Get.toNamed(coursesView),
-        ),
+        // "الفروع" now lives inside "خطوات الإعداد"; "الكورسات" temporarily
+        // removed — both dropped from this section for manager/owner.
       ],
     );
   }
@@ -136,20 +126,8 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'billing_my_subscription',
           onTap: () => Get.toNamed(mySubscriptionView),
         ),
-        ManagerGridTile(
-          icon: Icons.app_registration_rounded,
-          color: AppColors.secondary80,
-          labelKey: 'apply_manage_title',
-          badgeCount: controller.pendingApplications.value,
-          onTap: () => Get.toNamed(managerApplicationsView)
-              ?.then((_) => controller.loadPendingApplications()),
-        ),
-        ManagerGridTile(
-          icon: Icons.assignment_rounded,
-          color: AppColors.teal,
-          labelKey: 'manager_more_link_application_file',
-          onTap: () => Get.toNamed(managerApplicationFileView),
-        ),
+        // "طلبات الالتحاق" and "ملف التقديم" tiles temporarily removed
+        // for manager/owner.
       ],
     );
   }

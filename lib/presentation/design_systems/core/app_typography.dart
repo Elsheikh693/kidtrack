@@ -3,6 +3,11 @@ import '../../../index/index_main.dart';
 /// Emoji-capable fallback fonts. IBMPlexSansArabic has no emoji glyphs, so
 /// without these, any emoji renders as a tofu box (؟). These are system fonts
 /// (built into iOS/Android) — no asset bundling needed.
+///
+/// Do NOT add a bundled `NotoColorEmoji.ttf` here: that font is a CBDT/CBLC
+/// color-bitmap font that the Flutter text engine crashes on when loaded on
+/// Apple platforms (killed the app on the first text-bearing screen). The two
+/// system fonts below cover iOS and Android already.
 const List<String> kEmojiFontFallback = <String>[
   'Apple Color Emoji',
   'Noto Color Emoji',

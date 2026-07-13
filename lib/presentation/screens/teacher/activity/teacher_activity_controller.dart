@@ -105,8 +105,9 @@ class TeacherActivityController extends GetxController
 
   void _watchActivity() {
     _activitySub?.cancel();
-    _activitySub =
-        _activityService.watchActiveActivity(nurseryId, _classroomId).listen(
+    _activitySub = _activityService
+        .watchActiveActivity(nurseryId, _classroomId, teacherId: teacherId)
+        .listen(
       (a) {
         activeActivity.value = a;
       },
@@ -211,8 +212,9 @@ class TeacherActivityController extends GetxController
   }
 
   Future<void> _loadTodayCompleted() async {
-    todayCompleted.value =
-        await _activityService.getTodayCompleted(nurseryId, _classroomId);
+    todayCompleted.value = await _activityService.getTodayCompleted(
+        nurseryId, _classroomId,
+        teacherId: teacherId);
   }
 
   Future<void> _reloadTodayData() async {
@@ -418,19 +420,19 @@ class TeacherActivityController extends GetxController
       if (files.isEmpty) return;
       isUploadingPhoto.value = true;
       for (final file in files) {
-        final result = await _activityService.uploadActivityPhoto(
+        final photo = await _activityService.uploadActivityPhoto(
           nurseryId: nurseryId,
           classroomId: _classroomId,
           activityId: activityKey,
           file: file,
+          uploadedBy: teacherId,
         );
-        if (result != null) {
-          final (photoId, url) = result;
+        if (photo != null) {
           final current = activeActivity.value;
           if (current != null) {
             activeActivity.value = current.copyWith(
-              photos: Map<String, String>.from(current.photos)
-                ..[photoId] = url,
+              photos: Map<String, ActivityPhoto>.from(current.photos)
+                ..[photo.id] = photo,
             );
           }
         } else {
@@ -447,7 +449,8 @@ class TeacherActivityController extends GetxController
     final current = activeActivity.value;
     if (current != null) {
       activeActivity.value = current.copyWith(
-        photos: Map<String, String>.from(current.photos)..remove(photoId),
+        photos: Map<String, ActivityPhoto>.from(current.photos)
+          ..remove(photoId),
       );
     }
     await _activityService.deleteActivityPhoto(
@@ -455,6 +458,37 @@ class TeacherActivityController extends GetxController
       classroomId: _classroomId,
       activityId: a!.key!,
       photoId: photoId,
+    );
+  }
+
+  /// Teacher sets who a photo is for: classroom-wide (default) or a set of
+  /// children (a "private moment"). Passing an empty list reverts to classroom.
+  Future<void> setPhotoAudience(
+    String photoId,
+    List<String> targetChildren,
+  ) async {
+    final a = activeActivity.value;
+    if (a?.key == null) return;
+    final audienceType =
+        targetChildren.isEmpty ? AudienceType.classroom : AudienceType.children;
+    final current = activeActivity.value;
+    final existing = current?.photos[photoId];
+    if (current != null && existing != null) {
+      activeActivity.value = current.copyWith(
+        photos: Map<String, ActivityPhoto>.from(current.photos)
+          ..[photoId] = existing.copyWith(
+            audienceType: audienceType,
+            targetChildren: targetChildren,
+          ),
+      );
+    }
+    await _activityService.updatePhotoAudience(
+      nurseryId: nurseryId,
+      classroomId: _classroomId,
+      activityId: a!.key!,
+      photoId: photoId,
+      audienceType: audienceType,
+      targetChildren: targetChildren,
     );
   }
 

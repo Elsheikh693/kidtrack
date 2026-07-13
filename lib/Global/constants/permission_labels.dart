@@ -17,9 +17,10 @@ abstract class PermissionLabels {
     'attendance.check_out': 'تسجيل الانصراف',
     'attendance.edit':      'تعديل سجل الحضور',
     // الفصول
-    'classroom.view':   'عرض الفصول',
-    'classroom.manage': 'إدارة الفصول',
-    'classroom.posts':  'النشر في الفصل',
+    'classroom.view':          'عرض الفصول',
+    'classroom.manage':        'إدارة الفصول',
+    'classroom.posts':         'النشر في الفصل',
+    'classroom.review_photos': 'مراجعة صور الأنشطة',
     // الرعاية اليومية
     'daily_care.view': 'عرض الرعاية اليومية',
     'daily_care.log':  'تسجيل الرعاية اليومية',
