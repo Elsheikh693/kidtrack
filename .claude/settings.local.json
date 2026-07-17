@@ -119,7 +119,27 @@
       "Bash(python3 -c \"import json;p='.claude/launch.json';d=json.load\\(open\\(p\\)\\);d['configurations']=[c for c in d['configurations'] if c['name']!='eco'];json.dump\\(d,open\\(p,'w'\\),ensure_ascii=False,indent=2\\);print\\('remaining:',[c['name'] for c in d['configurations']]\\)\")",
       "Bash(grep -n '^body{\\\\|^body ,\\\\|body{' public/index.html)",
       "Bash(grep -n 'html,body\\\\|^html{\\\\|^body{\\\\|box-sizing\\\\|^\\\\*{' index.html)",
-      "Bash(awk '/<div class=\"hero-proof/,/<\\\\/div>/' index.html)"
+      "Bash(awk '/<div class=\"hero-proof/,/<\\\\/div>/' index.html)",
+      "Bash(git -C /Users/apple/kidtrack status --short)",
+      "Bash(awk '/var APPS = \\\\[/,/\\\\];/' public/index.html)",
+      "Bash(awk '/var APPS = \\\\[/,/APPS.forEach/' public/index.html)",
+      "Bash(grep -iE \"\\\\.\\(png|jpg|jpeg|webp|svg\\)$\")",
+      "Bash(grep -nA20 \"assets:\" pubspec.yaml)",
+      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha public/logo.png)",
+      "Bash(curl -s -i \"https://kidtrack-bed28-default-rtdb.firebaseio.com/showcaseShots.json\")",
+      "Bash(curl -s -X PUT https://kidtrack-bed28-default-rtdb.firebaseio.com/showcaseShots.json -d '{ *)",
+      "Bash(curl -s \"https://kidtrack-bed28-default-rtdb.firebaseio.com/showcaseShots.json\")",
+      "Bash(cp __TRACKED_VAR__/og.png public/og.png)",
+      "Bash(sips -s format jpeg -s formatOptions 82 __TRACKED_VAR__/og.png --out public/og.jpg)",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(curl -s -X DELETE \"https://kidtrack-bed28-default-rtdb.firebaseio.com/showcaseShots.json\")",
+      "Bash(sips -s format jpeg -s formatOptions 88 __TRACKED_VAR__/og1.png --out public/og-light.jpg)",
+      "Bash(sips -s format jpeg -s formatOptions 88 __TRACKED_VAR__/og2.png --out public/og-purple.jpg)",
+      "Bash(sips -s format jpeg -s formatOptions 88 __TRACKED_VAR__/og3.png --out public/og-dark.jpg)",
+      "Bash(cp __TRACKED_VAR__/og3.png public/og.png)",
+      "Bash(sips -s format jpeg -s formatOptions 86 __TRACKED_VAR__/og3.png --out public/og.jpg)",
+      "Bash(sips -g pixelWidth -g pixelHeight public/og.jpg)",
+      "Bash(curl -s -o /dev/null -w \"og.jpg -> HTTP %{http_code}, %{size_download}B\\\\n\" https://kidtrack-bed28.web.app/og.jpg)"
     ]
   }
 }

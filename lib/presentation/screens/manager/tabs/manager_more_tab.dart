@@ -74,6 +74,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'owner_item_setup_checklist',
           onTap: () => Get.toNamed(setupChecklistView),
         ),
+        ManagerGridTile(
+          icon: Icons.ondemand_video_rounded,
+          color: const Color(0xFFDC2626),
+          labelKey: 'tutorial_menu_entry',
+          onTap: () => Get.toNamed(appTutorialView),
+        ),
         // "الفروع" now lives inside "خطوات الإعداد"; "الكورسات" temporarily
         // removed — both dropped from this section for manager/owner.
       ],

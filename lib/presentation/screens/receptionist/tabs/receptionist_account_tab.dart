@@ -191,6 +191,12 @@ class _SettingsCard extends StatelessWidget {
             labelKey: 'owner_item_notifications',
             onTap: () => Get.toNamed(notificationsView),
           ),
+          _SettingsTile(
+            icon: Icons.ondemand_video_rounded,
+            color: const Color(0xFFDC2626),
+            labelKey: 'tutorial_menu_entry',
+            onTap: () => Get.toNamed(appTutorialView),
+          ),
         ],
       ),
     );

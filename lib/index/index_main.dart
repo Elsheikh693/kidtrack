@@ -172,6 +172,8 @@ export '../Data/models/support_ticket/support_ticket_model.dart';
 export '../Data/models/contact_info/contact_info_model.dart';
 export '../Data/models/about_us/about_us_model.dart';
 export '../Data/models/city/city_model.dart';
+export '../Data/models/tutorial_video/tutorial_video_model.dart';
+export '../Data/models/showcase/showcase_shot_model.dart';
 export '../Data/models/support_request/support_request_model.dart';
 export '../Data/models/app_review/app_review_model.dart';
 export '../Data/models/nursery_feedback/nursery_feedback_model.dart';
@@ -313,6 +315,8 @@ export 'package:kidtrack/presentation/parentControllers/services/support_ticket_
 export 'package:kidtrack/presentation/parentControllers/services/contact_info_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/about_us_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/city_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/tutorial_video_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/showcase_shot_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/support_request_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/app_review_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/nursery_feedback_parent_service.dart';
@@ -622,6 +626,18 @@ export 'package:kidtrack/presentation/screens/super_admin/support_tickets/widget
 // ─── Platform Subscription Billing ────────────────────────────────────────────
 export 'package:kidtrack/Data/models/platform_bill/platform_bill_model.dart';
 export 'package:kidtrack/Global/services/platform_billing_service.dart';
+export 'package:kidtrack/Data/models/platform_payment/platform_payment_info_model.dart';
+export 'package:kidtrack/Global/services/platform_payment_service.dart';
+export 'package:kidtrack/presentation/screens/super_admin/payment_accounts/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/payment_accounts/view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/tutorial_videos/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/tutorial_videos/view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/showcase_albums/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/showcase_albums/view.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/app_tutorial_controller.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/app_tutorial_view.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/player/tutorial_player_controller.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/player/tutorial_player_view.dart';
 export '../Global/services/kidtrack_campaign_service.dart';
 export '../Global/services/kidtrack_feedback_service.dart';
 export 'package:kidtrack/presentation/screens/billing/my_subscription_controller.dart';

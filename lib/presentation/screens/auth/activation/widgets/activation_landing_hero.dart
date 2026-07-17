@@ -147,7 +147,7 @@ class _ActivationLandingHeroState extends State<ActivationLandingHero>
           ),
         ],
       ),
-      child: Image.asset('assets/images/splash.png', fit: BoxFit.contain),
+      child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
     );
   }
 

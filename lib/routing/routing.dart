@@ -140,6 +140,13 @@ const String appReviewsAdminView = "/AppReviewsAdminView";
 const String citiesView = "/CitiesView";
 const String kidtrackCampaignsView = "/KidtrackCampaignsView";
 const String kidtrackFeedbackResponsesView = "/KidtrackFeedbackResponsesView";
+const String platformPaymentAccountsView = "/PlatformPaymentAccountsView";
+const String saTutorialVideosView = "/SaTutorialVideosView";
+const String saShowcaseAlbumsView = "/SaShowcaseAlbumsView";
+
+// App Tutorial ("Learn the App") — shared across roles
+const String appTutorialView = "/AppTutorialView";
+const String tutorialPlayerView = "/TutorialPlayerView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
@@ -731,6 +738,14 @@ class Routes {
         middlewares: guard,
       ),
       GetPage(
+        name: platformPaymentAccountsView,
+        page: () => const PlatformPaymentAccountsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
         name: contactInfoFormView,
         page: () => const ContactInfoFormView(),
         binding: Binding(),
@@ -766,6 +781,46 @@ class Routes {
         name: citiesView,
         page: () => const CitiesView(),
         binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: saTutorialVideosView,
+        page: () => const SaTutorialVideosView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SaTutorialVideosController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: saShowcaseAlbumsView,
+        page: () => const SaShowcaseAlbumsView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SaShowcaseAlbumsController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: appTutorialView,
+        page: () => const AppTutorialView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => AppTutorialController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: tutorialPlayerView,
+        page: () => const TutorialPlayerView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => TutorialPlayerController(), fenix: true),
+        ),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,

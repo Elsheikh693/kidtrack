@@ -6,11 +6,25 @@
 <title>KidTrack — منظومة تشغيل الحضانات</title>
 <meta name="description" content="لكل دور في حضانتك تطبيقه الخاص — 5 تطبيقات موبايل تشتغل كمنظومة واحدة، وموقع احترافي مجانًا. تشغيل في ربع ساعة وأسبوع أول مجاني." />
 <meta name="theme-color" content="#6D4AFF" />
+<link rel="icon" type="image/png" href="logo.png" />
+<link rel="apple-touch-icon" href="logo.png" />
 
 <meta property="og:title" content="KidTrack — منظومة تشغيل الحضانات" />
 <meta property="og:description" content="لكل دور في حضانتك تطبيقه الخاص — 5 تطبيقات وموقع مجاني." />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="ar_AR" />
+<meta property="og:url" content="https://kidtrack-bed28.web.app/" />
+<meta property="og:site_name" content="KidTrack" />
+<meta property="og:image" content="https://kidtrack-bed28.web.app/og.jpg" />
+<meta property="og:image:secure_url" content="https://kidtrack-bed28.web.app/og.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="KidTrack — منظومة تشغيل الحضانات" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="KidTrack — منظومة تشغيل الحضانات" />
+<meta name="twitter:description" content="لكل دور في حضانتك تطبيقه الخاص — 5 تطبيقات وموقع مجاني." />
+<meta name="twitter:image" content="https://kidtrack-bed28.web.app/og.jpg" />
 
 <script>
   // Preserve QR / activation deep-link behaviour: any /a/** URL redirects to the store.
@@ -115,6 +129,9 @@ header.nav.scrolled{border-color:var(--border);background:rgba(252,252,254,.86)}
   direction:ltr;letter-spacing:-.01em}
 .brand .logo{width:36px;height:36px;flex:0 0 36px}
 .brand b{color:var(--primary);font-weight:800}
+img.logo{object-fit:contain;border-radius:9px}
+.foot-logo{display:inline-flex;width:38px;height:38px;background:#fff;border-radius:10px;padding:3px;align-items:center;justify-content:center;vertical-align:middle}
+.foot-logo img{width:100%;height:100%;object-fit:contain}
 .nav-links{display:flex;gap:2px}
 .nav-links a{padding:9px 15px;border-radius:var(--r-pill);font-size:.95rem;font-weight:600;color:var(--muted);
   transition:color .2s,background .2s}
@@ -223,9 +240,10 @@ header.nav.scrolled{border-color:var(--border);background:rgba(252,252,254,.86)}
 .gcard{background:#fff;border:1px solid var(--border);border-radius:var(--r-card);padding:28px;text-align:center}
 .gcard .ic-tile{width:56px;height:56px;margin:0 auto 18px}
 .gcard .ic-tile svg{width:28px;height:28px}
-.gcard h3{font-size:1.375rem;font-weight:700;margin-bottom:8px}
-.gcard p{color:var(--muted);font-size:1.0625rem;line-height:1.65}
-.gcard-stat{font-size:2rem;font-weight:800;color:var(--primary);line-height:1;margin:2px 0 10px;letter-spacing:-.5px}
+.gcard h3{font-size:1.2rem;font-weight:700;margin-bottom:10px}
+.gcard p{color:var(--muted);font-size:.95rem;line-height:1.7;max-width:270px;margin-inline:auto}
+.gcard-stat{display:inline-block;font-size:.8125rem;font-weight:700;color:var(--primary);background:#F1ECFF;
+  padding:6px 14px;border-radius:var(--r-pill);line-height:1.2;margin:0 0 14px;letter-spacing:0}
 /* coverflow-only positioning (scoped to the roles gallery) */
 .gallery .gcard{position:absolute;top:50%;left:50%;width:340px;padding:32px 28px;box-shadow:var(--sh);
   will-change:transform,opacity;backface-visibility:hidden;
@@ -307,12 +325,14 @@ header.nav.scrolled{border-color:var(--border);background:rgba(252,252,254,.86)}
 @keyframes vlbin{from{opacity:0}to{opacity:1}}
 .vlb-box{position:relative;height:min(86vh,720px);aspect-ratio:9/16;max-width:94vw;background:#0E0A24;border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .vlb-frame,.vlb-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1}
+.vlb-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:1}
+.vlb-box.wide{aspect-ratio:16/9;height:auto;width:min(94vw,940px)}
 .vlb-spin{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff}
 .vlb-spin .ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:vspin .8s linear infinite}
 .vlb-spin span{font-size:.85rem;font-weight:700;opacity:.85}
 @keyframes vspin{to{transform:rotate(360deg)}}
 .vlb-x{position:absolute;top:-46px;inset-inline-start:0;width:38px;height:38px;border-radius:50%;border:none;background:#fff;color:#1B1730;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
-@media(max-width:560px){.vlb-x{top:8px;inset-inline-start:auto;inset-inline-end:8px;background:rgba(255,255,255,.92)}}
+@media(max-width:560px){.vlb-x{top:-44px;inset-inline-start:0;inset-inline-end:auto;background:rgba(255,255,255,.95)}}
 
 .jr-meta{text-align:center;margin-top:26px;display:flex;flex-direction:column;align-items:center}
 .jr-meta h3{font-size:1.375rem;font-weight:700}
@@ -587,7 +607,7 @@ footer{background:#131126;color:#B9B3D0;padding:56px 0 30px}
 <header class="nav" id="nav">
   <div class="container nav-inner">
     <a class="brand" href="#">
-      <svg class="logo" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="14" fill="url(#lg)"/><path d="M17 13v22M17 24l10-9M17 24l11 11" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="4" fill="#FF7A59"/><defs><linearGradient id="lg" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#9A6CFF"/><stop offset="1" stop-color="#6D4AFF"/></linearGradient></defs></svg>
+      <img class="logo" src="logo.png" alt="KidTrack" width="40" height="40">
       <span class="brand-name">Kid<b>Track</b></span>
     </a>
     <nav class="nav-links">
@@ -624,6 +644,7 @@ footer{background:#131126;color:#B9B3D0;padding:56px 0 30px}
     <div class="sec-head center">
       <span class="eyebrow reveal" id="appsBadge"></span>
       <h2 class="h-sec reveal">إنت هتكسب إيه؟</h2>
+      <p class="p-lead reveal">إنت مش هتخسر أي حاجة — حرفيًا: تجربة ببلاش، دعاية ببلاش، موقع ببلاش، وداتا حضانتك كلها في جيبك.</p>
     </div>
     <div class="slider">
       <button class="slider-nav prev" id="rolesPrev" aria-label="السابق"></button>
@@ -855,7 +876,7 @@ footer{background:#131126;color:#B9B3D0;padding:56px 0 30px}
   <div class="container">
     <div class="foot-top">
       <div>
-        <div class="brand" style="font-size:1.15rem"><svg class="logo" style="width:34px;height:34px" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="14" fill="url(#lg2)"/><path d="M17 13v22M17 24l10-9M17 24l11 11" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="33" cy="15" r="4" fill="#FF7A59"/><defs><linearGradient id="lg2" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#9A6CFF"/><stop offset="1" stop-color="#6D4AFF"/></linearGradient></defs></svg> Kid<b style="color:#B79BFF">Track</b></div>
+        <div class="brand" style="font-size:1.15rem"><span class="foot-logo"><img src="logo.png" alt="KidTrack"></span><span class="brand-name">Kid<b style="color:#B79BFF">Track</b></span></div>
         <p>منظومة متكاملة لتشغيل الحضانات — 5 تطبيقات وموقع مجاني لحضانتك.</p>
       </div>
       <div class="foot-links">
@@ -979,11 +1000,10 @@ document.getElementById('rolesNext').innerHTML = icon('chevronL');
 /* ===================== APPS: role cards ===================== */
 // داتا مبدئية (placeholder) — تُستبدل بأرقام حقيقية من الحضانة (live) لاحقًا
 var APPS = [
-  { icon:'crown',     tint:'t-violet', name:'المالك',    stat:'125,500 ج', line:'صافي ربح حضانتك الشهر ده' },
-  { icon:'building',  tint:'t-sky',    name:'الإدارة',   stat:'6 فصول',    line:'شغّالة دلوقتي — بتتابعها من مكتبك' },
-  { icon:'cap',       tint:'t-mint',   name:'المعلمة',   stat:'دقيقتين',   line:'وقت التقارير بدل ساعة ورق' },
-  { icon:'clipboard', tint:'t-coral',  name:'الاستقبال', stat:'168,500 ج', line:'اتحصّلت الشهر من غير لخبطة' },
-  { icon:'users',     tint:'t-amber',  name:'ولي الأمر', stat:'24/7',      line:'متابعة لحظية بترضّي الأهالي' }
+  { icon:'gift',     tint:'t-violet', name:'جرّب قبل ما تدفع',        stat:'أسبوع مجاني',    line:'ليك ولأولياء الأمور — شوف النظام شغّال على حضانتك الحقيقية، وبعدها قرّر براحتك.' },
+  { icon:'zap',      tint:'t-amber',  name:'ارفع مستوى حضانتك',       stat:'5 تطبيقات + موقع', line:'شكل احترافي يحطّ حضانتك في مستوى تاني، ويزوّد ثقة أولياء الأمور فيك.' },
+  { icon:'building', tint:'t-sky',    name:'شغّل حضانتك من أي مكان',  stat:'حتى من البيت',   line:'تابع الفروع والفصول والحضور والصور والموظفين — حتى وإنت مسافر.' },
+  { icon:'trend',    tint:'t-mint',   name:'كل أرقام حضانتك قدامك',   stat:'لحظة بلحظة',     line:'اعرف اتجمّع كام وفاضل كام ومين دفع ومين لأ — وموقع مجاني يوفّرلك آلاف الجنيهات.' }
 ];
 (function(){
   var track = document.getElementById('rolesTrack');
@@ -1029,7 +1049,9 @@ var RESULTS = [
   });
 })();
 
-/* ===================== ROLE JOURNEY ===================== */
+/* ===================== ROLE JOURNEY (data-driven from Firebase) ===================== */
+/* Static fallback shown only if Firebase has no tutorial videos yet. It also
+   doubles as the role → emoji/accent lookup for uploaded videos. */
 var JROLES = [
   { key:'teacher',    label:'المعلمة',   emoji:'👩‍🏫', icon:'cap',       title:'دور المعلمة',   desc:'من أول ما تبدأ يومها إلى تسليم التقارير للأهل.',  accent:'#16C47F' },
   { key:'parent',     label:'ولي الأمر', emoji:'👨‍👩‍👧', icon:'users',     title:'دور ولي الأمر', desc:'يتابع طفله لحظة بلحظة من أي مكان.',               accent:'#2E9BFF' },
@@ -1038,10 +1060,22 @@ var JROLES = [
   { key:'supervisor', label:'المشرفة',   emoji:'🧑‍⚕️', icon:'eye',       title:'دور المشرفة',   desc:'إشراف على سير اليوم وجودة العمل داخل الفرع.',      accent:'#F7B731' },
   { key:'owner',      label:'المالك',    emoji:'👑',   icon:'crown',     title:'دور المالك',    desc:'يتابع كل الفروع والأداء المالي والإشغال.',         accent:'#9A6CFF' }
 ];
-var TOTAL = JROLES.length;
-var PREVIEW_MS = 6500;
+/* audience values written by the app use UserType names. */
+var ROLE_META = {
+  teacher:{emoji:'👩‍🏫',accent:'#16C47F'},
+  parent:{emoji:'👨‍👩‍👧',accent:'#2E9BFF'},
+  manager:{emoji:'🏫',accent:'#6D4AFF'}, branchManager:{emoji:'🏫',accent:'#6D4AFF'},
+  reception:{emoji:'👩‍💼',accent:'#FF7A59'}, receptionist:{emoji:'👩‍💼',accent:'#FF7A59'},
+  supervisor:{emoji:'🧑‍⚕️',accent:'#F7B731'}, busChaperone:{emoji:'🧑‍⚕️',accent:'#F7B731'},
+  owner:{emoji:'👑',accent:'#9A6CFF'}
+};
+var DB_TUTORIALS = 'https://kidtrack-bed28-default-rtdb.firebaseio.com/tutorialVideos.json';
+var JR_VIDEO = '1YOAp3s93dE'; // fallback YouTube id (used only by the static list)
+
+var JITEMS = JROLES.slice();   // replaced by the uploaded videos once fetched
+var TOTAL = JITEMS.length;
 var watched = {};
-var current = 0, playing = false, playTimer = null, swiped = false;
+var current = 0;
 
 var chips = document.getElementById('jrChips');
 var bars = document.getElementById('jrBars');
@@ -1054,24 +1088,39 @@ var jrNext = document.getElementById('jrNext');
 var jrCount = document.getElementById('jrCount');
 var completion = document.getElementById('completion');
 var barFills = [];
-var JR_VIDEO = '1YOAp3s93dE'; // \u0645\u062b\u0627\u0644 (YouTube Short) \u2014 \u0636\u0639 \u0641\u064a\u062f\u064a\u0648 \u0643\u0644 \u062f\u0648\u0631 \u0641\u064a JROLES[i].video
 
-JROLES.forEach(function(r,i){
-  var c = document.createElement('button');
-  c.className = 'jr-chip'; c.setAttribute('data-i', i);
-  c.innerHTML = '<span class="em">'+r.emoji+'</span><span>'+r.label+'</span><span class="ck">\u2713</span>';
-  c.addEventListener('click', function(){ selectRole(i); });
-  chips.appendChild(c);
-  var b = document.createElement('div'); b.className='jr-bar';
-  var f = document.createElement('i'); b.appendChild(f);
-  bars.appendChild(b); barFills.push(f);
-});
+function metaFor(aud){
+  if (aud && aud.length){ var m = ROLE_META[aud[0]]; if (m) return m; }
+  return { emoji:'🎬', accent:'#6D4AFF' };
+}
+/* Firebase object { pushId: {...} } → ordered array of journey items. */
+function mapTutorials(obj){
+  var arr = [];
+  Object.keys(obj||{}).forEach(function(k){
+    var v = obj[k]; if (!v || v.isActive === false || !v.videoUrl) return;
+    var aud = v.audience;
+    if (aud && !Array.isArray(aud)) aud = Object.keys(aud).map(function(x){ return aud[x]; });
+    var m = metaFor(aud);
+    arr.push({
+      key: k,
+      label: v.title || 'فيديو',
+      title: v.title || 'شرح',
+      desc: v.description || '',
+      emoji: m.emoji,
+      accent: m.accent,
+      videoUrl: v.videoUrl,
+      order: (v.order != null ? (parseInt(v.order, 10) || 0) : 0)
+    });
+  });
+  arr.sort(function(a,b){ return a.order - b.order; });
+  return arr;
+}
 
 function countWatched(){ return Object.keys(watched).length; }
 function renderChips(){
   chips.querySelectorAll('.jr-chip').forEach(function(c,i){
     c.classList.toggle('active', i===current);
-    c.classList.toggle('done', !!watched[JROLES[i].key]);
+    c.classList.toggle('done', !!watched[JITEMS[i].key]);
   });
   var act = chips.children[current];
   if (act) chips.scrollTo({ left: act.offsetLeft - (chips.clientWidth - act.clientWidth)/2, behavior:'smooth' });
@@ -1079,60 +1128,108 @@ function renderChips(){
 function renderBars(){
   bars.querySelectorAll('.jr-bar').forEach(function(b,i){
     b.classList.toggle('active', i===current);
-    b.classList.toggle('watched', !!watched[JROLES[i].key]);
+    b.classList.toggle('watched', !!watched[JITEMS[i].key]);
   });
 }
-function setCount(msg){ jrCount.textContent = msg || (countWatched()+' / '+TOTAL+' \u0627\u0643\u062a\u0645\u0644\u062a'); }
+function setCount(msg){ jrCount.textContent = msg || (countWatched()+' / '+TOTAL+' اكتملت'); }
 function updateNext(){
   var next=-1;
-  for (var k=1;k<=TOTAL;k++){ var idx=(current+k)%TOTAL; if(!watched[JROLES[idx].key]){ next=idx; break; } }
+  for (var k=1;k<=TOTAL;k++){ var idx=(current+k)%TOTAL; if(!watched[JITEMS[idx].key]){ next=idx; break; } }
   if (next===-1){ jrNext.hidden=true; return -1; }
   jrNext.hidden=false;
-  jrNext.innerHTML='\u0627\u0644\u062a\u0627\u0644\u064a: '+JROLES[next].label+' <span aria-hidden="true">\u2190</span>';
+  jrNext.innerHTML='التالي: '+JITEMS[next].label+' <span aria-hidden="true">←</span>';
   jrNext.onclick=function(){ selectRole(next); };
   return next;
 }
 function selectRole(i){
-  current=i; var r=JROLES[i];
-  roleTitle.textContent=r.title; roleDesc.textContent=r.desc;
+  current=i; var r=JITEMS[i];
+  roleTitle.textContent=r.title; roleDesc.textContent=r.desc||'';
   jrVEmoji.textContent=r.emoji;
-  jrVLabel.textContent='\u0634\u0627\u0647\u062f '+r.title+' \u00b7 60 \u062b\u0627\u0646\u064a\u0629';
+  jrVLabel.textContent='شاهد: '+r.title;
   jrVideo.style.setProperty('--vacc', r.accent);
   renderChips(); renderBars(); updateNext();
-  setCount(watched[r.key] ? '\u0634\u064f\u0641\u062a\u0647 \u0628\u0627\u0644\u0641\u0639\u0644 \u2014 \u0643\u0631\u0651\u0631\u0647 \u0623\u0648 \u0643\u0645\u0651\u0644' : null);
+  setCount(watched[r.key] ? 'شُفته بالفعل — كرّره أو كمّل' : null);
 }
 
-/* ---- video lightbox (vertical short) ---- */
+function buildJourney(){
+  TOTAL = JITEMS.length;
+  watched = {}; current = 0; barFills = [];
+  chips.innerHTML=''; bars.innerHTML='';
+  completion.classList.remove('show');
+  JITEMS.forEach(function(r,i){
+    var c = document.createElement('button');
+    c.className = 'jr-chip'; c.setAttribute('data-i', i);
+    c.innerHTML = '<span class="em">'+r.emoji+'</span><span>'+r.label+'</span><span class="ck">✓</span>';
+    c.addEventListener('click', function(){ selectRole(i); });
+    chips.appendChild(c);
+    var b = document.createElement('div'); b.className='jr-bar';
+    var f = document.createElement('i'); b.appendChild(f);
+    bars.appendChild(b); barFills.push(f);
+  });
+  selectRole(0);
+}
+
+/* ---- video lightbox (mp4 from Storage, or YouTube fallback) ---- */
 var vlb=document.getElementById('vlb'), vlbFrame=document.getElementById('vlbFrame'), vlbX=document.getElementById('vlbX');
 var vlbSpin=document.getElementById('vlbSpin');
+var vlbBox=vlb ? vlb.querySelector('.vlb-box') : null;
 function openVideo(){
-  var r=JROLES[current]; var vid=r.video || JR_VIDEO;
+  var r=JITEMS[current];
   if(vlbSpin) vlbSpin.style.display='flex';
-  var f=document.createElement('iframe');
-  f.title=r.title;
-  f.setAttribute('frameborder','0');
-  f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
-  f.setAttribute('allowfullscreen','');
-  f.onload=function(){ if(vlbSpin) vlbSpin.style.display='none'; };
-  f.src='https://www.youtube-nocookie.com/embed/'+vid+'?autoplay=1&rel=0&playsinline=1&modestbranding=1';
-  vlbFrame.innerHTML=''; vlbFrame.appendChild(f);
+  vlbFrame.innerHTML='';
+  if (r.videoUrl){
+    if(vlbBox) vlbBox.classList.add('wide');
+    var v=document.createElement('video');
+    v.src=r.videoUrl; v.controls=true; v.autoplay=true; v.playsInline=true;
+    v.setAttribute('playsinline',''); v.preload='auto';
+    v.onloadeddata=function(){ if(vlbSpin) vlbSpin.style.display='none'; };
+    v.onended=function(){ markWatched(r); };
+    vlbFrame.appendChild(v);
+    v.play().catch(function(){});
+  } else {
+    if(vlbBox) vlbBox.classList.remove('wide');
+    var f=document.createElement('iframe');
+    f.title=r.title;
+    f.setAttribute('frameborder','0');
+    f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
+    f.setAttribute('allowfullscreen','');
+    f.onload=function(){ if(vlbSpin) vlbSpin.style.display='none'; };
+    f.src='https://www.youtube-nocookie.com/embed/'+(r.video||JR_VIDEO)+'?autoplay=1&rel=0&playsinline=1&modestbranding=1';
+    vlbFrame.appendChild(f);
+  }
   vlb.classList.add('open'); vlb.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
   markWatched(r);
 }
-function closeVideo(){ vlb.classList.remove('open'); vlb.setAttribute('aria-hidden','true'); vlbFrame.innerHTML=''; document.body.style.overflow=''; }
+function closeVideo(){
+  var v = vlbFrame.querySelector('video');
+  if(v){ try{ v.pause(); if(document.pictureInPictureElement===v && document.exitPictureInPicture) document.exitPictureInPicture(); v.removeAttribute('src'); v.load(); }catch(e){} }
+  vlbFrame.innerHTML='';
+  vlb.classList.remove('open'); vlb.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+}
 function markWatched(r){
   if(!watched[r.key]){ watched[r.key]=true; renderChips(); renderBars(); }
   var n=countWatched(), remain=TOTAL-n;
-  if(n===TOTAL){ setCount('\u0623\u0646\u0647\u064a\u062a \u0643\u0644 \u0627\u0644\u0623\u062f\u0648\u0627\u0631'); jrNext.hidden=true; completion.classList.add('show'); }
-  else setCount('\u0641\u0647\u0645\u062a '+r.title+' \u00b7 \u0628\u0627\u0642\u064a '+remain+(remain<=2?' \u2014 \u0647\u0627\u0646\u062a!':''));
+  if(n===TOTAL){ setCount('أنهيت كل الخطوات'); jrNext.hidden=true; completion.classList.add('show'); }
+  else setCount('فهمت '+r.title+' · باقي '+remain+(remain<=2?' — هانت!':''));
   updateNext();
 }
 jrVideo.addEventListener('click', openVideo);
 vlbX.addEventListener('click', closeVideo);
 vlb.addEventListener('click', function(e){ if(e.target===vlb) closeVideo(); });
 document.addEventListener('keydown', function(e){ if(e.key==='Escape' && vlb.classList.contains('open')) closeVideo(); });
+/* Pause playback when the tab/app goes to the background so audio never keeps
+   playing after minimizing. */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){ var v=vlbFrame.querySelector('video'); if(v){ try{ v.pause(); }catch(e){} } }
+});
 
-selectRole(0);
+/* Build immediately with the fallback, then swap in the uploaded videos. */
+buildJourney();
+fetch(DB_TUTORIALS).then(function(res){ return res.ok ? res.json() : null; })
+  .then(function(data){
+    var items = data ? mapTutorials(data) : [];
+    if (items.length){ JITEMS = items; buildJourney(); }
+  }).catch(function(){ /* keep fallback */ });
 
 /* ===================== APPS slider — 3D COVERFLOW (RTL-safe, drag + autoplay) ===================== */
 (function(){
@@ -1255,6 +1352,37 @@ selectRole(0);
     b.addEventListener('click', function(){ openAlbum(ri); });
     grid.appendChild(b);
   });
+
+  // Refresh the "N صور" badge on each cover after real shots load.
+  function refreshCounts(){
+    var labels = grid.querySelectorAll('.album-count');
+    ALBUMS.forEach(function(r, ri){
+      if (labels[ri]) labels[ri].textContent = shotCount(r) + ' صور';
+    });
+  }
+
+  // Pull SuperAdmin-managed screenshots from Firebase. Each shot carries a
+  // role (owner|manager|teacher|reception|parent), an imageUrl and an order.
+  // On any failure we silently keep the built-in placeholder mockups.
+  fetch('https://kidtrack-bed28-default-rtdb.firebaseio.com/showcaseShots.json')
+    .then(function(res){ return res.ok ? res.json() : null; })
+    .then(function(data){
+      if (!data) return;
+      var byRole = {};
+      Object.keys(data).forEach(function(k){
+        var s = data[k];
+        if (!s || !s.imageUrl || s.isActive === false) return;
+        (byRole[s.role] = byRole[s.role] || []).push(s);
+      });
+      ALBUMS.forEach(function(r){
+        var list = (byRole[r.key] || []).slice().sort(function(a, b){
+          return (a.order || 0) - (b.order || 0);
+        });
+        if (list.length) r.shots = list.map(function(s){ return s.imageUrl; });
+      });
+      refreshCounts();
+    })
+    .catch(function(){});
 
   var lb = document.getElementById('lightbox');
   var stage = document.getElementById('lbStage');

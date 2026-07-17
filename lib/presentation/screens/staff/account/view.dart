@@ -45,6 +45,12 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                   iconColor: AppColors.primary,
                   onTap: () => showEditProfileSheet(isStaff: true),
                 ),
+                _MenuItem(
+                  labelKey: 'tutorial_menu_entry',
+                  icon: Icons.ondemand_video_rounded,
+                  iconColor: const Color(0xFFDC2626),
+                  onTap: () => Get.toNamed(appTutorialView),
+                ),
               ],
             ),
             if (controller.isTeacher)

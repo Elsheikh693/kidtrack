@@ -207,6 +207,21 @@ class ApiConstants {
   static String platformBillingFor(String nurseryId) =>
       'platformBilling/$nurseryId';
 
+  /// Global single record. The platform's own collection accounts (InstaPay
+  /// number / wallet number / InstaPay link) that nurseries pay their monthly
+  /// subscription TO. Edited by the SuperAdmin, read by owners/managers on the
+  /// "My subscription" screen.
+  static const String platformPaymentInfo = 'platformPaymentInfo';
+
+  /// Global list. In-app tutorial videos, uploaded & role-targeted by the
+  /// SuperAdmin, streamed by every role on the "Learn the App" screen.
+  static const String tutorialVideos = 'tutorialVideos';
+
+  /// Global list. Marketing screenshots for the public website "شوف كل تطبيق من
+  /// جوّه" albums. Uploaded & ordered per role by the SuperAdmin, read
+  /// anonymously by `public/index.html` via the RTDB REST endpoint.
+  static const String showcaseShots = 'showcaseShots';
+
   /// A specific nursery's children subtree, addressed by explicit id (used by
   /// SuperAdmin billing to recount active children per branch, outside session
   /// scope).

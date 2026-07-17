@@ -50,6 +50,14 @@ class SaActionsSection extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           SaActionCard(
+            icon: Icons.account_balance_wallet_rounded,
+            color: const Color(0xFF6D4AFF),
+            title: 'sa_payment_accounts_title'.tr,
+            subtitle: 'sa_payment_accounts_subtitle'.tr,
+            onTap: controller.goPaymentAccounts,
+          ),
+          SizedBox(height: 12.h),
+          SaActionCard(
             icon: Icons.dashboard_customize_rounded,
             color: const Color(0xFF0EA5E9),
             title: 'sa_content_title'.tr,
@@ -63,6 +71,22 @@ class SaActionsSection extends StatelessWidget {
             title: 'sa_cities_title'.tr,
             subtitle: 'sa_cities_subtitle'.tr,
             onTap: controller.goCities,
+          ),
+          SizedBox(height: 12.h),
+          SaActionCard(
+            icon: Icons.ondemand_video_rounded,
+            color: const Color(0xFFDC2626),
+            title: 'sa_tutorial_title'.tr,
+            subtitle: 'sa_tutorial_subtitle'.tr,
+            onTap: controller.goTutorialVideos,
+          ),
+          SizedBox(height: 12.h),
+          SaActionCard(
+            icon: Icons.photo_library_rounded,
+            color: const Color(0xFF6D4AFF),
+            title: 'sa_showcase_title'.tr,
+            subtitle: 'sa_showcase_subtitle'.tr,
+            onTap: controller.goShowcaseAlbums,
           ),
           SizedBox(height: 12.h),
           SaActionCard(

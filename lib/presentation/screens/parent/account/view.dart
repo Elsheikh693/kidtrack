@@ -55,6 +55,12 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   iconColor: AppColors.blueForeground,
                   onTap: controller.contactSupport,
                 ),
+                AccountMenuItem(
+                  labelKey: 'tutorial_menu_entry',
+                  icon: Icons.ondemand_video_outlined,
+                  iconColor: const Color(0xFFDC2626),
+                  onTap: controller.navigateToTutorial,
+                ),
               ],
             ),
             AccountMenuSection(

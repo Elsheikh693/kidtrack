@@ -33,6 +33,8 @@ class ParentAccountController extends GetxController {
 
   void navigateToNotifications() => Get.toNamed(notificationsView);
 
+  void navigateToTutorial() => Get.toNamed(appTutorialView);
+
   /// Opens the notification-preferences sheet (attendance / activities toggles).
   void navigateToNotificationPrefs() => showNotificationPrefsSheet();
 

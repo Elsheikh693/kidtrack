@@ -18,6 +18,12 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFF5E35B1),
         route: setupChecklistView,
       ),
+      DashboardItem(
+        labelKey: 'tutorial_menu_entry',
+        icon: Icons.ondemand_video_rounded,
+        color: Color(0xFFDC2626),
+        route: appTutorialView,
+      ),
       // "الفروع" now lives inside "خطوات الإعداد"; "الكورسات" temporarily
       // removed — both dropped from this section for manager/owner.
     ],

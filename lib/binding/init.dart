@@ -467,6 +467,20 @@ class Binding implements Bindings {
       fromJson: (json) => AboutUsModel.fromJson(json),
     );
 
+    // 42b. Tutorial Videos (SuperAdmin-managed, role-targeted "Learn the App")
+    BaseBinding.bindCrud<TutorialVideoModel>(
+      tag: "tutorialVideos",
+      baseUrl: () => ApiConstants.tutorialVideos,
+      fromJson: (json) => TutorialVideoModel.fromJson(json),
+    );
+
+    // 42c. Showcase Shots (SuperAdmin-managed website album screenshots)
+    BaseBinding.bindCrud<ShowcaseShotModel>(
+      tag: "showcaseShots",
+      baseUrl: () => ApiConstants.showcaseShots,
+      fromJson: (json) => ShowcaseShotModel.fromJson(json),
+    );
+
     // 43. Support Requests (pre-login guest tickets)
     BaseBinding.bindCrud<SupportRequestModel>(
       tag: "supportRequests",
@@ -708,6 +722,14 @@ class Binding implements Bindings {
       () => AboutUsParentService(),
       fenix: true,
     );
+    Get.lazyPut<TutorialVideoParentService>(
+      () => TutorialVideoParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<ShowcaseShotParentService>(
+      () => ShowcaseShotParentService(),
+      fenix: true,
+    );
     Get.lazyPut<SupportRequestParentService>(
       () => SupportRequestParentService(),
       fenix: true,
@@ -922,6 +944,10 @@ class Binding implements Bindings {
     // ─── Platform Subscription Billing ────────────────────────────────────
     Get.lazyPut<PlatformBillingService>(
       () => PlatformBillingService(),
+      fenix: true,
+    );
+    Get.lazyPut<PlatformPaymentService>(
+      () => PlatformPaymentService(),
       fenix: true,
     );
 
