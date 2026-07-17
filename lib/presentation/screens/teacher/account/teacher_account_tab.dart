@@ -46,24 +46,6 @@ class TeacherAccountTab extends StatelessWidget {
           ),
         ),
 
-        // General settings section
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          sliver: SliverToBoxAdapter(
-            child: _SectionCard(
-              titleKey: 'parent_account_settings_section',
-              tiles: [
-                _SettingsTile(
-                  icon: Icons.support_agent_outlined,
-                  color: AppColors.blueForeground,
-                  labelKey: 'contact_support_title',
-                  onTap: () => showContactSheet(ContactType.support),
-                ),
-              ],
-            ),
-          ),
-        ),
-
         // Logout
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),

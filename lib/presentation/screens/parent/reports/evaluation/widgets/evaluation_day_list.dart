@@ -1,8 +1,9 @@
 import '../../../../../../index/index_main.dart';
 import 'daily_rating_style.dart';
 
-/// Day-by-day teacher assessment: each day shows its rating and the teacher's
-/// comment (or a gentle placeholder when there is none / not assessed yet).
+/// Day-by-day teacher assessment: each day shows its aggregated evaluation and
+/// how many activities were assessed (or a gentle placeholder when the day was
+/// not assessed yet).
 class EvaluationDayList extends StatelessWidget {
   final WeeklyEvaluationController controller;
   const EvaluationDayList({super.key, required this.controller});
@@ -30,10 +31,10 @@ class _DayTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rating = day.rating;
-    final color = rating == null
+    final level = day.level;
+    final color = level == null
         ? const Color(0xFF94A3B8)
-        : DailyRatingStyle.color(rating);
+        : DailyRatingStyle.color(level);
     return Container(
       padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
       decoration: BoxDecoration(
@@ -58,10 +59,12 @@ class _DayTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
             ),
             alignment: Alignment.center,
-            child: rating == null
-                ? Icon(Icons.remove_rounded, color: color, size: 20.sp)
-                : Text(DailyRatingStyle.emoji(rating),
-                    style: TextStyle(fontSize: 20.sp)),
+            child: Icon(
+                level == null
+                    ? Icons.remove_rounded
+                    : DailyRatingStyle.icon(level),
+                color: color,
+                size: 22.sp),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -74,19 +77,18 @@ class _DayTile extends StatelessWidget {
                     Text(day.dayKey.tr,
                         style: context.typography.smSemiBold
                             .copyWith(color: const Color(0xFF1E293B))),
-                    if (rating != null)
-                      Text(DailyRatingStyle.labelKey(rating).tr,
+                    if (level != null)
+                      Text(DailyRatingStyle.labelKey(level).tr,
                           style: context.typography.xsMedium
                               .copyWith(color: color)),
                   ],
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  (day.comment != null && day.comment!.trim().isNotEmpty)
-                      ? day.comment!.trim()
-                      : (day.assessed
-                          ? 'report_eval_no_comment'.tr
-                          : 'report_eval_not_assessed'.tr),
+                  day.assessed
+                      ? 'report_eval_activities_count'
+                          .trParams({'count': '${day.count}'})
+                      : 'report_eval_not_assessed'.tr,
                   style: context.typography.xsRegular.copyWith(
                     height: 1.4,
                     color: const Color(0xFF64748B),

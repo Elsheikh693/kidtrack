@@ -73,3 +73,11 @@ exports.activate = activate;
 const { deleteNursery } = require("./nurseries/deleteNursery");
 
 exports.deleteNursery = deleteNursery;
+
+// ============================================================
+// 📸 ACTIVITY PHOTO REVIEW (nudge reviewers when photos await approval)
+// ============================================================
+
+const { onActivityPhotoPending } = require("./activities/photoReviewTriggers");
+
+exports.onActivityPhotoPending = onActivityPhotoPending;

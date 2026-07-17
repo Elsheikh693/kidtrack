@@ -36,12 +36,17 @@ class FinancialReportController extends GetxController {
   Future<void> _load() async {
     isLoading.value = true;
     childName = _activeChild.childName.value;
-    await _loadNursery();
-
     final childId = _activeChild.childId.value;
-    final list = childId.isEmpty
-        ? <FinancialTransactionModel>[]
-        : await _txSvc.getByChild(childId);
+
+    // Nursery details and the child's transactions are independent — fetch both
+    // at once instead of one after the other.
+    final nurseryF = _loadNursery();
+    final txF = childId.isEmpty
+        ? Future.value(<FinancialTransactionModel>[])
+        : _txSvc.getByChild(childId);
+
+    await nurseryF;
+    final list = await txF;
     items.value = list;
     _recompute(list);
 

@@ -205,7 +205,7 @@ class _DateNavigator extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _ArrowButton(
-              icon: Icons.chevron_right_rounded,
+              icon: Icons.chevron_left_rounded,
               enabled: true,
               onTap: ctrl.goToPreviousDay,
             ),
@@ -235,7 +235,7 @@ class _DateNavigator extends StatelessWidget {
               ),
             ),
             _ArrowButton(
-              icon: Icons.chevron_left_rounded,
+              icon: Icons.chevron_right_rounded,
               enabled: !ctrl.isToday,
               onTap: ctrl.goToNextDay,
             ),

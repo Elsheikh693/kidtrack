@@ -1,0 +1,38 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "landing",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "python3 -m http.server \"$PORT\" --directory public"
+      ],
+      "autoPort": true
+    },
+    {
+      "name": "journeypreview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5077",
+        "--directory",
+        "public"
+      ],
+      "port": 5077
+    },
+    {
+      "name": "dsverify",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5099",
+        "--directory",
+        "public"
+      ],
+      "port": 5099
+    }
+  ]
+}

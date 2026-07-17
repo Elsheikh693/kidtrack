@@ -1575,18 +1575,20 @@ class _HeaderHero extends StatelessWidget {
   // A single, optional action — only when the state invites one. It's an
   // action (a button), never another competing piece of information.
   List<Widget> _heroAction(BuildContext context, String firstName) {
-    if (phase == _Phase.during) {
-      return [
-        SizedBox(height: 16.h),
-        _HeroCtaButton(
-          icon: Icons.directions_car_rounded,
-          label: controller.pickupRequested.value
-              ? 'تم إرسال طلب الاستلام'
-              : 'اطلب استلام $firstName',
-          onTap: () => _showPickupSheet(context, controller),
-        ),
-      ];
-    }
+    // TEMP: pickup-request feature disabled for now. Restore by
+    // un-commenting the `_Phase.during` block below.
+    // if (phase == _Phase.during) {
+    //   return [
+    //     SizedBox(height: 16.h),
+    //     _HeroCtaButton(
+    //       icon: Icons.directions_car_rounded,
+    //       label: controller.pickupRequested.value
+    //           ? 'تم إرسال طلب الاستلام'
+    //           : 'اطلب استلام $firstName',
+    //       onTap: () => _showPickupSheet(context, controller),
+    //     ),
+    //   ];
+    // }
     if (phase == _Phase.after && controller.effectiveStatus.isOnBus) {
       return [
         SizedBox(height: 16.h),

@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import '../widgets/report_skeleton.dart';
 import '../widgets/report_week_bar.dart';
 import '../widgets/report_insight_banner.dart';
 import '../widgets/report_empty_state.dart';
@@ -47,7 +48,7 @@ class _WeeklyEvaluationViewState extends State<WeeklyEvaluationView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ReportSkeleton();
           }
           return ListView(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),

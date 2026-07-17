@@ -1,9 +1,10 @@
 import '../../../../index/index_main.dart';
-import 'widgets/report_entry_card.dart';
+import 'widgets/report_hero_card.dart';
+import 'widgets/report_grid_tile.dart';
 
-/// Parent-facing Reports hub tab. Uses the shared [ParentTopBar] like the other
-/// parent tabs, then a staggered list of report entries. Only Weekly Attendance
-/// is live in v1; the rest navigate to their own screens.
+/// Parent-facing Reports hub tab. A featured hero card for the live weekly
+/// report sits above a 2×2 grid of colour-owned report tiles. Each entry
+/// navigates to its own screen.
 class ReportsHubView extends StatelessWidget {
   const ReportsHubView({super.key});
 
@@ -11,7 +12,7 @@ class ReportsHubView extends StatelessWidget {
   Widget build(BuildContext context) {
     final activeChild = Get.find<ActiveChildService>();
     return Container(
-      color: const Color(0xFFF4F4F8),
+      color: const Color(0xFFF6F5FB),
       child: SafeArea(
         bottom: false,
         child: ListView(
@@ -25,15 +26,14 @@ class ReportsHubView extends StatelessWidget {
               child: ParentTopBar(),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 6.h, 20.w, 16.h),
+              padding: EdgeInsets.fromLTRB(20.w, 6.h, 20.w, 18.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'reports_hub_title'.tr,
-                    style: context.typography.xlBold.copyWith(
-                      color: const Color(0xFF0F172A),
-                    ),
+                    style: context.typography.xlBold
+                        .copyWith(color: const Color(0xFF0F172A)),
                   ),
                   SizedBox(height: 4.h),
                   Obx(() {
@@ -42,9 +42,8 @@ class ReportsHubView extends StatelessWidget {
                       name.isEmpty
                           ? 'reports_hub_tagline'.tr
                           : 'reports_hub_subtitle'.trParams({'name': name}),
-                      style: context.typography.smRegular.copyWith(
-                        color: const Color(0xFF64748B),
-                      ),
+                      style: context.typography.smRegular
+                          .copyWith(color: const Color(0xFF64748B)),
                     );
                   }),
                 ],
@@ -54,45 +53,68 @@ class ReportsHubView extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Column(
                 children: [
-                  ReportEntryCard(
+                  ReportHeroCard(
                     index: 0,
                     labelKey: 'report_attendance_title',
                     descKey: 'report_attendance_desc',
+                    badgeKey: 'reports_featured_badge',
                     icon: Icons.event_available_rounded,
                     color: AppColors.primary,
                     onTap: () => Get.toNamed(weeklyAttendanceReportView),
                   ),
-                  ReportEntryCard(
-                    index: 1,
-                    labelKey: 'report_learning_title',
-                    descKey: 'report_learning_desc',
-                    icon: Icons.menu_book_rounded,
-                    color: const Color(0xFF0891B2),
-                    onTap: () => Get.toNamed(weeklyLearningReportView),
+                  SizedBox(height: 14.h),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ReportGridTile(
+                          index: 1,
+                          labelKey: 'report_learning_title',
+                          descKey: 'report_learning_desc',
+                          icon: Icons.menu_book_rounded,
+                          color: AppColors.activityBlue,
+                          onTap: () => Get.toNamed(weeklyLearningReportView),
+                        ),
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: ReportGridTile(
+                          index: 2,
+                          labelKey: 'report_evaluation_title',
+                          descKey: 'report_evaluation_desc',
+                          icon: Icons.star_rounded,
+                          color: AppColors.activityAmberBrand,
+                          onTap: () => Get.toNamed(weeklyEvaluationReportView),
+                        ),
+                      ),
+                    ],
                   ),
-                  ReportEntryCard(
-                    index: 2,
-                    labelKey: 'report_evaluation_title',
-                    descKey: 'report_evaluation_desc',
-                    icon: Icons.star_rounded,
-                    color: const Color(0xFFD97706),
-                    onTap: () => Get.toNamed(weeklyEvaluationReportView),
-                  ),
-                  ReportEntryCard(
-                    index: 3,
-                    labelKey: 'report_monthly_title',
-                    descKey: 'report_monthly_desc',
-                    icon: Icons.calendar_month_rounded,
-                    color: const Color(0xFF7C3AED),
-                    onTap: () => Get.toNamed(monthlyReportView),
-                  ),
-                  ReportEntryCard(
-                    index: 4,
-                    labelKey: 'report_financial_title',
-                    descKey: 'report_financial_desc',
-                    icon: Icons.receipt_long_rounded,
-                    color: const Color(0xFF16A34A),
-                    onTap: () => Get.toNamed(financialReportView),
+                  SizedBox(height: 14.h),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ReportGridTile(
+                          index: 3,
+                          labelKey: 'report_monthly_title',
+                          descKey: 'report_monthly_desc',
+                          icon: Icons.calendar_month_rounded,
+                          color: AppColors.activityPurple,
+                          onTap: () => Get.toNamed(monthlyReportView),
+                        ),
+                      ),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: ReportGridTile(
+                          index: 4,
+                          labelKey: 'report_financial_title',
+                          descKey: 'report_financial_desc',
+                          icon: Icons.receipt_long_rounded,
+                          color: AppColors.activityGreen,
+                          onTap: () => Get.toNamed(financialReportView),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -7,9 +7,13 @@ class TeachingSlice {
   final String classroomId;
   final String className;
 
-  /// What is being taught right now — the activity's subject, falling back to
-  /// its title so the arc always reads as a topic, never a blank.
+  /// The subject being taught right now (e.g. "Arabic"), falling back to a
+  /// generic label so the donut arc always reads as a topic, never a blank.
   final String subjectLabel;
+
+  /// The specific activity/lesson being run (e.g. "شرح حرف الكاف"). May be empty
+  /// when the teacher started a subject with no lesson title.
+  final String activityTitle;
 
   final String teacherId;
   final String teacherName;
@@ -25,6 +29,7 @@ class TeachingSlice {
     required this.classroomId,
     required this.className,
     required this.subjectLabel,
+    required this.activityTitle,
     required this.teacherId,
     required this.teacherName,
     this.teacherPhoto,

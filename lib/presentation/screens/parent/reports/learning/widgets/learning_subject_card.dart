@@ -1,4 +1,5 @@
 import '../../../../../../index/index_main.dart';
+import 'learning_topic_row.dart';
 
 /// One subject with the list of topics covered under it this week.
 class LearningSubjectCard extends StatelessWidget {
@@ -50,28 +51,12 @@ class LearningSubjectCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text('${group.topics.length}',
-                    style: context.typography.xsBold.copyWith(color: _accent)),
+                    style: context.typography.lgBold.copyWith(color: _accent)),
               ),
             ],
           ),
           SizedBox(height: 10.h),
-          for (final topic in group.topics)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.check_circle_rounded,
-                      size: 16.sp, color: const Color(0xFF16A34A)),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(topic,
-                        style: context.typography.smRegular
-                            .copyWith(color: const Color(0xFF475569))),
-                  ),
-                ],
-              ),
-            ),
+          for (final topic in group.topics) LearningTopicRow(topic: topic),
         ],
       ),
     );

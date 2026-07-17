@@ -63,7 +63,7 @@ class _Metric extends StatelessWidget {
           Icon(icon, color: color, size: 24.sp),
           SizedBox(height: 8.h),
           Text('$value',
-              style: context.typography.xxlBold.copyWith(color: color)),
+              style: context.typography.xlBold.copyWith(color: color)),
           SizedBox(height: 2.h),
           Text(labelKey.tr,
               style: context.typography.xsRegular

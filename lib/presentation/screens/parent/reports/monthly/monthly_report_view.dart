@@ -1,7 +1,9 @@
 import '../../../../../index/index_main.dart';
+import '../widgets/report_skeleton.dart';
 import '../widgets/report_week_bar.dart';
 import '../widgets/report_insight_banner.dart';
 import '../widgets/report_empty_state.dart';
+import 'widgets/monthly_hero_card.dart';
 import 'widgets/monthly_attendance_card.dart';
 import 'widgets/monthly_evaluation_card.dart';
 import 'widgets/monthly_financial_card.dart';
@@ -46,7 +48,7 @@ class _MonthlyReportViewState extends State<MonthlyReportView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ReportSkeleton();
           }
           return ListView(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),
@@ -69,9 +71,11 @@ class _MonthlyReportViewState extends State<MonthlyReportView> {
                   subKey: 'report_monthly_empty_sub',
                 )
               else ...[
-                MonthlyAttendanceCard(controller: controller),
+                MonthlyHeroCard(controller: controller),
                 SizedBox(height: 12.h),
                 MonthlyEvaluationCard(controller: controller),
+                SizedBox(height: 12.h),
+                MonthlyAttendanceCard(controller: controller),
                 SizedBox(height: 12.h),
                 MonthlyFinancialCard(controller: controller),
                 SizedBox(height: 4.h),

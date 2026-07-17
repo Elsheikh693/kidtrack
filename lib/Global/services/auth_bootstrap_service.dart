@@ -158,11 +158,19 @@ class AuthBootstrapService {
   /// other staff (e.g. reception).
   Future<bool> _readReviewPhotosPermission(String nurseryId, String uid) async {
     try {
+      // Read the whole `permissions` map and look the key up in Dart — the
+      // permission key contains a '.', which Firebase forbids in a PATH segment.
+      // Appending it to ref() throws a native NSException (SIGABRT) that Dart
+      // can't catch, taking the whole app down on login for any staff-record
+      // role (reception/teacher/…). Owners have no staff record so they skipped
+      // this and never hit it. Indexing the map avoids the illegal path.
       final snap = await FirebaseDatabase.instance
-          .ref('platform/$nurseryId/permissionSets/$uid/permissions/'
-              '${PermissionKeys.classroomReviewPhotos}')
+          .ref('platform/$nurseryId/permissionSets/$uid/permissions')
           .get();
-      return snap.exists && (snap.value == true || snap.value == 1);
+      final value = snap.value;
+      if (value is! Map) return false;
+      final granted = value[PermissionKeys.classroomReviewPhotos];
+      return granted == true || granted == 1 || granted == '1';
     } catch (_) {
       return false;
     }

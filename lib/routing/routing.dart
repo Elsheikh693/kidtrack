@@ -149,9 +149,9 @@ const String managerApplicationsView = "/ManagerApplicationsView";
 const String managerPresenceView = "/ManagerPresenceView";
 
 // First-Login Setup
-const String ownerSetupView        = "/OwnerSetupView";
-const String managerSetupView      = "/ManagerSetupView";
-const String setupChecklistView    = "/SetupChecklistView";
+const String ownerSetupView = "/OwnerSetupView";
+const String managerSetupView = "/ManagerSetupView";
+const String setupChecklistView = "/SetupChecklistView";
 const String teacherOnboardingView = "/TeacherOnboardingView";
 const String teacherAcademicSettingsView = "/TeacherAcademicSettingsView";
 
@@ -320,9 +320,8 @@ class Routes {
         page: () => const StaffFormView(),
         binding: BindingsBuilder(
           () => Get.lazyPut(
-            () => StaffFormController(
-              initialStaff: Get.arguments as StaffModel?,
-            ),
+            () =>
+                StaffFormController(initialStaff: Get.arguments as StaffModel?),
           ),
         ),
         transition: Transition.cupertino,
@@ -927,7 +926,9 @@ class Routes {
       GetPage(
         name: ownerSetupView,
         page: () => const OwnerSetupView(),
-        binding: BindingsBuilder(() => Get.lazyPut(() => OwnerSetupController())),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => OwnerSetupController()),
+        ),
         transition: Transition.fade,
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: guard,
@@ -937,7 +938,9 @@ class Routes {
       GetPage(
         name: managerSetupView,
         page: () => const ManagerSetupView(),
-        binding: BindingsBuilder(() => Get.lazyPut(() => ManagerSetupController())),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => ManagerSetupController()),
+        ),
         transition: Transition.fade,
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: guard,

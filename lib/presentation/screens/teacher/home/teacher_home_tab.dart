@@ -1,6 +1,5 @@
 import '../../../../index/index_main.dart';
 import 'widgets/teacher_home_app_bar.dart';
-import 'widgets/active_activity_section.dart';
 import 'widgets/home_section_header.dart';
 import 'widgets/class_card.dart';
 import 'widgets/classroom_states_sheet.dart';
@@ -100,16 +99,6 @@ class _HomeBodyState extends State<_HomeBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-
-        // Active activity / start CTA
-        _FadeSlideIn(
-          delay: Duration.zero,
-          child: ActiveActivitySection(
-            controller: controller,
-            onGoToActivities: widget.onGoToActivities,
-          ),
-        ),
-        const SizedBox(height: 26),
 
         // My classes — the hero of the screen
         Obx(() {

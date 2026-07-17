@@ -353,7 +353,8 @@ class _ReasonFormSheetState extends State<_ReasonFormSheet> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2),
                     )
-                  : Text('save'.tr, style: context.typography.smSemiBold),
+                  : Text('eval_reasons_save'.tr,
+                      style: context.typography.smSemiBold),
             ),
           ),
         ],

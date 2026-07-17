@@ -32,7 +32,7 @@ class FinancialSummaryCard extends StatelessWidget {
             SizedBox(height: 6.h),
             Text(
               '${controller.totalPaid.value.toStringAsFixed(0)} ${'currency'.tr}',
-              style: context.typography.xxlBold.copyWith(color: _green),
+              style: context.typography.xlBold.copyWith(color: _green),
             ),
             SizedBox(height: 18.h),
             Row(

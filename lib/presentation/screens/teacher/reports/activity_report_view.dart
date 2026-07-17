@@ -195,7 +195,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
                             padding: EdgeInsets.fromLTRB(4.w, 4.h, 16.w, 0),
                             child: IconButton(
                               icon: Icon(
-                                Icons.arrow_forward_ios_rounded,
+                                Icons.arrow_back_ios_new_rounded,
                                 color: Colors.white,
                                 size: 20.sp,
                               ),

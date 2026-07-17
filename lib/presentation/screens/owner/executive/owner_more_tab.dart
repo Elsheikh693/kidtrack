@@ -214,13 +214,7 @@ class _AccountCard extends StatelessWidget {
             onTap: () => Get.toNamed(notificationsView),
           ),
           const _RowDivider(),
-          _Tile(
-            icon: Icons.contact_phone_outlined,
-            color: AppColors.blueForeground,
-            labelKey: 'owner_item_contact_numbers',
-            onTap: () => Get.toNamed(nurseryContactsView),
-          ),
-          const _RowDivider(),
+          // "أرقام التواصل" now lives inside "خطوات الإعداد".
           _Tile(
             icon: Icons.logout_rounded,
             color: AppColors.errorForeground,

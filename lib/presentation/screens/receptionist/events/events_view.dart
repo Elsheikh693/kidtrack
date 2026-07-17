@@ -39,7 +39,12 @@ class _ReceptionistEventsViewState extends State<ReceptionistEventsView> {
           title: 'event_title'.tr,
           onSettingsTap: () => Get.toNamed(settingsView),
         ),
-        floatingActionButton: _GradientFab(onPressed: () => _showCreate(context)),
+        // Lift the FAB clear of MainPage's floating bottom nav bar (this is a
+        // nested Scaffold, so its FAB otherwise overlaps the parent nav).
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 80.h),
+          child: _GradientFab(onPressed: () => _showCreate(context)),
+        ),
         body: Obx(() {
           if (controller.isLoading.value) {
             return const Center(
@@ -198,7 +203,7 @@ class _EventsList extends StatelessWidget {
       if (list.isEmpty) return _EmptyState(onCreate: onCreate);
       return ListView.builder(
         physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 110.h),
+        padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 160.h),
         itemCount: list.length,
         itemBuilder: (_, i) => _EventCard(
           event: list[i],

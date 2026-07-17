@@ -8,28 +8,24 @@ const _slate = PdfColor.fromInt(0xFF64748B);
 const _ink = PdfColor.fromInt(0xFF1E293B);
 const _line = PdfColor.fromInt(0xFFE2E8F0);
 
-PdfColor _ratingColor(DailyRating r) {
+PdfColor _ratingColor(EvalLevel r) {
   switch (r) {
-    case DailyRating.excellent:
-      return const PdfColor.fromInt(0xFF16A34A);
-    case DailyRating.veryGood:
-      return const PdfColor.fromInt(0xFF0891B2);
-    case DailyRating.good:
+    case EvalLevel.excellent:
+      return const PdfColor.fromInt(0xFF059669);
+    case EvalLevel.needsFollow:
+      return const PdfColor.fromInt(0xFF2563EB);
+    case EvalLevel.needsAttention:
       return const PdfColor.fromInt(0xFFD97706);
-    case DailyRating.needsSupport:
-      return const PdfColor.fromInt(0xFFDC2626);
   }
 }
 
-String _ratingLabelKey(DailyRating r) {
+String _ratingLabelKey(EvalLevel r) {
   switch (r) {
-    case DailyRating.excellent:
+    case EvalLevel.excellent:
       return 'report_rating_excellent';
-    case DailyRating.veryGood:
+    case EvalLevel.needsFollow:
       return 'report_rating_very_good';
-    case DailyRating.good:
-      return 'report_rating_good';
-    case DailyRating.needsSupport:
+    case EvalLevel.needsAttention:
       return 'report_rating_needs_support';
   }
 }
@@ -170,13 +166,11 @@ pw.Widget _summary(
 List<pw.Widget> _dayRows(
     WeeklyEvaluationController c, pw.Font bold, pw.Font regular) {
   return c.days.map((d) {
-    final rating = d.rating;
-    final color = rating == null ? _slate : _ratingColor(rating);
-    final comment = (d.comment != null && d.comment!.trim().isNotEmpty)
-        ? d.comment!.trim()
-        : (d.assessed
-            ? 'report_eval_no_comment'.tr
-            : 'report_eval_not_assessed'.tr);
+    final level = d.level;
+    final color = level == null ? _slate : _ratingColor(level);
+    final comment = d.assessed
+        ? 'report_eval_activities_count'.trParams({'count': '${d.count}'})
+        : 'report_eval_not_assessed'.tr;
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 8),
       padding: const pw.EdgeInsets.all(10),
@@ -194,7 +188,7 @@ List<pw.Widget> _dayRows(
           ),
           pw.SizedBox(
             width: 62,
-            child: pw.Text(rating == null ? '—' : _ratingLabelKey(rating).tr,
+            child: pw.Text(level == null ? '—' : _ratingLabelKey(level).tr,
                 style: pw.TextStyle(font: bold, fontSize: 10, color: color)),
           ),
           pw.Expanded(

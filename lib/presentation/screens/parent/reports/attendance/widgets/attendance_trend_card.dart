@@ -63,7 +63,7 @@ class AttendanceTrendCard extends StatelessWidget {
                   ),
                   SizedBox(width: 2.w),
                   Text('${delta.abs()}%',
-                      style: context.typography.xsBold.copyWith(color: color)),
+                      style: context.typography.lgBold.copyWith(color: color)),
                 ],
               ),
             ),

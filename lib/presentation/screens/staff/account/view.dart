@@ -25,11 +25,11 @@ class _StaffAccountViewState extends State<StaffAccountView> {
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
-          backgroundColor: AppColors.backgroundNeutral100,
+          backgroundColor: AppColors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
           toolbarHeight: 76.h,
-          titleSpacing: 0,
+          titleSpacing: 16.w,
           title: _ProfileTitle(controller: controller),
         ),
         body: ListView(
@@ -76,18 +76,6 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                     icon: Icons.emoji_emotions_rounded,
                     iconColor: const Color(0xFF0891B2),
                     onTap: () => Get.toNamed(childStatesView),
-                  ),
-                ],
-              ),
-            if (!controller.isOwner)
-              _Section(
-                titleKey: 'staff_account_section_support',
-                items: [
-                  _MenuItem(
-                    labelKey: 'staff_account_contact_support',
-                    icon: Icons.support_agent_rounded,
-                    iconColor: AppColors.blueForeground,
-                    onTap: () => showContactSheet(ContactType.support),
                   ),
                 ],
               ),

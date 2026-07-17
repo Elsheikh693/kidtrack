@@ -1,19 +1,26 @@
 import '../../../../../index/index_main.dart';
+import '../../../../../Global/services/parent_education_service.dart';
 
-/// Topics covered in one subject during the week.
+/// One lesson the child took part in — a completed classroom activity, with the
+/// teacher's note when present.
+class LearningTopicItem {
+  final String title;
+  final String? note; // teacher's note to the parent (per-child or group)
+  const LearningTopicItem({required this.title, this.note});
+}
+
+/// Lessons taken in one subject during the week.
 class LearningSubjectGroup {
   final String subjectName;
-  final List<String> topics;
+  final List<LearningTopicItem> topics;
   const LearningSubjectGroup({required this.subjectName, required this.topics});
 }
 
 class WeeklyLearningController extends GetxController {
-  late final TopicProgressParentService _progressSvc;
-  late final AcademicTopicParentService _topicSvc;
-  late final SubjectParentService _subjectSvc;
   late final ChildParentService _childSvc;
   late final NurseryParentService _nurserySvc;
   late final ActiveChildService _activeChild;
+  final _eduSvc = ParentEducationService();
 
   final isLoading = true.obs;
   final weekOffset = 0.obs;
@@ -22,13 +29,17 @@ class WeeklyLearningController extends GetxController {
   final topicsCount = 0.obs;
   final subjectsCount = 0.obs;
   final isEmptyWeek = false.obs;
+  final insight = ''.obs;
+
+  static const insightColor = Color(0xFF0891B2);
+
+  // How far back we prefetch completed activities so week navigation stays fast.
+  static const _historyWeeks = 12;
 
   String childName = '';
+  String _childId = '';
   String _classroomId = '';
-  final _topicTitle = <String, String>{}; // topicId → title
-  final _topicSubject = <String, String>{}; // topicId → subjectId
-  final _subjectName = <String, String>{}; // subjectId → name
-  final _progress = <TopicProgressModel>[];
+  final _activities = <ClassroomActivityModel>[];
 
   String nurseryName = '';
   String? nurseryLogo;
@@ -38,9 +49,6 @@ class WeeklyLearningController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _progressSvc = Get.find<TopicProgressParentService>();
-    _topicSvc = Get.find<AcademicTopicParentService>();
-    _subjectSvc = Get.find<SubjectParentService>();
     _childSvc = Get.find<ChildParentService>();
     _nurserySvc = Get.find<NurseryParentService>();
     _activeChild = Get.find<ActiveChildService>();
@@ -50,10 +58,13 @@ class WeeklyLearningController extends GetxController {
   Future<void> _load() async {
     isLoading.value = true;
     childName = _activeChild.childName.value;
-    await _loadNursery();
-    await _loadClassroom(_activeChild.childId.value);
-    await _loadCatalog();
-    await _loadProgress();
+    _childId = _activeChild.childId.value;
+    // Nursery details load alongside the classroom lookup; activities depend on
+    // the resolved classroom id, so they follow.
+    final nurseryF = _loadNursery();
+    await _loadClassroom(_childId);
+    await _loadActivities();
+    await nurseryF;
     _recompute();
     isLoading.value = false;
   }
@@ -87,34 +98,28 @@ class WeeklyLearningController extends GetxController {
     );
   }
 
-  Future<void> _loadCatalog() async {
-    await _topicSvc.getAll(
-      callBack: (list) {
-        for (final t in list.whereType<AcademicTopicModel>()) {
-          if (t.key == null) continue;
-          _topicTitle[t.key!] = t.title;
-          _topicSubject[t.key!] = t.subjectId;
-        }
-      },
+  Future<void> _loadActivities() async {
+    _activities.clear();
+    if (_classroomId.isEmpty) return;
+    final nurseryId = SessionService().nurseryId ?? '';
+    if (nurseryId.isEmpty) return;
+
+    final start = _weekStart(-(_historyWeeks - 1));
+    final end = _weekStart(0).add(const Duration(days: 7));
+    final list = await _eduSvc.getActivitiesForRange(
+      nurseryId,
+      _classroomId,
+      startMs: start.millisecondsSinceEpoch,
+      endMs: end.millisecondsSinceEpoch,
     );
-    await _subjectSvc.getAll(
-      callBack: (list) {
-        for (final s in list.whereType<SubjectModel>()) {
-          if (s.key != null) _subjectName[s.key!] = s.name;
-        }
-      },
-    );
+    _activities.addAll(list.where((a) => _childParticipated(a, _childId)));
   }
 
-  Future<void> _loadProgress() async {
-    _progress.clear();
-    await _progressSvc.getAll(
-      callBack: (list) {
-        _progress.addAll(list.whereType<TopicProgressModel>().where(
-              (p) => p.classroomId == _classroomId && p.isDone,
-            ));
-      },
-    );
+  bool _childParticipated(ClassroomActivityModel a, String childId) {
+    if (a.childIds.isEmpty) return true;
+    return a.childIds.contains(childId) ||
+        a.evaluations.containsKey(childId) ||
+        a.notes.containsKey(childId);
   }
 
   void previousWeek() {
@@ -141,25 +146,25 @@ class WeeklyLearningController extends GetxController {
     final startMs = start.millisecondsSinceEpoch;
     final endMs = end.millisecondsSinceEpoch;
 
-    // subjectId → topic titles completed this week
-    final bySubject = <String, List<String>>{};
+    // subjectName → lessons taken this week
+    final bySubject = <String, List<LearningTopicItem>>{};
     var total = 0;
-    for (final p in _progress) {
-      final done = p.completedAt;
-      if (done == null || done < startMs || done >= endMs) continue;
-      final topicId = p.topicId;
-      final title = _topicTitle[topicId];
-      if (title == null) continue;
-      final subjectId = _topicSubject[topicId] ?? p.subjectId;
-      bySubject.putIfAbsent(subjectId, () => []).add(title);
+    for (final a in _activities) {
+      final when = a.startedAt;
+      if (when < startMs || when >= endMs) continue;
+      final subject = (a.subjectName?.trim().isNotEmpty ?? false)
+          ? a.subjectName!.trim()
+          : 'report_learning_other'.tr;
+      final note = a.notes[_childId] ?? a.groupNote;
+      bySubject.putIfAbsent(subject, () => []).add(LearningTopicItem(
+            title: a.title,
+            note: (note?.trim().isEmpty ?? true) ? null : note!.trim(),
+          ));
       total++;
     }
 
     final built = bySubject.entries
-        .map((e) => LearningSubjectGroup(
-              subjectName: _subjectName[e.key] ?? 'report_learning_other'.tr,
-              topics: e.value,
-            ))
+        .map((e) => LearningSubjectGroup(subjectName: e.key, topics: e.value))
         .toList()
       ..sort((a, b) => a.subjectName.compareTo(b.subjectName));
 
@@ -167,6 +172,19 @@ class WeeklyLearningController extends GetxController {
     topicsCount.value = total;
     subjectsCount.value = built.length;
     isEmptyWeek.value = total == 0;
+    _buildInsight(total, built.length);
+  }
+
+  void _buildInsight(int topics, int subjects) {
+    if (topics == 0) {
+      insight.value = '';
+      return;
+    }
+    insight.value = 'report_learning_insight'.trParams({
+      'name': childName,
+      'topics': '$topics',
+      'subjects': '$subjects',
+    });
   }
 
   String get weekRangeLabel {

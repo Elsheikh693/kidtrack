@@ -15,6 +15,7 @@ class SetupChecklistController extends GetxController {
   final doneIds = <String>{}.obs;
 
   late final BranchParentService _branchService;
+  late final NurseryContactParentService _contactService;
   late final StaffParentService _staffService;
   late final ShiftParentService _shiftService;
   late final ProgramParentService _programService;
@@ -27,6 +28,7 @@ class SetupChecklistController extends GetxController {
   void onInit() {
     super.onInit();
     _branchService = Get.find<BranchParentService>();
+    _contactService = Get.find<NurseryContactParentService>();
     _staffService = Get.find<StaffParentService>();
     _shiftService = Get.find<ShiftParentService>();
     _programService = Get.find<ProgramParentService>();
@@ -61,6 +63,7 @@ class SetupChecklistController extends GetxController {
         titleKey: 'setup_hub_group_branches',
         steps: [
           _stepBranches,
+          _stepContacts,
           _stepStaff,
           _stepShifts,
         ],
@@ -82,6 +85,14 @@ class SetupChecklistController extends GetxController {
         subtitleKey: 'setup_hub_step_branches_sub',
         icon: Icons.account_tree_rounded,
         route: branchesView,
+      );
+
+  SetupStep get _stepContacts => const SetupStep(
+        id: 'contacts',
+        titleKey: 'setup_hub_step_contacts_title',
+        subtitleKey: 'setup_hub_step_contacts_sub',
+        icon: Icons.contact_phone_rounded,
+        route: nurseryContactsView,
       );
 
   SetupStep get _stepStaff => const SetupStep(
@@ -159,6 +170,11 @@ class SetupChecklistController extends GetxController {
       // full, since a trimmed row might not match the filter.
       _branchService.getAll(limit: 1, callBack: (list) {
         if (list.whereType<BranchModel>().isNotEmpty) done.add('branches');
+      }),
+      _contactService.getAll(callBack: (list) {
+        if (list.whereType<NurseryContactModel>().isNotEmpty) {
+          done.add('contacts');
+        }
       }),
       _staffService.getAll(callBack: (list) {
         final staff = list.whereType<StaffModel>().where(

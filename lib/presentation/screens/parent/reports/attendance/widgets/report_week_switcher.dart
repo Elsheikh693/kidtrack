@@ -81,7 +81,10 @@ class _NavButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = enabled ? AppColors.primary : const Color(0xFFCBD5E1);
     final content = [
-      Icon(icon, color: color, size: 20.sp),
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Icon(icon, color: color, size: 20.sp),
+      ),
       Text(label,
           style: context.typography.xsMedium.copyWith(color: color)),
     ];

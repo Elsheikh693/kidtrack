@@ -105,10 +105,25 @@ class WeeklyAttendanceController extends GetxController {
     final childId = _activeChild.childId.value;
     childName = _activeChild.childName.value;
 
-    await _loadNursery();
-    final childShiftKey = await _loadChildShiftKey(childId);
-    await _loadShift(childShiftKey);
-    await _loadAttendance(childId);
+    // Independent fetches run concurrently; only the shift selection waits on
+    // the child's shift key, and the shift list is prefetched in parallel too.
+    final nurseryF = _loadNursery();
+    final shiftKeyF = _loadChildShiftKey(childId);
+    final attendanceF = _loadAttendance(childId);
+    final shiftsF = _shiftSvc.getActive();
+
+    await nurseryF;
+    await attendanceF;
+    final childShiftKey = await shiftKeyF;
+    final shifts = await shiftsF;
+    if (childShiftKey != null && childShiftKey.isNotEmpty) {
+      for (final s in shifts) {
+        if (s.key == childShiftKey) {
+          _shift = s;
+          break;
+        }
+      }
+    }
 
     _recompute();
     isLoading.value = false;
@@ -144,17 +159,6 @@ class WeeklyAttendanceController extends GetxController {
       },
     );
     return shiftKey;
-  }
-
-  Future<void> _loadShift(String? shiftKey) async {
-    if (shiftKey == null || shiftKey.isEmpty) return;
-    final shifts = await _shiftSvc.getActive();
-    for (final s in shifts) {
-      if (s.key == shiftKey) {
-        _shift = s;
-        break;
-      }
-    }
   }
 
   Future<void> _loadAttendance(String childId) async {
@@ -226,7 +230,15 @@ class WeeklyAttendanceController extends GetxController {
       } else {
         final record = _byDate[_dateKey(date)];
         if (record == null) {
-          status = 'none';
+          // Attendance is actively taken every working day, so a past working
+          // day with no check-in record means the child was absent. Today
+          // itself stays pending ('none') — the child may still arrive.
+          if (date.isBefore(today)) {
+            status = 'absent';
+            absent++;
+          } else {
+            status = 'none';
+          }
         } else {
           status = record.status;
           checkIn = record.checkInTime;

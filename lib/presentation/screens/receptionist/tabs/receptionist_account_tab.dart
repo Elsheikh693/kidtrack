@@ -191,12 +191,6 @@ class _SettingsCard extends StatelessWidget {
             labelKey: 'owner_item_notifications',
             onTap: () => Get.toNamed(notificationsView),
           ),
-          _SettingsTile(
-            icon: Icons.support_agent_outlined,
-            color: AppColors.blueForeground,
-            labelKey: 'contact_support_title',
-            onTap: () => showContactSheet(ContactType.support),
-          ),
         ],
       ),
     );

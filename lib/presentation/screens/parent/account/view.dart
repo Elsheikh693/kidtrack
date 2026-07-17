@@ -29,46 +29,16 @@ class _ParentAccountViewState extends State<ParentAccountView> {
         appBar: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
-          title: Text(
-            'parent_account_title'.tr,
-            style: context.typography.lgBold.copyWith(
-              color: AppColors.textDefault,
-            ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: controller.navigateToNotifications,
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textDefault,
-              ),
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(
-              height: 1,
-              color: AppColors.borderNeutralPrimary.withValues(alpha: 0.3),
-            ),
-          ),
+          scrolledUnderElevation: 0,
+          toolbarHeight: 76,
+          titleSpacing: 16,
+          title: AccountHeader(controller: controller),
         ),
         body: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.only(top: 16, bottom: 16),
           physics: const BouncingScrollPhysics(),
           children: [
-            AccountHeader(controller: controller),
             AccountChildCard(),
-            AccountMenuSection(
-              titleKey: 'parent_account_finance_section',
-              items: [
-                AccountMenuItem(
-                  labelKey: 'parent_account_finance',
-                  icon: Icons.account_balance_wallet_outlined,
-                  iconColor: const Color(0xFFD97706),
-                  onTap: controller.navigateToFinance,
-                ),
-              ],
-            ),
             AccountMenuSection(
               titleKey: 'parent_account_support_section',
               items: [
@@ -90,6 +60,18 @@ class _ParentAccountViewState extends State<ParentAccountView> {
             AccountMenuSection(
               titleKey: 'parent_account_title',
               items: [
+                AccountMenuItem(
+                  labelKey: 'parent_account_edit_profile',
+                  icon: Icons.person_outline_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: controller.editProfile,
+                ),
+                AccountMenuItem(
+                  labelKey: 'parent_account_notifications',
+                  icon: Icons.notifications_outlined,
+                  iconColor: const Color(0xFF6366F1),
+                  onTap: controller.navigateToNotifications,
+                ),
                 AccountMenuItem(
                   labelKey: 'notif_prefs_menu_item',
                   icon: Icons.notifications_active_outlined,

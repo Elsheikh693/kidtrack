@@ -86,14 +86,14 @@ class PendingActivityCard extends StatelessWidget {
           GestureDetector(
             onTap: onReview,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
                 color: _accent,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(9),
               ),
               child: Text(
                 'media_review_action'.tr,
-                style: context.typography.xsBold.copyWith(color: Colors.white),
+                style: context.typography.xsMedium.copyWith(color: Colors.white),
               ),
             ),
           ),

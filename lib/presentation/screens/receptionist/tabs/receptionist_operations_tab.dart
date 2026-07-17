@@ -1,6 +1,7 @@
 import '../../../../index/index_main.dart';
 import '../dashboard/widgets/check_in_button.dart';
-import '../dashboard/widgets/pending_pickups_section.dart';
+// TEMP: pickup feature paused — import kept commented for easy restore.
+// import '../dashboard/widgets/pending_pickups_section.dart';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const _accent = Color(0xFF0891B2);
@@ -51,8 +52,8 @@ class _ReceptionistOperationsTabState extends State<ReceptionistOperationsTab> {
                   children: [
                     const OpsCheckInButton(),
                     const SizedBox(height: 22),
-                    PendingPickupsSection(controller: controller),
-                    const SizedBox(height: 22),
+                    // TEMP: pickup feature paused — pending-pickups section hidden.
+                    // PendingPickupsSection(controller: controller),
                     _SectionTitle('reception_action_events'.tr),
                     const SizedBox(height: 12),
                     _NavRow(

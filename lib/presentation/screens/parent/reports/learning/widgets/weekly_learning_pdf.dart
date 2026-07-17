@@ -145,22 +145,38 @@ pw.Widget _subject(
         pw.Text(g.subjectName,
             style: pw.TextStyle(font: bold, fontSize: 12, color: _ink)),
         pw.SizedBox(height: 6),
-        ...g.topics.map((t) => pw.Padding(
-              padding: const pw.EdgeInsets.only(bottom: 3),
-              child: pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('• ',
-                      style: pw.TextStyle(
-                          font: bold, fontSize: 10, color: _green)),
-                  pw.Expanded(
-                    child: pw.Text(t,
-                        style: pw.TextStyle(
-                            font: regular, fontSize: 10, color: _slate)),
-                  ),
-                ],
-              ),
-            )),
+        ...g.topics.map((t) => _topicRow(t, bold, regular)),
+      ],
+    ),
+  );
+}
+
+pw.Widget _topicRow(LearningTopicItem t, pw.Font bold, pw.Font regular) {
+  final note = t.note?.trim();
+  return pw.Padding(
+    padding: const pw.EdgeInsets.only(bottom: 4),
+    child: pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('• ',
+                style: pw.TextStyle(font: bold, fontSize: 10, color: _green)),
+            pw.Expanded(
+              child: pw.Text(t.title,
+                  style: pw.TextStyle(font: regular, fontSize: 10, color: _ink)),
+            ),
+          ],
+        ),
+        if (note != null && note.isNotEmpty)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(right: 12, top: 1),
+            child: pw.Text(
+              '${'report_learning_teacher_note_label'.tr}: $note',
+              style: pw.TextStyle(font: regular, fontSize: 9, color: _slate),
+            ),
+          ),
       ],
     ),
   );

@@ -48,7 +48,7 @@ class AttendanceRateCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text('$rate%',
-                          style: context.typography.xxlBold
+                          style: context.typography.xlBold
                               .copyWith(color: color)),
                       Text('report_attendance_rate'.tr,
                           style: context.typography.xsRegular

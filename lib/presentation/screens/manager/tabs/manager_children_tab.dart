@@ -4,6 +4,7 @@ import '../children/widgets/children_overview_section.dart';
 import '../children/widgets/monthly_movement_section.dart';
 import '../children/widgets/classroom_health_section.dart';
 import '../children/widgets/child_directory_tile.dart';
+import '../children/widgets/children_directory_entry.dart';
 import '../children/widgets/children_shimmer.dart';
 
 class ManagerChildrenTab extends StatefulWidget {
@@ -77,6 +78,8 @@ class _ManagerChildrenTabState extends State<ManagerChildrenTab> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                const ChildrenDirectoryEntry(),
+                const SizedBox(height: 24),
                 ChildrenOverviewSection(controller: controller),
                 const SizedBox(height: 24),
                 MonthlyMovementSection(controller: controller),

@@ -51,8 +51,6 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                     _operationsSection(),
                     const SizedBox(height: 20),
                     _businessSection(),
-                    const SizedBox(height: 20),
-                    _settingsSection(),
                     const SizedBox(height: 24),
                     const ManagerLogoutButton(),
                   ]),
@@ -87,24 +85,14 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     return ManagerGridSection(
       titleKey: 'manager_more_section_operations',
       tiles: [
-        ManagerGridTile(
-          icon: Icons.contact_phone_rounded,
-          color: const Color(0xFF25D366),
-          labelKey: 'owner_item_contact_numbers',
-          onTap: () => Get.toNamed(nurseryContactsView),
-        ),
+        // "أرقام التواصل" now lives inside "خطوات الإعداد".
         ManagerGridTile(
           icon: Icons.event_busy_rounded,
           color: AppColors.activityOrange,
           labelKey: 'manager_more_link_holidays',
           onTap: () => Get.toNamed(holidaysView),
         ),
-        ManagerGridTile(
-          icon: Icons.child_care_rounded,
-          color: AppColors.activityGreen,
-          labelKey: 'manager_more_link_children',
-          onTap: () => Get.toNamed(childrenView),
-        ),
+        // "الأطفال" moved to the Children tab (ManagerChildrenTab).
         ManagerGridTile(
           icon: Icons.reviews_rounded,
           color: AppColors.ratingStar,
@@ -132,25 +120,8 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     );
   }
 
-  Widget _settingsSection() {
-    return ManagerGridSection(
-      titleKey: 'manager_more_section_settings',
-      tiles: [
-        ManagerGridTile(
-          icon: Icons.notifications_none_rounded,
-          color: AppColors.primary,
-          labelKey: 'manager_more_link_notifications',
-          onTap: () => Get.toNamed(notificationsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.support_agent_rounded,
-          color: AppColors.blueForeground,
-          labelKey: 'staff_account_contact_support',
-          onTap: () => showContactSheet(ContactType.support),
-        ),
-      ],
-    );
-  }
+  // "الإعدادات" section removed — its only remaining item (الإشعارات) is
+  // already reachable from the bell icon in the app bar.
 }
 
 /// Shown only when a real owner is currently acting as a branch manager.

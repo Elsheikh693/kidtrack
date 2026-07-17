@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import '../widgets/report_skeleton.dart';
 import '../widgets/report_empty_state.dart';
 import 'widgets/financial_summary_card.dart';
 import 'widgets/financial_category_card.dart';
@@ -44,7 +45,7 @@ class _FinancialReportViewState extends State<FinancialReportView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ReportSkeleton();
           }
           if (controller.isEmpty.value) {
             return ReportEmptyState(

@@ -98,14 +98,13 @@ class LiveTeachingController extends GetxController {
       final a = entries[i];
       final subject = (a.subjectName ?? '').trim();
       final title = a.title.trim();
-      final label = subject.isNotEmpty
-          ? subject
-          : (title.isNotEmpty ? title : 'live_teaching_activity'.tr);
       built.add(TeachingSlice(
         classroomId: a.classroomId,
         className:
             _classroomNames[a.classroomId] ?? 'live_teaching_class'.tr,
-        subjectLabel: label,
+        subjectLabel:
+            subject.isNotEmpty ? subject : 'live_teaching_activity'.tr,
+        activityTitle: title,
         teacherId: a.teacherId,
         teacherName: _teacherNames[a.teacherId] ?? 'tr_unknown_teacher'.tr,
         teacherPhoto: _teacherPhotos[a.teacherId],

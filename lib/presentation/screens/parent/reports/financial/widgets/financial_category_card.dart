@@ -84,7 +84,7 @@ class _Row extends StatelessWidget {
                   style: context.typography.xsMedium
                       .copyWith(color: const Color(0xFF475569))),
               Text('${amount.toStringAsFixed(0)} ${'currency'.tr}',
-                  style: context.typography.xsBold.copyWith(color: color)),
+                  style: context.typography.lgBold.copyWith(color: color)),
             ],
           ),
           SizedBox(height: 5.h),

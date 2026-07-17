@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import '../widgets/report_skeleton.dart';
 import 'widgets/report_week_switcher.dart';
 import 'widgets/attendance_rate_card.dart';
 import 'widgets/attendance_week_details.dart';
@@ -49,7 +50,7 @@ class _WeeklyAttendanceViewState extends State<WeeklyAttendanceView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ReportSkeleton();
           }
           return ListView(
             padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),

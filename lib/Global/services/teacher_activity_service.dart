@@ -949,7 +949,11 @@ class TeacherActivityService {
   }) async {
     if (photoIds.isEmpty) return;
     final now = DateTime.now().millisecondsSinceEpoch;
-    final updates = <String, dynamic>{};
+    final updates = <String, dynamic>{
+      // Clear the review-notification debounce flag so a later batch of photos
+      // on this activity notifies reviewers again (see photoReviewTriggers.js).
+      'reviewNotifiedAt': null,
+    };
     for (final id in photoIds) {
       updates['photos/$id/isApproved'] = true;
       updates['photos/$id/approvedBy'] = approvedBy;

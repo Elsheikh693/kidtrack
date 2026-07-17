@@ -1,39 +1,45 @@
 import '../../../../../../index/index_main.dart';
 
-/// Colors, labels and emoji for a [DailyRating] across the evaluation report.
+/// Colors, labels and icons for an [EvalLevel] across the evaluation report.
+/// Mirrors the language parents already see in the Daily Journal (3-level
+/// teacher scale, softened tone).
 class DailyRatingStyle {
   DailyRatingStyle._();
 
-  static const excellent = Color(0xFF16A34A);
-  static const veryGood = Color(0xFF0891B2);
-  static const good = Color(0xFFD97706);
-  static const needsSupport = Color(0xFFDC2626);
+  static const excellent = Color(0xFF059669);
+  static const needsFollow = Color(0xFF2563EB);
+  static const needsAttention = Color(0xFFD97706);
 
-  static Color color(DailyRating r) {
+  static Color color(EvalLevel r) {
     switch (r) {
-      case DailyRating.excellent:
+      case EvalLevel.excellent:
         return excellent;
-      case DailyRating.veryGood:
-        return veryGood;
-      case DailyRating.good:
-        return good;
-      case DailyRating.needsSupport:
-        return needsSupport;
+      case EvalLevel.needsFollow:
+        return needsFollow;
+      case EvalLevel.needsAttention:
+        return needsAttention;
     }
   }
 
-  static String labelKey(DailyRating r) {
+  static String labelKey(EvalLevel r) {
     switch (r) {
-      case DailyRating.excellent:
+      case EvalLevel.excellent:
         return 'report_rating_excellent';
-      case DailyRating.veryGood:
+      case EvalLevel.needsFollow:
         return 'report_rating_very_good';
-      case DailyRating.good:
-        return 'report_rating_good';
-      case DailyRating.needsSupport:
+      case EvalLevel.needsAttention:
         return 'report_rating_needs_support';
     }
   }
 
-  static String emoji(DailyRating r) => r.emoji;
+  static IconData icon(EvalLevel r) {
+    switch (r) {
+      case EvalLevel.excellent:
+        return Icons.star_rounded;
+      case EvalLevel.needsFollow:
+        return Icons.thumb_up_rounded;
+      case EvalLevel.needsAttention:
+        return Icons.error_rounded;
+    }
+  }
 }

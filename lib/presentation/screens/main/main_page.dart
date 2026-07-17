@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import '../../../index/index_main.dart';
 
 // ── Tab header configuration ──────────────────────────────────────────────────
@@ -150,6 +152,7 @@ class _MainPageState extends State<MainPage> {
         _visited.add(current);
         return Scaffold(
           backgroundColor: AppColors.backgroundNeutral100,
+          extendBody: true,
           body: Column(
             children: [
               _DynamicHeader(controller: controller),
@@ -506,26 +509,41 @@ class _KidNavBarState extends State<_KidNavBar>
       top: false,
       child: Padding(
         padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
-        child: Container(
-          height: 68.h,
+        child: DecoratedBox(
+          // Shadow sits outside the clip so the blur stays inside the pill.
           decoration: BoxDecoration(
-            color: AppColors.white,
             borderRadius: BorderRadius.circular(28.r),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.14),
+                color: AppColors.primary.withValues(alpha: 0.10),
                 blurRadius: 32.r,
                 spreadRadius: 0,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: LayoutBuilder(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28.r),
+            child: BackdropFilter(
+              // Frosted-glass blur so the scrolling content shows through
+              // the translucent bar — Pinterest-style.
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(
+                height: 68.h,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(28.r),
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
+                ),
+                child: LayoutBuilder(
             builder: (ctx, constraints) {
               final itemW = constraints.maxWidth / count;
 
@@ -580,6 +598,9 @@ class _KidNavBarState extends State<_KidNavBar>
                 ],
               );
             },
+                ),
+              ),
+            ),
           ),
         ),
       ),

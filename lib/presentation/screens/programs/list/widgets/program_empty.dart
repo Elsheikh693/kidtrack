@@ -18,9 +18,13 @@ class ProgramEmpty extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8.h),
-        Text(
-          'program_empty_subtitle'.tr,
-          style: context.typography.xsRegular.copyWith(fontSize: 13, color: const Color(0xFFCBD5E1)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w),
+          child: Text(
+            'program_empty_subtitle'.tr,
+            textAlign: TextAlign.center,
+            style: context.typography.xsRegular.copyWith(fontSize: 13, color: const Color(0xFFCBD5E1)),
+          ),
         ),
       ],
     ),

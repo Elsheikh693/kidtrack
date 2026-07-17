@@ -59,14 +59,26 @@ class TeachingRingPainter extends CustomPainter {
         textDirection: TextDirection.rtl,
         maxLines: 1,
         ellipsis: '…',
-      )..layout(maxWidth: stroke * 2.6);
-      tp.paint(
-        canvas,
-        Offset(
-          center.dx + radius * math.cos(mid) - tp.width / 2,
-          center.dy + radius * math.sin(mid) - tp.height / 2,
+      )..layout(maxWidth: stroke * 2.4);
+
+      // Anchor the label on the ring, then seat the text in a rounded pill so
+      // the white glyphs always clear the arc color instead of blending into
+      // it. The pill is a deeper shade of the same slice hue — reads as a
+      // designed chip, not text struggling against the stroke.
+      final cx = center.dx + radius * math.cos(mid);
+      final cy = center.dy + radius * math.sin(mid);
+      final padH = size.width * 0.035;
+      final padV = size.width * 0.018;
+      final pill = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(cx, cy),
+          width: tp.width + padH * 2,
+          height: tp.height + padV * 2,
         ),
+        Radius.circular((tp.height + padV * 2) / 2),
       );
+      canvas.drawRRect(pill, Paint()..color = slices[i].color.darken(0.22));
+      tp.paint(canvas, Offset(cx - tp.width / 2, cy - tp.height / 2));
 
       start += sweep + gap;
     }

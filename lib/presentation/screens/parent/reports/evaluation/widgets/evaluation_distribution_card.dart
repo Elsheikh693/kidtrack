@@ -23,7 +23,7 @@ class EvaluationDistributionCard extends StatelessWidget {
         ],
       ),
       child: Obx(() {
-        final total = controller.assessedCount.value;
+        final total = controller.evalCount.value;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,23 +34,18 @@ class EvaluationDistributionCard extends StatelessWidget {
                       .copyWith(color: const Color(0xFF1E293B))),
             ),
             _Row(
-              rating: DailyRating.excellent,
+              rating: EvalLevel.excellent,
               value: controller.excellentCount.value,
               total: total,
             ),
             _Row(
-              rating: DailyRating.veryGood,
-              value: controller.veryGoodCount.value,
+              rating: EvalLevel.needsFollow,
+              value: controller.needsFollowCount.value,
               total: total,
             ),
             _Row(
-              rating: DailyRating.good,
-              value: controller.goodCount.value,
-              total: total,
-            ),
-            _Row(
-              rating: DailyRating.needsSupport,
-              value: controller.needsSupportCount.value,
+              rating: EvalLevel.needsAttention,
+              value: controller.needsAttentionCount.value,
               total: total,
             ),
           ],
@@ -61,7 +56,7 @@ class EvaluationDistributionCard extends StatelessWidget {
 }
 
 class _Row extends StatelessWidget {
-  final DailyRating rating;
+  final EvalLevel rating;
   final int value;
   final int total;
   const _Row({required this.rating, required this.value, required this.total});
@@ -96,7 +91,7 @@ class _Row extends StatelessWidget {
             width: 18.w,
             child: Text('$value',
                 textAlign: TextAlign.end,
-                style: context.typography.xsBold.copyWith(color: color)),
+                style: context.typography.lgBold.copyWith(color: color)),
           ),
         ],
       ),

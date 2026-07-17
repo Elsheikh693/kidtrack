@@ -12,28 +12,24 @@ const _green = PdfColor.fromInt(0xFF16A34A);
 PdfColor _rateColor(int rate) =>
     rate >= 90 ? _green : (rate >= 75 ? const PdfColor.fromInt(0xFFD97706) : const PdfColor.fromInt(0xFFDC2626));
 
-PdfColor _ratingColor(DailyRating r) {
+PdfColor _ratingColor(EvalLevel r) {
   switch (r) {
-    case DailyRating.excellent:
-      return _green;
-    case DailyRating.veryGood:
-      return const PdfColor.fromInt(0xFF0891B2);
-    case DailyRating.good:
+    case EvalLevel.excellent:
+      return const PdfColor.fromInt(0xFF059669);
+    case EvalLevel.needsFollow:
+      return const PdfColor.fromInt(0xFF2563EB);
+    case EvalLevel.needsAttention:
       return const PdfColor.fromInt(0xFFD97706);
-    case DailyRating.needsSupport:
-      return const PdfColor.fromInt(0xFFDC2626);
   }
 }
 
-String _ratingLabelKey(DailyRating r) {
+String _ratingLabelKey(EvalLevel r) {
   switch (r) {
-    case DailyRating.excellent:
+    case EvalLevel.excellent:
       return 'report_rating_excellent';
-    case DailyRating.veryGood:
+    case EvalLevel.needsFollow:
       return 'report_rating_very_good';
-    case DailyRating.good:
-      return 'report_rating_good';
-    case DailyRating.needsSupport:
+    case EvalLevel.needsAttention:
       return 'report_rating_needs_support';
   }
 }
@@ -190,19 +186,23 @@ pw.Widget _attendance(
 pw.Widget _evaluation(
     MonthlyReportController c, pw.Font bold, pw.Font regular) {
   final rating = c.dominant.value;
+  final total = c.evalTotal;
   return _section(
     'report_evaluation_title'.tr,
     pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text(_ratingLabelKey(rating).tr,
-            style: pw.TextStyle(
-                font: bold, fontSize: 16, color: _ratingColor(rating))),
         pw.Text(
-          'report_eval_assessed_short'
-              .trParams({'n': '${c.assessedCount.value}'}),
-          style: pw.TextStyle(font: regular, fontSize: 10, color: _slate),
-        ),
+            total == 0 ? 'report_eval_not_assessed'.tr : _ratingLabelKey(rating).tr,
+            style: pw.TextStyle(
+                font: bold,
+                fontSize: 16,
+                color: total == 0 ? _slate : _ratingColor(rating))),
+        if (total > 0)
+          pw.Text(
+            'report_eval_assessed_short'.trParams({'n': '$total'}),
+            style: pw.TextStyle(font: regular, fontSize: 10, color: _slate),
+          ),
       ],
     ),
     bold,

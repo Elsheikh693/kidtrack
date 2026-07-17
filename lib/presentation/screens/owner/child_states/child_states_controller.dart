@@ -60,18 +60,14 @@ class ChildStatesController extends GetxController {
     );
   }
 
-  void openAdd() => _openSheet(null);
-  void openEdit(ChildStateTemplateModel item) => _openSheet(item);
+  void openAdd() => _openEditor(null);
+  void openEdit(ChildStateTemplateModel item) => _openEditor(item);
 
-  void _openSheet(ChildStateTemplateModel? item) {
-    Get.bottomSheet(
-      ChildStateSheet(existing: item),
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-    ).then((_) => loadData());
+  void _openEditor(ChildStateTemplateModel? item) {
+    Get.to(
+      () => ChildStateEditView(existing: item),
+      transition: Transition.cupertino,
+    )?.then((_) => loadData());
   }
 
   Future<void> delete(ChildStateTemplateModel item) async {

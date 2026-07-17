@@ -48,6 +48,17 @@ class TeachingLegendTile extends StatelessWidget {
                       color: AppColors.textDefault,
                     ),
                   ),
+                  if (slice.activityTitle.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      slice.activityTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typography.smMedium.copyWith(
+                        color: AppColors.textDefault,
+                      ),
+                    ),
+                  ],
                   SizedBox(height: 2.h),
                   Text(
                     '${slice.subjectLabel} · ${slice.teacherName}',
@@ -62,7 +73,7 @@ class TeachingLegendTile extends StatelessWidget {
             ),
             SizedBox(width: 8.w),
             Icon(
-              Icons.chevron_left_rounded,
+              Icons.chevron_right_rounded,
               size: 20.sp,
               color: AppColors.textSecondaryParagraph,
             ),
