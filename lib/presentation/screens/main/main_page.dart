@@ -276,6 +276,12 @@ const _teacherItems = [
     labelKey: 'teacher_tab_work_log',
     color: Color(0xFF7C3AED),
   ),
+  _NavItemData(
+    activeIcon: Icons.forum_rounded,
+    inactiveIcon: Icons.forum_outlined,
+    labelKey: 'parent_notes_tab',
+    color: Color(0xFF7C3AED),
+  ),
   // مخفي مؤقتاً: تاب الواجبات
   // _NavItemData(
   //   activeIcon: Icons.assignment_rounded,
@@ -285,30 +291,44 @@ const _teacherItems = [
   // ),
 ];
 
+// Analytics Center lives at page index 4 but is surfaced as the 2nd nav slot,
+// so every owner item carries an explicit pageIndex to keep the bar order
+// independent of the IndexedStack order.
 const _ownerItems = [
   _NavItemData(
     activeIcon: Icons.insights_rounded,
     inactiveIcon: Icons.insights_outlined,
     labelKey: 'owner_tab_dashboard',
     color: Color(0xFF4F46E5),
+    pageIndex: 0,
+  ),
+  _NavItemData(
+    activeIcon: Icons.analytics_rounded,
+    inactiveIcon: Icons.analytics_outlined,
+    labelKey: 'owner_tab_analytics',
+    color: Color(0xFF0891B2),
+    pageIndex: 4,
   ),
   _NavItemData(
     activeIcon: Icons.account_balance_wallet_rounded,
     inactiveIcon: Icons.account_balance_wallet_outlined,
     labelKey: 'owner_tab_finance',
     color: Color(0xFFD97706),
+    pageIndex: 1,
   ),
   _NavItemData(
     activeIcon: Icons.dynamic_feed_rounded,
     inactiveIcon: Icons.dynamic_feed_outlined,
     labelKey: 'owner_tab_communication',
     color: Color(0xFFEC4899),
+    pageIndex: 2,
   ),
   _NavItemData(
     activeIcon: Icons.grid_view_rounded,
     inactiveIcon: Icons.grid_view_outlined,
     labelKey: 'owner_tab_more',
     color: Color(0xFF7C3AED),
+    pageIndex: 3,
   ),
 ];
 

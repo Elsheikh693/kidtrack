@@ -1272,7 +1272,7 @@ class _HeaderHero extends StatelessWidget {
                           ],
                         ),
                         if (classroom.isNotEmpty) ...[
-                          SizedBox(height: 5.h),
+                          SizedBox(height: 10.h),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 2.h),
@@ -2118,7 +2118,7 @@ class _TodayTimelinePreview extends StatelessWidget {
           // ── Prominent header ───────────────────────────────────────
           _SectionHeader(
             icon: Icons.timeline_rounded,
-            title: 'خط اليوم',
+            title: 'خطة اليوم',
             accent: _kPurple,
             subtitle:
                 history ? 'كل اللي حصل في اليوم ده' : 'كل اللي حصل ولسه جاي',

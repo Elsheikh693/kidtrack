@@ -25,6 +25,7 @@ class UnpaidSubscriptionController extends GetxController {
   late final ChildParentService _children;
   late final PackageParentService _packages;
   late final FinancialTransactionParentService _transactions;
+  late final InvoiceParentService _invoices;
   late final ParentChildParentService _links;
   late final GuardianParentService _guardians;
   final _sender = NotificationSendService();
@@ -48,6 +49,7 @@ class UnpaidSubscriptionController extends GetxController {
     _children = Get.find<ChildParentService>();
     _packages = Get.find<PackageParentService>();
     _transactions = Get.find<FinancialTransactionParentService>();
+    _invoices = Get.find<InvoiceParentService>();
     _links = Get.find<ParentChildParentService>();
     _guardians = Get.find<GuardianParentService>();
 
@@ -132,6 +134,23 @@ class UnpaidSubscriptionController extends GetxController {
               _inMonth(t.date, now))
           .map((t) => t.childId)
           .toSet();
+
+      // 3b. Also count a child as paid when their current-month subscription
+      // invoice (`month_{childId}_{YYYYMM}`) has ANY money collected against it.
+      // Reception's invoice-based collection settles the invoice but records a
+      // generic "fees" transaction that wouldn't match the package above — so
+      // the invoice itself is the reliable signal.
+      final ym = '${now.year}${now.month.toString().padLeft(2, '0')}';
+      await _invoices.getAll(callBack: (list) {
+        for (final inv in list.whereType<InvoiceModel>()) {
+          final k = inv.key ?? '';
+          if (k.startsWith('month_') &&
+              k.endsWith(ym) &&
+              inv.collectedAmount > 0.5) {
+            paidIds.add(inv.childId);
+          }
+        }
+      });
 
       // 4. Unpaid = active scoped children with no such collection. With no
       // recurring category configured there's nothing to owe, so the list is

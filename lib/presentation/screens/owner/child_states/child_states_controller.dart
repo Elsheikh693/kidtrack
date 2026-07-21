@@ -43,6 +43,7 @@ class ChildStatesController extends GetxController {
         title: d.titleKey.tr,
         icon: d.icon,
         createdAt: now + i,
+        kind: d.kind,
         options: d.options
             .map((o) => ChildStateOption(
                   label: o.labelKey.tr,

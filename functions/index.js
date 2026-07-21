@@ -18,6 +18,14 @@ const { onNurseryEventCreated } = require("./events/eventTriggers");
 
 exports.onNurseryEventCreated = onNurseryEventCreated;
 
+// ------------------------------------------------------------
+// 🧹 EVENT CLEANUP (scheduled — hard-delete events past retention)
+// ------------------------------------------------------------
+
+const { eventCleanupScan } = require("./events/eventCleanup");
+
+exports.eventCleanupScan = eventCleanupScan;
+
 // ============================================================
 // 📚 COURSES (published by the manager)
 // ============================================================
@@ -81,3 +89,11 @@ exports.deleteNursery = deleteNursery;
 const { onActivityPhotoPending } = require("./activities/photoReviewTriggers");
 
 exports.onActivityPhotoPending = onActivityPhotoPending;
+
+// ============================================================
+// 📝 GUARDIAN NOTES (notify the teacher when a parent writes a note)
+// ============================================================
+
+const { onGuardianNoteCreated } = require("./guardianNotes/guardianNoteTriggers");
+
+exports.onGuardianNoteCreated = onGuardianNoteCreated;

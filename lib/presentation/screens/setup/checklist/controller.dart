@@ -22,6 +22,7 @@ class SetupChecklistController extends GetxController {
   late final ClassroomParentService _classroomService;
   late final SubjectParentService _subjectService;
   late final PackageParentService _packageService;
+  late final PaymentAccountParentService _paymentAccountService;
   late final SessionService _session;
 
   @override
@@ -35,6 +36,7 @@ class SetupChecklistController extends GetxController {
     _classroomService = Get.find<ClassroomParentService>();
     _subjectService = Get.find<SubjectParentService>();
     _packageService = Get.find<PackageParentService>();
+    _paymentAccountService = Get.find<PaymentAccountParentService>();
     _session = Get.find<SessionService>();
     _buildGroups();
     recompute();
@@ -74,7 +76,7 @@ class SetupChecklistController extends GetxController {
       ),
       SetupGroup(
         titleKey: 'setup_hub_group_finance',
-        steps: [_stepPackages],
+        steps: [_stepPackages, _stepPaymentAccounts],
       ),
     ];
   }
@@ -143,6 +145,14 @@ class SetupChecklistController extends GetxController {
         route: nurseryPackagesView,
       );
 
+  SetupStep get _stepPaymentAccounts => const SetupStep(
+        id: 'payment_accounts',
+        titleKey: 'setup_hub_step_payment_accounts_title',
+        subtitleKey: 'setup_hub_step_payment_accounts_sub',
+        icon: Icons.account_balance_rounded,
+        route: nurseryPaymentAccountsView,
+      );
+
   // ── Navigation ──────────────────────────────────────────────────────────────
 
   /// Opens a task's management screen, then re-probes completion on return so
@@ -208,6 +218,11 @@ class SetupChecklistController extends GetxController {
           if (scoped.isNotEmpty) done.add('packages');
         },
       ),
+      _paymentAccountService.getAll(callBack: (list) {
+        if (list.whereType<PaymentAccountModel>().isNotEmpty) {
+          done.add('payment_accounts');
+        }
+      }),
     ]);
 
     doneIds.assignAll(done);

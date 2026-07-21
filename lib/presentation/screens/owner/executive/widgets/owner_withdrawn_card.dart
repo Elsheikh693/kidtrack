@@ -1,8 +1,9 @@
 import '../../../../../index/index_main.dart';
 
-/// Tappable "withdrawn this month" stat on the owner's executive dashboard.
-/// Opens the read-only list of children who left the nursery this month (for the
-/// current scope) with the reason each one left. Hidden when nobody left.
+/// "withdrawn this month" stat on the owner's executive dashboard. Always shown
+/// (even at zero, like the manager/reception cards); tappable only when someone
+/// left, opening the read-only list of children who left this month (for the
+/// current scope) with the reason each one left.
 class OwnerWithdrawnCard extends StatelessWidget {
   const OwnerWithdrawnCard({super.key, required this.controller});
 
@@ -12,11 +13,10 @@ class OwnerWithdrawnCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final count = controller.withdrawnThisMonth.length;
-      if (count == 0) return const SizedBox.shrink();
       return Padding(
         padding: EdgeInsets.only(top: 12.h),
         child: GestureDetector(
-          onTap: controller.openWithdrawnList,
+          onTap: count == 0 ? null : controller.openWithdrawnList,
           behavior: HitTestBehavior.opaque,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
@@ -53,9 +53,11 @@ class OwnerWithdrawnCard extends StatelessWidget {
                   style: context.typography.smSemiBold
                       .copyWith(color: AppColors.activityRed),
                 ),
-                SizedBox(width: 4.w),
-                Icon(Icons.chevron_right_rounded,
-                    color: AppColors.activityRed, size: 20),
+                if (count > 0) ...[
+                  SizedBox(width: 4.w),
+                  Icon(Icons.chevron_right_rounded,
+                      color: AppColors.activityRed, size: 20),
+                ],
               ],
             ),
           ),

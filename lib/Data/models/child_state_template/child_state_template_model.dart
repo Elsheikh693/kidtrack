@@ -6,6 +6,13 @@ import 'child_state_option.dart';
 
 const kDefaultStateId = 'with_classroom';
 
+// A template is either a persistent STATUS (sticky — becomes the child's current
+// state until it ends, e.g. sleeping) or an instant EVENT (logged to the day's
+// timeline and does NOT change the current state, e.g. toilet / ate). Old records
+// saved before this split default to `status` so their behaviour never changes.
+const kStateKindStatus = 'status';
+const kStateKindEvent = 'event';
+
 class ChildStateTemplateModel {
   final String? key;
   final String nurseryId;
@@ -13,6 +20,9 @@ class ChildStateTemplateModel {
   final String icon;
   final bool isActive;
   final int createdAt;
+
+  // 'status' (persistent) or 'event' (instant). See constants above.
+  final String kind;
 
   // Optional classification tree (2 levels). Empty = simple state, no evaluation.
   final List<ChildStateOption> options;
@@ -24,8 +34,12 @@ class ChildStateTemplateModel {
     required this.icon,
     this.isActive = true,
     required this.createdAt,
+    this.kind = kStateKindStatus,
     this.options = const [],
   });
+
+  bool get isEvent => kind == kStateKindEvent;
+  bool get isStatus => !isEvent;
 
   factory ChildStateTemplateModel.fromJson(
     Map<String, dynamic> json, {
@@ -38,8 +52,23 @@ class ChildStateTemplateModel {
       icon: json['icon']?.toString() ?? '',
       isActive: json['isActive'] != false,
       createdAt: _parseInt(json['createdAt']) ?? 0,
+      kind: _resolveKind(json['kind'], key ?? json['key']?.toString()),
       options: _parseOptions(json['options']),
     );
+  }
+
+  // Seed keys that are instant EVENTS by default (see [ChildStateDefaults]).
+  static const _seedEventKeys = {'eat', 'toilet'};
+
+  // Resolve the kind: honour an explicit value; otherwise (legacy records saved
+  // before the status/event split) infer from the seed key so nurseries that
+  // never re-classified still behave right — eat/toilet are instant events,
+  // everything else stays a persistent status.
+  static String _resolveKind(dynamic raw, String? key) {
+    final k = raw?.toString();
+    if (k == kStateKindEvent) return kStateKindEvent;
+    if (k == kStateKindStatus) return kStateKindStatus;
+    return _seedEventKeys.contains(key) ? kStateKindEvent : kStateKindStatus;
   }
 
   Map<String, dynamic> toJson() {
@@ -54,6 +83,7 @@ class ChildStateTemplateModel {
     data['icon'] = icon;
     data['isActive'] = isActive;
     data['createdAt'] = createdAt;
+    data['kind'] = kind;
     if (options.isNotEmpty) {
       data['options'] = options.map((o) => o.toJson()).toList();
     }
@@ -65,6 +95,7 @@ class ChildStateTemplateModel {
     String? title,
     String? icon,
     bool? isActive,
+    String? kind,
     List<ChildStateOption>? options,
   }) {
     return ChildStateTemplateModel(
@@ -74,6 +105,7 @@ class ChildStateTemplateModel {
       icon: icon ?? this.icon,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt,
+      kind: kind ?? this.kind,
       options: options ?? this.options,
     );
   }
@@ -114,12 +146,14 @@ class ChildStateDefaults {
         String key,
         String titleKey,
         String icon,
+        String kind,
         List<({String labelKey, List<String> subLabelKeys})> options,
       })> seed = [
     (
       key: 'eat',
       titleKey: 'child_state_default_eat',
       icon: 'food',
+      kind: kStateKindEvent,
       options: [
         (
           labelKey: 'child_state_default_eat_ate',
@@ -136,12 +170,14 @@ class ChildStateDefaults {
       key: 'sleep',
       titleKey: 'child_state_default_sleep',
       icon: 'sleep',
+      kind: kStateKindStatus,
       options: [],
     ),
     (
       key: 'toilet',
       titleKey: 'child_state_default_toilet',
       icon: 'toilet',
+      kind: kStateKindEvent,
       options: [],
     ),
   ];

@@ -126,6 +126,33 @@ class StaffListController extends GetxController {
     );
   }
 
+  /// Whether [staff] may be permanently removed. The signed-in user can't delete
+  /// their own account, and the nursery owner account is protected outright.
+  bool canDelete(StaffModel staff) =>
+      staff.uid != _session.userId && staff.template != StaffTemplate.owner;
+
+  /// Permanently removes a staff member: staff doc, permission set, user node,
+  /// and their activation (login) code so the credential can't reach a dead
+  /// account. Unlike deactivate this is irreversible.
+  Future<void> deleteStaff(StaffModel staff) async {
+    if (!canDelete(staff)) {
+      Loader.showError('staff_delete_forbidden'.tr);
+      return;
+    }
+    Loader.show();
+    final ok = await _staffService.deleteCompletely(staff: staff);
+    if (!ok) {
+      Loader.showError('staff_delete_error'.tr);
+      return;
+    }
+    final code = _codeByStaff.remove(staff.uid);
+    if (code != null) {
+      await _activationService.delete(code: code.code, callBack: (_) {});
+    }
+    staffList.removeWhere((s) => s.uid == staff.uid);
+    Loader.showSuccess('staff_delete_success'.tr);
+  }
+
   void openAdd() => _openSheet(null);
 
   void openEdit(StaffModel s) => _openSheet(s);

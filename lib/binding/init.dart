@@ -91,6 +91,21 @@ class Binding implements Bindings {
     // ─── Owner Scope (network vs branch level switch) ─────────────────────
     Get.put<OwnerScopeService>(OwnerScopeService(), permanent: true);
 
+    // ─── Owner cross-branch photo-review flag (settings-gated) ────────────
+    Get.put<OwnerPhotoReviewService>(
+      OwnerPhotoReviewService(),
+      permanent: true,
+    );
+
+    // ─── Owner Analytics (shared BI data layer — loads the bundle once) ───
+    Get.put<OwnerAnalyticsService>(OwnerAnalyticsService(), permanent: true);
+
+    // ─── Owner finance-detail reports (raw invoices/txns/children/packages) ──
+    Get.put<OwnerFinanceDataService>(
+      OwnerFinanceDataService(),
+      permanent: true,
+    );
+
     // ─── Deep links (QR scan → open app → auto-login) ─────────────────────
     Get.put<DeepLinkService>(DeepLinkService(), permanent: true);
 
@@ -286,6 +301,13 @@ class Binding implements Bindings {
       fromJson: (json) => NoteModel.fromJson(json),
     );
 
+    // 24b. Guardian notes (parent → nursery, per session)
+    BaseBinding.bindCrud<GuardianNoteModel>(
+      tag: "guardianNotes",
+      baseUrl: () => ApiConstants.guardianNotes,
+      fromJson: (json) => GuardianNoteModel.fromJson(json),
+    );
+
     // 25. Lesson Plans
     BaseBinding.bindCrud<LessonPlanModel>(
       tag: "lessonPlans",
@@ -346,6 +368,13 @@ class Binding implements Bindings {
       tag: "paymentCategories",
       baseUrl: () => ApiConstants.paymentCategories,
       fromJson: (json) => PaymentCategoryModel.fromJson(json),
+    );
+
+    // Payment Accounts (nursery's own collection accounts — InstaPay / wallets)
+    BaseBinding.bindCrud<PaymentAccountModel>(
+      tag: "paymentAccounts",
+      baseUrl: () => ApiConstants.paymentAccounts,
+      fromJson: (json) => PaymentAccountModel.fromJson(json),
     );
 
     // Cities (global, SuperAdmin managed)
@@ -444,6 +473,13 @@ class Binding implements Bindings {
       tag: "childStateTemplates",
       baseUrl: () => ApiConstants.childStateTemplates,
       fromJson: (json) => ChildStateTemplateModel.fromJson(json),
+    );
+
+    // 39b. Activity Eval Level Templates (ممتاز / يحتاج متابعة / يحتاج دعم …)
+    BaseBinding.bindCrud<EvalLevelTemplateModel>(
+      tag: "evalLevelTemplates",
+      baseUrl: () => ApiConstants.evalLevelTemplates,
+      fromJson: (json) => EvalLevelTemplateModel.fromJson(json),
     );
 
     // 40. Nursery Contacts (direct WhatsApp/call numbers shown to parents)
@@ -656,14 +692,15 @@ class Binding implements Bindings {
       () => InvoiceParentService(),
       fenix: true,
     );
+    Get.lazyPut<PaymentAccountParentService>(
+      () => PaymentAccountParentService(),
+      fenix: true,
+    );
     Get.lazyPut<FeeCategoryParentService>(
       () => FeeCategoryParentService(),
       fenix: true,
     );
-    Get.lazyPut<ShiftParentService>(
-      () => ShiftParentService(),
-      fenix: true,
-    );
+    Get.lazyPut<ShiftParentService>(() => ShiftParentService(), fenix: true);
     Get.lazyPut<DailyAssessmentParentService>(
       () => DailyAssessmentParentService(),
       fenix: true,
@@ -714,10 +751,7 @@ class Binding implements Bindings {
       () => ContactInfoParentService(),
       fenix: true,
     );
-    Get.lazyPut<CityParentService>(
-      () => CityParentService(),
-      fenix: true,
-    );
+    Get.lazyPut<CityParentService>(() => CityParentService(), fenix: true);
     Get.lazyPut<AboutUsParentService>(
       () => AboutUsParentService(),
       fenix: true,
@@ -778,6 +812,31 @@ class Binding implements Bindings {
       fenix: true,
     );
 
+    // ─── Eval Level Templates (dynamic activity evaluations) ──────────────
+    Get.put<EvalLevelsRegistry>(EvalLevelsRegistry(), permanent: true);
+    Get.lazyPut<EvalLevelTemplateParentService>(
+      () => EvalLevelTemplateParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<EvalLevelsController>(
+      () => EvalLevelsController(),
+      fenix: true,
+    );
+
+    // ─── Guardian session notes (parent → nursery) ───────────────────────
+    Get.lazyPut<GuardianNoteParentService>(
+      () => GuardianNoteParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<GuardianNoteController>(
+      () => GuardianNoteController(),
+      fenix: true,
+    );
+    Get.lazyPut<ParentNotesInboxController>(
+      () => ParentNotesInboxController(),
+      fenix: true,
+    );
+
     // ─── Evaluation Reasons ───────────────────────────────────────────────
     Get.lazyPut<EvaluationReasonsService>(
       () => EvaluationReasonsService(),
@@ -822,10 +881,7 @@ class Binding implements Bindings {
       () => TeacherReportsController(),
       fenix: true,
     );
-    Get.lazyPut<LinkBookController>(
-      () => LinkBookController(),
-      fenix: true,
-    );
+    Get.lazyPut<LinkBookController>(() => LinkBookController(), fenix: true);
 
     // ─── Branch Manager — Children ────────────────────────────────────────
     Get.lazyPut<ManagerChildrenController>(
@@ -860,10 +916,7 @@ class Binding implements Bindings {
     );
 
     // ─── Nursery Settings — Shifts ────────────────────────────────────────
-    Get.lazyPut<ShiftsController>(
-      () => ShiftsController(),
-      fenix: true,
-    );
+    Get.lazyPut<ShiftsController>(() => ShiftsController(), fenix: true);
 
     // ─── Parent — Notification Preferences ────────────────────────────────
     Get.lazyPut<NotificationPrefsController>(
@@ -934,6 +987,41 @@ class Binding implements Bindings {
       () => OwnerExecutiveController(),
       fenix: true,
     );
+    // ─── Owner — Analytics Center (hub + Phase-1 reports) ─────────────────
+    Get.lazyPut<AnalyticsCenterController>(() => AnalyticsCenterController());
+    Get.lazyPut<OwnerFinanceTrendController>(
+      () => OwnerFinanceTrendController(),
+    );
+    Get.lazyPut<OwnerCollectionsController>(() => OwnerCollectionsController());
+    Get.lazyPut<OwnerReceivablesController>(() => OwnerReceivablesController());
+    Get.lazyPut<OwnerBranchPnlController>(() => OwnerBranchPnlController());
+    Get.lazyPut<OwnerBranchHealthController>(
+      () => OwnerBranchHealthController(),
+    );
+    Get.lazyPut<OwnerOccupancyController>(() => OwnerOccupancyController());
+    Get.lazyPut<OwnerInsightsController>(() => OwnerInsightsController());
+    // Phase-2 reports
+    Get.lazyPut<OwnerChurnController>(() => OwnerChurnController());
+    Get.lazyPut<OwnerEngagementController>(() => OwnerEngagementController());
+    Get.lazyPut<OwnerTeacherPerfController>(() => OwnerTeacherPerfController());
+    Get.lazyPut<OwnerEvaluationsController>(() => OwnerEvaluationsController());
+    Get.lazyPut<OwnerAttendanceController>(() => OwnerAttendanceController());
+    // Phase-3 finance-detail reports
+    Get.lazyPut<OwnerCollectionRateController>(
+      () => OwnerCollectionRateController(),
+    );
+    Get.lazyPut<OwnerRevenueMethodController>(
+      () => OwnerRevenueMethodController(),
+    );
+    Get.lazyPut<OwnerRevenueCategoryController>(
+      () => OwnerRevenueCategoryController(),
+    );
+    Get.lazyPut<OwnerPaymentBehaviorController>(
+      () => OwnerPaymentBehaviorController(),
+    );
+    Get.lazyPut<OwnerRevenueForecastController>(
+      () => OwnerRevenueForecastController(),
+    );
     // New shared finance dashboard — owner scope (network / branch via switcher).
     Get.lazyPut<FinanceDashboardController>(
       () => FinanceDashboardController(isOwner: true),
@@ -964,10 +1052,7 @@ class Binding implements Bindings {
       () => MySubscriptionController(),
       fenix: true,
     );
-    Get.lazyPut<SaBillingController>(
-      () => SaBillingController(),
-      fenix: true,
-    );
+    Get.lazyPut<SaBillingController>(() => SaBillingController(), fenix: true);
     Get.lazyPut<SaBillingDetailController>(
       () => SaBillingDetailController(),
       fenix: true,

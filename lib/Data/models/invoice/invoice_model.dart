@@ -23,6 +23,15 @@ class InvoiceModel {
   final String? paidBy;
   final String? paymentMethod;
   final String? notes;
+
+  /// A guardian-uploaded screenshot of their bank/wallet transfer, awaiting the
+  /// reception/CS review that turns it into a recorded collection. Null until
+  /// the guardian submits proof from the invoice-payment sheet.
+  final String? proofUrl;
+
+  /// When the guardian submitted [proofUrl].
+  final int? proofSubmittedAt;
+
   final int? createdAt;
   final int? updatedAt;
 
@@ -46,6 +55,8 @@ class InvoiceModel {
     this.paidBy,
     this.paymentMethod,
     this.notes,
+    this.proofUrl,
+    this.proofSubmittedAt,
     this.createdAt,
     this.updatedAt,
   });
@@ -71,6 +82,8 @@ class InvoiceModel {
       paidBy: json['paidBy']?.toString(),
       paymentMethod: json['paymentMethod']?.toString(),
       notes: json['notes']?.toString(),
+      proofUrl: json['proofUrl']?.toString(),
+      proofSubmittedAt: _parseInt(json['proofSubmittedAt']),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
     );
@@ -98,6 +111,8 @@ class InvoiceModel {
     put('paidBy', paidBy);
     put('paymentMethod', paymentMethod);
     put('notes', notes);
+    put('proofUrl', proofUrl);
+    put('proofSubmittedAt', proofSubmittedAt);
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
     return data;
@@ -110,7 +125,8 @@ class InvoiceModel {
     double? amount, double? discount,
     double? totalAmount, double? paidAmount, String? status, int? dueDate, int? paidAt,
     String? paidBy, String? paymentMethod,
-    String? notes, int? createdAt, int? updatedAt,
+    String? notes, String? proofUrl, int? proofSubmittedAt,
+    int? createdAt, int? updatedAt,
   }) => InvoiceModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
     childId: childId ?? this.childId, parentId: parentId ?? this.parentId,
@@ -124,8 +140,15 @@ class InvoiceModel {
     dueDate: dueDate ?? this.dueDate, paidAt: paidAt ?? this.paidAt,
     paidBy: paidBy ?? this.paidBy, paymentMethod: paymentMethod ?? this.paymentMethod,
     notes: notes ?? this.notes,
+    proofUrl: proofUrl ?? this.proofUrl,
+    proofSubmittedAt: proofSubmittedAt ?? this.proofSubmittedAt,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
+
+  /// Whether the guardian has uploaded a transfer screenshot that hasn't been
+  /// turned into a recorded collection yet.
+  bool get hasPendingProof =>
+      (proofUrl != null && proofUrl!.isNotEmpty) && !isFullyPaid;
 
   // ── Partial-payment helpers ────────────────────────────────────────────────
 

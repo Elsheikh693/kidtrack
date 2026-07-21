@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart' as intl;
 import '../../../../index/index_main.dart';
-import 'controller.dart';
 import 'widgets/inside_now_banner.dart';
 // TEMP: pickup feature paused — import kept commented for easy restore.
 // import 'widgets/pending_pickups_section.dart';
@@ -57,9 +56,9 @@ class _ReceptionistDashboardViewState extends State<ReceptionistDashboardView> {
                         const HomeActionCards(),
                         SizedBox(height: 18.h),
                         const MediaApprovalBanner(),
-                        const AbsentTodaySection(previewLimit: 3),
-                        SizedBox(height: 22.h),
                         const UnpaidSubscriptionCard(),
+                        SizedBox(height: 22.h),
+                        const AbsentTodaySection(previewLimit: 3),
                         // TEMP: pickup feature paused — pending-pickups section hidden.
                         // PendingPickupsSection(controller: controller),
                         SizedBox(height: 24.h),

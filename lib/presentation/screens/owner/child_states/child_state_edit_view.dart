@@ -15,6 +15,7 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
   final _titleCtrl = TextEditingController();
   String _icon = ChildStateIcons.defaultKey;
 
+  String _kind = kStateKindStatus;
   bool _hasClassification = false;
   List<ChildStateOption> _options = const [];
 
@@ -26,6 +27,7 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
     final e = widget.existing;
     _titleCtrl.text = e?.title ?? '';
     _icon = e?.icon ?? ChildStateIcons.defaultKey;
+    _kind = e?.kind ?? kStateKindStatus;
     _options = e?.options ?? const [];
     _hasClassification = _options.isNotEmpty;
   }
@@ -53,6 +55,7 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
       isActive: widget.existing?.isActive ?? true,
       createdAt: widget.existing?.createdAt ??
           DateTime.now().millisecondsSinceEpoch,
+      kind: _kind,
       options: _hasClassification ? _options : const [],
     );
 
@@ -76,6 +79,79 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
           Loader.showError('child_state_error'.tr);
         }
       },
+    );
+  }
+
+  Widget _kindSelector(BuildContext context) {
+    Widget opt({
+      required String kind,
+      required IconData icon,
+      required String title,
+      required String hint,
+    }) {
+      final selected = _kind == kind;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() => _kind = kind),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: selected
+                  ? _accent.withValues(alpha: 0.08)
+                  : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? _accent : const Color(0xFFE2E8F0),
+                width: selected ? 1.4 : 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon,
+                    size: 20,
+                    color: selected ? _accent : const Color(0xFF94A3B8)),
+                const SizedBox(height: 8),
+                Text(title,
+                    style: context.typography.smSemiBold.copyWith(
+                        color: selected ? _accent : const Color(0xFF334155))),
+                const SizedBox(height: 3),
+                Text(hint,
+                    style: context.typography.xsRegular
+                        .copyWith(color: const Color(0xFF94A3B8), height: 1.4)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('child_state_kind_label'.tr,
+            style: context.typography.xsMedium
+                .copyWith(color: const Color(0xFF374151))),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            opt(
+              kind: kStateKindStatus,
+              icon: Icons.timelapse_rounded,
+              title: 'child_state_kind_status'.tr,
+              hint: 'child_state_kind_status_hint'.tr,
+            ),
+            const SizedBox(width: 10),
+            opt(
+              kind: kStateKindEvent,
+              icon: Icons.bolt_rounded,
+              title: 'child_state_kind_event'.tr,
+              hint: 'child_state_kind_event_hint'.tr,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -114,6 +190,8 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
                 icon: _icon,
                 accent: _accent,
               ),
+              const SizedBox(height: 20),
+              _kindSelector(context),
               const SizedBox(height: 20),
               ChildStateClassificationToggle(
                 value: _hasClassification,

@@ -8,6 +8,8 @@ class StaffCard extends StatelessWidget {
   final VoidCallback onPermissions;
   final VoidCallback onGenerateCode;
   final VoidCallback onSendWhatsApp;
+  final VoidCallback onDelete;
+  final bool canDelete;
 
   const StaffCard({
     super.key,
@@ -18,6 +20,8 @@ class StaffCard extends StatelessWidget {
     required this.onPermissions,
     required this.onGenerateCode,
     required this.onSendWhatsApp,
+    required this.onDelete,
+    this.canDelete = true,
   });
 
   @override
@@ -63,6 +67,8 @@ class StaffCard extends StatelessWidget {
                   onEdit: onEdit,
                   onToggleActive: onToggleActive,
                   onPermissions: onPermissions,
+                  onDelete: onDelete,
+                  canDelete: canDelete,
                 ),
               ],
             ),
@@ -211,11 +217,15 @@ class _Menu extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onPermissions;
+  final VoidCallback onDelete;
+  final bool canDelete;
   const _Menu({
     required this.staff,
     required this.onEdit,
     required this.onToggleActive,
     required this.onPermissions,
+    required this.onDelete,
+    required this.canDelete,
   });
 
   @override
@@ -226,6 +236,7 @@ class _Menu extends StatelessWidget {
         case _MenuAction.edit:        onEdit();
         case _MenuAction.permissions: onPermissions();
         case _MenuAction.toggle:      onToggleActive();
+        case _MenuAction.delete:      onDelete();
       }
     },
     itemBuilder: (_) => [
@@ -245,6 +256,15 @@ class _Menu extends StatelessWidget {
           color: staff.isActive ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
         ),
       ),
+      if (canDelete)
+        PopupMenuItem(
+          value: _MenuAction.delete,
+          child: _MenuItem(
+            icon: Icons.delete_outline_rounded,
+            label: 'staff_menu_delete'.tr,
+            color: const Color(0xFFDC2626),
+          ),
+        ),
     ],
   );
 }
@@ -265,4 +285,4 @@ class _MenuItem extends StatelessWidget {
   );
 }
 
-enum _MenuAction { edit, permissions, toggle }
+enum _MenuAction { edit, permissions, toggle, delete }

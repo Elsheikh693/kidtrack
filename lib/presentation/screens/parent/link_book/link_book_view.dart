@@ -36,24 +36,47 @@ class _LinkBookViewState extends State<LinkBookView> {
           surfaceTintColor: kJBg,
           elevation: 0,
           centerTitle: true,
-          title: const Text(
-            'دفتر التواصل',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              color: kJInk,
-            ),
-          ),
+          title: Obx(() {
+            final count = controller.days.length;
+            final showSub = !controller.isLoading.value && count > 0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'دفتر التواصل',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: kJInk,
+                  ),
+                ),
+                if (showSub) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '${controller.childName} · $count يوم',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: kJMuted,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          }),
           iconTheme: const IconThemeData(color: kJInk),
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
             return const Center(child: CircularProgressIndicator());
           }
-          final days = controller.days;
-          if (days.isEmpty) return const _Empty();
+          // No history at all (child never had a recorded day).
+          if (controller.availableMonths.isEmpty) return const _Empty();
 
           final mode = controller.viewMode.value;
+          final months = controller.availableMonths;
 
           return RefreshIndicator(
             onRefresh: controller.reload,
@@ -62,18 +85,24 @@ class _LinkBookViewState extends State<LinkBookView> {
                   parent: BouncingScrollPhysics()),
               slivers: [
                 SliverToBoxAdapter(
-                  child: _Intro(
-                    childName: controller.childName,
-                    dayCount: days.length,
-                  ),
-                ),
-                SliverToBoxAdapter(
                   child: _ModeToggle(
                     mode: mode,
                     onSelect: controller.setMode,
                   ),
                 ),
-                if (mode == LbViewMode.days)
+                // Month picker governs BOTH tabs — data is loaded one month at
+                // a time so the book scales to years without a giant fetch.
+                if (months.length > 1)
+                  SliverToBoxAdapter(
+                    child: _MonthBar(
+                      months: months,
+                      selected: controller.selectedMonth.value!,
+                      onSelect: controller.setMonth,
+                    ),
+                  ),
+                if (controller.daysLoading.value)
+                  const SliverToBoxAdapter(child: _MonthLoading())
+                else if (mode == LbViewMode.days)
                   ..._daysSlivers(context)
                 else
                   ..._subjectsSlivers(context),
@@ -86,17 +115,11 @@ class _LinkBookViewState extends State<LinkBookView> {
   }
 
   List<Widget> _daysSlivers(BuildContext context) {
-    final months = controller.months;
-    final filtered = controller.filteredDays;
+    final days = controller.days;
+    if (days.isEmpty) {
+      return const [SliverToBoxAdapter(child: _MonthEmpty())];
+    }
     return [
-      if (months.length > 1)
-        SliverToBoxAdapter(
-          child: _MonthBar(
-            months: months,
-            selected: controller.selectedMonth.value,
-            onSelect: controller.setMonth,
-          ),
-        ),
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         sliver: SliverGrid(
@@ -108,7 +131,7 @@ class _LinkBookViewState extends State<LinkBookView> {
           ),
           delegate: SliverChildBuilderDelegate(
             (context, i) {
-              final day = filtered[i];
+              final day = days[i];
               return LinkBookDayCard(
                 day: day,
                 onTap: () => Get.to(() => LinkBookDayView(
@@ -117,7 +140,7 @@ class _LinkBookViewState extends State<LinkBookView> {
                     )),
               );
             },
-            childCount: filtered.length,
+            childCount: days.length,
           ),
         ),
       ),
@@ -127,12 +150,7 @@ class _LinkBookViewState extends State<LinkBookView> {
   List<Widget> _subjectsSlivers(BuildContext context) {
     final subjects = controller.subjectHistories;
     if (subjects.isEmpty) {
-      return const [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: _SubjectsEmpty(),
-        ),
-      ];
+      return const [SliverToBoxAdapter(child: _SubjectsEmpty())];
     }
     return [
       SliverPadding(
@@ -314,11 +332,11 @@ class _MonthBar extends StatelessWidget {
   });
 
   final List<DateTime> months;
-  final DateTime? selected;
-  final ValueChanged<DateTime?> onSelect;
+  final DateTime selected;
+  final ValueChanged<DateTime> onSelect;
 
   bool _isSel(DateTime m) =>
-      selected != null && selected!.year == m.year && selected!.month == m.month;
+      selected.year == m.year && selected.month == m.month;
 
   @override
   Widget build(BuildContext context) {
@@ -329,19 +347,73 @@ class _MonthBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         physics: const BouncingScrollPhysics(),
         children: [
-          _Chip(
-            label: 'الكل',
-            selected: selected == null,
-            onTap: () => onSelect(null),
-          ),
-          for (final m in months) ...[
-            const SizedBox(width: 8),
+          for (var i = 0; i < months.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
             _Chip(
-              label: _monthLabel(m),
-              selected: _isSel(m),
-              onTap: () => onSelect(m),
+              label: _monthLabel(months[i]),
+              selected: _isSel(months[i]),
+              onTap: () => onSelect(months[i]),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Inline loader shown while a month is being fetched (keeps the month bar up).
+class _MonthLoading extends StatelessWidget {
+  const _MonthLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 60),
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+/// Shown when the selected month has no recorded days.
+class _MonthEmpty extends StatelessWidget {
+  const _MonthEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 48, 32, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6C4DDB).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.event_busy_rounded,
+                size: 32, color: Color(0xFF6C4DDB)),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'لا توجد أيام في هذا الشهر',
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
+              color: kJInk,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'اختر شهرًا آخر من الأعلى.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: kJMuted,
+            ),
+          ),
         ],
       ),
     );
@@ -384,76 +456,6 @@ class _Chip extends StatelessWidget {
             color: selected ? Colors.white : kJMuted,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Intro extends StatelessWidget {
-  const _Intro({required this.childName, required this.dayCount});
-  final String childName;
-  final int dayCount;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6C4DDB), Color(0xFF8B5CF6)],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6C4DDB).withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(Icons.auto_stories_rounded,
-                color: Colors.white, size: 26),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'دفتر $childName',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'كل أيامه في مكان واحد · $dayCount يوم',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

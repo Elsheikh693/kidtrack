@@ -54,51 +54,48 @@ class BulkInvitationsController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     try {
-      final sessionNurseryId = SessionService().nurseryId;
-      await Get.find<NurseryParentService>().getAll(
-        callBack: (list) {
-          final nurseries = list.whereType<NurseryModel>();
-          final n =
-              nurseries.where((item) => item.key == sessionNurseryId).firstOrNull ??
-                  nurseries.firstOrNull;
+      final sessionNurseryId = SessionService().nurseryId ?? '';
+
+      final links = <ParentChildModel>[];
+      final parents = <ParentModel>[];
+      final childNameById = <String, String>{};
+      // Existing parent activation codes (durable login keys), indexed by the
+      // account they activate so we can reuse instead of minting duplicates.
+      _codeByParent.clear();
+
+      // These five reads are independent — fire them concurrently instead of
+      // awaiting one after another, so the screen loads in one round-trip
+      // instead of five stacked back-to-back.
+      await Future.wait([
+        Get.find<NurseryParentService>().getOne(sessionNurseryId).then((n) {
           if (n != null) {
             _nurseryName = n.name;
             _nurseryLogo = n.logo;
           }
-        },
-      );
-
-      final links = <ParentChildModel>[];
-      await _linkService.getAll(
-        callBack: (list) => links.addAll(list.whereType<ParentChildModel>()),
-      );
-
-      final parents = <ParentModel>[];
-      await _guardianService.getAll(
-        callBack: (list) => parents.addAll(list.whereType<ParentModel>()),
-      );
-
-      final childNameById = <String, String>{};
-      await _childService.getAll(
-        callBack: (list) {
-          for (final c in list.whereType<ChildModel>()) {
-            if (c.key != null) childNameById[c.key!] = c.fullName;
-          }
-        },
-      );
-
-      // Existing parent activation codes (durable login keys), indexed by the
-      // account they activate so we can reuse instead of minting duplicates.
-      _codeByParent.clear();
-      await _activationService.getAll(
-        callBack: (list) {
-          for (final c in list.whereType<ActivationCodeModel>()) {
-            if (c.role == 'parent' && c.targetId.isNotEmpty) {
-              _codeByParent[c.targetId] = c;
+        }),
+        _linkService.getAll(
+          callBack: (list) => links.addAll(list.whereType<ParentChildModel>()),
+        ),
+        _guardianService.getAll(
+          callBack: (list) => parents.addAll(list.whereType<ParentModel>()),
+        ),
+        _childService.getAll(
+          callBack: (list) {
+            for (final c in list.whereType<ChildModel>()) {
+              if (c.key != null) childNameById[c.key!] = c.fullName;
             }
-          }
-        },
-      );
+          },
+        ),
+        _activationService.getAll(
+          callBack: (list) {
+            for (final c in list.whereType<ActivationCodeModel>()) {
+              if (c.role == 'parent' && c.targetId.isNotEmpty) {
+                _codeByParent[c.targetId] = c;
+              }
+            }
+          },
+        ),
+      ]);
 
       // Group child names per guardian.
       final namesByParent = <String, List<String>>{};

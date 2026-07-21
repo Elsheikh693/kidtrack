@@ -28,6 +28,12 @@ class OwnerAccountTab extends StatelessWidget {
         color: const Color(0xFF0891B2),
         route: childStatesView,
       ),
+      DashboardItem(
+        labelKey: 'eval_levels_menu_item',
+        icon: Icons.star_rounded,
+        color: const Color(0xFF16A34A),
+        route: evalLevelsView,
+      ),
     ],
   );
 

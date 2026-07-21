@@ -136,7 +136,18 @@ class StaffFormController extends GetxController {
         address: addressCtrl.text.trim().nullIfEmpty,
         emergencyPhone: emergencyPhoneCtrl.text.trim().nullIfEmpty,
       ),
-      callBack: (status) {
+      callBack: (status) async {
+        if (status == ResponseStatus.success) {
+          // The staff record is updated, but login routing reads the role from
+          // the global users/$uid node — keep it in sync or a role change (e.g.
+          // teacher → branch manager) never takes effect at sign-in.
+          await _syncUsersNode(
+            uid: initialStaff!.uid,
+            name: name,
+            phone: phoneCtrl.text.trim(),
+            role: selectedTemplate.value.toUserType(),
+          );
+        }
         Loader.dismiss();
         if (status == ResponseStatus.success) Get.back();
       },
@@ -266,6 +277,23 @@ class StaffFormController extends GetxController {
       'nurseryId': nurseryId,
       'userType': role.name,
       'createdAt': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  /// Patches the editable fields on the existing users/$uid node after an edit.
+  /// Uses update (not set) so createdAt/nurseryId and any other keys survive.
+  /// The userType is the one login routing depends on, so this is what makes a
+  /// role change actually reach the user's next sign-in.
+  Future<void> _syncUsersNode({
+    required String uid,
+    required String name,
+    required String phone,
+    required UserType role,
+  }) async {
+    await FirebaseDatabase.instance.ref('users/$uid').update({
+      'name': name,
+      'phone': phone,
+      'userType': role.name,
     });
   }
 

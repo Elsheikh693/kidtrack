@@ -77,6 +77,8 @@ class _StaffListViewState extends State<StaffListView> {
                   onPermissions: () => controller.openPermissions(staff),
                   onGenerateCode: () => controller.generateActivationCode(staff),
                   onSendWhatsApp: () => controller.sendActivationWhatsApp(staff),
+                  onDelete: () => showStaffDeleteSheet(controller, staff),
+                  canDelete: controller.canDelete(staff),
                 );
               },
             ),

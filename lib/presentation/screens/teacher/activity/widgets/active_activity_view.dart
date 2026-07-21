@@ -67,7 +67,11 @@ class ActiveActivityView extends StatelessWidget {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            // Clearance for the floating action bar AND the shell's floating
+            // nav bar (extendBody:true lets it overlap the scroll). Without
+            // enough tail space the last child rows sit behind those bars with
+            // no room to scroll them into view.
+            SliverToBoxAdapter(child: SizedBox(height: 190.h)),
           ],
         ),
 

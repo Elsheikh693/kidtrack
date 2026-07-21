@@ -103,45 +103,27 @@ class _DefaultEvalPicker extends StatelessWidget {
 
   final ActivityEndController endCtrl;
 
-  static const _items = [
-    (
-      EvalLevel.excellent,
-      'teacher_end_eval_excellent',
-      Icons.sentiment_very_satisfied_rounded,
-      AppColors.activityGreen,
-    ),
-    (
-      EvalLevel.needsFollow,
-      'teacher_end_eval_follow',
-      Icons.sentiment_neutral_rounded,
-      AppColors.activityAmber,
-    ),
-    (
-      EvalLevel.needsAttention,
-      'teacher_end_eval_support',
-      Icons.sentiment_dissatisfied_rounded,
-      AppColors.activityRed,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final selected = endCtrl.defaultEval.value;
+      final levels = endCtrl.levels;
+      if (levels.isEmpty) {
+        return const SizedBox.shrink();
+      }
       return Row(
         children: [
-          for (int i = 0; i < _items.length; i++) ...[
+          for (int i = 0; i < levels.length; i++) ...[
             if (i > 0) const SizedBox(width: 8),
             Expanded(
               child: _DefaultButton(
-                level: _items[i].$1,
-                labelKey: _items[i].$2,
-                icon: _items[i].$3,
-                color: _items[i].$4,
-                isSelected: selected == _items[i].$1,
+                title: levels[i].title,
+                icon: EvalLevelIcons.iconFor(levels[i].icon),
+                color: Color(levels[i].color),
+                isSelected: selected == levels[i].key,
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  endCtrl.setDefaultEval(_items[i].$1);
+                  endCtrl.setDefaultEval(levels[i].key ?? '');
                 },
               ),
             ),
@@ -154,16 +136,14 @@ class _DefaultEvalPicker extends StatelessWidget {
 
 class _DefaultButton extends StatelessWidget {
   const _DefaultButton({
-    required this.level,
-    required this.labelKey,
+    required this.title,
     required this.icon,
     required this.color,
     required this.isSelected,
     required this.onTap,
   });
 
-  final EvalLevel level;
-  final String labelKey;
+  final String title;
   final IconData icon;
   final Color color;
   final bool isSelected;
@@ -176,7 +156,7 @@ class _DefaultButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected ? color : color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16),
@@ -215,7 +195,9 @@ class _DefaultButton extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              labelKey.tr,
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: context.typography.xsMedium.copyWith(
                 color: isSelected ? Colors.white : color,
                 fontWeight: FontWeight.w700,
@@ -237,8 +219,11 @@ class _SummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Container(
+    return Obx(() {
+      final levels = endCtrl.levels;
+      // Rebuild when evaluations change too.
+      endCtrl.childEvals.length;
+      return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
@@ -248,27 +233,19 @@ class _SummaryBar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _SummaryChip(
-              icon: Icons.sentiment_very_satisfied_rounded,
-              count: endCtrl.summaryCount(EvalLevel.excellent),
-              color: AppColors.activityGreen,
-            ),
-            Container(width: 1, height: 18, color: Colors.grey.shade200),
-            _SummaryChip(
-              icon: Icons.sentiment_neutral_rounded,
-              count: endCtrl.summaryCount(EvalLevel.needsFollow),
-              color: AppColors.activityAmber,
-            ),
-            Container(width: 1, height: 18, color: Colors.grey.shade200),
-            _SummaryChip(
-              icon: Icons.sentiment_dissatisfied_rounded,
-              count: endCtrl.summaryCount(EvalLevel.needsAttention),
-              color: AppColors.activityRed,
-            ),
+            for (int i = 0; i < levels.length; i++) ...[
+              if (i > 0)
+                Container(width: 1, height: 18, color: Colors.grey.shade200),
+              _SummaryChip(
+                icon: EvalLevelIcons.iconFor(levels[i].icon),
+                count: endCtrl.summaryCount(levels[i].key ?? ''),
+                color: Color(levels[i].color),
+              ),
+            ],
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
 

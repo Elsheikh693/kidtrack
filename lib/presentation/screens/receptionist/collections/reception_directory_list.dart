@@ -6,6 +6,9 @@ const _ink = Color(0xFF111827);
 const _muted = Color(0xFF8A93A4);
 const _line = Color(0xFFEEF0F4);
 const _bg = Color(0xFFF6F7FB);
+const _green = Color(0xFF16A34A);
+const _red = Color(0xFFDC2626);
+const _amber = Color(0xFFD97706);
 
 /// Default reception "الماليات" state: the whole in-scope children directory as
 /// compact single-row cards. Each card carries two quick actions — one-tap
@@ -15,19 +18,19 @@ const _bg = Color(0xFFF6F7FB);
 class ReceptionDirectoryList extends StatelessWidget {
   final ReceptionCollectionController controller;
   final ValueChanged<ChildModel> onHistory;
-  final ValueChanged<ChildModel> onRenew;
+  final ValueChanged<ChildModel> onCollect;
 
   const ReceptionDirectoryList({
     super.key,
     required this.controller,
     required this.onHistory,
-    required this.onRenew,
+    required this.onCollect,
   });
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final children = controller.children;
+      final children = controller.orderedChildren;
       if (children.isEmpty) {
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 60.h, horizontal: 24.w),
@@ -46,7 +49,6 @@ class ReceptionDirectoryList extends StatelessWidget {
           ),
         );
       }
-      final canRenew = controller.monthlyPackage != null;
       return ListView.separated(
         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
         itemCount: children.length,
@@ -56,8 +58,9 @@ class ReceptionDirectoryList extends StatelessWidget {
           return CollectionChildCard(
             child: c,
             subtitle: controller.classroomName(c.classroomId),
-            canRenew: canRenew,
-            onRenew: () => onRenew(c),
+            outstanding: controller.outstandingFor(c.key),
+            hasProof: controller.proofFor(c.key) != null,
+            onCollect: () => onCollect(c),
             onHistory: () => onHistory(c),
           );
         },
@@ -67,31 +70,38 @@ class ReceptionDirectoryList extends StatelessWidget {
 }
 
 /// Compact single-row child card used by both the directory list and the
-/// search results: avatar + name/classroom + two trailing icon actions.
+/// search results: avatar + name/classroom, the child's outstanding balance,
+/// a history shortcut and a "collect" button.
 class CollectionChildCard extends StatelessWidget {
   final ChildModel child;
   final String subtitle;
-  final bool canRenew;
-  final VoidCallback onRenew;
+  final double outstanding;
+  final bool hasProof;
+  final VoidCallback onCollect;
   final VoidCallback onHistory;
 
   const CollectionChildCard({
     super.key,
     required this.child,
     required this.subtitle,
-    required this.canRenew,
-    required this.onRenew,
+    required this.outstanding,
+    this.hasProof = false,
+    required this.onCollect,
     required this.onHistory,
   });
 
   @override
   Widget build(BuildContext context) {
+    final owes = outstanding > 0.5;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _line),
+        border: Border.all(
+          color: hasProof ? _amber.withValues(alpha: 0.55) : _line,
+          width: hasProof ? 1.4 : 1,
+        ),
       ),
       child: Row(
         children: [
@@ -118,20 +128,72 @@ class CollectionChildCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  child.fullName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.typography.smSemiBold
-                      .copyWith(color: _ink, fontSize: 14),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        child.fullName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.typography.smSemiBold
+                            .copyWith(color: _ink, fontSize: 14),
+                      ),
+                    ),
+                    if (hasProof) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: _amber.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(7.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.receipt_long_rounded,
+                                size: 11.sp, color: _amber),
+                            SizedBox(width: 3.w),
+                            Text(
+                              'collection_proof_badge'.tr,
+                              style: context.typography.xsMedium
+                                  .copyWith(color: _amber, fontSize: 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                SizedBox(height: 2.h),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.typography.xsRegular
-                      .copyWith(color: _muted, fontSize: 11.5),
+                SizedBox(height: 3.h),
+                Row(
+                  children: [
+                    Icon(
+                      owes
+                          ? Icons.account_balance_wallet_rounded
+                          : Icons.check_circle_rounded,
+                      size: 13.sp,
+                      color: owes ? _red : _green,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      owes
+                          ? '${outstanding.toStringAsFixed(0)} ${'overdue_currency'.tr}'
+                          : 'collect_settled'.tr,
+                      style: context.typography.xsMedium.copyWith(
+                        color: owes ? _red : _green,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      '  •  $subtitle',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typography.xsRegular
+                          .copyWith(color: _muted, fontSize: 11),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -143,16 +205,39 @@ class CollectionChildCard extends StatelessWidget {
             filled: false,
             onTap: onHistory,
           ),
-          if (canRenew) ...[
-            SizedBox(width: 8.w),
-            _IconAction(
-              icon: Icons.autorenew_rounded,
-              tooltip: 'collection_renew_subscription'.tr,
-              filled: true,
-              onTap: onRenew,
-            ),
-          ],
+          SizedBox(width: 8.w),
+          _CollectAction(enabled: owes, onTap: onCollect),
         ],
+      ),
+    );
+  }
+}
+
+/// Filled "collect" button on a child card; greyed out when nothing is owed.
+class _CollectAction extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback onTap;
+  const _CollectAction({required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Container(
+        height: 40.w,
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: enabled ? _accent : const Color(0xFFE5E7EB),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Text(
+          'collect_action'.tr,
+          style: context.typography.xsMedium.copyWith(
+            color: enabled ? Colors.white : _muted,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ),
     );
   }

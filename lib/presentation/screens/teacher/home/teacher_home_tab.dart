@@ -3,6 +3,7 @@ import 'widgets/teacher_home_app_bar.dart';
 import 'widgets/home_section_header.dart';
 import 'widgets/class_card.dart';
 import 'widgets/classroom_states_sheet.dart';
+import 'widgets/teacher_home_action_cards.dart';
 
 class TeacherHomeTab extends StatefulWidget {
   const TeacherHomeTab({super.key});
@@ -100,6 +101,13 @@ class _HomeBodyState extends State<_HomeBody> {
       children: [
         const SizedBox(height: 16),
 
+        // Quick actions — mirrors the reception home grid.
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: TeacherHomeActionCards(),
+        ),
+        const SizedBox(height: 24),
+
         // My classes — the hero of the screen
         Obx(() {
           final classrooms = controller.myClassrooms;
@@ -147,7 +155,10 @@ class _HomeBodyState extends State<_HomeBody> {
           );
         }),
 
-        const SizedBox(height: 24),
+        // Clear the floating bottom nav bar (extendBody: true) so the last
+        // class card's "view details" button isn't hidden behind it. Matches
+        // the reception dashboard's bottom clearance.
+        SizedBox(height: 100.h),
       ],
     );
   }

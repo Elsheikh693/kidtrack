@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import 'widgets/activation_code_formatter.dart';
 import 'widgets/activation_scanner_sheet.dart';
 
 /// Drives the pre-login activation screen: the holder types the activation code
@@ -28,6 +29,20 @@ class ActivationCodeController extends GetxController {
       code.value.replaceAll('-', '').trim().length >= 8;
 
   void onCodeChanged(String value) => code.value = value;
+
+  /// One-tap fill for the common case where the holder copies the WHOLE WhatsApp
+  /// invite (they can't grab just the code from the bubble): reads the clipboard
+  /// and lifts the `XXXX-XXXX` code out of it.
+  Future<void> pasteCode() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final extracted = ActivationCodeFormatter.extractFromText(data?.text ?? '');
+    if (extracted.replaceAll('-', '').length < 8) {
+      Loader.showError('activation_paste_empty'.tr);
+      return;
+    }
+    codeController.text = extracted;
+    code.value = extracted;
+  }
 
   /// Open the camera scanner; on a successful scan fill the field and submit.
   Future<void> scanCode() async {

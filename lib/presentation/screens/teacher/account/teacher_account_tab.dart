@@ -42,6 +42,12 @@ class TeacherAccountTab extends StatelessWidget {
                   onTap: () => Get.toNamed(childStatesView),
                 ),
                 _SettingsTile(
+                  icon: Icons.star_rounded,
+                  color: const Color(0xFF16A34A),
+                  labelKey: 'eval_levels_menu_item',
+                  onTap: () => Get.toNamed(evalLevelsView),
+                ),
+                _SettingsTile(
                   icon: Icons.ondemand_video_rounded,
                   color: const Color(0xFFDC2626),
                   labelKey: 'tutorial_menu_entry',

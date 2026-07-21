@@ -83,6 +83,12 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                     iconColor: const Color(0xFF0891B2),
                     onTap: () => Get.toNamed(childStatesView),
                   ),
+                  _MenuItem(
+                    labelKey: 'eval_levels_menu_item',
+                    icon: Icons.star_rounded,
+                    iconColor: const Color(0xFF16A34A),
+                    onTap: () => Get.toNamed(evalLevelsView),
+                  ),
                 ],
               ),
             _Section(

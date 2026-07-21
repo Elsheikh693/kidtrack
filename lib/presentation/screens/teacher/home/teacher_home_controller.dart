@@ -270,6 +270,9 @@ class TeacherHomeController extends GetxController {
             if (e.value is! Map) continue;
             final d = Map<String, dynamic>.from(e.value as Map);
             if ((d['status'] ?? 'active') != 'active') continue;
+            // A classroom may be shared across branches — only count children
+            // that belong to this teacher's own branch.
+            if (!_session.seesBranch(d['branchId']?.toString())) continue;
             count++;
             final childId = e.key.toString();
             ids.add(childId);

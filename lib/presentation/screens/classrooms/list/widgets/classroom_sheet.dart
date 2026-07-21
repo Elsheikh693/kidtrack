@@ -74,6 +74,13 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
       Loader.showError('classroom_error_name_required'.tr);
       return;
     }
+    // Branches must be fully separate — a classroom belongs to specific
+    // branch(es), never "all branches" (that shared bucket mixed children
+    // across branches). At least one branch is required.
+    if (selectedBranchIds.isEmpty) {
+      Loader.showError('classroom_error_branch_required'.tr);
+      return;
+    }
     final nurseryId = SessionService().nurseryId ?? '';
     final id = isEdit
         ? (widget.initial!.key ?? const Uuid().v4())
@@ -204,7 +211,6 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
                         loading: isLoadingLookups,
                         branches: branches,
                         selectedIds: selectedBranchIds,
-                        onAllTap: () => setState(selectedBranchIds.clear),
                         onToggle: (id) => setState(() {
                           if (selectedBranchIds.contains(id)) {
                             selectedBranchIds.remove(id);
@@ -290,14 +296,12 @@ class _BranchMultiSelect extends StatelessWidget {
   final bool loading;
   final List<BranchModel> branches;
   final Set<String> selectedIds;
-  final VoidCallback onAllTap;
   final void Function(String) onToggle;
 
   const _BranchMultiSelect({
     required this.loading,
     required this.branches,
     required this.selectedIds,
-    required this.onAllTap,
     required this.onToggle,
   });
 
@@ -316,16 +320,10 @@ class _BranchMultiSelect extends StatelessWidget {
         ),
       );
     }
-    final allSelected = selectedIds.isEmpty;
     return Wrap(
       spacing: 8.w,
       runSpacing: 8.h,
       children: [
-        _BranchChip(
-          label: 'classroom_all_branches'.tr,
-          selected: allSelected,
-          onTap: onAllTap,
-        ),
         ...branches.map(
           (b) => _BranchChip(
             label: b.name,

@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
-import 'journal_date_pill.dart';
 
 /// Hero summary: "what kind of day did my child have?" — read in 3 seconds.
 class DayHeroCard extends StatelessWidget {
   const DayHeroCard({
     super.key,
     required this.childName,
-    required this.date,
     required this.summary,
-    required this.onDate,
   });
 
   final String childName;
-  final DateTime date;
   final DaySummary summary;
-  final ValueChanged<DateTime> onDate;
 
   String get _firstName =>
       childName.trim().isEmpty ? 'طفلك' : childName.trim().split(' ').first;
@@ -66,18 +61,15 @@ class DayHeroCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'تقييم اليوم',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: kJMuted),
-                        ),
-                        const Spacer(),
-                        JournalDatePill(date: date, onDate: onDate),
-                      ],
+                    // Date selector intentionally hidden here: parents browse
+                    // past days from the Link Book (دفتر التواصل) instead, so a
+                    // second date picker on the home hero was redundant.
+                    const Text(
+                      'تقييم اليوم',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: kJMuted),
                     ),
                     const SizedBox(height: 4),
                     Text(

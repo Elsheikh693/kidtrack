@@ -14,13 +14,18 @@ class ActivityEndController extends GetxController {
   final childEvals = <String, String>{}.obs;
   final childNotes = <String, String>{}.obs;
   final childReasons = <String, List<String>>{}.obs;
-  final defaultEval = Rxn<EvalLevel>();
+  // Holds the selected default level's KEY (dynamic eval levels).
+  final defaultEval = RxnString();
   final showHomework = true.obs;
 
   final reasons = <EvaluationReasonModel>[].obs;
   final isLoadingReasons = true.obs;
   late final EvaluationReasonsService _reasonsService;
   late final TeacherActivityService _activityService;
+  late final EvalLevelsRegistry _levelsRegistry;
+
+  /// The nursery's active evaluation levels (dynamic, highest-score first).
+  List<EvalLevelTemplateModel> get levels => _levelsRegistry.levels;
   final selectedSubjectId = RxnString();
   final selectedSubjectName = RxnString();
   final dueDate = Rxn<DateTime>();
@@ -34,6 +39,8 @@ class ActivityEndController extends GetxController {
     _mainCtrl = Get.find<TeacherActivityController>();
     _reasonsService = Get.find<EvaluationReasonsService>();
     _activityService = Get.find<TeacherActivityService>();
+    _levelsRegistry = Get.find<EvalLevelsRegistry>();
+    _levelsRegistry.ensureLoaded();
     ever(_mainCtrl.activeActivity, (_) => initFromActivity());
     // Default the homework date to the next school day when homework is enabled.
     ever(showHomework, (on) {
@@ -87,20 +94,20 @@ class ActivityEndController extends GetxController {
     return '';
   }
 
-  void setDefaultEval(EvalLevel level) {
-    defaultEval.value = level;
-    bulkSetAll(level.key);
+  void setDefaultEval(String levelKey) {
+    defaultEval.value = levelKey;
+    bulkSetAll(levelKey);
   }
 
-  void setChildEval(String childId, EvalLevel level) {
-    childEvals[childId] = level.key;
+  void setChildEval(String childId, String levelKey) {
+    childEvals[childId] = levelKey;
     childEvals.refresh();
   }
 
-  int summaryCount(EvalLevel level) {
+  int summaryCount(String levelKey) {
     final ids = children.map((c) => c.key).toSet();
     return childEvals.entries
-        .where((e) => ids.contains(e.key) && e.value == level.key)
+        .where((e) => ids.contains(e.key) && e.value == levelKey)
         .length;
   }
 

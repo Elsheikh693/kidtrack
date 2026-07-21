@@ -399,6 +399,10 @@ class ParentDashboardController extends GetxController {
     final childId = _activeChildId.value;
     if (childId.isEmpty) return;
 
+    // Ensure this month's fee invoice exists so the home payment-reminder card
+    // surfaces the due even before reception opens the collections tab.
+    await MonthlyInvoiceService().generateForChild(childId);
+
     // Months (YYYYMM) in which reception already recorded a cash collection for
     // this child. A monthly-subscription invoice (month_… key) for one of these
     // months is treated as settled — this reconciles the new collections log with

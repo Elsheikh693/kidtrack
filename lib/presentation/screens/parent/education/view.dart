@@ -28,22 +28,11 @@ class _ParentEducationViewState extends State<ParentEducationView> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return Container(
-          color: kJBg,
-          child: const SafeArea(
-            bottom: false,
-            child: CustomScrollView(
-              physics: NeverScrollableScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    child: ParentTopBar(),
-                  ),
-                ),
-                SliverToBoxAdapter(child: EducationShimmer()),
-              ],
-            ),
+        return const ParentTabScaffold(
+          backgroundColor: kJBg,
+          body: CustomScrollView(
+            physics: NeverScrollableScrollPhysics(),
+            slivers: [SliverToBoxAdapter(child: EducationShimmer())],
           ),
         );
       }
@@ -52,7 +41,8 @@ class _ParentEducationViewState extends State<ParentEducationView> {
       final active = controller.activeActivity.value;
       final timeline = controller.timeline.toList();
       final notes = controller.teacherNotes.toList();
-      final summary = controller.daySummary.value ??
+      final summary =
+          controller.daySummary.value ??
           const DaySummary(
             activityCount: 0,
             homeworkTotal: 0,
@@ -61,64 +51,53 @@ class _ParentEducationViewState extends State<ParentEducationView> {
             skills: [],
           );
 
-      return Container(
-        color: kJBg,
-        child: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: ParentTopBar(),
-                ),
-              ),
-              const SliverToBoxAdapter(child: _LinkBookEntry()),
-              if (active != null)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: CurrentActivityCard(
-                      activity: active,
-                      allActivities: controller.todayActivities,
-                    ),
-                  ),
-                ),
-              SliverToBoxAdapter(
-                child: DayHeroCard(
-                  childName: controller.childName,
-                  date: date,
-                  summary: summary,
-                  onDate: controller.setDate,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: JournalTimelineSection(items: timeline),
-              ),
-              const SliverToBoxAdapter(
-                child: JournalSectionHeader(
-                  icon: Icons.assignment_rounded,
-                  label: 'الواجبات',
-                  color: Color(0xFF8E44AD),
-                ),
-              ),
+      return ParentTabScaffold(
+        backgroundColor: kJBg,
+        body: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            const SliverToBoxAdapter(child: _LinkBookEntry()),
+            if (active != null)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: HomeworkSection(controller: controller),
-                ),
-              ),
-              if (notes.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 22, 16, 0),
-                    child: TeacherNotesSection(notes: notes, date: date),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: CurrentActivityCard(
+                    activity: active,
+                    allActivities: controller.todayActivities,
                   ),
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
-          ),
+              ),
+            SliverToBoxAdapter(
+              child: DayHeroCard(
+                childName: controller.childName,
+                summary: summary,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: JournalTimelineSection(items: timeline, enableNotes: true),
+            ),
+            const SliverToBoxAdapter(
+              child: JournalSectionHeader(
+                icon: Icons.assignment_rounded,
+                label: 'الواجبات',
+                color: Color(0xFF8E44AD),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: HomeworkSection(controller: controller),
+              ),
+            ),
+            if (notes.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 22, 16, 0),
+                  child: TeacherNotesSection(notes: notes, date: date),
+                ),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
         ),
       );
     });
@@ -141,7 +120,9 @@ class _LinkBookEntry extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF6C4DDB).withValues(alpha: 0.18)),
+            border: Border.all(
+              color: const Color(0xFF6C4DDB).withValues(alpha: 0.18),
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF6C4DDB).withValues(alpha: 0.08),
@@ -163,8 +144,11 @@ class _LinkBookEntry extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.auto_stories_rounded,
-                    color: Colors.white, size: 23),
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  color: Colors.white,
+                  size: 23,
+                ),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -174,17 +158,19 @@ class _LinkBookEntry extends StatelessWidget {
                     Text(
                       'دفتر التواصل',
                       style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
-                          color: kJInk),
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: kJInk,
+                      ),
                     ),
                     SizedBox(height: 3),
                     Text(
                       'تصفّح كل أيام طفلك في مكان واحد',
                       style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: kJMuted),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: kJMuted,
+                      ),
                     ),
                   ],
                 ),

@@ -1,9 +1,10 @@
 import '../../../../../index/index_main.dart';
 import 'report_reveal.dart';
 
-/// One tile in the Reports hub grid. Owns its [color] as a whisper-tinted
-/// ground with a solid gradient icon chip, a title and a short description.
-class ReportGridTile extends StatelessWidget {
+/// Full-width report entry in the Reports hub. A whisper-tinted card with a
+/// solid gradient icon chip, title, description and a trailing chevron — gives
+/// each report room to breathe instead of a cramped grid cell.
+class ReportListRow extends StatelessWidget {
   final int index;
   final String labelKey;
   final String descKey;
@@ -11,7 +12,7 @@ class ReportGridTile extends StatelessWidget {
   final Color color;
   final VoidCallback? onTap;
 
-  const ReportGridTile({
+  const ReportListRow({
     super.key,
     required this.index,
     required this.labelKey,
@@ -28,8 +29,7 @@ class ReportGridTile extends StatelessWidget {
       index: index,
       onTap: onTap,
       child: Container(
-        height: 158.h,
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: Color.alphaBlend(
             color.withValues(alpha: 0.05),
@@ -39,47 +39,50 @@ class ReportGridTile extends StatelessWidget {
           border: Border.all(color: color.withValues(alpha: 0.14)),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.10),
-              blurRadius: 20.r,
-              spreadRadius: -8.r,
-              offset: Offset(0, 10.h),
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 18.r,
+              spreadRadius: -10.r,
+              offset: Offset(0, 8.h),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                _iconChip(),
-                const Spacer(),
-                _arrow(),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              labelKey.tr,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: context.typography.smSemiBold.copyWith(color: ink),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              descKey.tr,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: context.typography.xsRegular
-                  .copyWith(color: const Color(0xFF94A3B8)),
-            ),
+            _iconChip(),
+            SizedBox(width: 14.w),
+            Expanded(child: _texts(context, ink)),
+            SizedBox(width: 8.w),
+            _arrow(),
           ],
         ),
       ),
     );
   }
 
+  Widget _texts(BuildContext context, Color ink) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            labelKey.tr,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.typography.smSemiBold.copyWith(color: ink),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            descKey.tr,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: context.typography.xsRegular
+                .copyWith(color: const Color(0xFF94A3B8)),
+          ),
+        ],
+      );
+
   Widget _iconChip() => Container(
-        width: 46.w,
-        height: 46.w,
+        width: 52.w,
+        height: 52.w,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -87,7 +90,7 @@ class ReportGridTile extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [color, color.darken(0.16)],
           ),
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.35),
@@ -96,12 +99,12 @@ class ReportGridTile extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 22.sp),
+        child: Icon(icon, color: Colors.white, size: 25.sp),
       );
 
   Widget _arrow() => Container(
-        width: 28.w,
-        height: 28.w,
+        width: 30.w,
+        height: 30.w,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.10),
@@ -109,8 +112,7 @@ class ReportGridTile extends StatelessWidget {
         ),
         child: Directionality(
           textDirection: TextDirection.ltr,
-          child:
-              Icon(Icons.chevron_left_rounded, color: color, size: 20.sp),
+          child: Icon(Icons.chevron_left_rounded, color: color, size: 20.sp),
         ),
       );
 }

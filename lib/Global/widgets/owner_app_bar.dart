@@ -14,6 +14,7 @@ class OwnerAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.showScopeSwitcher = false,
     this.onBack,
+    this.extraActions = const [],
   });
 
   final String title;
@@ -22,6 +23,10 @@ class OwnerAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// When provided, a leading back arrow is shown (e.g. when the screen is
   /// opened from a home quick-link rather than the bottom nav bar).
   final VoidCallback? onBack;
+
+  /// Extra actions shown before the notifications icon (e.g. a PDF export
+  /// button on analytics reports).
+  final List<Widget> extraActions;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +54,7 @@ class OwnerAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
       actions: [
+        ...extraActions,
         IconButton(
           icon: const Icon(Icons.notifications_outlined),
           color: AppColors.textDefault,

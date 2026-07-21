@@ -19,6 +19,12 @@ class NurseryModel {
   /// opts in. Discovery requires both `isActive && isListed`.
   final bool isListed;
 
+  /// Owner-only feature flag: when true, the OWNER's home dashboard surfaces the
+  /// cross-branch activity-photo review banner (aggregating pending photos from
+  /// every branch). Managers always keep their own per-branch review regardless.
+  /// Defaults to false — the owner opts in from settings.
+  final bool ownerPhotoReviewEnabled;
+
   final int? createdAt;
   final int? updatedAt;
 
@@ -91,6 +97,7 @@ class NurseryModel {
     this.ownerIds = const [],
     this.isActive = true,
     this.isListed = false,
+    this.ownerPhotoReviewEnabled = false,
     this.createdAt,
     this.updatedAt,
     this.kidtrackFeedbackCampaignId,
@@ -140,6 +147,8 @@ class NurseryModel {
       ownerIds: _parseOwnerIds(json['ownerIds'], json['ownerId']),
       isActive: _parseBool(json['isActive']),
       isListed: _parseBool(json['isListed'], fallback: false),
+      ownerPhotoReviewEnabled:
+          _parseBool(json['ownerPhotoReviewEnabled'], fallback: false),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
       kidtrackFeedbackCampaignId:
@@ -184,6 +193,7 @@ class NurseryModel {
     if (owners.isNotEmpty) data['ownerIds'] = owners;
     data['isActive'] = isActive;
     data['isListed'] = isListed;
+    data['ownerPhotoReviewEnabled'] = ownerPhotoReviewEnabled;
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
     put('kidtrackFeedbackCampaignId', kidtrackFeedbackCampaignId);
@@ -219,7 +229,8 @@ class NurseryModel {
   NurseryModel copyWith({
     String? key, String? name, String? logo, String? phone, String? whatsapp,
     String? email, String? address, String? ownerId, List<String>? ownerIds,
-    bool? isActive, bool? isListed, int? createdAt, int? updatedAt,
+    bool? isActive, bool? isListed, bool? ownerPhotoReviewEnabled,
+    int? createdAt, int? updatedAt,
     String? kidtrackFeedbackCampaignId,
     String? coverPhoto, List<String>? photos, String? description,
     double? lat, double? lng, double? rating, int? reviewsCount,
@@ -241,6 +252,8 @@ class NurseryModel {
     ownerId: ownerId ?? this.ownerId, ownerIds: ownerIds ?? this.ownerIds,
     isActive: isActive ?? this.isActive,
     isListed: isListed ?? this.isListed,
+    ownerPhotoReviewEnabled:
+        ownerPhotoReviewEnabled ?? this.ownerPhotoReviewEnabled,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
     kidtrackFeedbackCampaignId:
         kidtrackFeedbackCampaignId ?? this.kidtrackFeedbackCampaignId,

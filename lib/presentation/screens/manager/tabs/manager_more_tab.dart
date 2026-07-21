@@ -105,6 +105,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'nursery_feedback_view_title',
           onTap: () => Get.toNamed(nurseryFeedbackListView),
         ),
+        ManagerGridTile(
+          icon: Icons.forum_rounded,
+          color: AppColors.activityPurple,
+          labelKey: 'parent_notes_tab',
+          onTap: () => Get.to(() => const ParentNotesInboxView()),
+        ),
       ],
     );
   }
@@ -120,6 +126,7 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'billing_my_subscription',
           onTap: () => Get.toNamed(mySubscriptionView),
         ),
+        // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
         // "طلبات الالتحاق" and "ملف التقديم" tiles temporarily removed
         // for manager/owner.
       ],

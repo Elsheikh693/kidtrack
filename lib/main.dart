@@ -56,11 +56,13 @@ void main() {
     final session = SessionService();
     final restoredUid = session.userId;
     if (session.isLoggedIn && !session.isGuest && restoredUid != null) {
-      unawaited(FcmTokenService().attach(
-        uid: restoredUid,
-        isStaff: session.hasStaffRecord,
-        nurseryId: session.nurseryId,
-      ));
+      unawaited(
+        FcmTokenService().attach(
+          uid: restoredUid,
+          isStaff: session.hasStaffRecord,
+          nurseryId: session.nurseryId,
+        ),
+      );
     }
 
     // NOTE: we deliberately do NOT call FlutterNativeSplash.preserve()/remove().

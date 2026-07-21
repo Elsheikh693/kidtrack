@@ -298,6 +298,11 @@ class CollectionsController extends GetxController {
     if (ok) {
       Loader.showSuccess('invoice_paid_success'.tr);
       await loadData();
+      // Settling here may also clear the child off the "unpaid subscriptions"
+      // home card — keep it in sync.
+      if (Get.isRegistered<UnpaidSubscriptionController>()) {
+        Get.find<UnpaidSubscriptionController>().load();
+      }
     } else {
       Loader.showError('invoice_paid_error'.tr);
     }

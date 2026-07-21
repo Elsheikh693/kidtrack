@@ -94,6 +94,23 @@ class SessionService {
     return entityShiftIds.any(seesShift);
   }
 
+  /// Whether an entity in [entityBranchId] is within the current user's branch
+  /// scope. A user with no bound branch (owner/super-admin, or a staff record
+  /// that lacks a branch) sees every branch; a branch-bound user (teacher,
+  /// supervisor, reception) sees ONLY their own branch. Empty [entityBranchId]
+  /// is treated as visible so legacy data is never hidden — mirrors [seesShift].
+  ///
+  /// This is the guard that keeps a teacher assigned to a shared/all-branches
+  /// classroom from seeing children of a different branch: classroom rosters are
+  /// queried by classroomId (which can span branches), so each child must also
+  /// pass this branch check.
+  bool seesBranch(String? entityBranchId) {
+    final mine = branchId;
+    if (mine == null || mine.isEmpty) return true;
+    if (entityBranchId == null || entityBranchId.isEmpty) return true;
+    return entityBranchId == mine;
+  }
+
   bool get isLoggedIn => _currentUser != null && !(_currentUser!.isGuest);
 
   bool get isGuest => _currentUser == null || (_currentUser!.isGuest);

@@ -68,12 +68,17 @@ class _OwnerFeedTabState extends State<OwnerFeedTab> {
             ],
           );
         }),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () =>
-              showCreatePostSheet(context, controller: controller),
-          backgroundColor: AppColors.primary,
-          icon: const Icon(Icons.add_rounded, color: Colors.white),
-          label: Text('بوست جديد', style: context.typography.smSemiBold.copyWith(color: Colors.white)),
+        // Lifted above the floating bottom nav bar (68.h pill + 12.h gap)
+        // owned by the outer shell Scaffold, so the FAB clears it.
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 80.h),
+          child: FloatingActionButton.extended(
+            onPressed: () =>
+                showCreatePostSheet(context, controller: controller),
+            backgroundColor: AppColors.primary,
+            icon: const Icon(Icons.add_rounded, color: Colors.white),
+            label: Text('بوست جديد', style: context.typography.smSemiBold.copyWith(color: Colors.white)),
+          ),
         ),
       );
   }

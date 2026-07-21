@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import '../../../../../Global/widgets/event_options_sheet.dart';
 
 /// One child row inside the classroom-states sheet: avatar with a live presence
 /// dot, name, a presence line, and either a check-in button (absent) or a state
@@ -24,6 +25,10 @@ class ClassroomStateTile extends StatelessWidget {
     return Obx(() {
       final checkedIn = controller.isCheckedIn(childId);
       final currentId = controller.stateIdFor(childId);
+      final statusTemplates =
+          controller.templates.where((t) => t.isStatus).toList();
+      final eventTemplates =
+          controller.templates.where((t) => t.isEvent).toList();
 
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
@@ -33,7 +38,10 @@ class ClassroomStateTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFEEF2F6)),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+        Row(
           children: [
             // Avatar + presence dot
             Stack(
@@ -138,14 +146,86 @@ class ClassroomStateTile extends StatelessWidget {
             else
               ChildStateDropdown(
                 currentId: currentId,
-                templates: controller.templates,
+                templates: statusTemplates,
                 currentLabel: controller.stateLabelFor(childId),
                 onChanged: (stateId, stateTitle) =>
                     controller.updateState(childId, stateId, stateTitle),
               ),
           ],
         ),
+        // Quick instant-event chips — one tap logs the event, no revert.
+        if (checkedIn && eventTemplates.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.only(right: 60),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final t in eventTemplates)
+                  _EventChip(
+                    icon: ChildStateIcons.iconFor(t.icon),
+                    label: t.title,
+                    onTap: () {
+                      if (t.options.isEmpty) {
+                        controller.updateState(childId, t.key ?? '', t.title);
+                      } else {
+                        showEventOptionsSheet(
+                          context: context,
+                          template: t,
+                          onPick: (title) => controller.updateState(
+                              childId, t.key ?? '', title),
+                        );
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
+          ],
+        ),
       );
     });
+  }
+}
+
+class _EventChip extends StatelessWidget {
+  const _EventChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: const Color(0xFF475569)),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: context.typography.xsMedium
+                  .copyWith(color: const Color(0xFF334155)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

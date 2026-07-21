@@ -3,11 +3,21 @@ import '../../../../../Global/widgets/app_network_image.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
 import 'activity_detail_sheet.dart';
+import 'session_note_button.dart';
 
 /// Time-ordered list of the child's activities for the selected day.
 class JournalTimelineSection extends StatelessWidget {
-  const JournalTimelineSection({super.key, required this.items});
+  const JournalTimelineSection({
+    super.key,
+    required this.items,
+    this.enableNotes = false,
+  });
   final List<DayTimelineItem> items;
+
+  /// When true, each activity card shows the guardian's "add your note" action.
+  /// Only the main Link Book tab (education view) opts in — the Link Book
+  /// history day pages stay read-only.
+  final bool enableNotes;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +71,11 @@ class JournalTimelineSection extends StatelessWidget {
           )
         else
           for (int i = 0; i < items.length; i++)
-            _TimelineTile(item: items[i], isLast: i == items.length - 1),
+            _TimelineTile(
+              item: items[i],
+              isLast: i == items.length - 1,
+              enableNotes: enableNotes,
+            ),
       ],
     );
   }
@@ -96,9 +110,14 @@ class _EmptyTimeline extends StatelessWidget {
 }
 
 class _TimelineTile extends StatelessWidget {
-  const _TimelineTile({required this.item, required this.isLast});
+  const _TimelineTile({
+    required this.item,
+    required this.isLast,
+    this.enableNotes = false,
+  });
   final DayTimelineItem item;
   final bool isLast;
+  final bool enableNotes;
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +280,7 @@ class _TimelineTile extends StatelessWidget {
                     const SizedBox(height: 11),
                     _CommentBox(text: item.note!.trim()),
                   ],
+                  if (enableNotes) SessionNoteButton(item: item),
                 ],
               ),
             ),

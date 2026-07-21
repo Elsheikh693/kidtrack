@@ -19,31 +19,20 @@ class _ParentPostsViewState extends State<ParentPostsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFF4F4F8),
-      child: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: controller.refresh,
-          color: AppColors.primary,
-          displacement: 60,
-          child: CustomScrollView(
-            controller: controller.scrollController,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: ParentTopBar(),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: _FeedBody(controller: controller),
-              ),
-            ],
+    return ParentTabScaffold(
+      backgroundColor: const Color(0xFFF4F4F8),
+      body: RefreshIndicator(
+        onRefresh: controller.refresh,
+        color: AppColors.primary,
+        displacement: 60,
+        child: CustomScrollView(
+          controller: controller.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
+          slivers: [
+            SliverToBoxAdapter(child: _FeedBody(controller: controller)),
+          ],
         ),
       ),
     );
@@ -67,6 +56,9 @@ class _FeedBody extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Breathing room between the top bar and the first post.
+          const SizedBox(height: 12),
+
           // ── Pinned section ────────────────────────────────────────────────
           if (pinned.isNotEmpty) ...[
             _SectionHeader(
@@ -74,18 +66,18 @@ class _FeedBody extends StatelessWidget {
               label: 'parent_posts_pinned_section'.tr,
               color: AppColors.yellowForeground,
             ),
-            ...pinned.map((p) => ParentPostCard(key: ValueKey('pin_${p.id}'), post: p)),
+            ...pinned.map(
+              (p) => ParentPostCard(key: ValueKey('pin_${p.id}'), post: p),
+            ),
           ],
 
           // ── Regular section ───────────────────────────────────────────────
-          if (regular.isNotEmpty) ...[
-            _SectionHeader(
-              icon: Icons.article_outlined,
-              label: 'parent_posts_recent_section'.tr,
-              color: AppColors.textSecondaryParagraph,
+          // Header ("الأنشطة والأخبار") intentionally removed — the posts speak
+          // for themselves and the top bar already frames the feed.
+          if (regular.isNotEmpty)
+            ...regular.map(
+              (p) => ParentPostCard(key: ValueKey('reg_${p.id}'), post: p),
             ),
-            ...regular.map((p) => ParentPostCard(key: ValueKey('reg_${p.id}'), post: p)),
-          ],
 
           // ── Empty state ───────────────────────────────────────────────────
           if (controller.isEmpty) const _EmptyState(),
@@ -104,14 +96,20 @@ class _FeedBody extends StatelessWidget {
             ),
 
           // ── End of feed label ─────────────────────────────────────────────
-          if (!controller.hasMore.value && regular.isNotEmpty && !controller.isLoadingMore.value)
+          if (!controller.hasMore.value &&
+              regular.isNotEmpty &&
+              !controller.isLoadingMore.value)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(width: 40, height: 1, color: AppColors.borderNeutralPrimary),
+                    Container(
+                      width: 40,
+                      height: 1,
+                      color: AppColors.borderNeutralPrimary,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       'parent_feed_no_more'.tr,
@@ -121,7 +119,11 @@ class _FeedBody extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Container(width: 40, height: 1, color: AppColors.borderNeutralPrimary),
+                    Container(
+                      width: 40,
+                      height: 1,
+                      color: AppColors.borderNeutralPrimary,
+                    ),
                   ],
                 ),
               ),
@@ -204,8 +206,9 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'parent_feed_empty_title'.tr,
-            style: context.typography.mdBold
-                .copyWith(color: AppColors.textDefault),
+            style: context.typography.mdBold.copyWith(
+              color: AppColors.textDefault,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -231,9 +234,7 @@ class _FeedShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(3, (_) => const _PostSkeleton()),
-    );
+    return Column(children: List.generate(3, (_) => const _PostSkeleton()));
   }
 }
 
@@ -241,13 +242,13 @@ class _PostSkeleton extends StatelessWidget {
   const _PostSkeleton();
 
   Widget _box(double w, double h) => Container(
-        width: w,
-        height: h,
-        decoration: BoxDecoration(
-          color: const Color(0xFFE5E7EB),
-          borderRadius: BorderRadius.circular(6),
-        ),
-      );
+    width: w,
+    height: h,
+    decoration: BoxDecoration(
+      color: const Color(0xFFE5E7EB),
+      borderRadius: BorderRadius.circular(6),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {

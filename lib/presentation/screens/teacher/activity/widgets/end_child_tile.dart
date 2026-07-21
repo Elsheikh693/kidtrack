@@ -42,25 +42,17 @@ class EndChildTile extends StatelessWidget {
     final childId = child.key ?? '';
     return Obx(() {
       final currentKey = endCtrl.childEvals[childId];
-      final currentLevel =
-          currentKey != null ? EvalLevel.fromKey(currentKey) : null;
+      final levels = endCtrl.levels;
+      final selColor = (currentKey != null && currentKey.isNotEmpty)
+          ? EvalLevelsRegistry.instance.colorFor(currentKey)
+          : null;
       final reasonCount = endCtrl.reasonCount(childId);
 
-      Color bgColor = Colors.white;
-      Color borderColor = Colors.grey.shade100;
-      if (currentLevel != null) {
-        switch (currentLevel) {
-          case EvalLevel.excellent:
-            bgColor = AppColors.activityGreenLight;
-            borderColor = AppColors.activityGreen.withValues(alpha: 0.15);
-          case EvalLevel.needsFollow:
-            bgColor = AppColors.activityAmberLight;
-            borderColor = AppColors.activityAmber.withValues(alpha: 0.15);
-          case EvalLevel.needsAttention:
-            bgColor = AppColors.activityRedLight;
-            borderColor = AppColors.activityRed.withValues(alpha: 0.15);
-        }
-      }
+      final bgColor =
+          selColor == null ? Colors.white : selColor.withValues(alpha: 0.08);
+      final borderColor = selColor == null
+          ? Colors.grey.shade100
+          : selColor.withValues(alpha: 0.18);
 
       return AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -71,94 +63,91 @@ class EndChildTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ChildAvatar(
-              name: child.fullName,
-              imageUrl: child.profileImage,
-              size: 30,
-              color: _avatarColor,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                child.fullName,
-                style: context.typography.smMedium
-                    .copyWith(color: AppColors.textDisplay),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 8),
-            _EvalMiniPill(
-              icon: Icons.sentiment_very_satisfied_rounded,
-              color: AppColors.activityGreen,
-              isSelected: currentLevel == EvalLevel.excellent,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                endCtrl.setChildEval(childId, EvalLevel.excellent);
-              },
-            ),
-            const SizedBox(width: 4),
-            _EvalMiniPill(
-              icon: Icons.sentiment_neutral_rounded,
-              color: AppColors.activityAmber,
-              isSelected: currentLevel == EvalLevel.needsFollow,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                endCtrl.setChildEval(childId, EvalLevel.needsFollow);
-              },
-            ),
-            const SizedBox(width: 4),
-            _EvalMiniPill(
-              icon: Icons.sentiment_dissatisfied_rounded,
-              color: AppColors.activityRed,
-              isSelected: currentLevel == EvalLevel.needsAttention,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                endCtrl.setChildEval(childId, EvalLevel.needsAttention);
-              },
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => _openComment(context),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 7, vertical: 5),
-                decoration: BoxDecoration(
-                  color: reasonCount > 0
-                      ? AppColors.activityPurple.withValues(alpha: 0.08)
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: reasonCount > 0
-                        ? AppColors.activityPurple.withValues(alpha: 0.3)
-                        : Colors.transparent,
+            // Row 1: avatar + name + comment button
+            Row(
+              children: [
+                ChildAvatar(
+                  name: child.fullName,
+                  imageUrl: child.profileImage,
+                  size: 30,
+                  color: _avatarColor,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    child.fullName,
+                    style: context.typography.smMedium
+                        .copyWith(color: AppColors.textDisplay),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.label_rounded,
-                      size: 14,
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _openComment(context),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 7, vertical: 5),
+                    decoration: BoxDecoration(
                       color: reasonCount > 0
-                          ? AppColors.activityPurple
-                          : Colors.grey.shade400,
-                    ),
-                    if (reasonCount > 0) ...[
-                      const SizedBox(width: 3),
-                      Text(
-                        '$reasonCount',
-                        style: context.typography.xsMedium.copyWith(
-                          color: AppColors.activityPurple,
-                          fontSize: 11,
-                        ),
+                          ? AppColors.activityPurple.withValues(alpha: 0.08)
+                          : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: reasonCount > 0
+                            ? AppColors.activityPurple.withValues(alpha: 0.3)
+                            : Colors.transparent,
                       ),
-                    ],
-                  ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.label_rounded,
+                          size: 14,
+                          color: reasonCount > 0
+                              ? AppColors.activityPurple
+                              : Colors.grey.shade400,
+                        ),
+                        if (reasonCount > 0) ...[
+                          const SizedBox(width: 3),
+                          Text(
+                            '$reasonCount',
+                            style: context.typography.xsMedium.copyWith(
+                              color: AppColors.activityPurple,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Row 2: dynamic eval-level pills (scrolls if many)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < levels.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 4),
+                    _EvalMiniPill(
+                      icon: EvalLevelIcons.iconFor(levels[i].icon),
+                      color: Color(levels[i].color),
+                      isSelected: currentKey == levels[i].key,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        endCtrl.setChildEval(childId, levels[i].key ?? '');
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
           ],

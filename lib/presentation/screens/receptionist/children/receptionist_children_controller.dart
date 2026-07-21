@@ -61,4 +61,7 @@ class ReceptionistChildrenController extends ChildListController {
       isScrollControlled: true,
     );
   }
+
+  /// Opens the bulk "invite guardians to the app" screen.
+  void openInviteParents() => Get.toNamed(bulkInvitationsView);
 }

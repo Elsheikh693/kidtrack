@@ -34,6 +34,7 @@ class ActivationCodeCard extends StatelessWidget {
             size: 20.sp,
             color: AppColors.textSecondaryParagraph,
           ),
+          suffixIcon: _PasteButton(onTap: controller.pasteCode),
         ),
         SizedBox(height: 24.h),
         _SubmitButton(controller: controller),
@@ -115,6 +116,42 @@ class _SubmitButton extends StatelessWidget {
         ),
       );
     });
+  }
+}
+
+/// Compact "paste the code" affordance sitting inside the code field. Lets a
+/// holder who copied the whole WhatsApp invite drop it in with one tap.
+class _PasteButton extends StatelessWidget {
+  const _PasteButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.content_paste_rounded,
+              size: 16.sp,
+              color: AppColors.primary,
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'activation_paste'.tr,
+              style: context.typography.xsMedium.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

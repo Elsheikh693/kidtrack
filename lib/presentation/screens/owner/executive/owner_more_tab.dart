@@ -52,6 +52,12 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFFD97706),
         route: holidaysView,
       ),
+      DashboardItem(
+        labelKey: 'owner_item_photo_review',
+        icon: Icons.rate_review_rounded,
+        color: Color(0xFF0891B2),
+        route: ownerPhotoReviewSettingsView,
+      ),
     ],
   );
 
@@ -66,6 +72,7 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFF16A34A),
         route: mySubscriptionView,
       ),
+      // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
       // "طلبات الالتحاق" item temporarily removed for manager/owner.
     ],
   );

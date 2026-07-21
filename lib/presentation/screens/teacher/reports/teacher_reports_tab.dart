@@ -111,15 +111,28 @@ class _Header extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 12.h),
+              padding: EdgeInsets.fromLTRB(16.w, 14.h, 20.w, 12.h),
               child: Row(
                 children: [
-                  Text(
-                    'teacher_tab_work_log'.tr,
-                    style: context.typography.lgBold,
+                  Expanded(
+                    child: Text(
+                      'teacher_tab_work_log'.tr,
+                      style: context.typography.lgBold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const Spacer(),
                   _DateNavigator(ctrl: ctrl),
+                  const SizedBox(width: 10),
+                  _CircleAction(
+                    icon: Icons.notifications_outlined,
+                    onTap: () => Get.toNamed(notificationsView),
+                  ),
+                  const SizedBox(width: 10),
+                  _CircleAction(
+                    icon: Icons.settings_outlined,
+                    onTap: () => Get.to(() => const StaffAccountView()),
+                  ),
                 ],
               ),
             ),
@@ -165,6 +178,36 @@ class _Header extends StatelessWidget {
               color: AppColors.borderNeutralPrimary.withValues(alpha: 0.2),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CircleAction extends StatelessWidget {
+  const _CircleAction({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.activityGreenLight,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.activityGreen.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 21,
+          color: AppColors.activityGreen,
         ),
       ),
     );

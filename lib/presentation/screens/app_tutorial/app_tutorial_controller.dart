@@ -14,6 +14,48 @@ class AppTutorialController extends GetxController {
 
   bool _celebrated = false;
 
+  /// Fixed demo activation codes, keyed by role, surfaced inline on each role's
+  /// tutorial card so a tester can copy that role's code, sign out, and log back
+  /// in as the role to try the app hands-on.
+  static const Map<String, String> _demoCodes = {
+    'owner': 'CZX2-8Z3A',
+    'manager': '3GB9-Q2K7',
+    'teacher': 'P4DV-W6T6',
+    'reception': '7Y36-FY5S',
+    'parent': 'Q88V-446F',
+  };
+
+  /// Best-effort match of a tutorial video (by title) to the role it explains,
+  /// returning that role's demo code — or null when the video isn't a role
+  /// walkthrough (e.g. the nursery-profile intro or the owner video).
+  String? demoCodeFor(TutorialVideoModel v) {
+    final t = v.title;
+    final lower = t.toLowerCase();
+    if (t.contains('استقبال') || lower.contains('reception')) {
+      return _demoCodes['reception'];
+    }
+    if (t.contains('معلم') || t.contains('معلّم') || lower.contains('teacher')) {
+      return _demoCodes['teacher'];
+    }
+    if (t.contains('مدير') || lower.contains('manager')) {
+      return _demoCodes['manager'];
+    }
+    if (t.contains('ولي') ||
+        lower.contains('parent') ||
+        lower.contains('guardian')) {
+      return _demoCodes['parent'];
+    }
+    if (t.contains('صاحب') || t.contains('مالك') || lower.contains('owner')) {
+      return _demoCodes['owner'];
+    }
+    return null;
+  }
+
+  void copyDemoCode(String code) {
+    Clipboard.setData(ClipboardData(text: code));
+    Loader.showSuccess('activation_code_copied'.tr);
+  }
+
   UserType get _role => SessionService().effectiveRole;
 
   @override

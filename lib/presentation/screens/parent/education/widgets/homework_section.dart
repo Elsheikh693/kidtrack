@@ -158,13 +158,13 @@ class _EmptyHomework extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'لا توجد واجبات لهذا اليوم',
+                  'hw_empty_today_title'.tr,
                   style: context.typography.smSemiBold
                       .copyWith(color: const Color(0xFF047857)),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'استمتع بوقتك مع طفلك 🌿',
+                  'hw_empty_today_sub'.tr,
                   style: context.typography.xsRegular
                       .copyWith(color: AppColors.textSecondaryParagraph),
                 ),
@@ -292,14 +292,25 @@ class _AllDoneBannerState extends State<_AllDoneBanner>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'ممتاز! أنجزنا كل الواجبات 🎉',
-                    style: context.typography.smSemiBold.copyWith(
-                      color: const Color(0xFF059669),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'hw_all_done_title'.tr,
+                          style: context.typography.smSemiBold.copyWith(
+                            color: const Color(0xFF059669),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // Standalone emoji — see the note in _EmptyHomework: a
+                      // trailing emoji fused to RTL Arabic tofus on iOS.
+                      Text('🎉', style: context.typography.smSemiBold),
+                    ],
                   ),
                   Text(
-                    'استمر في التقدم الرائع!',
+                    'hw_all_done_sub'.tr,
                     style: context.typography.xsRegular.copyWith(
                       color: AppColors.textSecondaryParagraph,
                     ),

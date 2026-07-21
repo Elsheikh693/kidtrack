@@ -1,17 +1,17 @@
 import '../../../../index/index_main.dart';
 
-/// Drives the receptionist "الماليات" tab — a pure cash-collection log built
-/// only on [FeeCategoryModel] + [FinancialTransactionModel] (no old Invoice
-/// system). The receptionist searches a child, sees what that child already
-/// paid, and records new cash.
+/// Drives the receptionist "الماليات" tab — a child-centric collections screen.
+/// Each in-scope child is listed with their outstanding balance (aggregated
+/// from their unpaid/partial [InvoiceModel]s); the receptionist collects the
+/// full remaining or a partial amount, picks a method (cash/InstaPay/wallet),
+/// and the payment is waterfalled across that child's open invoices while a
+/// [FinancialTransactionModel] revenue-log entry records the collected total.
 class ReceptionCollectionController extends GetxController {
   late final ChildParentService _childService;
   late final ClassroomParentService _classroomService;
   late final ParentChildParentService _linkService;
   late final GuardianParentService _guardianService;
-  late final PackageParentService _packageService;
   late final FinancialTransactionParentService _txService;
-  late final InvoiceParentService _invoiceService;
 
   final _session = SessionService();
   final _finance = FinanceService();
@@ -21,8 +21,17 @@ class ReceptionCollectionController extends GetxController {
   final RxMap<String, String> classroomNames = <String, String>{}.obs;
   final RxMap<String, String> parentNames = <String, String>{}.obs;
 
-  // ─── Packages the receptionist collects against (the branch's price list) ──
-  final RxList<PackageModel> packages = <PackageModel>[].obs;
+  // ─── Per-child outstanding (المستحق) ──────────────────────────────────────
+  /// childId -> total remaining across all that child's unpaid/partial invoices.
+  final RxMap<String, double> outstandingByChild = <String, double>{}.obs;
+
+  /// childId -> that child's open invoices (oldest-first), the collection targets.
+  final Map<String, List<InvoiceModel>> _openInvoices = {};
+
+  /// childId -> a guardian-uploaded transfer screenshot awaiting confirmation.
+  /// Drives the "إثبات تحويل" badge on the child card and the proof preview in
+  /// the collect sheet, so reception knows who to confirm.
+  final RxMap<String, String> proofUrlByChild = <String, String>{}.obs;
 
   // ─── Selection + that child's history ─────────────────────────────────────
   final Rxn<ChildModel> selectedChild = Rxn<ChildModel>();
@@ -41,9 +50,7 @@ class ReceptionCollectionController extends GetxController {
     _classroomService = Get.find<ClassroomParentService>();
     _linkService = Get.find<ParentChildParentService>();
     _guardianService = Get.find<GuardianParentService>();
-    _packageService = Get.find<PackageParentService>();
     _txService = Get.find<FinancialTransactionParentService>();
-    _invoiceService = Get.find<InvoiceParentService>();
     loadData();
   }
 
@@ -76,7 +83,18 @@ class ReceptionCollectionController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
-    await Future.wait([_loadChildren(), _loadLookups(), _loadPackages()]);
+    // The directory + name lookups don't depend on invoices — load them in
+    // parallel with generating/reading this month's invoices, which returns the
+    // list so we bucket outstanding WITHOUT a second read.
+    final results = await Future.wait([
+      _loadChildren(),
+      _loadLookups(),
+      MonthlyInvoiceService().generateForMonth(
+        month: DateTime(DateTime.now().year, DateTime.now().month),
+        branchId: _session.branchId,
+      ),
+    ]);
+    _loadOutstanding(results[2] as List<InvoiceModel>);
     isLoading.value = false;
   }
 
@@ -99,65 +117,97 @@ class ReceptionCollectionController extends GetxController {
     return _session.seesShift(c.shift);
   }
 
-  Future<void> _loadLookups() async {
-    await _classroomService.getAll(
-      callBack: (list) {
-        final map = <String, String>{};
-        for (final c in list.whereType<ClassroomModel>()) {
-          if (c.key != null) map[c.key!] = c.name;
-        }
-        classroomNames.value = map;
-      },
-    );
-    final parentById = <String, String>{};
-    await _guardianService.getAll(
-      callBack: (list) {
-        for (final p in list.whereType<ParentModel>()) {
-          parentById[p.uid] = p.name;
-        }
-      },
-    );
-    await _linkService.getAll(
-      callBack: (list) {
-        final map = <String, String>{};
-        for (final link in list.whereType<ParentChildModel>()) {
-          final name = parentById[link.parentId];
-          if (name == null) continue;
-          if (link.isPrimary || !map.containsKey(link.childId)) {
-            map[link.childId] = name;
-          }
-        }
-        parentNames.value = map;
-      },
-    );
-  }
+  // ─── Outstanding (المستحق) ────────────────────────────────────────────────
 
-  /// Active packages this receptionist can collect against: their own branch's
-  /// packages plus any network-wide package (no branch pinned). These are the
-  /// exact price-list entries the owner/manager defined in "الباقات".
-  Future<void> _loadPackages() async {
-    final out = <PackageModel>[];
-    await _packageService.getAll(
-      callBack: (list) => out.addAll(list.whereType<PackageModel>()),
-    );
-    final bId = _session.branchId;
-    packages.value = out.where((p) => p.isActive && _packageInScope(p, bId)).toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
-  }
-
-  bool _packageInScope(PackageModel p, String? branchId) {
-    if (branchId == null || branchId.isEmpty) return true;
-    return p.branchId == null || p.branchId!.isEmpty || p.branchId == branchId;
-  }
-
-  /// The branch's monthly subscription package (first active monthly package in
-  /// scope), or null if none is set up. Drives the one-tap "renew" shortcut on
-  /// the directory list.
-  PackageModel? get monthlyPackage {
-    for (final p in packages) {
-      if (p.duration == 'monthly') return p;
+  /// Buckets every in-scope child's remaining balance from their open invoices
+  /// (unpaid + partially-paid). Keeps the raw open invoices per child so a
+  /// collection can be waterfalled across them oldest-first.
+  void _loadOutstanding(List<InvoiceModel> invoices) {
+    final scoped = children.map((c) => c.key).whereType<String>().toSet();
+    final byChild = <String, double>{};
+    final proofs = <String, String>{};
+    _openInvoices.clear();
+    for (final inv in invoices) {
+      if (!scoped.contains(inv.childId) || !inv.hasOutstanding) continue;
+      byChild[inv.childId] = (byChild[inv.childId] ?? 0) + inv.remaining;
+      (_openInvoices[inv.childId] ??= []).add(inv);
+      if (inv.hasPendingProof) proofs[inv.childId] = inv.proofUrl!;
     }
-    return null;
+    for (final l in _openInvoices.values) {
+      l.sort((a, b) => (a.dueDate ?? a.createdAt ?? 0)
+          .compareTo(b.dueDate ?? b.createdAt ?? 0));
+    }
+    outstandingByChild.value = byChild;
+    proofUrlByChild.value = proofs;
+  }
+
+  double outstandingFor(String? childId) =>
+      childId == null ? 0 : (outstandingByChild[childId] ?? 0);
+
+  /// The transfer screenshot a guardian uploaded for [childId], if one is
+  /// awaiting reception confirmation.
+  String? proofFor(String? childId) =>
+      childId == null ? null : proofUrlByChild[childId];
+
+  double get totalOutstanding =>
+      outstandingByChild.values.fold(0.0, (a, b) => a + b);
+
+  /// Directory order: children with an uploaded transfer proof first (they need
+  /// confirming), then whoever owes the most, then settled ones alphabetically.
+  List<ChildModel> get orderedChildren {
+    final list = children.toList();
+    list.sort((a, b) {
+      final pa = proofFor(a.key) != null;
+      final pb = proofFor(b.key) != null;
+      if (pa != pb) return pa ? -1 : 1;
+      final da = outstandingFor(a.key);
+      final db = outstandingFor(b.key);
+      if (da != db) return db.compareTo(da);
+      return a.fullName.compareTo(b.fullName);
+    });
+    return list;
+  }
+
+  Future<void> _loadLookups() async {
+    // Classrooms are independent; guardians must land before the links resolve
+    // names. Run the classroom read in parallel with the guardian→links chain.
+    final parentById = <String, String>{};
+    final links = <ParentChildModel>[];
+    await Future.wait([
+      _classroomService.getAll(
+        callBack: (list) {
+          final map = <String, String>{};
+          for (final c in list.whereType<ClassroomModel>()) {
+            if (c.key != null) map[c.key!] = c.name;
+          }
+          classroomNames.value = map;
+        },
+      ),
+      Future(() async {
+        await Future.wait([
+          _guardianService.getAll(
+            callBack: (list) {
+              for (final p in list.whereType<ParentModel>()) {
+                parentById[p.uid] = p.name;
+              }
+            },
+          ),
+          _linkService.getAll(
+            callBack: (list) => links.addAll(list.whereType<ParentChildModel>()),
+          ),
+        ]);
+      }),
+    ]);
+
+    final map = <String, String>{};
+    for (final link in links) {
+      final name = parentById[link.parentId];
+      if (name == null) continue;
+      if (link.isPrimary || !map.containsKey(link.childId)) {
+        map[link.childId] = name;
+      }
+    }
+    parentNames.value = map;
   }
 
   // ─── Child selection + history ────────────────────────────────────────────
@@ -184,102 +234,91 @@ class ReceptionCollectionController extends GetxController {
   double get childTotalPaid =>
       history.fold(0, (total, t) => total + t.amount);
 
-  // ─── Save a collection ────────────────────────────────────────────────────
+  // ─── Collect dues (full / partial + method) ───────────────────────────────
 
-  /// Records a collection for [child] (or the currently selected child when the
-  /// quick directory shortcut doesn't select one). Keeping [child] explicit lets
-  /// the reception directory renew a child inline without leaving the list.
-  Future<bool> saveCollection({
-    required PackageModel package,
+  /// Collects [amount] from [child] against their outstanding invoices, spread
+  /// oldest-first (waterfall): each invoice is settled in turn until the amount
+  /// runs out — the last one may be left "partial" with a remaining balance.
+  /// [method] is one of 'cash' | 'instapay' | 'wallet'. Writes a revenue-log
+  /// entry for the total actually applied, then refreshes balances + history.
+  Future<bool> collectDues({
+    required ChildModel child,
     required double amount,
-    String? notes,
-    ChildModel? child,
+    required String method,
   }) async {
-    final target = child ?? selectedChild.value;
-    if (target == null || target.key == null || amount <= 0) {
+    final childId = child.key;
+    if (childId == null || amount <= 0) {
       Loader.showError('payment_fill_required'.tr);
       return false;
     }
 
-    final tx = FinancialTransactionModel(
-      key: const Uuid().v4(),
-      nurseryId: _session.nurseryId ?? ApiConstants.nurseryId,
-      branchId: target.branchId,
-      childId: target.key!,
-      childName: target.fullName,
-      categoryId: package.key ?? '',
-      categoryName: package.name,
-      amount: amount,
-      date: DateTime.now().millisecondsSinceEpoch,
-      collectedBy: _session.userId,
-      collectedByName: _session.currentUser?.name,
-      notes: (notes != null && notes.trim().isNotEmpty) ? notes.trim() : null,
-    );
-
+    final invoices = List<InvoiceModel>.from(_openInvoices[childId] ?? const []);
     Loader.show();
-    var ok = false;
-    await _txService.add(
-      item: tx,
-      callBack: (status) => ok = status == ResponseStatus.success,
-      silent: true,
-    );
+
+    var remaining = amount;
+    // Mirror the post-payment state locally so we can update the UI instantly
+    // without a server re-read (which can lag right after a write).
+    final stillOpen = <InvoiceModel>[];
+    for (final inv in invoices) {
+      if (remaining <= 0.5) {
+        stillOpen.add(inv);
+        continue;
+      }
+      final pay = remaining >= inv.remaining ? inv.remaining : remaining;
+      // recordPayment writes the invoice + payment + revenue-log transaction;
+      // passing the child avoids a lookup per invoice in the waterfall.
+      final ok = await _finance.recordPayment(
+        invoice: inv,
+        amount: pay,
+        paymentMethod: method,
+        branchId: child.branchId,
+        childName: child.fullName,
+      );
+      if (!ok) {
+        stillOpen.add(inv);
+        continue;
+      }
+      remaining -= pay;
+      final newPaid =
+          (inv.collectedAmount + pay).clamp(0, inv.totalAmount).toDouble();
+      final updated = inv.copyWith(
+        paidAmount: newPaid,
+        status: newPaid >= inv.totalAmount - 0.5 ? 'paid' : 'partial',
+      );
+      if (updated.hasOutstanding) stillOpen.add(updated);
+    }
+
+    final applied = amount - remaining;
     Loader.dismiss();
 
-    if (ok) {
-      // Recording a monthly-subscription collection applies this cash against
-      // that child's current-month invoice. A full amount settles it ("paid");
-      // a smaller amount leaves it "partial" with the remaining balance, so the
-      // guardian's "محتاج انتباهك" and المطلوب/المحصّل stay accurate.
-      if (package.duration == 'monthly') {
-        await _applyMonthlyPayment(target, amount);
-      }
+    if (applied > 0.5) {
       Loader.showSuccess('collection_saved'.tr);
-      // Only reload the open history panel if we collected for the child that's
-      // currently expanded on screen.
-      if (selectedChild.value?.key == target.key) {
-        await _loadHistory(target.key!);
+      // Instant, optimistic UI update from the locally-mirrored state.
+      _openInvoices[childId] = stillOpen;
+      final newTotal = stillOpen.fold<double>(0, (a, i) => a + i.remaining);
+      final balances = Map<String, double>.from(outstandingByChild);
+      if (newTotal <= 0.5) {
+        balances.remove(childId);
+      } else {
+        balances[childId] = newTotal;
       }
-      // Live-link: a fresh collection may clear a child off the "unpaid this
-      // month" list, so refresh that shared controller right away instead of
-      // waiting for an app restart.
+      outstandingByChild.value = balances;
+      // Drop the pending-proof badge once no open invoice still carries one.
+      if (stillOpen.every((i) => !i.hasPendingProof)) {
+        final proofs = Map<String, String>.from(proofUrlByChild)..remove(childId);
+        proofUrlByChild.value = proofs;
+      }
+      if (selectedChild.value?.key == childId) await _loadHistory(childId);
+      // Refresh the month summary + unpaid card if they're live on screen.
+      if (Get.isRegistered<CollectionsController>()) {
+        Get.find<CollectionsController>().loadData();
+      }
       if (Get.isRegistered<UnpaidSubscriptionController>()) {
         Get.find<UnpaidSubscriptionController>().load();
       }
-    } else {
-      Loader.showError('collection_save_failed'.tr);
+      return true;
     }
-    return ok;
-  }
-
-  /// Applies [amount] of collected cash against the child's current-month
-  /// monthly invoice (`month_{childId}_{YYYYMM}`), if one exists and isn't
-  /// already fully paid. Partial amounts leave the invoice "partial" with the
-  /// remaining balance; a full amount settles it. This is the bridge between the
-  /// cash-collection log and the invoice-based dues the guardian app reads.
-  /// No-op when the child has no invoice this month (nothing is owed).
-  Future<void> _applyMonthlyPayment(ChildModel child, double amount) async {
-    final childId = child.key;
-    if (childId == null) return;
-    final key = MonthlyInvoiceService.monthlyKey(childId, DateTime.now());
-
-    InvoiceModel? invoice;
-    await _invoiceService.getAll(
-      callBack: (list) {
-        for (final inv in list.whereType<InvoiceModel>()) {
-          if (inv.key == key) {
-            invoice = inv;
-            break;
-          }
-        }
-      },
-    );
-
-    final inv = invoice;
-    if (inv == null || inv.isFullyPaid) return;
-    await _finance.recordPayment(
-      invoice: inv,
-      amount: amount,
-      paymentMethod: 'cash',
-    );
+    Loader.showError('collection_save_failed'.tr);
+    return false;
   }
 }

@@ -226,6 +226,37 @@ class ParentEducationService {
     );
   }
 
+  /// The `startedAt` of the classroom's OLDEST activity — a single-record read
+  /// (`limitToFirst(1)` on the `startedAt` index). Lets the Link Book build its
+  /// month list without ever loading the whole history: months are enumerated
+  /// from here to now, and each is fetched on demand. Returns null if empty.
+  Future<int?> getEarliestActivityMs(
+    String nurseryId,
+    String classroomId,
+  ) async {
+    if (nurseryId.isEmpty || classroomId.isEmpty) return null;
+    try {
+      final snap = await _db
+          .ref('platform/$nurseryId/classroomActivities/$classroomId')
+          .orderByChild('startedAt')
+          .limitToFirst(1)
+          .get();
+      if (!snap.exists || snap.value == null) return null;
+      final data = snap.value as Map? ?? {};
+      int? earliest;
+      for (final e in data.entries) {
+        if (e.value is! Map) continue;
+        final v = (e.value as Map)['startedAt'];
+        final ms = v is int ? v : (v is num ? v.toInt() : int.tryParse('$v'));
+        if (ms != null && (earliest == null || ms < earliest)) earliest = ms;
+      }
+      return earliest;
+    } catch (e) {
+      AppLogger.error(_tag, 'getEarliestActivityMs: $e');
+      return null;
+    }
+  }
+
   // Most recent assessment per subject for a child (real-time stream)
   Stream<List<AssessmentModel>> watchRecentAssessments(
       String nurseryId, String childId) {

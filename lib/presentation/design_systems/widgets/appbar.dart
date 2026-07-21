@@ -24,6 +24,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       backgroundColor: AppColors.white,
+      // Keep the bar pure white — without these, Material 3 tints the app bar
+      // with a grey surface overlay once content scrolls beneath it.
+      surfaceTintColor: AppColors.white,
+      scrolledUnderElevation: 0,
       elevation: 0,
       automaticallyImplyLeading: true,
       toolbarHeight: 72.h,

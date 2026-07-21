@@ -66,6 +66,10 @@ class ApiConstants {
 
   static String get notes => '$_n/notes';
 
+  /// Guardian-authored notes on a session/activity their child attended (the
+  /// reverse of teacher→parent [notes]). Keyed `gn_{activityId}_{childId}`.
+  static String get guardianNotes => '$_n/guardianNotes';
+
   static String get lessonPlans => '$_n/lessonPlans';
 
   static String get classroomPosts => '$_n/classroomPosts';
@@ -81,6 +85,11 @@ class ApiConstants {
   static String get payments => '$_n/payments';
 
   static String get paymentCategories => '$_n/paymentCategories';
+
+  /// The nursery's own collection accounts (InstaPay / e-wallet) that guardians
+  /// transfer tuition TO. A nursery-scoped LIST, edited by the owner/manager and
+  /// read by guardians on the invoice-payment sheet.
+  static String get paymentAccounts => '$_n/paymentAccounts';
 
   static String get expenses => '$_n/expenses';
 
@@ -143,6 +152,8 @@ class ApiConstants {
   static String get dailyAssessments => '$_n/dailyAssessments';
 
   static String get childStateTemplates => '$_n/childStateTemplates';
+
+  static String get evalLevelTemplates => '$_n/evalLevelTemplates';
 
   static String get shifts => '$_n/shifts';
 

@@ -47,7 +47,18 @@ class TeacherActivityController extends GetxController
   @override
   String get branchId => _session.branchId ?? '';
   @override
+  // Show every classroom child in the states panel: present-today ones with
+  // their state controls, absent ones dimmed with an inline check-in button so
+  // a teacher can register a latecomer without leaving the activity. The
+  // present/absent split comes from the dated attendance set (presentTodayIds),
+  // not the stale childCurrentStatus cache.
   List<ChildModel> get stateChildren => children;
+
+  @override
+  Set<String>? get presentTodayIds => presentChildIds.value;
+
+  @override
+  Future<void> refreshPresence() => refreshPresentChildren();
   String get activeClassroomId => selectedClassroomId.value;
   String get _classroomId => selectedClassroomId.value;
   set _classroomId(String v) => selectedClassroomId.value = v;
@@ -58,6 +69,14 @@ class TeacherActivityController extends GetxController
     _session = Get.find<SessionService>();
     _activityService = Get.find<TeacherActivityService>();
     _load();
+  }
+
+  /// Ensures classrooms + subjects are loaded before the start-activity sheet is
+  /// opened from OUTSIDE the Activities tab (e.g. the teacher-home quick action),
+  /// where this fenix controller may have just been created and not yet loaded.
+  Future<void> ensureLoaded() async {
+    if (myClassrooms.isNotEmpty) return;
+    await _load();
   }
 
   Future<void> _load() async {
@@ -145,11 +164,15 @@ class TeacherActivityController extends GetxController
   }
 
   int get evaluatedCount => activeActivity.value?.evaluations.length ?? 0;
-  int get unevaluatedCount =>
-      (children.length - evaluatedCount).clamp(0, children.length);
-  double get evalProgress => children.isEmpty
-      ? 0.0
-      : (evaluatedCount / children.length).clamp(0.0, 1.0);
+  int get unevaluatedCount {
+    final total = presentChildren.length;
+    return (total - evaluatedCount).clamp(0, total);
+  }
+
+  double get evalProgress {
+    final total = presentChildren.length;
+    return total == 0 ? 0.0 : (evaluatedCount / total).clamp(0.0, 1.0);
+  }
 
   // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -361,9 +384,10 @@ class TeacherActivityController extends GetxController
 
   Future<void> setAllEval(EvalLevel level) async {
     final a = activeActivity.value;
-    if (a?.key == null || children.isEmpty) return;
+    final targets = presentChildren;
+    if (a?.key == null || targets.isEmpty) return;
     isSaving.value = true;
-    final ids = children
+    final ids = targets
         .map((c) => c.key ?? '')
         .where((id) => id.isNotEmpty)
         .toList();
@@ -566,7 +590,7 @@ class TeacherActivityController extends GetxController
   }
 
   void setAllHomeworkStatus(HomeworkStatus status) {
-    for (final c in children) {
+    for (final c in presentChildren) {
       final id = c.key ?? '';
       if (id.isNotEmpty) pendingHomeworkStatuses[id] = status;
     }

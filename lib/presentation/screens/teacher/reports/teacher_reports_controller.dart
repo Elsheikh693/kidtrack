@@ -30,6 +30,7 @@ class TeacherReportsController extends GetxController {
     super.onInit();
     _session = Get.find<SessionService>();
     _service = Get.find<TeacherActivityService>();
+    EvalLevelsRegistry.instance.ensureLoaded();
     _load();
   }
 
@@ -129,16 +130,20 @@ class TeacherReportsController extends GetxController {
     return ids.length;
   }
 
+  /// Mean of the evaluated children's level scores (each level carries a 0-5
+  /// score defined in settings), so the average reflects the dynamic levels.
   double get averageRating {
+    final reg = EvalLevelsRegistry.instance;
+    double sum = 0;
     int total = 0;
-    int excellent = 0;
     for (final a in displayedActivities) {
-      total += a.evaluations.length;
-      excellent +=
-          a.evaluations.values.where((v) => v == 'excellent').length;
+      for (final v in a.evaluations.values) {
+        sum += reg.scoreFor(v);
+        total++;
+      }
     }
     if (total == 0) return 0.0;
-    return (excellent / total) * 5.0;
+    return sum / total;
   }
 
   // ── Auto-generated insights ───────────────────────────────────────────────

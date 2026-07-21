@@ -10,6 +10,7 @@ class ClassroomDetailController extends GetxController {
   late final ChildParentService _childService;
   late final StaffParentService _staffService;
   late final ClassroomParentService _classroomService;
+  final _session = SessionService();
 
   final RxList<ChildModel> children = <ChildModel>[].obs;
   final RxList<StaffModel> teachers = <StaffModel>[].obs;
@@ -42,7 +43,10 @@ class ClassroomDetailController extends GetxController {
     await _childService.getAll(callBack: (list) {
       children.value = list
           .whereType<ChildModel>()
-          .where((c) => c.classroomId == classroom.key)
+          // Branches are fully separate: a shared/same-named classroom must
+          // never surface another branch's children (owners see all).
+          .where((c) =>
+              c.classroomId == classroom.key && _session.seesBranch(c.branchId))
           .toList()
         ..sort((a, b) => a.fullName.compareTo(b.fullName));
     });
@@ -54,7 +58,8 @@ class ClassroomDetailController extends GetxController {
     await _staffService.getAll(callBack: (list) {
       teachers.value = list
           .whereType<StaffModel>()
-          .where((s) => s.classroomId == classroom.key)
+          .where((s) =>
+              s.classroomId == classroom.key && _session.seesBranch(s.branchId))
           .toList()
         ..sort((a, b) => a.name.compareTo(b.name));
     });
@@ -62,10 +67,20 @@ class ClassroomDetailController extends GetxController {
   }
 
   Future<void> _loadOtherClassrooms() async {
+    // Transfer targets must stay inside the current user's branch — a child can
+    // never be moved into another branch's classroom (which would also leave
+    // its branchId inconsistent with the new classroom). Owners/unscoped users
+    // (empty session branch) still see every classroom.
+    final myBranch = _session.branchId ?? '';
     await _classroomService.getAll(callBack: (list) {
       otherClassrooms.value = list
           .whereType<ClassroomModel>()
-          .where((c) => c.key != classroom.key && c.isActive)
+          .where((c) =>
+              c.key != classroom.key &&
+              c.isActive &&
+              (myBranch.isEmpty ||
+                  c.isAllBranches ||
+                  c.branchIds.contains(myBranch)))
           .toList()
         ..sort((a, b) => a.name.compareTo(b.name));
     });

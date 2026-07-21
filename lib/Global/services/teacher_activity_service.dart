@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../../Data/models/classroom_activity/classroom_activity_model.dart';
 import '../../Data/models/assessment/assessment_model.dart';
 import '../../Data/models/child/child_model.dart';
-import '../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../Data/models/classroom/classroom_model.dart';
 import '../../Data/models/classroom_post/classroom_post_model.dart';
@@ -16,6 +15,7 @@ import '../../Data/models/schedule/schedule_model.dart';
 import '../../Data/models/session/session_model.dart';
 import '../../Data/models/subject/subject_model.dart';
 import '../../Global/Utils/logger.dart';
+import 'session_service.dart';
 
 // Firebase path: platform/{nurseryId}/classroomActivities/{classroomId}/{activityId}
 
@@ -143,7 +143,9 @@ class TeacherActivityService {
               key: e.key.toString(),
             ),
           )
-          .where((c) => c.status == 'active')
+          // A classroom may be shared across branches — keep only children of
+          // the teacher's own branch (owners/unscoped users see all).
+          .where((c) => c.status == 'active' && SessionService().seesBranch(c.branchId))
           .toList()
         ..sort((a, b) => a.firstName.compareTo(b.firstName));
     } catch (_) {
@@ -151,33 +153,37 @@ class TeacherActivityService {
     }
   }
 
-  // A child counts as "present in the classroom" for evaluation when their
-  // live status is one of these — mirrors ClassroomStatesController.isCheckedIn.
-  static const _presentStatuses = {
-    ChildStatus.checkedIn,
-    ChildStatus.havingMeal,
-    ChildStatus.sleeping,
-  };
-
-  /// Of [childIds], the ones currently checked-in (present/eating/napping)
-  /// per their live childCurrentStatus. Returns null when none are present
-  /// (status tracking unused or nobody arrived yet) so callers can fall back
-  /// to showing every child instead of an empty list.
+  /// Of [childIds], the ones marked present today per the date-scoped
+  /// `childAttendance` record (status present/late) — the SAME source the
+  /// teacher home card, classroom-states sheet and reception dashboard use, so
+  /// the counts can never drift. Reading the dated record (not the
+  /// non-resetting childCurrentStatus cache) means a child checked in on a
+  /// previous day and never checked out is NOT counted as present today.
+  /// Returns null when nobody is present so callers can fall back to showing
+  /// every child instead of an empty list.
   Future<Set<String>?> loadPresentChildIds(
     String nurseryId,
     List<String> childIds,
   ) async {
     if (childIds.isEmpty) return null;
     try {
-      final snap =
-          await _db.ref('platform/$nurseryId/childCurrentStatus').get();
+      final date = _dateKey(DateTime.now().millisecondsSinceEpoch);
+      final snap = await _db
+          .ref('platform/$nurseryId/childAttendance')
+          .orderByChild('date')
+          .equalTo(date)
+          .get();
       if (!snap.exists || snap.value == null) return null;
       final data = snap.value as Map? ?? {};
+      final requested = childIds.toSet();
       final present = <String>{};
-      for (final id in childIds) {
-        final v = data[id];
-        if (v is Map && _presentStatuses.contains(v['status']?.toString())) {
-          present.add(id);
+      for (final v in data.values) {
+        if (v is! Map) continue;
+        final status = v['status']?.toString();
+        if (status != 'present' && status != 'late') continue;
+        final childId = v['childId']?.toString();
+        if (childId != null && requested.contains(childId)) {
+          present.add(childId);
         }
       }
       return present.isEmpty ? null : present;

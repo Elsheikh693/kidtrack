@@ -128,6 +128,8 @@ class TeacherNote {
 // ── Daily Journal models (parent-first design) ──────────────────────────────────
 
 class DayTimelineItem {
+  final String? activityId; // the session/activity this item represents
+  final String? classroomId;
   final int startedAt;
   final int? endedAt;
   final String subjectName;
@@ -141,6 +143,8 @@ class DayTimelineItem {
   final List<String> photos;
 
   const DayTimelineItem({
+    this.activityId,
+    this.classroomId,
     required this.startedAt,
     this.endedAt,
     required this.subjectName,
@@ -530,6 +534,8 @@ class ParentEducationController extends GetxController {
     final items = _rangeActivities
         .where((a) => _childParticipated(a, childId))
         .map((a) => DayTimelineItem(
+              activityId: a.key,
+              classroomId: a.classroomId,
               startedAt: a.startedAt,
               endedAt: a.endedAt,
               subjectName:

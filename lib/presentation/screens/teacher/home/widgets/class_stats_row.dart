@@ -128,9 +128,18 @@ class _AttendanceRing extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation(accent),
                 ),
               ),
-              Text(
-                '${(pct * 100).round()}%',
-                style: context.typography.displaySmBold.copyWith(color: accent),
+              // Scale the label down only when it would overflow the ring
+              // (i.e. the 4-glyph "100%"); shorter values keep full size.
+              SizedBox(
+                width: 34,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${(pct * 100).round()}%',
+                    style:
+                        context.typography.displaySmBold.copyWith(color: accent),
+                  ),
+                ),
               ),
             ],
           ),

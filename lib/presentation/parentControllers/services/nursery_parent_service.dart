@@ -17,6 +17,20 @@ class NurseryParentService {
     );
   }
 
+  /// Fetches a SINGLE nursery from the global registry by its key, instead of
+  /// downloading every nursery's info just to read one name/logo. Filtering on
+  /// `$key` needs no index rule.
+  Future<NurseryModel?> getOne(String id) async {
+    if (id.isEmpty) return null;
+    NurseryModel? found;
+    await _service.getData(
+      data: FirebaseFilter(orderBy: r'$key', equalTo: id).toJson(),
+      voidCallBack: (list) =>
+          found = list.whereType<NurseryModel>().firstOrNull,
+    );
+    return found;
+  }
+
   Future<void> add({
     required NurseryModel item,
     required Function(ResponseStatus) callBack,

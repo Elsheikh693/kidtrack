@@ -317,7 +317,7 @@ class TeacherAcademicService {
                 Map<String, dynamic>.from(e.value as Map),
                 key: e.key.toString(),
               ))
-          .where((c) => c.status == 'active')
+          .where((c) => c.status == 'active' && _session.seesBranch(c.branchId))
           .toList()
         ..sort((a, b) => a.fullName.compareTo(b.fullName));
     } catch (_) {

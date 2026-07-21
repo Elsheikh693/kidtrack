@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../../index/index_main.dart';
 import '../../../screens/shared/edit_profile_sheet.dart';
 import '../../../screens/shared/language_sheet.dart';
@@ -20,20 +22,32 @@ class ParentAccountController extends GetxController {
 
   void editProfile() => showEditProfileSheet(isStaff: false);
 
-  void navigateToRequestsHistory() =>
-      Get.toNamed(parentRequestsHistoryView);
+  void navigateToRequestsHistory() => Get.toNamed(parentRequestsHistoryView);
 
   void navigateToPickup() => Get.toNamed(authorizedPickupView);
 
   void navigateToFinance() => Get.toNamed(parentInvoicesView);
 
-  void navigateToChat() => openParentChat();
-
   void navigateToHomeLocation() => Get.toNamed(parentHomeLocationView);
 
-  void navigateToNotifications() => Get.toNamed(notificationsView);
-
   void navigateToTutorial() => Get.toNamed(appTutorialView);
+
+  // ── KidTrack brand screens ───────────────────────────────────────────────
+  void navigateToAboutUs() => Get.toNamed(aboutUsView);
+
+  void navigateToAppReview() => Get.toNamed(appReviewView);
+
+  /// Opens the app's store page (App Store / Play Store) to leave a rating.
+  Future<void> rateOnStore() async {
+    final url = Platform.isIOS ? Strings.urlIos : Strings.urlAndroid;
+    if (url.isEmpty) return;
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Loader.showError('contact_launch_error'.tr);
+    }
+  }
 
   /// Opens the notification-preferences sheet (attendance / activities toggles).
   void navigateToNotificationPrefs() => showNotificationPrefsSheet();

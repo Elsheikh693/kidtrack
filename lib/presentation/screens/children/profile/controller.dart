@@ -2,11 +2,13 @@ import '../../../../index/index_main.dart';
 import '../../../../Global/services/parent_education_service.dart';
 
 part 'profile_window_mixin.dart';
+part 'child_manage_mixin.dart';
 
 /// Granularity of the profile attendance/activities window.
 enum ProfilePeriod { day, week, month }
 
-class ChildProfileController extends GetxController with ProfileWindowMixin {
+class ChildProfileController extends GetxController
+    with ProfileWindowMixin, ChildManageMixin {
   final child      = Rx<ChildModel?>(null);
   final parents    = <ParentModel>[].obs;
   final enrollment = Rx<EnrollmentModel?>(null);
@@ -73,7 +75,27 @@ class ChildProfileController extends GetxController with ProfileWindowMixin {
     _classroomSvc = Get.find<ClassroomParentService>();
     _attendSvc    = Get.find<ChildAttendanceParentService>();
     _withdrawalSvc = Get.find<ChildWithdrawalService>();
+    initManage();
   }
+
+  // ─── ChildManageMixin wiring ─────────────────────────────────────────────
+  @override
+  ChildModel? get manageChild => child.value;
+
+  @override
+  Future<void> reloadProfile() => loadProfile();
+
+  /// The same enrollment-managing roles allowed to withdraw may also change a
+  /// child's classroom / package / branch and permanently delete them.
+  bool get canManage => canWithdraw;
+
+  bool get isReception => _session.effectiveRole == UserType.receptionist;
+
+  /// Reception handles enrollment/logistics only, so the pedagogical feed —
+  /// the activities the child attended + the teacher's notes — is hidden for
+  /// them. Everyone else (parents, teachers, managers) still sees it, where it
+  /// matters. Attendance stays visible for reception.
+  bool get showsLearningFeed => !isReception;
 
   Future<void> loadProfile() async {
     isLoading.value = true;
@@ -167,9 +189,10 @@ class ChildProfileController extends GetxController with ProfileWindowMixin {
     isRangeLoading.value = true;
     await Future.wait([
       _loadAttendanceRange(),
-      _loadActivities(),
-      _loadHomework(),
-      _loadNotes(),
+      // Reception never sees the activities/notes feed — don't waste reads on it.
+      if (showsLearningFeed) _loadActivities(),
+      if (showsLearningFeed) _loadHomework(),
+      if (showsLearningFeed) _loadNotes(),
     ]);
     isRangeLoading.value = false;
   }

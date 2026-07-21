@@ -25,6 +25,12 @@ class ActivationLoginService {
     return Uri.decodeComponent(value).trim();
   }
 
+  /// SharedPreferences key holding the last activation code that successfully
+  /// signed in. It is the app's durable "refresh credential": the activation
+  /// code never expires server-side, so re-running [activate] with it re-mints a
+  /// fresh Firebase session whenever the device's Firebase Auth session is lost.
+  static const _codeKey = 'activation_code';
+
   /// Resolves [code] and signs in. Returns the authenticated uid on success, or
   /// null if the code is invalid / the call failed.
   Future<String?> activate(String code) async {
@@ -43,6 +49,38 @@ class ActivationLoginService {
     if (token.isEmpty) return null;
 
     final cred = await FirebaseAuth.instance.signInWithCustomToken(token);
-    return cred.user?.uid;
+    final uid = cred.user?.uid;
+
+    // Persist the code so a dropped Firebase session can self-heal (see
+    // [silentReactivate]). Kept OUTSIDE the SessionService so the access gate's
+    // session-clear doesn't wipe it; only an explicit logout (StorageService
+    // clearAll) removes it.
+    if (uid != null) {
+      await StorageService().setData(_codeKey, {'code': trimmed});
+    }
+    return uid;
+  }
+
+  /// The activation code last used to sign in, if any.
+  String? get storedCode =>
+      StorageService().getData(_codeKey)?['code'] as String?;
+
+  /// Re-mints a Firebase session from the stored activation code when the local
+  /// login state survives but the Firebase Auth session was lost (keychain wipe,
+  /// token-refresh failure, cleared app data). Returns the authenticated uid on
+  /// success, or null if there is no stored code / the re-activation failed.
+  ///
+  /// Never throws: a transient network failure here must fall back to the normal
+  /// gate decision, not crash the launch. It deliberately does NOT clear the
+  /// stored code on failure — the failure may be transient, and a genuinely
+  /// revoked code just lands the user on the login screen as before.
+  Future<String?> silentReactivate() async {
+    final code = storedCode;
+    if (code == null || code.trim().isEmpty) return null;
+    try {
+      return await activate(code);
+    } catch (_) {
+      return null;
+    }
   }
 }

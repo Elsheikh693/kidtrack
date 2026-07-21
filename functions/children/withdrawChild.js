@@ -13,9 +13,12 @@ const admin = require("firebase-admin");
 // another nursery on the platform later.
 //
 // A compact record is written to `platform/{nid}/withdrawals/{id}` BEFORE the
-// delete so the manager's "left this month" movement stat survives the wipe.
+// delete so the manager's "left this month" movement stat survives the wipe —
+// UNLESS `skipLog` is set. `skipLog` is the "permanent delete" variant used to
+// erase a child registered by mistake: same full cleanup, but nothing is left
+// behind (no departure record), so it never counts as a nursery movement.
 //
-// Input : { nurseryId, childId, reason }
+// Input : { nurseryId, childId, reason, skipLog? }
 // Output: { ok, deletedChild, deletedParents:[uid], keptParents:[uid] }
 // ============================================================
 
@@ -47,6 +50,7 @@ exports.withdrawChild = onCall(async (request) => {
   const nurseryId = (request.data && request.data.nurseryId || "").toString().trim();
   const childId = (request.data && request.data.childId || "").toString().trim();
   const reason = (request.data && request.data.reason || "").toString().trim();
+  const skipLog = request.data && request.data.skipLog === true;
 
   if (!nurseryId || !childId) {
     throw new HttpsError("invalid-argument", "nurseryId and childId are required.");
@@ -82,19 +86,22 @@ exports.withdrawChild = onCall(async (request) => {
     }
   }
 
-  // 3) Write the withdrawal log BEFORE deleting anything.
-  const logRef = db.ref(`${base}/withdrawals`).push();
-  await logRef.set({
-    key: logRef.key,
-    childId,
-    childName: `${child.firstName || ""} ${child.lastName || ""}`.trim(),
-    branchId: child.branchId || "",
-    classroomId: child.classroomId || null,
-    reason: reason || null,
-    withdrawnBy: request.auth.uid,
-    withdrawnAt: Date.now(),
-    parentIds: Array.from(parentIds),
-  });
+  // 3) Write the withdrawal log BEFORE deleting anything — unless this is a
+  // permanent "delete a mistake" wipe (skipLog), which leaves no trace.
+  if (!skipLog) {
+    const logRef = db.ref(`${base}/withdrawals`).push();
+    await logRef.set({
+      key: logRef.key,
+      childId,
+      childName: `${child.firstName || ""} ${child.lastName || ""}`.trim(),
+      branchId: child.branchId || "",
+      classroomId: child.classroomId || null,
+      reason: reason || null,
+      withdrawnBy: request.auth.uid,
+      withdrawnAt: Date.now(),
+      parentIds: Array.from(parentIds),
+    });
+  }
 
   // 4) Decide which parents are orphaned (no children left after this removal).
   const orphanParents = [];
@@ -165,7 +172,7 @@ exports.withdrawChild = onCall(async (request) => {
   }
 
   console.log(
-    `🚪 WITHDREW child=${childId} nursery=${nurseryId} ` +
+    `🚪 ${skipLog ? "DELETED" : "WITHDREW"} child=${childId} nursery=${nurseryId} ` +
       `deletedParents=${deletedParents.length} keptParents=${keptParents.length}`
   );
 

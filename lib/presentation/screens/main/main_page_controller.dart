@@ -112,6 +112,8 @@ class MainPageViewModel extends GetxController {
     const OwnerFinanceTab(),
     const OwnerFeedTab(),
     const OwnerMoreTab(),
+    // index 4: Analytics Center — surfaced as the 2nd nav slot via pageIndex.
+    const AnalyticsCenterView(),
   ];
   static final _managerPages = <Widget>[
     const ManagerDashboardTab(),
@@ -136,6 +138,7 @@ class MainPageViewModel extends GetxController {
     const TeacherHomeTab(),
     const TeacherActivityTab(),
     const TeacherReportsTab(),
+    const ParentNotesInboxView(),
     // مخفي مؤقتاً: دفتر التواصل
     // const TeacherLinkBookTab(),
     // مخفي مؤقتاً: صفحة الواجبات

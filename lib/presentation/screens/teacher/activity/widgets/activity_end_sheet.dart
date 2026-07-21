@@ -80,7 +80,12 @@ class _ActivityEndSheetState extends State<ActivityEndSheet> {
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollCtrl,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  // DraggableScrollableSheet doesn't resize for the keyboard,
+                  // so add the keyboard inset as bottom padding — this gives the
+                  // scroll enough extra extent for the focused homework field to
+                  // lift above the keyboard instead of hiding behind it.
+                  padding: EdgeInsets.fromLTRB(
+                      20, 0, 20, 16 + MediaQuery.of(context).viewInsets.bottom),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

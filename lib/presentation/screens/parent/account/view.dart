@@ -42,13 +42,8 @@ class _ParentAccountViewState extends State<ParentAccountView> {
             AccountMenuSection(
               titleKey: 'parent_account_support_section',
               items: [
-                AccountMenuItem(
-                  labelKey: 'chat_with_nursery',
-                  icon: Icons.forum_outlined,
-                  iconColor: const Color(0xFF6366F1),
-                  onTap: controller.navigateToChat,
-                  badge: Get.find<ActiveChildService>().chatUnread,
-                ),
+                // "تواصل مع الإدارة" removed — the chat is already reachable
+                // from the chat icon in the app bar.
                 AccountMenuItem(
                   labelKey: 'parent_account_technical_support',
                   icon: Icons.support_agent_outlined,
@@ -64,6 +59,29 @@ class _ParentAccountViewState extends State<ParentAccountView> {
               ],
             ),
             AccountMenuSection(
+              titleKey: 'parent_account_kidtrack_section',
+              items: [
+                AccountMenuItem(
+                  labelKey: 'settings_about_us',
+                  icon: Icons.info_outline_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: controller.navigateToAboutUs,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_review',
+                  icon: Icons.favorite_rounded,
+                  iconColor: const Color(0xFFEC4899),
+                  onTap: controller.navigateToAppReview,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_rate_store',
+                  icon: Icons.star_rounded,
+                  iconColor: const Color(0xFFF59E0B),
+                  onTap: controller.rateOnStore,
+                ),
+              ],
+            ),
+            AccountMenuSection(
               titleKey: 'parent_account_title',
               items: [
                 AccountMenuItem(
@@ -72,12 +90,9 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   iconColor: AppColors.primary,
                   onTap: controller.editProfile,
                 ),
-                AccountMenuItem(
-                  labelKey: 'parent_account_notifications',
-                  icon: Icons.notifications_outlined,
-                  iconColor: const Color(0xFF6366F1),
-                  onTap: controller.navigateToNotifications,
-                ),
+                // "الإشعارات" removed — the notifications inbox is already
+                // reachable from the bell in the app bar. Only the notification
+                // *settings* remain here.
                 AccountMenuItem(
                   labelKey: 'notif_prefs_menu_item',
                   icon: Icons.notifications_active_outlined,

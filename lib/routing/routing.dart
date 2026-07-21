@@ -27,6 +27,7 @@ const String supportTicketsView = "/SupportTicketsView";
 const String platformBillingView = "/PlatformBillingView";
 const String platformBillingDetailView = "/PlatformBillingDetailView";
 const String mySubscriptionView = "/MySubscriptionView";
+const String ownerPhotoReviewSettingsView = "/OwnerPhotoReviewSettingsView";
 
 // Branches
 const String branchesView = "/BranchesView";
@@ -78,6 +79,25 @@ const String weeklyEvaluationReportView = "/WeeklyEvaluationReportView";
 const String weeklyLearningReportView = "/WeeklyLearningReportView";
 const String financialReportView = "/FinancialReportView";
 const String monthlyReportView = "/MonthlyReportView";
+// ─── Owner Analytics Center ───────────────────────────────────────────────
+const String ownerAnalyticsCenterView = "/OwnerAnalyticsCenterView";
+const String ownerFinanceTrendReportView = "/OwnerFinanceTrendReportView";
+const String ownerCollectionsReportView = "/OwnerCollectionsReportView";
+const String ownerReceivablesReportView = "/OwnerReceivablesReportView";
+const String ownerBranchPnlReportView = "/OwnerBranchPnlReportView";
+const String ownerBranchHealthReportView = "/OwnerBranchHealthReportView";
+const String ownerOccupancyReportView = "/OwnerOccupancyReportView";
+const String ownerInsightsReportView = "/OwnerInsightsReportView";
+const String ownerChurnReportView = "/OwnerChurnReportView";
+const String ownerEngagementReportView = "/OwnerEngagementReportView";
+const String ownerTeacherPerfReportView = "/OwnerTeacherPerfReportView";
+const String ownerEvaluationsReportView = "/OwnerEvaluationsReportView";
+const String ownerAttendanceReportView = "/OwnerAttendanceReportView";
+const String ownerCollectionRateReportView = "/OwnerCollectionRateReportView";
+const String ownerRevenueMethodReportView = "/OwnerRevenueMethodReportView";
+const String ownerRevenueCategoryReportView = "/OwnerRevenueCategoryReportView";
+const String ownerPaymentBehaviorReportView = "/OwnerPaymentBehaviorReportView";
+const String ownerRevenueForecastReportView = "/OwnerRevenueForecastReportView";
 const String parentHomeworkView = "/ParentHomeworkView";
 const String parentSubjectsAllView = "/ParentSubjectsAllView";
 const String parentClassPhotosView = "/ParentClassPhotosView";
@@ -150,6 +170,7 @@ const String tutorialPlayerView = "/TutorialPlayerView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
+const String nurseryPaymentAccountsView = "/NurseryPaymentAccountsView";
 const String managerApplicationFileView = "/ManagerApplicationFileView";
 const String managerTeacherReportsView = "/ManagerTeacherReportsView";
 const String managerApplicationsView = "/ManagerApplicationsView";
@@ -170,6 +191,9 @@ const String evaluationReasonsView = "/EvaluationReasonsView";
 
 // Child State Templates (Settings)
 const String childStatesView = "/ChildStatesView";
+
+// Activity Eval Levels (Settings)
+const String evalLevelsView = "/EvalLevelsView";
 
 // Teacher Weekly Schedule
 const String teacherWeeklyScheduleView = "/TeacherWeeklyScheduleView";
@@ -621,6 +645,151 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      // ─── Owner Analytics Center ─────────────────────────────────────────
+      GetPage(
+        name: ownerAnalyticsCenterView,
+        page: () => const AnalyticsCenterView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerFinanceTrendReportView,
+        page: () => const OwnerFinanceTrendView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCollectionsReportView,
+        page: () => const OwnerCollectionsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerReceivablesReportView,
+        page: () => const OwnerReceivablesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerBranchPnlReportView,
+        page: () => const OwnerBranchPnlView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerBranchHealthReportView,
+        page: () => const OwnerBranchHealthView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerOccupancyReportView,
+        page: () => const OwnerOccupancyView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerInsightsReportView,
+        page: () => const OwnerInsightsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerChurnReportView,
+        page: () => const OwnerChurnView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCollectionRateReportView,
+        page: () => const OwnerCollectionRateView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueMethodReportView,
+        page: () => const OwnerRevenueMethodView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueCategoryReportView,
+        page: () => const OwnerRevenueCategoryView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerPaymentBehaviorReportView,
+        page: () => const OwnerPaymentBehaviorView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueForecastReportView,
+        page: () => const OwnerRevenueForecastView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEngagementReportView,
+        page: () => const OwnerEngagementView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerTeacherPerfReportView,
+        page: () => const OwnerTeacherPerfView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEvaluationsReportView,
+        page: () => const OwnerEvaluationsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerAttendanceReportView,
+        page: () => const OwnerAttendanceView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Nursery Contact Numbers ───────────────────────────────────────────
       GetPage(
@@ -727,6 +896,14 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      GetPage(
+        name: ownerPhotoReviewSettingsView,
+        page: () => const OwnerPhotoReviewSettingsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Platform Content Management (Super Admin) ──────────────────────────
       GetPage(
@@ -740,6 +917,14 @@ class Routes {
       GetPage(
         name: platformPaymentAccountsView,
         page: () => const PlatformPaymentAccountsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: nurseryPaymentAccountsView,
+        page: () => const NurseryPaymentAccountsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -1154,6 +1339,16 @@ class Routes {
       GetPage(
         name: childStatesView,
         page: () => const ChildStatesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Activity Eval Levels ──────────────────────────────────────────────
+      GetPage(
+        name: evalLevelsView,
+        page: () => const EvalLevelsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

@@ -2,6 +2,7 @@ import '../../../../index/index_main.dart';
 import '../children/receptionist_children_controller.dart';
 import '../children/widgets/shift_switcher.dart';
 import '../children/widgets/rc_withdrawn_card.dart';
+import '../children/widgets/rc_invite_parents_card.dart';
 import '../children/widgets/rc_child_card.dart';
 
 class ReceptionistChildrenTab extends StatefulWidget {
@@ -63,6 +64,7 @@ class _ReceptionistChildrenTabState extends State<ReceptionistChildrenTab> {
                               onAdd: controller.openAddPage,
                             ),
                             RcWithdrawnCard(controller: controller),
+                            RcInviteParentsCard(controller: controller),
                           ],
                         ),
                       ),
@@ -133,11 +135,6 @@ class _ChildrenTopBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              _IconBtn(
-                icon: Icons.forward_to_inbox_rounded,
-                onTap: () => Get.toNamed(bulkInvitationsView),
-              ),
-              const SizedBox(width: 14),
               _IconBtn(
                 icon: Icons.notifications_none_rounded,
                 onTap: () => Get.toNamed(notificationsView),

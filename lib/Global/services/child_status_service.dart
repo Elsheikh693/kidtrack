@@ -205,6 +205,10 @@ class ChildStatusService {
     required String childId,
     required String receptionistId,
     String? classroomId,
+    // Who is performing the check-in — reception by default, but a teacher can
+    // check a child in from the states/activity screen, and it must be recorded
+    // as the teacher's action (not reception) while writing the SAME attendance.
+    String byRole = ChildEventSource.reception,
   }) async {
     final now = DateTime.now();
     final date = _today();
@@ -214,7 +218,7 @@ class ChildStatusService {
       status: ChildStatus.checkedIn,
       updatedAt: now,
       updatedById: receptionistId,
-      updatedByRole: ChildEventSource.reception,
+      updatedByRole: byRole,
       checkInTime: now,
     );
 
@@ -224,10 +228,10 @@ class ChildStatusService {
       nurseryId: nurseryId,
       branchId: branchId,
       eventType: ChildEventType.checkIn,
-      source: ChildEventSource.reception,
+      source: byRole,
       title: 'وصل الحضانة',
       createdBy: receptionistId,
-      createdByRole: ChildEventSource.reception,
+      createdByRole: byRole,
       createdAt: now.millisecondsSinceEpoch,
     );
 

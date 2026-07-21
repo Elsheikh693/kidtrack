@@ -46,6 +46,7 @@ class TutorialStepTile extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.only(bottom: 16.h),
                 child: _Card(
+                  controller: controller,
                   video: video,
                   done: done,
                   isCurrent: isCurrent,
@@ -120,6 +121,7 @@ class _Rail extends StatelessWidget {
 }
 
 class _Card extends StatelessWidget {
+  final AppTutorialController controller;
   final TutorialVideoModel video;
   final bool done;
   final bool isCurrent;
@@ -127,6 +129,7 @@ class _Card extends StatelessWidget {
   final VoidCallback onTap;
 
   const _Card({
+    required this.controller,
     required this.video,
     required this.done,
     required this.isCurrent,
@@ -136,57 +139,149 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: unlocked ? 1 : 0.55,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+    final demoCode = controller.demoCodeFor(video);
+
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        padding: EdgeInsets.all(10.w),
+        decoration: BoxDecoration(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16.r),
-          child: Ink(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: isCurrent
-                    ? AppColors.primary.withValues(alpha: 0.45)
-                    : Colors.transparent,
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 5),
-                ),
-              ],
+          border: Border.all(
+            color: isCurrent
+                ? AppColors.primary.withValues(alpha: 0.45)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
             ),
-            child: Row(
-              children: [
-                _Thumb(video: video),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        text: video.title,
-                        textStyle: context.typography.smSemiBold
-                            .copyWith(color: AppColors.textDefault),
-                        maxLines: 2,
+          ],
+        ),
+        child: Column(
+          children: [
+            InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(10.r),
+              child: Opacity(
+                opacity: unlocked ? 1 : 0.55,
+                child: Row(
+                  children: [
+                    _Thumb(video: video),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            text: video.title,
+                            textStyle: context.typography.smSemiBold
+                                .copyWith(color: AppColors.textDefault),
+                            maxLines: 2,
+                          ),
+                          SizedBox(height: 6.h),
+                          _StatusChip(
+                              done: done,
+                              isCurrent: isCurrent,
+                              unlocked: unlocked),
+                        ],
                       ),
-                      SizedBox(height: 6.h),
-                      _StatusChip(
-                          done: done, isCurrent: isCurrent, unlocked: unlocked),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (demoCode != null)
+              _DemoStrip(
+                code: demoCode,
+                onCopy: () => controller.copyDemoCode(demoCode),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The demo affordances shown under a role's tutorial card: the role's login
+/// code (tap to copy) plus a quick logout that opens the shared confirm dialog.
+class _DemoStrip extends StatelessWidget {
+  final String code;
+  final VoidCallback onCopy;
+
+  const _DemoStrip({required this.code, required this.onCopy});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          child: Divider(height: 1, color: AppColors.grayLight),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: onCopy,
+                borderRadius: BorderRadius.circular(10.r),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy_rounded,
+                          size: 16.sp, color: AppColors.primary),
+                      SizedBox(width: 8.w),
+                      Flexible(
+                        child: AppText(
+                          text: code,
+                          textStyle: context.typography.smSemiBold
+                              .copyWith(color: AppColors.primary),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            SizedBox(width: 8.w),
+            InkWell(
+              onTap: showLogoutConfirm,
+              borderRadius: BorderRadius.circular(10.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+                decoration: BoxDecoration(
+                  color: AppColors.errorForeground.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.logout_rounded,
+                        size: 16.sp, color: AppColors.errorForeground),
+                    SizedBox(width: 6.w),
+                    AppText(
+                      text: 'logout_confirm_button'.tr,
+                      textStyle: context.typography.xsMedium
+                          .copyWith(color: AppColors.errorForeground),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
+      ],
     );
   }
 }

@@ -2,6 +2,8 @@ import '../../../../../index/index_main.dart';
 import '../controller.dart';
 
 const _accent = Color(0xFF0891B2);
+const _muted = Color(0xFF8A93A4);
+const _line = Color(0xFFEEF0F4);
 
 /// Hero "inside the nursery now" banner — today's live movement at a glance.
 class InsideNowBanner extends StatelessWidget {
@@ -15,17 +17,14 @@ class InsideNowBanner extends StatelessWidget {
       return Container(
         padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 13.h),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0E7490), _accent],
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(22.r),
+          border: Border.all(color: _line),
           boxShadow: [
             BoxShadow(
-              color: _accent.withValues(alpha: 0.32),
-              blurRadius: 18.r,
-              offset: Offset(0, 8.h),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 14.r,
+              offset: Offset(0, 6.h),
             ),
           ],
         ),
@@ -38,7 +37,7 @@ class InsideNowBanner extends StatelessWidget {
                   width: 8.w,
                   height: 8.h,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: _accent,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -46,36 +45,29 @@ class InsideNowBanner extends StatelessWidget {
                 Text(
                   'reception_inside_now_title'.tr,
                   style: context.typography.smSemiBold.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: _muted,
                     fontSize: 13.5,
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 4.h),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
+                const Spacer(),
+                // Count moved to the end of the title line to shave a full row
+                // off the banner height.
                 Text(
                   '${controller.insideNow.value}',
                   style: context.typography.xxlBold.copyWith(
-                    color: Colors.white,
-                    fontSize: 32,
+                    color: _accent,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
                     height: 1,
                     letterSpacing: -1,
                   ),
                 ),
-                SizedBox(width: 7.w),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 4.h),
-                  child: Text(
-                    'reception_inside_now_unit'.tr,
-                    style: context.typography.smSemiBold.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14,
-                    ),
+                SizedBox(width: 6.w),
+                Text(
+                  'reception_inside_now_unit'.tr,
+                  style: context.typography.smSemiBold.copyWith(
+                    color: _muted,
+                    fontSize: 13.5,
                   ),
                 ),
               ],
@@ -84,8 +76,9 @@ class InsideNowBanner extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.14),
+                color: _accent.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: _accent.withValues(alpha: 0.12)),
               ),
               child: Row(
                 children: [
@@ -130,7 +123,7 @@ class _MiniStat extends StatelessWidget {
             Text(
               '$value',
               style: context.typography.mdBold.copyWith(
-                color: Colors.white,
+                color: _accent,
                 fontSize: 19,
                 fontWeight: FontWeight.w800,
                 height: 1,
@@ -143,7 +136,7 @@ class _MiniStat extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: context.typography.xsMedium.copyWith(
-                color: Colors.white.withValues(alpha: 0.78),
+                color: _muted,
                 fontSize: 10.5,
               ),
             ),
@@ -157,7 +150,7 @@ class _Divider extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: 1,
         height: 30.h,
-        color: Colors.white.withValues(alpha: 0.2),
+        color: const Color(0xFFE5E7EB),
         margin: EdgeInsets.symmetric(horizontal: 8.w),
       );
 }
