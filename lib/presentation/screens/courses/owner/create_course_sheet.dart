@@ -156,7 +156,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
     final accent = AppColors.primary;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -165,7 +165,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
-            isEditing ? 'تعديل الكورس' : 'كورس جديد',
+            isEditing ? 'coursesown13_edit_course'.tr : 'coursesown13_new_course'.tr,
             style: context.typography.lgBold.copyWith(color: AppColors.textDefault),
           ),
         ),
@@ -196,7 +196,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                 SizedBox(height: 22.h),
 
                 // ── Course details card ──────────────────────────────────
-                _SectionLabel(label: 'تفاصيل الكورس', icon: Icons.edit_note_rounded),
+                _SectionLabel(label: 'coursesown13_course_details'.tr, icon: Icons.edit_note_rounded),
                 SizedBox(height: 10.h),
                 Container(
                   padding: EdgeInsets.all(16.w),
@@ -215,17 +215,17 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                     children: [
                       _Field(
                         controller: _titleCtrl,
-                        label: 'اسم الكورس',
-                        hint: 'مثال: اللغة العربية للمبتدئين',
+                        label: 'coursesown13_course_name_label'.tr,
+                        hint: 'coursesown13_course_name_hint'.tr,
                         validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                            (v == null || v.trim().isEmpty) ? 'coursesown13_required'.tr : null,
                         textInputAction: TextInputAction.next,
                       ),
                       SizedBox(height: 14.h),
                       _Field(
                         controller: _descCtrl,
-                        label: 'الوصف',
-                        hint: 'اكتب وصفاً موجزاً عن الكورس...',
+                        label: 'coursesown13_description_label'.tr,
+                        hint: 'coursesown13_course_desc_hint'.tr,
                         maxLines: 3,
                         textInputAction: TextInputAction.newline,
                       ),
@@ -236,8 +236,8 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                           Expanded(
                             child: _Field(
                               controller: _priceCtrl,
-                              label: 'السعر (جنيه)',
-                              hint: '0 = مجاني',
+                              label: 'coursesown13_price_label'.tr,
+                              hint: 'coursesown13_price_hint'.tr,
                               keyboardType: TextInputType.number,
                               textInputAction: TextInputAction.next,
                             ),
@@ -246,8 +246,8 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                           Expanded(
                             child: _Field(
                               controller: _ageCtrl,
-                              label: 'الفئة العمرية',
-                              hint: 'مثال: 3-6',
+                              label: 'coursesown13_age_group_label'.tr,
+                              hint: 'coursesown13_age_group_hint'.tr,
                               textInputAction: TextInputAction.next,
                             ),
                           ),
@@ -256,8 +256,8 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                       SizedBox(height: 14.h),
                       _Field(
                         controller: _sessionsCtrl,
-                        label: 'عدد الحصص',
-                        hint: 'مثال: 10',
+                        label: 'coursesown13_sessions_label'.tr,
+                        hint: 'coursesown13_sessions_hint'.tr,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.done,
                       ),
@@ -274,10 +274,10 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
 
                 // ── Branch availability ──────────────────────────────────
                 _SectionLabel(
-                    label: 'الفروع المتاحة', icon: Icons.account_balance_rounded),
+                    label: 'coursesown13_available_branches'.tr, icon: Icons.account_balance_rounded),
                 SizedBox(height: 4.h),
                 Text(
-                  'اختر الفروع المتاح بها الكورس، أو اتركها لكل الفروع',
+                  'coursesown13_available_branches_hint'.tr,
                   style: context.typography.xsRegular
                       .copyWith(color: AppColors.textSecondaryParagraph),
                 ),
@@ -300,7 +300,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
 
                 // ── Availability for parents ─────────────────────────────
                 _SectionLabel(
-                    label: 'إتاحة الكورس', icon: Icons.visibility_rounded),
+                    label: 'coursesown13_course_availability'.tr, icon: Icons.visibility_rounded),
                 SizedBox(height: 10.h),
                 _AvailabilityToggle(
                   isOpen: _isOpen,
@@ -330,7 +330,7 @@ class _CreateCourseScreenState extends State<_CreateCourseScreen> {
                           color: Colors.white, strokeWidth: 2),
                     )
                   : Text(
-                      isEditing ? 'حفظ التعديلات' : 'إضافة الكورس',
+                      isEditing ? 'coursesown13_save_changes'.tr : 'coursesown13_add_course'.tr,
                       style: context.typography.mdBold
                           .copyWith(color: Colors.white),
                     ),
@@ -414,15 +414,15 @@ class _AvailabilityToggle extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isOpen ? 'متاح لأولياء الأمور' : 'مقفول (لن يظهر للأهالي)',
+                  isOpen ? 'coursesown13_available_to_parents'.tr : 'coursesown13_closed_hidden'.tr,
                   style: context.typography.smSemiBold
                       .copyWith(color: AppColors.textDefault),
                 ),
                 SizedBox(height: 2.h),
                 Text(
                   isOpen
-                      ? 'الكورس ظاهر ومتاح للتسجيل'
-                      : 'الكورس مخفي تماماً عن تطبيق ولي الأمر',
+                      ? 'coursesown13_open_desc'.tr
+                      : 'coursesown13_closed_desc'.tr,
                   style: context.typography.xsRegular
                       .copyWith(color: AppColors.textSecondaryParagraph),
                 ),
@@ -516,12 +516,12 @@ class _CoverPicker extends StatelessWidget {
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    'إضافة صورة غلاف',
+                    'coursesown13_add_cover_image'.tr,
                     style: context.typography.smSemiBold.copyWith(color: catColor),
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'اختياري',
+                    'coursesown13_optional'.tr,
                     style: context.typography.xsRegular
                         .copyWith(color: catColor.withValues(alpha: 0.7)),
                   ),
@@ -571,7 +571,7 @@ class _BranchPicker extends StatelessWidget {
       runSpacing: 8.h,
       children: [
         _BranchChip(
-          label: 'كل الفروع',
+          label: 'coursesown13_all_branches'.tr,
           selected: allSelected,
           accent: accent,
           onTap: onAllTap,
@@ -650,9 +650,11 @@ class _StartDateField extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onClear;
 
-  static const _months = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  List<String> get _months => [
+    'coursesown13_month_1'.tr, 'coursesown13_month_2'.tr, 'coursesown13_month_3'.tr,
+    'coursesown13_month_4'.tr, 'coursesown13_month_5'.tr, 'coursesown13_month_6'.tr,
+    'coursesown13_month_7'.tr, 'coursesown13_month_8'.tr, 'coursesown13_month_9'.tr,
+    'coursesown13_month_10'.tr, 'coursesown13_month_11'.tr, 'coursesown13_month_12'.tr,
   ];
 
   String get _label =>
@@ -664,7 +666,7 @@ class _StartDateField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('تاريخ بداية الكورس',
+        Text('coursesown13_start_date_label'.tr,
             style: context.typography.xsMedium
                 .copyWith(color: AppColors.textSecondaryParagraph)),
         SizedBox(height: 6.h),
@@ -684,7 +686,7 @@ class _StartDateField extends StatelessWidget {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    hasDate ? _label : 'اختر تاريخ البداية',
+                    hasDate ? _label : 'coursesown13_choose_start_date'.tr,
                     style: context.typography.smRegular.copyWith(
                       color: hasDate
                           ? AppColors.textDefault

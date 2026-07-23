@@ -30,7 +30,7 @@ class _CourseLessonsViewState extends State<CourseLessonsView> {
     final catColor = course.category.color;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF3F4F6),
         body: KeyboardActions(
@@ -88,7 +88,7 @@ class _CourseLessonsViewState extends State<CourseLessonsView> {
                     children: [
                       _InfoChip(
                         icon: Icons.play_lesson_rounded,
-                        label: '$count درس',
+                        label: '$count ${'coursesown13_lessons_suffix'.tr}',
                         color: catColor,
                       ),
                       SizedBox(width: 10.w),
@@ -100,7 +100,7 @@ class _CourseLessonsViewState extends State<CourseLessonsView> {
                         ),
                       const Spacer(),
                       Text(
-                        'اسحب للترتيب',
+                        'coursesown13_drag_to_reorder'.tr,
                         style: context.typography.xsRegular.copyWith(color: Colors.grey.shade500),
                       ),
                       SizedBox(width: 4.w),
@@ -161,7 +161,7 @@ class _CourseLessonsViewState extends State<CourseLessonsView> {
           backgroundColor: catColor,
           icon: const Icon(Icons.add_rounded, color: Colors.white),
           label: Text(
-            'درس جديد',
+            'coursesown13_new_lesson'.tr,
             style: context.typography.mdBold.copyWith(color: Colors.white),
           ),
         ),
@@ -172,9 +172,9 @@ class _CourseLessonsViewState extends State<CourseLessonsView> {
   String _formatMinutes(int mins) {
     final h = mins ~/ 60;
     final m = mins % 60;
-    if (h == 0) return '$m د';
-    if (m == 0) return '$h س';
-    return '$h س $m د';
+    if (h == 0) return '$m ${'coursesown13_min_suffix'.tr}';
+    if (m == 0) return '$h ${'coursesown13_hour_suffix'.tr}';
+    return '$h ${'coursesown13_hour_suffix'.tr} $m ${'coursesown13_min_suffix'.tr}';
   }
 }
 
@@ -270,7 +270,7 @@ class _LessonTile extends StatelessWidget {
                 Icon(Icons.schedule_rounded, size: 11.sp, color: Colors.grey.shade400),
                 SizedBox(width: 2.w),
                 Text(
-                  '${lesson.durationMinutes} د',
+                  '${lesson.durationMinutes} ${'coursesown13_min_suffix'.tr}',
                   style: context.typography.xsRegular.copyWith(color: Colors.grey.shade500),
                 ),
               ],
@@ -305,21 +305,21 @@ class _LessonTile extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
-          title: const Text('حذف الدرس'),
-          content: Text('هل تريد حذف "${lesson.title}"؟'),
+          title: Text('coursesown13_delete_lesson_title'.tr),
+          content: Text('coursesown13_delete_lesson_confirm'.trParams({'title': lesson.title})),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء'),
+              child: Text('coursesown13_cancel'.tr),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 controller.deleteLesson(lesson);
               },
-              child: Text('حذف', style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
+              child: Text('coursesown13_delete'.tr, style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
             ),
           ],
         ),
@@ -368,12 +368,12 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.menu_book_outlined, size: 64.sp, color: catColor.withOpacity(0.3)),
           SizedBox(height: 12.h),
           Text(
-            'لا توجد دروس بعد',
+            'coursesown13_no_lessons_title'.tr,
             style: context.typography.mdMedium.copyWith(color: Colors.grey.shade500),
           ),
           SizedBox(height: 6.h),
           Text(
-            'اضغط على + لإضافة أول درس',
+            'coursesown13_no_lessons_hint'.tr,
             style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
           ),
         ],

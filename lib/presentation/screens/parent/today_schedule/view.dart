@@ -60,6 +60,10 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
         return (icon: Icons.medical_services_rounded, color: const Color(0xFFDC2626));
       case ChildEventType.bathroom:
         return (icon: Icons.wc_rounded, color: const Color(0xFF0891B2));
+      case ChildEventType.childStateChanged:
+        return (icon: Icons.child_care_rounded, color: const Color(0xFF16A34A));
+      case ChildEventType.homeworkAssigned:
+        return (icon: Icons.assignment_rounded, color: const Color(0xFF2563EB));
       default:
         return (icon: Icons.circle_rounded, color: AppColors.textSecondaryParagraph);
     }
@@ -68,6 +72,45 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
   static String _formatTime(int ms) {
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);
     return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Journal events (done) plus the running classroom activity pinned as the
+  /// single live "now" entry — so the currently-running lesson is what pulses,
+  /// not the last thing that already happened.
+  List<_TimelineEntry> _buildEntries() {
+    final events = _ctrl.todayTimeline2;
+    final running = _ctrl.isChildActive
+        ? _ctrl.runningClassroomActivity.value
+        : null;
+    final runningKey =
+        (running != null && running.isActive) ? running.key : null;
+
+    final entries = <_TimelineEntry>[
+      for (final e in events)
+        _TimelineEntry(
+          time: _formatTime(e.createdAt),
+          title: (e.title ?? e.eventType).tr,
+          subtitle: e.description,
+          icon: _styleForEvent(e.eventType).icon,
+          color: _styleForEvent(e.eventType).color,
+          isCurrent: runningKey != null && e.activityId == runningKey,
+        ),
+    ];
+
+    // Running activity started before check-in (gated out of the journal) —
+    // add it back so parents still see the live lesson.
+    if (runningKey != null && !events.any((e) => e.activityId == runningKey)) {
+      final subj = running!.subjectName ?? '';
+      entries.add(_TimelineEntry(
+        time: _formatTime(running.startedAt),
+        title: subj.isNotEmpty ? '$subj — ${running.title}' : running.title,
+        subtitle: null,
+        icon: Icons.menu_book_rounded,
+        color: AppColors.primary,
+        isCurrent: true,
+      ));
+    }
+    return entries;
   }
 
   Widget _fade(int index, Widget child) {
@@ -95,7 +138,7 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -117,9 +160,9 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
           ),
         ),
         body: Obx(() {
-          final events = _ctrl.todayTimeline2;
+          final entries = _buildEntries();
 
-          if (events.isEmpty) {
+          if (entries.isEmpty) {
             return _EmptyState();
           }
 
@@ -131,20 +174,19 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
               children: [
                 const SizedBox(height: 16),
                 _fade(0, _ScheduleHeader()),
-                ...List.generate(events.length, (i) {
-                  final e = events[i];
-                  final isLast = i == events.length - 1;
-                  final style = _styleForEvent(e.eventType);
+                ...List.generate(entries.length, (i) {
+                  final entry = entries[i];
+                  final isLast = i == entries.length - 1;
                   return _fade(
                     i + 1,
                     _VerticalEventTile(
-                      time: _formatTime(e.createdAt),
-                      title: e.title ?? e.eventType,
-                      subtitle: e.description,
-                      icon: style.icon,
-                      color: style.color,
-                      isCurrent: isLast,
-                      isDone: !isLast,
+                      time: entry.time,
+                      title: entry.title,
+                      subtitle: entry.subtitle,
+                      icon: entry.icon,
+                      color: entry.color,
+                      isCurrent: entry.isCurrent,
+                      isDone: !entry.isCurrent,
                       isLast: isLast,
                     ),
                   );
@@ -156,6 +198,25 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
       ),
     );
   }
+}
+
+// ── Timeline entry (one row) ──────────────────────────────────────────────────
+
+class _TimelineEntry {
+  const _TimelineEntry({
+    required this.time,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.isCurrent,
+  });
+  final String time;
+  final String title;
+  final String? subtitle;
+  final IconData icon;
+  final Color color;
+  final bool isCurrent;
 }
 
 // ── Section Header ────────────────────────────────────────────────────────────
@@ -203,13 +264,13 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'لا توجد أحداث مسجلة اليوم بعد',
+            'parentpick26_schedule_empty_title'.tr,
             style: context.typography.smSemiBold
                 .copyWith(color: AppColors.textSecondaryParagraph),
           ),
           const SizedBox(height: 6),
           Text(
-            'ستظهر هنا أحداث يومك عند تسجيل الحضور',
+            'parentpick26_schedule_empty_sub'.tr,
             style: context.typography.xsRegular
                 .copyWith(color: AppColors.textSecondaryParagraph),
           ),
@@ -343,7 +404,7 @@ class _VerticalEventTile extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isDone ? Icons.check_rounded : icon,
+                        icon,
                         color: isDone ? AppColors.grayMedium : color,
                         size: 20,
                       ),

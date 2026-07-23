@@ -19,8 +19,28 @@ class NurseryModel {
   /// opts in. Discovery requires both `isActive && isListed`.
   final bool isListed;
 
+  /// Owner-only feature flag: when true, the OWNER's home dashboard surfaces the
+  /// cross-branch activity-photo review banner (aggregating pending photos from
+  /// every branch). Managers always keep their own per-branch review regardless.
+  /// Defaults to false — the owner opts in from settings.
+  final bool ownerPhotoReviewEnabled;
+
+  /// Nursery-wide switch controlled by the branch manager (and owner): when
+  /// true, photos uploaded by teachers — activity photos AND event ("fun day")
+  /// photos — stay hidden (`isApproved: false`) until a reviewer approves them
+  /// (the current default flow). When false, uploads are published to guardians
+  /// immediately (written `isApproved: true` at upload). Defaults to true so the
+  /// review flow is preserved unless the manager opts out.
+  final bool photosNeedApproval;
+
   final int? createdAt;
   final int? updatedAt;
+
+  /// Links this nursery to a global KidTrack app-rating campaign
+  /// (`platform/kidtrackFeedbackCampaigns/{id}`). SuperAdmin-controlled: null
+  /// means no active survey. The parent prompt is live only when this is set
+  /// AND the linked campaign is enabled.
+  final String? kidtrackFeedbackCampaignId;
 
   // ─── Discovery / profile display fields ───────────────────────────────────
   final String? coverPhoto;
@@ -63,6 +83,12 @@ class NurseryModel {
   /// Each entry is a single clause; they're added/displayed one at a time.
   final List<String> terms;
 
+  /// Privacy policy shown to a guardian on their FIRST app open, as a
+  /// non-dismissible bottom sheet they must accept once (checkbox) before they
+  /// can use the app. Each entry is a single numbered clause; edited by the
+  /// manager in the application file (same add-one-at-a-time UX as [terms]).
+  final List<String> privacyPolicy;
+
   /// Manager-authored configuration of the online application form: which
   /// sections appear, in what order, plus the dynamic assessment questions and
   /// bus note. Falls back to [ApplicationFormConfig.defaults] when unset.
@@ -72,6 +98,14 @@ class NurseryModel {
   /// Drives homework date defaults (next school day). Empty = not configured;
   /// callers fall back to "every day except Friday" via [effectiveWorkingDays].
   final List<int> workingDays;
+
+  /// Monthly fee-collection window as day-of-month bounds (1..28). Purely a
+  /// courtesy window: when both are set, a guardian who still owes this
+  /// month's fees after [feeCollectionToDay] has passed gets ONE automatic,
+  /// polite chat reminder (the `feeReminderScan` Cloud Function). Both null =
+  /// feature off — no reminders are ever sent.
+  final int? feeCollectionFromDay;
+  final int? feeCollectionToDay;
 
   const NurseryModel({
     this.key,
@@ -85,8 +119,11 @@ class NurseryModel {
     this.ownerIds = const [],
     this.isActive = true,
     this.isListed = false,
+    this.ownerPhotoReviewEnabled = false,
+    this.photosNeedApproval = true,
     this.createdAt,
     this.updatedAt,
+    this.kidtrackFeedbackCampaignId,
     this.coverPhoto,
     this.photos = const [],
     this.description,
@@ -107,8 +144,11 @@ class NurseryModel {
     this.activities = const [],
     this.branches = const [],
     this.terms = const [],
+    this.privacyPolicy = const [],
     this.applicationForm = const ApplicationFormConfig(),
     this.workingDays = const [],
+    this.feeCollectionFromDay,
+    this.feeCollectionToDay,
   });
 
   /// Configured school days, or the sensible default (every day except Friday)
@@ -133,8 +173,14 @@ class NurseryModel {
       ownerIds: _parseOwnerIds(json['ownerIds'], json['ownerId']),
       isActive: _parseBool(json['isActive']),
       isListed: _parseBool(json['isListed'], fallback: false),
+      ownerPhotoReviewEnabled:
+          _parseBool(json['ownerPhotoReviewEnabled'], fallback: false),
+      photosNeedApproval:
+          _parseBool(json['photosNeedApproval'], fallback: true),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
+      kidtrackFeedbackCampaignId:
+          json['kidtrackFeedbackCampaignId']?.toString(),
       coverPhoto: json['coverPhoto']?.toString(),
       photos: _parseStringList(json['photos']),
       description: json['description']?.toString(),
@@ -155,8 +201,11 @@ class NurseryModel {
       activities: _parseStringList(json['activities']),
       branches: NurseryBranch.parseList(json['branches']),
       terms: _parseTerms(json['terms']),
+      privacyPolicy: _parseTerms(json['privacyPolicy']),
       applicationForm: ApplicationFormConfig.fromJson(json['applicationForm']),
       workingDays: _parseIntList(json['workingDays']),
+      feeCollectionFromDay: _parseInt(json['feeCollectionFromDay']),
+      feeCollectionToDay: _parseInt(json['feeCollectionToDay']),
     );
   }
 
@@ -175,8 +224,11 @@ class NurseryModel {
     if (owners.isNotEmpty) data['ownerIds'] = owners;
     data['isActive'] = isActive;
     data['isListed'] = isListed;
+    data['ownerPhotoReviewEnabled'] = ownerPhotoReviewEnabled;
+    data['photosNeedApproval'] = photosNeedApproval;
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
+    put('kidtrackFeedbackCampaignId', kidtrackFeedbackCampaignId);
     put('coverPhoto', coverPhoto);
     if (photos.isNotEmpty) data['photos'] = photos;
     put('description', description);
@@ -199,17 +251,23 @@ class NurseryModel {
       data['branches'] = branches.map((b) => b.toJson()).toList();
     }
     if (terms.isNotEmpty) data['terms'] = terms;
+    if (privacyPolicy.isNotEmpty) data['privacyPolicy'] = privacyPolicy;
     if (applicationForm.sections.isNotEmpty) {
       data['applicationForm'] = applicationForm.toJson();
     }
     if (workingDays.isNotEmpty) data['workingDays'] = workingDays;
+    put('feeCollectionFromDay', feeCollectionFromDay);
+    put('feeCollectionToDay', feeCollectionToDay);
     return data;
   }
 
   NurseryModel copyWith({
     String? key, String? name, String? logo, String? phone, String? whatsapp,
     String? email, String? address, String? ownerId, List<String>? ownerIds,
-    bool? isActive, bool? isListed, int? createdAt, int? updatedAt,
+    bool? isActive, bool? isListed, bool? ownerPhotoReviewEnabled,
+    bool? photosNeedApproval,
+    int? createdAt, int? updatedAt,
+    String? kidtrackFeedbackCampaignId,
     String? coverPhoto, List<String>? photos, String? description,
     double? lat, double? lng, double? rating, int? reviewsCount,
     int? childrenCount,
@@ -220,8 +278,11 @@ class NurseryModel {
     List<String>? programs, List<String>? activities,
     List<NurseryBranch>? branches,
     List<String>? terms,
+    List<String>? privacyPolicy,
     ApplicationFormConfig? applicationForm,
     List<int>? workingDays,
+    int? feeCollectionFromDay,
+    int? feeCollectionToDay,
   }) => NurseryModel(
     key: key ?? this.key, name: name ?? this.name,
     logo: logo ?? this.logo, phone: phone ?? this.phone,
@@ -230,7 +291,12 @@ class NurseryModel {
     ownerId: ownerId ?? this.ownerId, ownerIds: ownerIds ?? this.ownerIds,
     isActive: isActive ?? this.isActive,
     isListed: isListed ?? this.isListed,
+    ownerPhotoReviewEnabled:
+        ownerPhotoReviewEnabled ?? this.ownerPhotoReviewEnabled,
+    photosNeedApproval: photosNeedApproval ?? this.photosNeedApproval,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
+    kidtrackFeedbackCampaignId:
+        kidtrackFeedbackCampaignId ?? this.kidtrackFeedbackCampaignId,
     coverPhoto: coverPhoto ?? this.coverPhoto, photos: photos ?? this.photos,
     description: description ?? this.description,
     lat: lat ?? this.lat, lng: lng ?? this.lng, rating: rating ?? this.rating,
@@ -247,8 +313,11 @@ class NurseryModel {
     programs: programs ?? this.programs, activities: activities ?? this.activities,
     branches: branches ?? this.branches,
     terms: terms ?? this.terms,
+    privacyPolicy: privacyPolicy ?? this.privacyPolicy,
     applicationForm: applicationForm ?? this.applicationForm,
     workingDays: workingDays ?? this.workingDays,
+    feeCollectionFromDay: feeCollectionFromDay ?? this.feeCollectionFromDay,
+    feeCollectionToDay: feeCollectionToDay ?? this.feeCollectionToDay,
   );
 
   /// Merged, de-duplicated list of all owner uids (includes the legacy

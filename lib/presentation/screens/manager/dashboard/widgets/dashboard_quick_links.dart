@@ -13,6 +13,7 @@ class DashboardQuickLinks extends StatelessWidget {
   static const _chatPage = 3;
   static const _financePage = 4;
   static const _socialPage = 5;
+  static const _schedulePage = 7;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +39,13 @@ class DashboardQuickLinks extends StatelessWidget {
           labelKey: 'manager_tab_social',
           color: const Color(0xFFEC4899),
           onTap: () => controller.openTab(_socialPage),
+        ),
+        SizedBox(width: 12.w),
+        _QuickLink(
+          icon: Icons.calendar_month_rounded,
+          labelKey: 'manager_tab_schedule',
+          color: const Color(0xFF2563EB),
+          onTap: () => controller.openTab(_schedulePage),
         ),
       ],
     );

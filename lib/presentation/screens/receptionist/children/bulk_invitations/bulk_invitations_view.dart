@@ -42,6 +42,14 @@ class _BulkInvitationsViewState extends State<BulkInvitationsView> {
               size: 20.sp, color: const Color(0xFF374151)),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'rc_bulk_print_all'.tr,
+            icon: Icon(Icons.print_rounded,
+                size: 22.sp, color: AppColors.primary),
+            onPressed: controller.printAllCards,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Obx(() {
@@ -50,33 +58,49 @@ class _BulkInvitationsViewState extends State<BulkInvitationsView> {
               child: CircularProgressIndicator(strokeWidth: 2),
             );
           }
-          return Column(
-            children: [
-              BulkInviteSummary(controller: controller),
-              BulkInviteSearch(controller: controller),
-              BulkInviteFilterBar(controller: controller),
-              Expanded(
-                child: controller.filtered.isEmpty
-                    ? const BulkInviteEmpty()
-                    : RefreshIndicator(
-                        onRefresh: controller.loadData,
-                        child: ListView.builder(
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 24.h),
-                          itemCount: controller.filtered.length,
-                          itemBuilder: (_, i) => Padding(
-                            padding: EdgeInsets.only(bottom: 12.h),
-                            child: BulkInviteParentCard(
-                              row: controller.filtered[i],
-                              onSend: () =>
-                                  controller.send(controller.filtered[i]),
-                            ),
+          final isEmpty = controller.filtered.isEmpty;
+          return RefreshIndicator(
+            onRefresh: controller.loadData,
+            child: CustomScrollView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: BulkInviteSummary(controller: controller),
+                ),
+                SliverToBoxAdapter(
+                  child: BulkInviteSearch(controller: controller),
+                ),
+                SliverToBoxAdapter(
+                  child: BulkInviteFilterBar(controller: controller),
+                ),
+                if (isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: BulkInviteEmpty(),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 24.h),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (_, i) => Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: BulkInviteParentCard(
+                            row: controller.filtered[i],
+                            onSend: () =>
+                                controller.send(controller.filtered[i]),
+                            onShowCode: () => controller
+                                .showActivation(controller.filtered[i]),
                           ),
                         ),
+                        childCount: controller.filtered.length,
                       ),
-              ),
-            ],
+                    ),
+                  ),
+              ],
+            ),
           );
         }),
       ),

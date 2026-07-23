@@ -103,35 +103,50 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
   Widget build(BuildContext context) {
     final accent = Color(NurseryContactModel.roleColor(_roleKey));
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: wrapWithKeyboard(
-        context: context,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(2),
+      textDirection: appTextDirection,
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Column(
+          children: [
+            // ── Grabber ──────────────────────────────────────────────────
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // ── Title ────────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  widget.existing == null
+                      ? 'nursery_contact_add'.tr
+                      : 'nursery_contact_edit'.tr,
+                  style: context.typography.lgBold.copyWith(
+                    color: const Color(0xFF1E293B),
                   ),
                 ),
               ),
-              Text(
-                widget.existing == null
-                    ? 'nursery_contact_add'.tr
-                    : 'nursery_contact_edit'.tr,
-                style: context.typography.lgBold.copyWith(
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 20),
-
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: Color(0xFFE2E8F0),
+            ),
+            // ── Scrollable form ──────────────────────────────────────────
+            Expanded(
+              child: wrapWithKeyboard(
+                context: context,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
               // ── Role ────────────────────────────────────────────────────
               Text(
                 'nursery_contact_role'.tr,
@@ -294,29 +309,39 @@ class _NurseryContactSheetState extends State<NurseryContactSheet>
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    widget.existing == null
-                        ? 'nursery_contact_save'.tr
-                        : 'nursery_contact_update'.tr,
-                    style: context.typography.smSemiBold,
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            // ── Pinned save button ───────────────────────────────────────
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      widget.existing == null
+                          ? 'nursery_contact_save'.tr
+                          : 'nursery_contact_update'.tr,
+                      style: context.typography.smSemiBold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

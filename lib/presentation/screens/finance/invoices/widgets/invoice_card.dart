@@ -133,6 +133,12 @@ class InvoiceCard extends StatelessWidget {
               ]),
             ],
 
+            // ── Transfer screenshot (guardian-submitted proof) ───────────────
+            if (item.proofUrl != null && item.proofUrl!.isNotEmpty) ...[
+              SizedBox(height: 10.h),
+              _ProofBanner(url: item.proofUrl!),
+            ],
+
             // ── Mark as paid button ──────────────────────────────────────────
             if (!isPaid && onMarkPaid != null) ...[
               SizedBox(height: 12.h),
@@ -173,6 +179,49 @@ class InvoiceCard extends StatelessWidget {
       default:
         return const Color(0xFFF59E0B);
     }
+  }
+}
+
+/// Green banner shown when a guardian has uploaded a transfer screenshot for
+/// this invoice. Tapping opens the full image so reception/CS (and the manager)
+/// can verify it before recording the collection.
+class _ProofBanner extends StatelessWidget {
+  final String url;
+  const _ProofBanner({required this.url});
+
+  void _view() => showFullImage(url);
+
+  @override
+  Widget build(BuildContext context) {
+    const green = Color(0xFF16A34A);
+    return GestureDetector(
+      onTap: _view,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          color: green.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: green.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.receipt_long_rounded, size: 16.sp, color: green),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'invoice_proof_badge'.tr,
+                style: context.typography.xsMedium.copyWith(color: green),
+              ),
+            ),
+            Text(
+              'invoice_proof_view'.tr,
+              style: context.typography.xsMedium.copyWith(color: green),
+            ),
+            Icon(Icons.chevron_left_rounded, size: 16.sp, color: green),
+          ],
+        ),
+      ),
+    );
   }
 }
 

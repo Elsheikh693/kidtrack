@@ -82,7 +82,7 @@ class _EnrollmentSheetState extends State<EnrollmentSheet>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

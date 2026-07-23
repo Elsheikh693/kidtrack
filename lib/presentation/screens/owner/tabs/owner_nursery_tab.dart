@@ -11,12 +11,6 @@ class OwnerNurseryTab extends StatelessWidget {
     titleColor: AppColors.blueForeground,
     items: [
       DashboardItem(
-        labelKey: 'manager_more_link_nursery_profile',
-        icon: Icons.storefront_rounded,
-        color: AppColors.secondary80,
-        route: managerNurseryProfileView,
-      ),
-      DashboardItem(
         labelKey: 'owner_item_branches',
         icon: Icons.account_balance_rounded,
         color: AppColors.blueForeground,
@@ -102,10 +96,10 @@ class OwnerNurseryTab extends StatelessWidget {
     return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            const KidTrackCollapsingHeader(
-              title: 'الحضانة',
+            KidTrackCollapsingHeader(
+              title: 'ownertabs20_nursery'.tr,
               icon: Icons.business_rounded,
-              accentColor: Color(0xFF2563EB),
+              accentColor: const Color(0xFF2563EB),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),

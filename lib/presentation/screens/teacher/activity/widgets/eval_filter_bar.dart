@@ -28,7 +28,7 @@ class EvalFilterBarDelegate extends SliverPersistentHeaderDelegate {
           children: [
             TextField(
               controller: searchCtrl,
-              textDirection: TextDirection.rtl,
+              textDirection: appTextDirection,
               decoration: InputDecoration(
                 hintText: 'teacher_activity_search_hint'.tr,
                 hintStyle: context.typography.smRegular

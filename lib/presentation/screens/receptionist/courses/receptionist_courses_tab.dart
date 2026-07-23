@@ -12,7 +12,7 @@ class ReceptionistCoursesTab extends StatelessWidget {
     final c = Get.put(ReceptionistCoursesController());
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(
@@ -75,7 +75,7 @@ class _CategoryBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w),
           children: [
             _CatChip(
-              label: 'الكل',
+              label: 'receptioni28_filter_all'.tr,
               color: AppColors.primary,
               selected: selected == null,
               onTap: () => controller.filterBy(null),
@@ -201,13 +201,15 @@ class _CourseCard extends StatelessWidget {
                         children: [
                           _MetaPill(
                             icon: Icons.event_note_rounded,
-                            label: '${course.totalSessions} حصة',
+                            label: 'receptioni28_sessions_count'
+                                .trParams({'count': '${course.totalSessions}'}),
                             color: color,
                           ),
                           SizedBox(width: 6.w),
                           _MetaPill(
                             icon: Icons.people_alt_rounded,
-                            label: '$enrolledCount طفل',
+                            label: 'receptioni28_children_count'
+                                .trParams({'count': '$enrolledCount'}),
                             color: const Color(0xFF059669),
                           ),
                         ],
@@ -224,7 +226,7 @@ class _CourseCard extends StatelessWidget {
               Expanded(
                 child: _CardAction(
                   icon: Icons.group_add_rounded,
-                  label: 'الأطفال',
+                  label: 'receptioni28_children'.tr,
                   color: const Color(0xFF059669),
                   onTap: onEnroll,
                 ),
@@ -233,7 +235,7 @@ class _CourseCard extends StatelessWidget {
               Expanded(
                 child: _CardAction(
                   icon: Icons.how_to_reg_rounded,
-                  label: 'الحضور',
+                  label: 'receptioni28_attendance'.tr,
                   color: color,
                   onTap: onSessions,
                 ),
@@ -319,13 +321,13 @@ class _EmptyState extends StatelessWidget {
         Icon(Icons.school_outlined, size: 64.sp, color: AppColors.grayLight),
         SizedBox(height: 12.h),
         Text(
-          'لا توجد كورسات بعد',
+          'receptioni28_no_courses'.tr,
           style: context.typography.mdBold
               .copyWith(color: AppColors.textSecondaryParagraph),
         ),
         SizedBox(height: 4.h),
         Text(
-          'يضيف المدير الكورسات ثم تسجّل الأطفال هنا',
+          'receptioni28_no_courses_hint'.tr,
           style: context.typography.xsRegular.copyWith(color: AppColors.grayMedium),
         ),
       ],

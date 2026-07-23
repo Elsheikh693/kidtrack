@@ -9,6 +9,7 @@ import '../../../Global/services/feed_service.dart';
 import '../../../Global/services/session_service.dart';
 import '../../parentControllers/services/branch_parent_service.dart';
 import '../../parentControllers/services/classroom_parent_service.dart';
+import '../../../Global/Localization/app_direction.dart';
 
 class FeedController extends GetxController {
   final _service = FeedService();
@@ -55,17 +56,17 @@ class FeedController extends GetxController {
   Future<void> deletePost(NurseryPostModel post) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('حذف البوست', textDirection: TextDirection.rtl),
-        content: const Text('هل تريد حذف هذا البوست نهائياً؟',
-            textDirection: TextDirection.rtl),
+        title: Text('feed14_delete_post_title'.tr, textDirection: appTextDirection),
+        content: Text('feed14_delete_post_confirm'.tr,
+            textDirection: appTextDirection),
         actions: [
           TextButton(
               onPressed: () => Get.back(result: false),
-              child: const Text('إلغاء')),
+              child: Text('feed14_cancel'.tr)),
           TextButton(
               onPressed: () => Get.back(result: true),
-              child: const Text('حذف',
-                  style: TextStyle(color: Colors.red))),
+              child: Text('feed14_delete'.tr,
+                  style: const TextStyle(color: Colors.red))),
         ],
       ),
     );

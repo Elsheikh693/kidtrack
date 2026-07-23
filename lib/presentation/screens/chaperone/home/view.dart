@@ -22,7 +22,7 @@ class _ChaperoneHomeViewState extends State<ChaperoneHomeView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'tracking_chaperone_title'.tr),

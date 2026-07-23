@@ -93,15 +93,25 @@ class _ActivityReportViewState extends State<ActivityReportView>
     final timeLabel =
         '${startDt.hour.toString().padLeft(2, '0')}:${startDt.minute.toString().padLeft(2, '0')}';
 
+    final reg = EvalLevelsRegistry.instance;
+    final levels = reg.levels;
     final evaluated = activity.evaluations.length;
     final participated = activity.childIds.length;
-    final excellent =
-        activity.evaluations.values.where((v) => v == 'excellent').length;
-    final needsFollow =
-        activity.evaluations.values.where((v) => v == 'needs_follow').length;
-    final needsAttention =
-        activity.evaluations.values.where((v) => v == 'needs_attention').length;
-    final avgRating = evaluated == 0 ? 0.0 : (excellent / evaluated) * 5.0;
+
+    // Count per dynamic level + mean-of-scores average.
+    final counts = <String, int>{};
+    double scoreSum = 0;
+    for (final v in activity.evaluations.values) {
+      counts[v] = (counts[v] ?? 0) + 1;
+      scoreSum += reg.scoreFor(v);
+    }
+    final avgRating = evaluated == 0 ? 0.0 : scoreSum / evaluated;
+    final distribution = [
+      for (final l in levels) (level: l, count: counts[l.key] ?? 0),
+    ];
+    final maxScore = levels.isEmpty
+        ? 5.0
+        : levels.map((l) => l.score).reduce((a, b) => a > b ? a : b);
 
     final evalEntries = <_ChildEval>[];
     final childMap = {for (final c in children) c.key ?? '': c};
@@ -111,26 +121,24 @@ class _ActivityReportViewState extends State<ActivityReportView>
       evalEntries.add(
           _ChildEval(child: child, evalKey: activity.evaluations[childId]));
     }
-    evalEntries.sort((a, b) {
-      int order(String? k) {
-        if (k == 'excellent') return 0;
-        if (k == 'needs_follow') return 1;
-        if (k == 'needs_attention') return 2;
-        return 3;
-      }
-      return order(a.evalKey).compareTo(order(b.evalKey));
-    });
+    // Highest score first (best performance on top).
+    evalEntries.sort(
+        (a, b) => reg.scoreFor(b.evalKey).compareTo(reg.scoreFor(a.evalKey)));
 
-    final topStudents =
-        evalEntries.where((e) => e.evalKey == 'excellent').take(5).toList();
-    final attentionStudents =
-        evalEntries.where((e) => e.evalKey == 'needs_attention').toList();
+    final topStudents = evalEntries
+        .where((e) =>
+            e.evalKey != null && reg.scoreFor(e.evalKey) >= maxScore - 0.001)
+        .take(5)
+        .toList();
+    final attentionStudents = evalEntries
+        .where((e) => e.evalKey != null && reg.scoreFor(e.evalKey) <= 2.0)
+        .toList();
 
     final color = _subjectColor(activity.subjectName);
     final sIcon = _subjectIcon(activity.subjectName);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         body: CustomScrollView(
@@ -195,7 +203,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
                             padding: EdgeInsets.fromLTRB(4.w, 4.h, 16.w, 0),
                             child: IconButton(
                               icon: Icon(
-                                Icons.arrow_forward_ios_rounded,
+                                Icons.arrow_back_ios_new_rounded,
                                 color: Colors.white,
                                 size: 20.sp,
                               ),
@@ -284,7 +292,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
                                 SizedBox(width: 8.w),
                                 _HeaderChip(
                                   icon: Icons.people_rounded,
-                                  label: '$participated طالب',
+                                  label: '$participated ${'teacherrep38_student_unit'.tr}',
                                 ),
                               ],
                             ),
@@ -319,9 +327,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
                     _animated(
                       1,
                       _EvalSection(
-                        excellent: excellent,
-                        follow: needsFollow,
-                        attention: needsAttention,
+                        distribution: distribution,
                         total: evaluated,
                       ),
                     ),
@@ -560,14 +566,10 @@ class _StatCard extends StatelessWidget {
 
 class _EvalSection extends StatelessWidget {
   const _EvalSection({
-    required this.excellent,
-    required this.follow,
-    required this.attention,
+    required this.distribution,
     required this.total,
   });
-  final int excellent;
-  final int follow;
-  final int attention;
+  final List<({EvalLevelTemplateModel level, int count})> distribution;
   final int total;
 
   @override
@@ -599,7 +601,7 @@ class _EvalSection extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'توزيع التقييمات',
+                  'teacherrep38_eval_distribution'.tr,
                   style: context.typography.displaySmBold.copyWith(
                     fontSize: 14,
                     color: const Color(0xFF111827),
@@ -608,32 +610,17 @@ class _EvalSection extends StatelessWidget {
               ],
             ),
             SizedBox(height: 14.h),
-            _EvalBarRow(
-              icon: Icons.star_rounded,
-              label: 'ممتاز',
-              count: excellent,
-              total: total,
-              color: const Color(0xFF16A34A),
-              delay: 0,
-            ),
-            SizedBox(height: 10.h),
-            _EvalBarRow(
-              icon: Icons.remove_red_eye_rounded,
-              label: 'متابعة',
-              count: follow,
-              total: total,
-              color: const Color(0xFFD97706),
-              delay: 150,
-            ),
-            SizedBox(height: 10.h),
-            _EvalBarRow(
-              icon: Icons.warning_rounded,
-              label: 'اهتمام',
-              count: attention,
-              total: total,
-              color: const Color(0xFFDC2626),
-              delay: 300,
-            ),
+            for (int i = 0; i < distribution.length; i++) ...[
+              if (i > 0) SizedBox(height: 10.h),
+              _EvalBarRow(
+                icon: EvalLevelIcons.iconFor(distribution[i].level.icon),
+                label: distribution[i].level.title,
+                count: distribution[i].count,
+                total: total,
+                color: Color(distribution[i].level.color),
+                delay: i * 150,
+              ),
+            ],
           ],
         ),
       );
@@ -771,24 +758,13 @@ class _StudentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon, label) = switch (entry.evalKey) {
-      'excellent' => (const Color(0xFF16A34A), Icons.star_rounded, 'ممتاز'),
-      'needs_follow' => (
-          const Color(0xFFD97706),
-          Icons.remove_red_eye_rounded,
-          'يحتاج متابعة',
-        ),
-      'needs_attention' => (
-          const Color(0xFFDC2626),
-          Icons.warning_rounded,
-          'يحتاج اهتمام',
-        ),
-      _ => (
-          Colors.grey.shade400,
-          Icons.radio_button_unchecked_rounded,
-          'لم يُقيَّم',
-        ),
-    };
+    final tpl = EvalLevelsRegistry.instance.byKey(entry.evalKey);
+    final Color color =
+        tpl != null ? Color(tpl.color) : Colors.grey.shade400;
+    final IconData icon = tpl != null
+        ? EvalLevelIcons.iconFor(tpl.icon)
+        : Icons.radio_button_unchecked_rounded;
+    final String label = tpl != null ? tpl.title : 'teacherrep38_not_evaluated'.tr;
 
     final avatarColors = [
       const Color(0xFF3B82F6), const Color(0xFF8B5CF6),
@@ -819,10 +795,12 @@ class _StudentTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(width: 4.w, color: color),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                child: Row(
-                  children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  child: Row(
+                    children: [
                     Container(
                       width: 36.w,
                       height: 36.h,
@@ -877,7 +855,8 @@ class _StudentTile extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

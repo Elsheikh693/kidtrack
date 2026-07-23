@@ -5,15 +5,23 @@ class ClassroomParentService {
   final BaseService<ClassroomModel> _service =
       Get.find<BaseService<ClassroomModel>>(tag: 'classrooms');
 
-  Future<void> getAll({required Function(List<ClassroomModel?>) callBack}) async {
+  /// [limit] caps the result to the first N rows (by key) for cheap existence
+  /// probes instead of downloading every classroom.
+  Future<void> getAll({
+    required Function(List<ClassroomModel?>) callBack,
+    int? limit,
+  }) async {
     final nurseryId = SessionService().nurseryId ?? '';
     if (nurseryId.isEmpty) {
       callBack([]);
       return;
     }
     try {
-      final snap = await FirebaseDatabase.instance
-          .ref('platform/$nurseryId/classrooms')
+      final ref =
+          FirebaseDatabase.instance.ref('platform/$nurseryId/classrooms');
+      final snap = await (limit != null
+              ? ref.orderByKey().limitToFirst(limit)
+              : ref)
           .get();
       if (!snap.exists || snap.value == null) {
         callBack([]);

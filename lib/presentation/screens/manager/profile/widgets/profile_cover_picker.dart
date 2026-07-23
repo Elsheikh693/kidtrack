@@ -38,6 +38,16 @@ class ProfileCoverPicker extends StatelessWidget {
             ),
           ),
           Positioned(
+            bottom: 34.h,
+            right: 116.w,
+            left: 16.w,
+            child: AppText(
+              text: 'manager_profile_logo_hint'.tr,
+              textStyle: context.typography.xsMedium
+                  .copyWith(color: AppColors.textSecondaryParagraph),
+            ),
+          ),
+          Positioned(
             bottom: 0,
             right: 16.w,
             child: GestureDetector(

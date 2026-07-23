@@ -28,6 +28,12 @@ class TeacherAccountTab extends StatelessWidget {
           ),
         ),
 
+        // Switch role (only for multi-hat identities)
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
+        ),
+
         // Classroom management section
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -36,28 +42,34 @@ class TeacherAccountTab extends StatelessWidget {
               titleKey: 'teacher_account_classroom_section',
               tiles: [
                 _SettingsTile(
+                  icon: Icons.grading_rounded,
+                  color: const Color(0xFF4F46E5),
+                  labelKey: 'assessment_teacher_menu_item',
+                  onTap: () => Get.toNamed(teacherAssessmentsView),
+                ),
+                _SettingsTile(
                   icon: Icons.emoji_emotions_rounded,
                   color: const Color(0xFF0891B2),
                   labelKey: 'child_state_templates_menu_item',
                   onTap: () => Get.toNamed(childStatesView),
                 ),
-              ],
-            ),
-          ),
-        ),
-
-        // General settings section
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          sliver: SliverToBoxAdapter(
-            child: _SectionCard(
-              titleKey: 'parent_account_settings_section',
-              tiles: [
                 _SettingsTile(
-                  icon: Icons.support_agent_outlined,
-                  color: AppColors.blueForeground,
-                  labelKey: 'contact_support_title',
-                  onTap: () => showContactSheet(ContactType.support),
+                  icon: Icons.star_rounded,
+                  color: const Color(0xFF16A34A),
+                  labelKey: 'eval_levels_menu_item',
+                  onTap: () => Get.toNamed(evalLevelsView),
+                ),
+                _SettingsTile(
+                  icon: Icons.ondemand_video_rounded,
+                  color: const Color(0xFFDC2626),
+                  labelKey: 'tutorial_menu_entry',
+                  onTap: () => Get.toNamed(appTutorialView),
+                ),
+                _SettingsTile(
+                  icon: Icons.language_rounded,
+                  color: AppColors.primary,
+                  labelKey: 'settings_language',
+                  onTap: showLanguageSheet,
                 ),
               ],
             ),

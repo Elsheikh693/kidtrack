@@ -30,71 +30,50 @@ class _ParentCoursesViewState extends State<ParentCoursesView> {
       final isLoading = controller.isLoading.value;
 
       if (isLoading) {
-        return Container(
-          color: _kBg,
-          child: const SafeArea(
-            bottom: false,
-            child: CustomScrollView(
-              physics: NeverScrollableScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    child: ParentTopBar(),
-                  ),
-                ),
-                SliverToBoxAdapter(child: CoursesShimmer()),
-              ],
-            ),
+        return const ParentTabScaffold(
+          backgroundColor: _kBg,
+          body: CustomScrollView(
+            physics: NeverScrollableScrollPhysics(),
+            slivers: [SliverToBoxAdapter(child: CoursesShimmer())],
           ),
         );
       }
 
       final isAll = controller.activeTab.value == 0;
 
-      return Container(
-        color: _kBg,
-        child: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: ParentTopBar(),
-                ),
+      return ParentTabScaffold(
+        backgroundColor: _kBg,
+        body: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ── Segmented tabs ─────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _SegmentedTabs(
+                activeTab: controller.activeTab.value,
+                totalCount: controller.totalCount,
+                enrolledCount: controller.enrolledCount,
+                onTab: controller.switchTab,
               ),
+            ),
 
-              // ── Segmented tabs ─────────────────────────────────────────
+            // ── Category chips (all tab only) ──────────────────────────
+            if (isAll && controller.availableCategories.length > 1)
               SliverToBoxAdapter(
-                child: _SegmentedTabs(
-                  activeTab: controller.activeTab.value,
-                  totalCount: controller.totalCount,
-                  enrolledCount: controller.enrolledCount,
-                  onTab: controller.switchTab,
+                child: _CategoryChips(
+                  categories: controller.availableCategories,
+                  selected: controller.selectedCategory.value,
+                  onSelect: controller.selectCategory,
                 ),
               ),
 
-              // ── Category chips (all tab only) ──────────────────────────
-              if (isAll && controller.availableCategories.length > 1)
-                SliverToBoxAdapter(
-                  child: _CategoryChips(
-                    categories: controller.availableCategories,
-                    selected: controller.selectedCategory.value,
-                    onSelect: controller.selectCategory,
-                  ),
-                ),
+            // ── Content ────────────────────────────────────────────────
+            if (isAll)
+              _AvailableList(controller: controller)
+            else
+              _EnrolledList(controller: controller),
 
-              // ── Content ────────────────────────────────────────────────
-              if (isAll)
-                _AvailableList(controller: controller)
-              else
-                _EnrolledList(controller: controller),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 110)),
-            ],
-          ),
+            const SliverToBoxAdapter(child: SizedBox(height: 110)),
+          ],
         ),
       );
     });
@@ -290,9 +269,7 @@ class _Chip extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? color : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: active ? color : _kBorder,
-          ),
+          border: Border.all(color: active ? color : _kBorder),
           boxShadow: active
               ? [
                   BoxShadow(
@@ -383,20 +360,17 @@ class _EnrolledList extends StatelessWidget {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (_, i) {
-          final course = enrolled[i];
-          return StaggerItem(
+      delegate: SliverChildBuilderDelegate((_, i) {
+        final course = enrolled[i];
+        return StaggerItem(
+          index: i,
+          child: EnrolledCourseCard(
+            course: course,
+            attended: controller.attendedCount(course.id),
             index: i,
-            child: EnrolledCourseCard(
-              course: course,
-              attended: controller.attendedCount(course.id),
-              index: i,
-            ),
-          );
-        },
-        childCount: enrolled.length,
-      ),
+          ),
+        );
+      }, childCount: enrolled.length),
     );
   }
 }
@@ -446,11 +420,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             subtitle.tr,
-            style: const TextStyle(
-              fontSize: 13,
-              height: 1.6,
-              color: _kMuted,
-            ),
+            style: const TextStyle(fontSize: 13, height: 1.6, color: _kMuted),
             textAlign: TextAlign.center,
           ),
         ],

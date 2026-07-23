@@ -9,14 +9,13 @@ class SendNotificationSheet extends StatefulWidget {
   State<SendNotificationSheet> createState() => _SendNotificationSheetState();
 }
 
-class _SendNotificationSheetState extends State<SendNotificationSheet> with KeyboardSheetMixin {
+class _SendNotificationSheetState extends State<SendNotificationSheet>
+    with KeyboardSheetMixin {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _titleCtrl;
   late final TextEditingController _bodyCtrl;
-  late final TextEditingController _userIdCtrl;
 
-  bool _toAll = true;
   bool _isSubmitting = false;
 
   @override
@@ -24,14 +23,12 @@ class _SendNotificationSheetState extends State<SendNotificationSheet> with Keyb
     super.initState();
     _titleCtrl = TextEditingController();
     _bodyCtrl = TextEditingController();
-    _userIdCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _bodyCtrl.dispose();
-    _userIdCtrl.dispose();
     super.dispose();
   }
 
@@ -45,8 +42,7 @@ class _SendNotificationSheetState extends State<SendNotificationSheet> with Keyb
       title: _titleCtrl.text,
       body: _bodyCtrl.text,
       type: 'general',
-      toAll: _toAll,
-      targetUserId: _toAll ? null : _userIdCtrl.text,
+      toAll: true,
     );
 
     if (mounted) Get.back();
@@ -55,266 +51,219 @@ class _SendNotificationSheetState extends State<SendNotificationSheet> with Keyb
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ── Drag Handle ─────────────────────────────────
-                Center(
-                  child: Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: AppColors.grayLight,
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── Title ───────────────────────────────────────
-                AppText(
-                  text: 'notif_send_title'.tr,
-                  textStyle: context.typography.lgBold.copyWith(
-                    color: AppColors.textDefault,
-                  ),
-                ),
-
-                SizedBox(height: 24.h),
-
-                // ── Notification Title ──────────────────────────
-                _FieldLabel(text: 'notif_field_title'.tr),
-                SizedBox(height: 8.h),
-                AppTextField(
-                  controller: _titleCtrl,
-                  hintText: 'notif_field_title_hint'.tr,
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.next,
-                  validator: (v) => Validators.notEmpty(
-                    v,
-                    errorMessage: 'notif_error_title_required'.tr,
-                  ),
-                ),
-
-                SizedBox(height: 16.h),
-
-                // ── Body ────────────────────────────────────────
-                _FieldLabel(text: 'notif_field_body'.tr),
-                SizedBox(height: 8.h),
-                AppTextField(
-                  controller: _bodyCtrl,
-                  hintText: 'notif_field_body_hint'.tr,
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-                  maxLines: 3,
-                  validator: (v) => Validators.notEmpty(
-                    v,
-                    errorMessage: 'notif_error_body_required'.tr,
-                  ),
-                ),
-
-                SizedBox(height: 20.h),
-
-                // ── Target Toggle ───────────────────────────────
-                _TargetToggle(
-                  toAll: _toAll,
-                  onChanged: (v) => setState(() => _toAll = v),
-                ),
-
-                // ── User ID field (conditional) ─────────────────
-                if (!_toAll) ...[
-                  SizedBox(height: 16.h),
-                  _FieldLabel(text: 'notif_user_id'.tr),
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _SheetHandle(),
+                  SizedBox(height: 20.h),
+                  const _SheetHeader(),
+                  SizedBox(height: 24.h),
+                  _FieldLabel(text: 'notif_field_title'.tr),
                   SizedBox(height: 8.h),
                   AppTextField(
-                    controller: _userIdCtrl,
-                    hintText: 'notif_user_id_hint'.tr,
+                    controller: _titleCtrl,
+                    hintText: 'notif_field_title_hint'.tr,
                     keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.done,
-                    validator: _toAll
-                        ? null
-                        : (v) => Validators.notEmpty(
-                            v,
-                            errorMessage: 'notif_error_user_id_required'.tr,
-                          ),
+                    textInputAction: TextInputAction.next,
+                    validator: (v) => Validators.notEmpty(
+                      v,
+                      errorMessage: 'notif_error_title_required'.tr,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  _FieldLabel(text: 'notif_field_body'.tr),
+                  SizedBox(height: 8.h),
+                  AppTextField(
+                    controller: _bodyCtrl,
+                    hintText: 'notif_field_body_hint'.tr,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    maxLines: 3,
+                    validator: (v) => Validators.notEmpty(
+                      v,
+                      errorMessage: 'notif_error_body_required'.tr,
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  const _AudienceBanner(),
+                  SizedBox(height: 28.h),
+                  _SubmitButton(
+                    isSubmitting: _isSubmitting,
+                    onTap: _submit,
                   ),
                 ],
-
-                SizedBox(height: 28.h),
-
-                // ── Send Button ─────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  child: _isSubmitting
-                      ? Container(
-                          height: 52.h,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: const Center(
-                            child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        )
-                      : PrimaryTextButton(
-                          appButtonSize: AppButtonSize.xxLarge,
-                          onTap: _submit,
-                          label: AppText(
-                            text: 'notif_send_btn'.tr,
-                            textStyle: context.typography.mdBold.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ),
     );
   }
 }
 
-// ── Target Toggle ─────────────────────────────────────────────────────────────
+// ── Drag Handle ───────────────────────────────────────────────────────────────
 
-class _TargetToggle extends StatelessWidget {
-  final bool toAll;
-  final ValueChanged<bool> onChanged;
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
 
-  const _TargetToggle({required this.toAll, required this.onChanged});
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 40.w,
+        height: 4.h,
+        decoration: BoxDecoration(
+          color: AppColors.grayLight,
+          borderRadius: BorderRadius.circular(4.r),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Header (icon + title + subtitle) ──────────────────────────────────────────
+
+class _SheetHeader extends StatelessWidget {
+  const _SheetHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.campaign_rounded,
+              color: AppColors.primary,
+              size: 22.sp,
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                text: 'notif_send_title'.tr,
+                textStyle: context.typography.lgBold.copyWith(
+                  color: AppColors.textDefault,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              AppText(
+                text: 'notif_send_subtitle'.tr,
+                textStyle: context.typography.xsRegular.copyWith(
+                  color: AppColors.textSecondaryParagraph,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Audience Banner (broadcast is the only target) ────────────────────────────
+
+class _AudienceBanner extends StatelessWidget {
+  const _AudienceBanner();
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: AppColors.backgroundNeutral100,
+        color: AppColors.primary.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          _TargetOption(
-            label: 'notif_target_all'.tr,
-            subtitle: 'notif_target_all_sub'.tr,
-            icon: Icons.people_rounded,
-            isSelected: toAll,
-            isTop: true,
-            onTap: () => onChanged(true),
+          Icon(Icons.people_rounded, size: 20.sp, color: AppColors.primary),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  text: 'notif_target_all'.tr,
+                  textStyle: context.typography.smMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                AppText(
+                  text: 'notif_target_all_sub'.tr,
+                  textStyle: context.typography.xsRegular.copyWith(
+                    color: AppColors.textSecondaryParagraph,
+                  ),
+                ),
+              ],
+            ),
           ),
-          // const Divider(height: 1, color: AppColors.grayLight),
-          // _TargetOption(
-          //   label: 'notif_target_specific'.tr,
-          //   subtitle: 'notif_target_specific_sub'.tr,
-          //   icon: Icons.person_rounded,
-          //   isSelected: !toAll,
-          //   isTop: false,
-          //   onTap: () => onChanged(false),
-          // ),
         ],
       ),
     );
   }
 }
 
-class _TargetOption extends StatelessWidget {
-  final String label;
-  final String subtitle;
-  final IconData icon;
-  final bool isSelected;
-  final bool isTop;
+// ── Submit Button ─────────────────────────────────────────────────────────────
+
+class _SubmitButton extends StatelessWidget {
+  final bool isSubmitting;
   final VoidCallback onTap;
 
-  const _TargetOption({
-    required this.label,
-    required this.subtitle,
-    required this.icon,
-    required this.isSelected,
-    required this.isTop,
-    required this.onTap,
-  });
+  const _SubmitButton({required this.isSubmitting, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.06)
-              : Colors.transparent,
-          borderRadius: BorderRadius.vertical(
-            top: isTop ? Radius.circular(12.r) : Radius.zero,
-            bottom: isTop ? Radius.zero : Radius.circular(12.r),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36.w,
-              height: 36.w,
+    return SizedBox(
+      width: double.infinity,
+      child: isSubmitting
+          ? Container(
+              height: 52.h,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryLight : AppColors.white,
-                borderRadius: BorderRadius.circular(8.r),
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: 18.sp,
-                  color: isSelected ? AppColors.primary : AppColors.grayMedium,
+              child: const Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            )
+          : PrimaryTextButton(
+              appButtonSize: AppButtonSize.xxLarge,
+              onTap: onTap,
+              label: AppText(
+                text: 'notif_send_btn'.tr,
+                textStyle: context.typography.mdBold.copyWith(
+                  color: AppColors.white,
                 ),
               ),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    text: label,
-                    textStyle: context.typography.smMedium.copyWith(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textDefault,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppText(
-                    text: subtitle,
-                    textStyle: context.typography.xsRegular.copyWith(
-                      color: AppColors.textSecondaryParagraph,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked_rounded
-                  : Icons.radio_button_unchecked_rounded,
-              color: isSelected ? AppColors.primary : AppColors.grayMedium,
-              size: 20.sp,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

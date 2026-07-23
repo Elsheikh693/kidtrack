@@ -43,12 +43,12 @@ class OwnerCoursesController extends GetxController {
   }
 
   String branchScopeLabel(NurseryCourse c) {
-    if (c.isAllBranches) return 'كل الفروع';
+    if (c.isAllBranches) return 'coursesown13_all_branches'.tr;
     final names = c.branchIds
         .map((id) => branchNames[id] ?? '')
         .where((n) => n.isNotEmpty)
         .toList();
-    if (names.isEmpty) return 'كل الفروع';
+    if (names.isEmpty) return 'coursesown13_all_branches'.tr;
     return names.join('، ');
   }
 
@@ -69,7 +69,7 @@ class OwnerCoursesController extends GetxController {
     EasyLoading.show();
     final ok = await _service.deleteCourse(course);
     EasyLoading.dismiss();
-    if (!ok) EasyLoading.showError('حدث خطأ');
+    if (!ok) EasyLoading.showError('coursesown13_error_generic'.tr);
   }
 
   // ─── Create ───────────────────────────────────────────────────────────────
@@ -85,7 +85,7 @@ class OwnerCoursesController extends GetxController {
     int? startDate,
     XFile? coverImage,
   }) async {
-    EasyLoading.show(status: 'جاري الحفظ...');
+    EasyLoading.show(status: 'coursesown13_saving'.tr);
     final ok = await _service.createCourse(
       title: title,
       description: description,
@@ -100,9 +100,9 @@ class OwnerCoursesController extends GetxController {
     );
     EasyLoading.dismiss();
     if (ok) {
-      EasyLoading.showSuccess('تم إضافة الكورس');
+      EasyLoading.showSuccess('coursesown13_course_added'.tr);
     } else {
-      EasyLoading.showError('حدث خطأ');
+      EasyLoading.showError('coursesown13_error_generic'.tr);
     }
     return ok;
   }
@@ -123,7 +123,7 @@ class OwnerCoursesController extends GetxController {
     XFile? newCoverImage,
     bool removeCover = false,
   }) async {
-    EasyLoading.show(status: 'جاري الحفظ...');
+    EasyLoading.show(status: 'coursesown13_saving'.tr);
     final ok = await _service.updateCourse(
       course: course,
       title: title,
@@ -141,9 +141,9 @@ class OwnerCoursesController extends GetxController {
     );
     EasyLoading.dismiss();
     if (ok) {
-      EasyLoading.showSuccess('تم تحديث الكورس');
+      EasyLoading.showSuccess('coursesown13_course_updated'.tr);
     } else {
-      EasyLoading.showError('حدث خطأ');
+      EasyLoading.showError('coursesown13_error_generic'.tr);
     }
     return ok;
   }

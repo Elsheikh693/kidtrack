@@ -34,10 +34,7 @@ class ContactUsController extends GetxController {
 
   void call(String phone) => _launch(Uri.parse('tel:$phone'));
 
-  void whatsapp(String number) {
-    final digits = number.replaceAll(RegExp(r'[^0-9+]'), '');
-    _launch(Uri.parse('https://wa.me/$digits'));
-  }
+  void whatsapp(String number) => MakeCall.openWhatsApp(number);
 
   void email(String address) => _launch(Uri.parse('mailto:$address'));
 

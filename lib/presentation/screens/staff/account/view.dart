@@ -21,20 +21,21 @@ class _StaffAccountViewState extends State<StaffAccountView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
-          backgroundColor: AppColors.backgroundNeutral100,
+          backgroundColor: AppColors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
+          toolbarHeight: 76.h,
+          titleSpacing: 16.w,
+          title: _ProfileTitle(controller: controller),
         ),
         body: ListView(
-          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 32.h),
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 32.h),
           physics: const BouncingScrollPhysics(),
           children: [
-            _StaffHeader(controller: controller),
-            SizedBox(height: 20.h),
             _Section(
               titleKey: 'staff_account_section_profile',
               items: [
@@ -43,6 +44,24 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                   icon: Icons.person_outline_rounded,
                   iconColor: AppColors.primary,
                   onTap: () => showEditProfileSheet(isStaff: true),
+                ),
+                _MenuItem(
+                  labelKey: 'tutorial_menu_entry',
+                  icon: Icons.ondemand_video_rounded,
+                  iconColor: const Color(0xFFDC2626),
+                  onTap: () => Get.toNamed(appTutorialView),
+                ),
+                _MenuItem(
+                  labelKey: 'events_menu_item',
+                  icon: Icons.celebration_rounded,
+                  iconColor: const Color(0xFF6366F1),
+                  onTap: () => Get.toNamed(staffEventsListView),
+                ),
+                _MenuItem(
+                  labelKey: 'settings_language',
+                  icon: Icons.language_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: showLanguageSheet,
                 ),
               ],
             ),
@@ -76,17 +95,11 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                     iconColor: const Color(0xFF0891B2),
                     onTap: () => Get.toNamed(childStatesView),
                   ),
-                ],
-              ),
-            if (!controller.isOwner)
-              _Section(
-                titleKey: 'staff_account_section_support',
-                items: [
                   _MenuItem(
-                    labelKey: 'staff_account_contact_support',
-                    icon: Icons.support_agent_rounded,
-                    iconColor: AppColors.blueForeground,
-                    onTap: () => showContactSheet(ContactType.support),
+                    labelKey: 'eval_levels_menu_item',
+                    icon: Icons.star_rounded,
+                    iconColor: const Color(0xFF16A34A),
+                    onTap: () => Get.toNamed(evalLevelsView),
                   ),
                 ],
               ),
@@ -109,147 +122,54 @@ class _StaffAccountViewState extends State<StaffAccountView> {
   }
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
+// ─── App bar title (name · role · phone) ───────────────────────────────────────
 
-class _StaffHeader extends StatelessWidget {
+class _ProfileTitle extends StatelessWidget {
+  const _ProfileTitle({required this.controller});
+
   final StaffAccountController controller;
-
-  const _StaffHeader({required this.controller});
-
-  static const _grad1 = Color(0xFF6D5BF5);
-  static const _grad2 = Color(0xFF4F46E5);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [_grad1, _grad2],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
+    final phone = controller.staffPhone;
+    return Row(
+      children: [
+        Container(
+          width: 44.w,
+          height: 44.w,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(controller.roleIcon, color: AppColors.primary, size: 22.sp),
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: _grad2.withValues(alpha: 0.32),
-            blurRadius: 22.r,
-            offset: Offset(0, 10.h),
-          ),
-        ],
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Decorative circles for depth
-          Positioned(
-            top: -38,
-            left: -28,
-            child: _Bubble(size: 96, opacity: 0.10),
-          ),
-          Positioned(
-            bottom: -34,
-            left: 40,
-            child: _Bubble(size: 64, opacity: 0.08),
-          ),
-          Row(
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      controller.staffName,
-                      style: context.typography.lgBold.copyWith(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.3,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 8.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 4.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.30),
-                        ),
-                      ),
-                      child: Text(
-                        controller.roleLabel,
-                        style: context.typography.displaySmBold.copyWith(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    if (controller.staffPhone.isNotEmpty) ...[
-                      SizedBox(height: 12.h),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.phone_rounded,
-                            color: Colors.white.withValues(alpha: 0.8),
-                            size: 15.sp,
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            controller.staffPhone,
-                            style: context.typography.smMedium.copyWith(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
+              Text(
+                controller.staffName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.mdBold
+                    .copyWith(color: AppColors.textDefault),
               ),
-              SizedBox(width: 14.w),
-              Container(
-                width: 72.w,
-                height: 72.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.20),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(controller.roleIcon, color: Colors.white, size: 34.sp),
+              SizedBox(height: 2.h),
+              Text(
+                phone.isNotEmpty
+                    ? '${controller.roleLabel} · $phone'
+                    : controller.roleLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typography.xsRegular
+                    .copyWith(color: AppColors.textSecondaryParagraph),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Bubble extends StatelessWidget {
-  const _Bubble({required this.size, required this.opacity});
-
-  final double size;
-  final double opacity;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        shape: BoxShape.circle,
-      ),
+        ),
+      ],
     );
   }
 }

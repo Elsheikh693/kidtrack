@@ -1,6 +1,5 @@
 import '../../../../index/index_main.dart';
 import '../dashboard/widgets/dashboard_item_model.dart';
-import '../dashboard/widgets/dashboard_section_widget.dart';
 
 /// Owner's "More" hub. Everything operational lives one tap deeper here so the
 /// four primary tabs stay decision-focused. Three groups: Operations · Business
@@ -8,52 +7,44 @@ import '../dashboard/widgets/dashboard_section_widget.dart';
 class OwnerMoreTab extends StatelessWidget {
   const OwnerMoreTab({super.key});
 
+  static const _nurseryProfile = DashboardSection(
+    titleKey: 'owner_section_nursery',
+    titleIcon: Icons.storefront_rounded,
+    titleColor: Color(0xFFEC4899),
+    items: [
+      DashboardItem(
+        labelKey: 'owner_item_setup_checklist',
+        icon: Icons.checklist_rounded,
+        color: Color(0xFF5E35B1),
+        route: setupChecklistView,
+      ),
+      DashboardItem(
+        labelKey: 'tutorial_menu_entry',
+        icon: Icons.ondemand_video_rounded,
+        color: Color(0xFFDC2626),
+        route: appTutorialView,
+      ),
+      // "الفروع" now lives inside "خطوات الإعداد"; "الكورسات" temporarily
+      // removed — both dropped from this section for manager/owner.
+    ],
+  );
+
   static const _operations = DashboardSection(
     titleKey: 'owner_more_operations',
     titleIcon: Icons.tune_rounded,
     titleColor: Color(0xFF2563EB),
     items: [
       DashboardItem(
-        labelKey: 'owner_item_staff_list',
-        icon: Icons.people_alt_rounded,
-        color: Color(0xFF2563EB),
-        route: staffView,
+        labelKey: 'owner_item_children',
+        icon: Icons.child_care_rounded,
+        color: Color(0xFF16A34A),
+        route: childrenView,
       ),
       DashboardItem(
-        labelKey: 'owner_item_classrooms',
-        icon: Icons.class_rounded,
-        color: Color(0xFFD97706),
-        route: classroomsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_programs',
-        icon: Icons.library_books_rounded,
-        color: Color(0xFFB45309),
-        route: programsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_subjects',
-        icon: Icons.menu_book_rounded,
-        color: Color(0xFF0891B2),
-        route: subjectsView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_courses',
-        icon: Icons.play_lesson_rounded,
-        color: Color(0xFF0891B2),
-        route: coursesView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_branches',
-        icon: Icons.account_balance_rounded,
-        color: Color(0xFF7C3AED),
-        route: branchesView,
-      ),
-      DashboardItem(
-        labelKey: 'owner_item_packages',
-        icon: Icons.card_membership_rounded,
-        color: Color(0xFF6366F1),
-        route: nurseryPackagesView,
+        labelKey: 'nursery_feedback_view_title',
+        icon: Icons.reviews_rounded,
+        color: Color(0xFFF5A623),
+        route: nurseryFeedbackListView,
       ),
       DashboardItem(
         labelKey: 'manager_more_link_holidays',
@@ -61,19 +52,17 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFFD97706),
         route: holidaysView,
       ),
-    ],
-  );
-
-  static const _nurseryProfile = DashboardSection(
-    titleKey: 'owner_section_nursery',
-    titleIcon: Icons.storefront_rounded,
-    titleColor: Color(0xFFEC4899),
-    items: [
       DashboardItem(
-        labelKey: 'manager_more_link_nursery_profile',
-        icon: Icons.storefront_rounded,
-        color: Color(0xFFEC4899),
-        route: managerNurseryProfileView,
+        labelKey: 'owner_item_photo_review',
+        icon: Icons.rate_review_rounded,
+        color: Color(0xFF0891B2),
+        route: ownerPhotoReviewSettingsView,
+      ),
+      DashboardItem(
+        labelKey: 'manager_item_photo_approval',
+        icon: Icons.fact_check_rounded,
+        color: Color(0xFF0E7490),
+        route: managerPhotoApprovalSettingsView,
       ),
     ],
   );
@@ -84,29 +73,13 @@ class OwnerMoreTab extends StatelessWidget {
     titleColor: Color(0xFF7C3AED),
     items: [
       DashboardItem(
-        labelKey: 'owner_item_children',
-        icon: Icons.child_care_rounded,
-        color: Color(0xFF16A34A),
-        route: childrenView,
-      ),
-      DashboardItem(
         labelKey: 'billing_my_subscription',
         icon: Icons.payments_rounded,
         color: Color(0xFF16A34A),
         route: mySubscriptionView,
       ),
-      DashboardItem(
-        labelKey: 'apply_manage_title',
-        icon: Icons.app_registration_rounded,
-        color: Color(0xFF16A34A),
-        route: managerApplicationsView,
-      ),
-      DashboardItem(
-        labelKey: 'nursery_feedback_view_title',
-        icon: Icons.reviews_rounded,
-        color: Color(0xFFF5A623),
-        route: nurseryFeedbackListView,
-      ),
+      // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
+      // "طلبات الالتحاق" item temporarily removed for manager/owner.
     ],
   );
 
@@ -125,11 +98,11 @@ class OwnerMoreTab extends StatelessWidget {
               delegate: SliverChildListDelegate([
                 _ProfileCard(session: session),
                 const SizedBox(height: 16),
-                const DashboardSectionWidget(section: _nurseryProfile),
                 const _SwitchViewCard(),
-                const SizedBox(height: 16),
-                const DashboardSectionWidget(section: _operations),
-                const DashboardSectionWidget(section: _business),
+                const SizedBox(height: 20),
+                const _ListSection(section: _nurseryProfile),
+                const _ListSection(section: _operations),
+                const _ListSection(section: _business),
                 const _AccountCard(),
               ]),
             ),
@@ -259,12 +232,8 @@ class _AccountCard extends StatelessWidget {
             labelKey: 'owner_item_notifications',
             onTap: () => Get.toNamed(notificationsView),
           ),
-          _Tile(
-            icon: Icons.contact_phone_outlined,
-            color: AppColors.blueForeground,
-            labelKey: 'owner_item_contact_numbers',
-            onTap: () => Get.toNamed(nurseryContactsView),
-          ),
+          const _RowDivider(),
+          // "أرقام التواصل" now lives inside "خطوات الإعداد".
           _Tile(
             icon: Icons.logout_rounded,
             color: AppColors.errorForeground,
@@ -273,6 +242,77 @@ class _AccountCard extends StatelessWidget {
             danger: true,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A titled white card that stacks a section's items as full-width list rows —
+/// matching the manager More tab, so sparse groups still read as clean lists.
+class _ListSection extends StatelessWidget {
+  const _ListSection({required this.section});
+
+  final DashboardSection section;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+            child: Text(
+              section.titleKey.tr,
+              style: context.typography.xsMedium
+                  .copyWith(color: AppColors.textSecondaryParagraph),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < section.items.length; i++) ...[
+                  _Tile(
+                    icon: section.items[i].icon,
+                    color: section.items[i].color,
+                    labelKey: section.items[i].labelKey,
+                    onTap: () => Get.toNamed(section.items[i].route),
+                  ),
+                  if (i != section.items.length - 1) const _RowDivider(),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hairline divider between list rows, indented past the leading icon chip.
+class _RowDivider extends StatelessWidget {
+  const _RowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 64),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: AppColors.grayLight.withValues(alpha: 0.7),
       ),
     );
   }

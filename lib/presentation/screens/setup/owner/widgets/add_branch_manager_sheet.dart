@@ -13,7 +13,7 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
   final _managerCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
-  static final _phoneRx = RegExp(r'^(010|011|012|015)\d{8}$');
+  PhoneCountry _country = PhoneUtils.egypt;
 
   late final HandleKeyboardService _keyboardService;
   late final List<String> _keys;
@@ -36,7 +36,7 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
   void _submit() {
     final branchName = _branchCtrl.text.trim();
     final managerName = _managerCtrl.text.trim();
-    final phone = _phoneCtrl.text.trim();
+    final rawPhone = _phoneCtrl.text.trim();
     if (branchName.isEmpty) {
       Loader.showError('setup_owner_branch_name_required'.tr);
       return;
@@ -45,7 +45,7 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
       Loader.showError('setup_manager_name_required'.tr);
       return;
     }
-    if (!_phoneRx.hasMatch(phone)) {
+    if (!PhoneUtils.isValid(_country, rawPhone)) {
       Loader.showError('nursery_error_phone_invalid'.tr);
       return;
     }
@@ -53,14 +53,14 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
     widget.controller.addBranchWithManager(
       branchName: branchName,
       managerName: managerName,
-      phone: phone,
+      phone: PhoneUtils.normalize(_country, rawPhone),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.58,
         child: Column(
@@ -141,6 +141,13 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
                         hint: 'setup_manager_phone_hint'.tr,
                         keyboardType: TextInputType.phone,
                         focusNode: _keyboardService.getFocusNode(_keys[2]),
+                        prefix: SizedBox(
+                          width: 118.w,
+                          child: CountryCodePicker(
+                            value: _country,
+                            onChanged: (c) => setState(() => _country = c),
+                          ),
+                        ),
                       ),
                       SizedBox(height: 8.h),
                       Text(
@@ -196,6 +203,7 @@ class _SheetField extends StatelessWidget {
   final TextInputType keyboardType;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
+  final Widget? prefix;
   const _SheetField({
     required this.controller,
     required this.label,
@@ -203,22 +211,12 @@ class _SheetField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.textInputAction,
     this.focusNode,
+    this.prefix,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: context.typography.smMedium.copyWith(
-            fontSize: 14,
-            color: const Color(0xFF475569),
-          ),
-        ),
-        SizedBox(height: 6.h),
-        TextField(
+    final field = TextField(
           inputFormatters: const [EnglishDigitsFormatter()],
           controller: controller,
           focusNode: focusNode,
@@ -259,7 +257,29 @@ class _SheetField extends StatelessWidget {
               ),
             ),
           ),
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: context.typography.smMedium.copyWith(
+            fontSize: 14,
+            color: const Color(0xFF475569),
+          ),
         ),
+        SizedBox(height: 6.h),
+        if (prefix != null)
+          Row(
+            children: [
+              prefix!,
+              SizedBox(width: 10.w),
+              Expanded(child: field),
+            ],
+          )
+        else
+          field,
       ],
     );
   }

@@ -60,17 +60,8 @@ Future<void> openNurseryWhatsApp() async {
 
 /// Opens WhatsApp chat for [phone] (any format). When [message] is provided it
 /// is pre-filled in the chat input, ready to send.
-Future<void> launchWhatsApp(String phone, {String? message}) async {
-  // Normalize to WhatsApp's international format (e.g. 01551061194 → 201551061194).
-  final cleaned = MakeCall.formatForWhatsApp(phone);
-  final query = (message != null && message.trim().isNotEmpty)
-      ? '?text=${Uri.encodeComponent(message)}'
-      : '';
-  final uri = Uri.parse('https://wa.me/$cleaned$query');
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
+Future<void> launchWhatsApp(String phone, {String? message}) =>
+    MakeCall.openWhatsApp(phone, message: message);
 
 class _NurseryWhatsAppSheet extends StatelessWidget {
   final List<NurseryContactModel> contacts;
@@ -79,7 +70,7 @@ class _NurseryWhatsAppSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
         child: Column(

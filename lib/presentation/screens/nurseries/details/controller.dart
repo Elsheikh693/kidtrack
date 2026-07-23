@@ -1,17 +1,26 @@
 import 'package:firebase_database/firebase_database.dart';
 import '../../../../index/index_main.dart';
+import 'nursery_feedback_admin_mixin.dart';
+import 'nursery_staff_admin_mixin.dart';
 
 /// SuperAdmin screen that drills into a single nursery: edit its info AND manage
 /// its owners (list / add / edit / delete). The nursery itself lives in the
 /// global registry ([ApiPaths.globalNurseries]); each owner is a `users/{uid}`
 /// record whose uid is referenced from the nursery's `ownerIds`.
-class NurseryDetailsController extends GetxController {
+class NurseryDetailsController extends GetxController
+    with NurseryFeedbackAdminMixin, NurseryStaffAdminMixin {
   final NurseryParentService _service = Get.find<NurseryParentService>();
 
+  @override
   final Rx<NurseryModel> nursery = const NurseryModel(name: '').obs;
   final RxList<UserModel> owners = <UserModel>[].obs;
   final RxBool loadingOwners = true.obs;
   final RxBool savingInfo = false.obs;
+
+  /// Set by [createOwner] when a fresh owner + code are minted; consumed by
+  /// [_openForm] once the form sheet closes, so the activation sheet opens on a
+  /// clean route instead of stacking under the closing form.
+  ({ActivationCodeModel code, String name, String? phone})? _pendingActivation;
 
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
@@ -27,6 +36,8 @@ class NurseryDetailsController extends GetxController {
       phoneCtrl.text = arg.phone ?? '';
       addressCtrl.text = arg.address ?? '';
       loadOwners();
+      loadFeedback();
+      loadStaffAndChildren();
     }
   }
 
@@ -126,36 +137,122 @@ class NurseryDetailsController extends GetxController {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
+    ).then((_) {
+      // Form closed — if a new owner was just created, show its login code now.
+      final pending = _pendingActivation;
+      _pendingActivation = null;
+      if (pending != null) {
+        openActivationSheet(
+          code: pending.code,
+          recipientName: pending.name,
+          phone: pending.phone,
+          nurseryName: nursery.value.name,
+          nurseryLogoUrl: nursery.value.logo,
+        );
+      }
+    });
+  }
+
+  /// Show (or lazily mint) an owner's durable activation code — the passwordless
+  /// login credential — so the super admin can deliver it or rotate it.
+  Future<void> showOwnerActivation(UserModel owner) async {
+    final uid = owner.uid;
+    if (uid == null) return;
+    final svc = Get.find<ActivationParentService>();
+
+    ActivationCodeModel? code;
+    await svc.getAll(
+      callBack: (list) {
+        code = list
+            .whereType<ActivationCodeModel>()
+            .where((c) => c.targetId == uid)
+            .firstOrNull;
+      },
+    );
+    code ??= await svc.generate(
+      role: 'owner',
+      targetId: uid,
+      nurseryId: nursery.value.key ?? '',
+      createdBy: SessionService().userId ?? '',
+      silent: true,
+    );
+
+    if (code == null) {
+      Loader.showError('activation_regenerate_error'.tr);
+      return;
+    }
+    await openActivationSheet(
+      code: code!,
+      recipientName: owner.name ?? '',
+      phone: owner.phone,
+      nurseryName: nursery.value.name,
+      nurseryLogoUrl: nursery.value.logo,
+    );
+  }
+
+  /// One-tap: deliver the owner's login code straight to their WhatsApp number.
+  Future<void> sendOwnerActivationWhatsApp(UserModel owner) async {
+    final uid = owner.uid;
+    final phone = owner.phone ?? '';
+    if (uid == null) return;
+    if (phone.trim().isEmpty) {
+      Loader.showError('activation_no_phone'.tr);
+      return;
+    }
+    final svc = Get.find<ActivationParentService>();
+
+    ActivationCodeModel? code;
+    await svc.getAll(
+      callBack: (list) {
+        code = list
+            .whereType<ActivationCodeModel>()
+            .where((c) => c.targetId == uid)
+            .firstOrNull;
+      },
+    );
+    code ??= await svc.generate(
+      role: 'owner',
+      targetId: uid,
+      nurseryId: nursery.value.key ?? '',
+      createdBy: SessionService().userId ?? '',
+      silent: true,
+    );
+
+    if (code == null) {
+      Loader.showError('activation_regenerate_error'.tr);
+      return;
+    }
+    launchWhatsApp(
+      phone,
+      message: buildActivationMessage(
+        role: 'owner',
+        name: owner.name ?? '',
+        code: code!.code,
+        nurseryName: nursery.value.name,
+      ),
     );
   }
 
   Future<bool> createOwner(String ownerName, String ownerPhone) async {
     Loader.show();
     final nurseryId = nursery.value.key ?? '';
-    final ownerEmail = '$ownerPhone@gmail.com';
 
-    final secondaryApp = await Firebase.initializeApp(
-      name: 'owner_${DateTime.now().millisecondsSinceEpoch}',
-      options: Firebase.app().options,
-    );
     try {
-      final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final credential = await secondaryAuth.createUserWithEmailAndPassword(
-        email: ownerEmail,
-        password: ownerPhone,
-      );
-      final ownerUid = credential.user!.uid;
+      // Reuse the identity if this phone already exists — one person can now own
+      // more than one nursery (an owner membership per nursery) instead of
+      // failing with "phone already registered".
+      final identity = Get.find<IdentityService>();
+      final resolved =
+          await identity.resolveByPhone(phone: ownerPhone, name: ownerName);
+      final ownerUid = resolved.uid;
 
-      await FirebaseDatabase.instance.ref('users/$ownerUid').set({
-        'uid': ownerUid,
-        'name': ownerName,
-        'phone': ownerPhone,
-        'email': ownerEmail,
-        'userType': 'owner',
-        'nurseryId': nurseryId,
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      await identity.attachMembership(
+        uid: ownerUid,
+        role: 'owner',
+        nurseryId: nurseryId,
+        name: ownerName,
+        phone: ownerPhone,
+      );
 
       final updated = nursery.value.copyWith(
         ownerIds: [...nursery.value.allOwnerIds, ownerUid],
@@ -168,8 +265,17 @@ class NurseryDetailsController extends GetxController {
           if (status == ResponseStatus.success) {
             ok = true;
           } else {
-            await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
-            await secondaryAuth.currentUser?.delete();
+            // Roll back the owner membership; drop the identity too only if we
+            // created it fresh and it is now left with no memberships.
+            await identity.removeMembership(
+              uid: ownerUid,
+              nurseryId: nurseryId,
+              role: 'owner',
+            );
+            if (resolved.created &&
+                (await identity.memberships(ownerUid)).isEmpty) {
+              await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
+            }
           }
         },
       );
@@ -178,23 +284,27 @@ class NurseryDetailsController extends GetxController {
       if (ok) {
         await _reloadNursery();
         await loadOwners();
+        // Mint the owner's passwordless login code; shown once the form closes.
+        final code = await Get.find<ActivationParentService>().generate(
+          role: 'owner',
+          targetId: ownerUid,
+          nurseryId: nurseryId,
+          createdBy: SessionService().userId ?? '',
+          silent: true,
+        );
+        if (code != null) {
+          _pendingActivation =
+              (code: code, name: ownerName, phone: ownerPhone);
+        }
         Loader.showSuccess('nursery_owner_added'.tr);
         return true;
       }
       Loader.showError('nursery_error_failed'.tr);
       return false;
-    } on FirebaseAuthException catch (e) {
-      Loader.dismiss();
-      Loader.showError(e.code == 'email-already-in-use'
-          ? 'nursery_owner_exists'.tr
-          : 'nursery_error_auth_failed'.tr);
-      return false;
     } catch (_) {
       Loader.dismiss();
       Loader.showError('nursery_error_failed'.tr);
       return false;
-    } finally {
-      await secondaryApp.delete();
     }
   }
 
@@ -266,8 +376,14 @@ class NurseryDetailsController extends GetxController {
         'updatedAt': DateTime.now().millisecondsSinceEpoch,
       });
 
-      await FirebaseDatabase.instance.ref('users/$uid').remove();
-      await _deleteOwnerAuth(owner);
+      // Drop this owner membership. Remove the global identity + auth account
+      // only if this was the person's last nursery (they may own another).
+      final identity = Get.find<IdentityService>();
+      await identity.removeMembership(uid: uid, nurseryId: key, role: 'owner');
+      if ((await identity.memberships(uid)).isEmpty) {
+        await FirebaseDatabase.instance.ref('users/$uid').remove();
+        await _deleteOwnerAuth(owner);
+      }
 
       await _reloadNursery();
       await loadOwners();

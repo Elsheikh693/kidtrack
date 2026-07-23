@@ -70,7 +70,7 @@ class OnboardController extends GetxController {
 
   Future<void> finish() async {
     await OnboardLocalCheck.markSeen();
-    Get.offAllNamed(nurseryDiscoveryView);
+    Get.offAllNamed(activationLandingView);
   }
 
   @override

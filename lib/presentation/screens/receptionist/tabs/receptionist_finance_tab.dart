@@ -1,7 +1,8 @@
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../index/index_main.dart';
+import '../collections/monthly_collection_summary.dart';
 import '../collections/reception_collection_controller.dart';
-import '../collections/reception_collection_sheet.dart';
+import '../collections/collect_payment_sheet.dart';
 import '../collections/reception_directory_list.dart';
 
 const _accent = Color(0xFF7C3AED);
@@ -26,6 +27,7 @@ class ReceptionistFinanceTab extends StatefulWidget {
 class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
   static const _tag = 'reception_collection';
   late final ReceptionCollectionController controller;
+  bool _searchOpen = false;
 
   @override
   void initState() {
@@ -35,10 +37,10 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
         : Get.put(ReceptionCollectionController(), tag: _tag, permanent: true);
   }
 
-  void _openCollectionSheet() {
-    if (controller.selectedChild.value == null) return;
+  /// Opens the collect sheet (full/partial + method) for [child].
+  void _openCollect(ChildModel child) {
     Get.bottomSheet(
-      ReceptionCollectionSheet(controller: controller),
+      CollectPaymentSheet(controller: controller, child: child),
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -47,21 +49,33 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
     );
   }
 
-  /// Quick renew from the directory: opens the sheet for [child] with the
-  /// monthly subscription pre-selected, without leaving the all-children list.
-  void _openRenewSheet(ChildModel child) {
-    Get.bottomSheet(
-      ReceptionCollectionSheet(
-        controller: controller,
-        child: child,
-        initialPackage: controller.monthlyPackage,
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-    );
+  void _openCollectSelected() {
+    final child = controller.selectedChild.value;
+    if (child != null) _openCollect(child);
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _searchOpen = !_searchOpen;
+      if (!_searchOpen) {
+        controller.searchCtrl.clear();
+        controller.onSearch('');
+      }
+    });
+  }
+
+  /// The finance screen is reached from the reception home via a page switch
+  /// (not a route push), so "back" returns to the home tab. Falls back to a
+  /// normal pop when it WAS pushed as a route.
+  bool get _canGoBack =>
+      Navigator.of(context).canPop() || Get.isRegistered<MainPageViewModel>();
+
+  void _goBack() {
+    if (Navigator.of(context).canPop()) {
+      Get.back();
+    } else if (Get.isRegistered<MainPageViewModel>()) {
+      Get.find<MainPageViewModel>().changePage(0);
+    }
   }
 
   @override
@@ -72,18 +86,57 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleSpacing: 20,
+        titleSpacing: _canGoBack ? 4 : 20,
         automaticallyImplyLeading: false,
-        title: Text(
-          'finance_dashboard_title'.tr,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            color: _ink,
-            letterSpacing: -0.4,
-          ),
-        ),
+        leading: _canGoBack
+            ? IconButton(
+                onPressed: _goBack,
+                icon: Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 20.sp, color: _ink),
+              )
+            : null,
+        title: Obx(() {
+          if (controller.selectedChild.value == null && _searchOpen) {
+            return TextField(
+              controller: controller.searchCtrl,
+              autofocus: true,
+              onChanged: controller.onSearch,
+              textInputAction: TextInputAction.search,
+              style: context.typography.smRegular
+                  .copyWith(fontSize: 16, color: _ink),
+              decoration: InputDecoration(
+                hintText: 'collection_search_hint'.tr,
+                hintStyle: context.typography.smRegular
+                    .copyWith(color: _muted, fontSize: 15),
+                border: InputBorder.none,
+                isCollapsed: true,
+              ),
+            );
+          }
+          return Text(
+            'finance_dashboard_title'.tr,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: _ink,
+              letterSpacing: -0.4,
+            ),
+          );
+        }),
         actions: [
+          Obx(
+            () => controller.selectedChild.value != null
+                ? const SizedBox.shrink()
+                : GestureDetector(
+                    onTap: _toggleSearch,
+                    child: Icon(
+                      _searchOpen ? Icons.close_rounded : Icons.search_rounded,
+                      size: 24,
+                      color: const Color(0xFF374151),
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 14),
           GestureDetector(
             onTap: () => Get.toNamed(notificationsView),
             child: const Icon(Icons.notifications_none_rounded,
@@ -101,203 +154,61 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
       body: Obx(() {
         if (controller.isLoading.value) return const _LoadingSkeleton();
         final child = controller.selectedChild.value;
-        return Column(
-          children: [
-            _SearchBar(controller: controller),
-            Expanded(
-              child: child == null
-                  ? _SearchResults(
-                      controller: controller,
-                      onPick: controller.selectChild,
-                      onRenew: _openRenewSheet,
-                    )
-                  : _ChildFinanceView(
-                      controller: controller,
-                      onNewCollection: _openCollectionSheet,
-                    ),
+        if (child != null) {
+          return _ChildFinanceView(
+            controller: controller,
+            onNewCollection: _openCollectSelected,
+          );
+        }
+        final q = controller.searchQuery.value.trim();
+        final list =
+            q.isEmpty ? controller.orderedChildren : controller.filteredChildren;
+        if (list.isEmpty) {
+          return _Hint(
+            icon: q.isEmpty
+                ? Icons.child_care_outlined
+                : Icons.person_off_outlined,
+            title: q.isEmpty
+                ? 'collection_directory_empty'.tr
+                : 'collection_no_child_found'.tr,
+            hint: q.isEmpty ? '' : 'collection_no_child_found_hint'.tr,
+          );
+        }
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            if (q.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: const MonthlyCollectionSummary(),
+                ),
+              ),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (_, i) {
+                    final c = list[i];
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: CollectionChildCard(
+                        child: c,
+                        subtitle: controller.classroomName(c.classroomId),
+                        outstanding: controller.outstandingFor(c.key),
+                        hasProof: controller.proofFor(c.key) != null,
+                        onCollect: () => _openCollect(c),
+                        onHistory: () => controller.selectChild(c),
+                      ),
+                    );
+                  },
+                  childCount: list.length,
+                ),
+              ),
             ),
           ],
         );
       }),
-    );
-  }
-}
-
-// ── Search bar ────────────────────────────────────────────────────────────────
-
-class _SearchBar extends StatelessWidget {
-  final ReceptionCollectionController controller;
-  const _SearchBar({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    final child = controller.selectedChild.value;
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 14.h),
-      child: child != null
-          ? _SelectedChip(controller: controller)
-          : TextField(
-              controller: controller.searchCtrl,
-              onChanged: controller.onSearch,
-              textInputAction: TextInputAction.search,
-              style: context.typography.smRegular
-                  .copyWith(fontSize: 15, color: _ink),
-              decoration: InputDecoration(
-                hintText: 'collection_search_hint'.tr,
-                hintStyle: context.typography.smRegular
-                    .copyWith(color: _muted, fontSize: 14),
-                prefixIcon: Icon(Icons.search_rounded,
-                    size: 22.sp, color: _muted),
-                filled: true,
-                fillColor: _bg,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-    );
-  }
-}
-
-class _SelectedChip extends StatelessWidget {
-  final ReceptionCollectionController controller;
-  const _SelectedChip({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    final child = controller.selectedChild.value!;
-    return GestureDetector(
-      onTap: controller.clearSelection,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: _bg,
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.arrow_back_ios_new_rounded, size: 20.sp, color: _accent),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Text(
-                'collection_change_child'.tr,
-                style: context.typography.smSemiBold
-                    .copyWith(color: _accent, fontSize: 14),
-              ),
-            ),
-            Text(
-              child.fullName,
-              style: context.typography.smMedium
-                  .copyWith(color: _muted, fontSize: 13),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Search results ────────────────────────────────────────────────────────────
-
-class _SearchResults extends StatelessWidget {
-  final ReceptionCollectionController controller;
-  final ValueChanged<ChildModel> onPick;
-  final ValueChanged<ChildModel> onRenew;
-  const _SearchResults({
-    required this.controller,
-    required this.onPick,
-    required this.onRenew,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final q = controller.searchQuery.value.trim();
-      if (q.isEmpty) {
-        // Default state: the full children directory with per-child quick
-        // actions (renew subscription / other payments).
-        return ReceptionDirectoryList(
-          controller: controller,
-          onOtherPayments: onPick,
-          onRenew: onRenew,
-        );
-      }
-      final results = controller.filteredChildren;
-      if (results.isEmpty) {
-        return _Hint(
-          icon: Icons.person_off_outlined,
-          title: 'collection_no_child_found'.tr,
-          hint: 'collection_no_child_found_hint'.tr,
-        );
-      }
-      return ListView.separated(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-        itemCount: results.length,
-        separatorBuilder: (_, _) => SizedBox(height: 8.h),
-        itemBuilder: (_, i) {
-          final c = results[i];
-          return _ChildRow(
-            child: c,
-            subtitle: controller.classroomName(c.classroomId),
-            onTap: () => onPick(c),
-          );
-        },
-      );
-    });
-  }
-}
-
-class _ChildRow extends StatelessWidget {
-  final ChildModel child;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _ChildRow({
-    required this.child,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: _line),
-        ),
-        child: Row(
-          children: [
-            _Avatar(child: child),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    child.fullName,
-                    style: context.typography.smSemiBold
-                        .copyWith(color: _ink, fontSize: 14.5),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle,
-                    style: context.typography.xsRegular
-                        .copyWith(color: _muted, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, size: 24.sp, color: _muted),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -347,6 +258,23 @@ class _ChildFinanceView extends StatelessWidget {
         ListView(
           padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 100.h),
           children: [
+            GestureDetector(
+              onTap: controller.clearSelection,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 18.sp, color: _accent),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'collection_change_child'.tr,
+                    style: context.typography.smSemiBold
+                        .copyWith(color: _accent, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 14.h),
             _ChildCard(controller: controller, child: child),
             SizedBox(height: 20.h),
             Row(
@@ -479,6 +407,47 @@ class _ChildCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.h),
+          Obx(() {
+            final due = controller.outstandingFor(child.key);
+            final owes = due > 0.5;
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              margin: EdgeInsets.only(bottom: 8.h),
+              decoration: BoxDecoration(
+                color: (owes ? const Color(0xFFDC2626) : _green)
+                    .withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    owes
+                        ? Icons.account_balance_wallet_rounded
+                        : Icons.verified_rounded,
+                    size: 18.sp,
+                    color: owes ? const Color(0xFFDC2626) : _green,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'collect_outstanding'.tr,
+                    style: context.typography.xsMedium
+                        .copyWith(color: _muted, fontSize: 12.5),
+                  ),
+                  const Spacer(),
+                  Text(
+                    owes
+                        ? '${due.toStringAsFixed(0)} ${'overdue_currency'.tr}'
+                        : 'collect_settled'.tr,
+                    style: context.typography.smSemiBold.copyWith(
+                      color: owes ? const Color(0xFFDC2626) : _green,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             decoration: BoxDecoration(

@@ -106,6 +106,29 @@ async function branchManagers(nurseryId, branchId) {
   return uids;
 }
 
+// All active receptionists for a branch (falsy branchId → all receptionists in
+// the nursery). Reception shares the manager side of parent chats, so they are
+// notified alongside branch managers when a parent replies.
+async function branchReceptionists(nurseryId, branchId) {
+  const uids = [];
+  try {
+    const snap = await db()
+      .ref(`platform/${nurseryId}/staff`)
+      .once("value");
+
+    snap.forEach((s) => {
+      const v = s.val() || {};
+      if (v.role !== "receptionist") return;
+      if (v.isActive === false) return;
+      if (branchId && v.branchId && v.branchId !== branchId) return;
+      uids.push(v.uid || s.key);
+    });
+  } catch (e) {
+    console.error(`❌ branchReceptionists error:`, e.message);
+  }
+  return uids;
+}
+
 // Child's first name for personalised copy — "طفلك" fallback.
 async function childFirstName(nurseryId, childId) {
   try {
@@ -140,6 +163,7 @@ module.exports = {
   parentsOfChild,
   parentsOfBranch,
   branchManagers,
+  branchReceptionists,
   childFirstName,
   parentFirstName,
 };

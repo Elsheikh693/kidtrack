@@ -69,7 +69,7 @@ async function nudgeChild(nurseryId, childId, date) {
   await notificationService.send({
     recipients,
     nurseryId,
-    title: `${name} بيقضّي يوم جميل 💕`,
+    title: `${name} بيقضّي يوم جميل`,
     body: `ادخلي تابعي أخبار ${name} ونشاطه لحد دلوقتي`,
     type: NotificationType.engagement,
     entityId: childId,

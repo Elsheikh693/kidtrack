@@ -180,10 +180,14 @@ class ParentLinkBookController extends GetxController {
   final _session = SessionService();
   final _eduSvc = ParentEducationService();
 
-  /// How far back the book reaches.
-  static const _historyDays = 60;
-
+  /// True only during the first bootstrap (resolving months + first month).
   final isLoading = true.obs;
+
+  /// True while switching to a different month (keeps the month bar on screen).
+  final daysLoading = false.obs;
+
+  /// The SELECTED month's data only — never the whole history. Each month is
+  /// fetched on demand so the book scales to years without a giant load.
   final days = <LinkBookDay>[].obs;
   final subjectHistories = <SubjectHistory>[].obs;
 
@@ -191,29 +195,28 @@ class ParentLinkBookController extends GetxController {
   final viewMode = LbViewMode.days.obs;
   void setMode(LbViewMode m) => viewMode.value = m;
 
-  /// null = "all months". Drives the grid month filter.
+  /// Every month with (potentially) data, newest first — from the child's first
+  /// recorded activity to the current month. Drives the month bar chips.
+  final availableMonths = <DateTime>[].obs;
+
+  /// The month currently loaded (first of the month). Always set after bootstrap.
   final selectedMonth = Rxn<DateTime>();
 
-  /// Distinct months present in the book, newest first (days are already sorted).
-  List<DateTime> get months {
-    final seen = <String>{};
-    final out = <DateTime>[];
-    for (final d in days) {
-      final key = '${d.date.year}-${d.date.month}';
-      if (seen.add(key)) out.add(DateTime(d.date.year, d.date.month));
-    }
-    return out;
-  }
+  // Resolved once at bootstrap and reused for every per-month fetch.
+  String _childId = '';
+  String _classroomId = '';
+  String _nurseryId = '';
 
-  List<LinkBookDay> get filteredDays {
-    final m = selectedMonth.value;
-    if (m == null) return days;
-    return days
-        .where((d) => d.date.year == m.year && d.date.month == m.month)
-        .toList();
-  }
+  // Fetched once at bootstrap (small, cross-month) and filtered per month.
+  List<SubjectModel> _subjects = const [];
+  List<NoteModel> _allNotes = const [];
 
-  void setMonth(DateTime? m) => selectedMonth.value = m;
+  void setMonth(DateTime m) {
+    final cur = selectedMonth.value;
+    if (cur != null && cur.year == m.year && cur.month == m.month) return;
+    selectedMonth.value = DateTime(m.year, m.month);
+    _loadMonth(selectedMonth.value!);
+  }
 
   String _childName = '';
   String get childName =>
@@ -222,55 +225,127 @@ class ParentLinkBookController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _load();
+    _bootstrap();
   }
 
-  Future<void> reload() => _load();
+  Future<void> reload() => _bootstrap();
 
-  Future<void> _load() async {
+  /// Resolves the child scope, discovers the available months (one tiny read),
+  /// caches the cross-month subjects + notes, then loads the newest month.
+  Future<void> _bootstrap() async {
     isLoading.value = true;
-    selectedMonth.value = null;
 
     final svc = Get.find<ActiveChildService>();
-    final childId = svc.childId.value;
-    final classroomId = svc.classroomId.value;
-    final nurseryId = _session.nurseryId ?? '';
+    _childId = svc.childId.value;
+    _classroomId = svc.classroomId.value;
+    _nurseryId = _session.nurseryId ?? '';
     _childName = svc.childName.value;
 
-    if (childId.isEmpty || classroomId.isEmpty || nurseryId.isEmpty) {
+    if (_childId.isEmpty || _classroomId.isEmpty || _nurseryId.isEmpty) {
+      availableMonths.clear();
       days.clear();
       subjectHistories.clear();
       isLoading.value = false;
       return;
     }
 
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day)
-        .subtract(const Duration(days: _historyDays))
-        .millisecondsSinceEpoch;
-    final end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999)
-        .millisecondsSinceEpoch;
-
     try {
       final results = await Future.wait([
-        _eduSvc.getActivitiesForRange(nurseryId, classroomId,
-            startMs: start, endMs: end),
-        _eduSvc.loadSubjects(nurseryId),
-        _eduSvc.watchVisibleNotes(nurseryId, childId).first,
+        _eduSvc.getEarliestActivityMs(_nurseryId, _classroomId),
+        _eduSvc.loadSubjects(_nurseryId),
+        _eduSvc.watchVisibleNotes(_nurseryId, _childId).first,
       ]);
+      final earliestActivityMs = results[0] as int?;
+      _subjects = results[1] as List<SubjectModel>;
+      _allNotes = results[2] as List<NoteModel>;
 
-      final activities = results[0] as List<ClassroomActivityModel>;
-      final subjects = results[1] as List<SubjectModel>;
-      final notes = results[2] as List<NoteModel>;
+      // The book reaches back to the oldest activity OR the oldest note.
+      final earliest = _minMs(earliestActivityMs, _earliestNoteMs());
 
-      days.assignAll(_buildDays(childId, activities, subjects, notes));
-      subjectHistories.assignAll(_buildSubjects(childId, activities, subjects));
+      if (earliest == null) {
+        // Genuinely empty book — no activities, no notes ever.
+        availableMonths.clear();
+        days.clear();
+        subjectHistories.clear();
+        isLoading.value = false;
+        return;
+      }
+
+      availableMonths.assignAll(_monthsFrom(earliest));
+      selectedMonth.value = availableMonths.first;
+      await _loadMonth(selectedMonth.value!);
     } catch (_) {
+      availableMonths.clear();
       days.clear();
       subjectHistories.clear();
     }
 
     isLoading.value = false;
+  }
+
+  int? _earliestNoteMs() {
+    int? min;
+    for (final n in _allNotes) {
+      final c = n.createdAt ?? 0;
+      if (c > 0 && (min == null || c < min)) min = c;
+    }
+    return min;
+  }
+
+  int? _minMs(int? a, int? b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    return a < b ? a : b;
+  }
+
+  /// Month list (newest first) from [earliestMs]'s month up to the current month.
+  List<DateTime> _monthsFrom(int earliestMs) {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month);
+    final d = DateTime.fromMillisecondsSinceEpoch(earliestMs);
+    final rawFirst = DateTime(d.year, d.month);
+    // Guard against a future timestamp (clock skew) so the list is never empty.
+    final first = rawFirst.isAfter(last) ? last : rawFirst;
+    final out = <DateTime>[];
+    var cur = last;
+    while (!cur.isBefore(first)) {
+      out.add(cur);
+      cur = DateTime(cur.year, cur.month - 1); // underflow rolls the year back
+    }
+    return out;
+  }
+
+  /// Fetches ONE month's activities and rebuilds the days + subjects from them
+  /// (notes are the cached full set, filtered to the month).
+  Future<void> _loadMonth(DateTime month) async {
+    daysLoading.value = true;
+
+    final start = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
+    final end = DateTime(month.year, month.month + 1, 1)
+        .subtract(const Duration(milliseconds: 1))
+        .millisecondsSinceEpoch;
+
+    try {
+      final activities = await _eduSvc.getActivitiesForRange(
+        _nurseryId,
+        _classroomId,
+        startMs: start,
+        endMs: end,
+      );
+      final notes = _allNotes.where((n) {
+        final c = n.createdAt ?? 0;
+        return c >= start && c <= end;
+      }).toList();
+
+      days.assignAll(_buildDays(_childId, activities, _subjects, notes));
+      subjectHistories
+          .assignAll(_buildSubjects(_childId, activities, _subjects));
+    } catch (_) {
+      days.clear();
+      subjectHistories.clear();
+    }
+
+    daysLoading.value = false;
   }
 
   List<SubjectHistory> _buildSubjects(
@@ -303,7 +378,7 @@ class ParentLinkBookController extends GetxController {
             note: a.notes[childId],
             groupNote: a.groupNote,
             reasons: a.childReasons[childId] ?? const [],
-            photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+            photos: a.approvedUrlsForChild(childId),
           ));
     }
 
@@ -342,6 +417,8 @@ class ParentLinkBookController extends GetxController {
     final timelineByDay = <int, List<DayTimelineItem>>{};
     for (final a in activities) {
       final item = DayTimelineItem(
+        activityId: a.key,
+        classroomId: a.classroomId,
         startedAt: a.startedAt,
         endedAt: a.endedAt,
         subjectName:
@@ -353,7 +430,7 @@ class ParentLinkBookController extends GetxController {
         note: a.notes[childId],
         reasons: a.childReasons[childId] ?? const [],
         groupNote: a.groupNote,
-        photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+        photos: a.approvedUrlsForChild(childId),
       );
       timelineByDay.putIfAbsent(dayKeyOf(a.startedAt), () => []).add(item);
     }

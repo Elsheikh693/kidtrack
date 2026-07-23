@@ -20,146 +20,94 @@ class AppSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _Header(),
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
-                  children: [
-                    _SettingsTile(
-                      icon: Icons.call_rounded,
-                      iconColor: const Color(0xFF6366F1),
-                      title: 'settings_contact_us'.tr,
-                      subtitle: 'settings_contact_us_sub'.tr,
-                      onTap: () => Get.toNamed(contactUsView),
-                    ),
-                    SizedBox(height: 14.h),
-                    _SettingsTile(
-                      icon: Icons.business_rounded,
-                      iconColor: const Color(0xFF0EA5E9),
-                      title: 'settings_about_us'.tr,
-                      subtitle: 'settings_about_us_sub'.tr,
-                      onTap: () => Get.toNamed(aboutUsView),
-                    ),
-                    SizedBox(height: 14.h),
-                    _SettingsTile(
-                      icon: Icons.headset_mic_rounded,
-                      iconColor: const Color(0xFFF59E0B),
-                      title: 'settings_support'.tr,
-                      subtitle: 'settings_support_sub'.tr,
-                      onTap: () => Get.toNamed(supportRequestView),
-                    ),
-                    SizedBox(height: 14.h),
-                    _SettingsTile(
-                      icon: Icons.handshake_rounded,
-                      iconColor: const Color(0xFF10B981),
-                      title: 'settings_join'.tr,
-                      subtitle: 'settings_join_sub'.tr,
-                      onTap: () => Get.toNamed(joinUsView),
-                    ),
-                    SizedBox(height: 14.h),
-                    _SettingsTile(
-                      icon: Icons.favorite_rounded,
-                      iconColor: const Color(0xFFEC4899),
-                      title: 'settings_review'.tr,
-                      subtitle: 'settings_review_sub'.tr,
-                      onTap: () => Get.toNamed(appReviewView),
-                    ),
-                    SizedBox(height: 14.h),
-                    _SettingsTile(
-                      icon: Icons.star_rounded,
-                      iconColor: const Color(0xFFF59E0B),
-                      title: 'settings_rate_store'.tr,
-                      subtitle: 'settings_rate_store_sub'.tr,
-                      onTap: _openStore,
-                    ),
-                    if (!SessionService().isLoggedIn) ...[
-                      SizedBox(height: 14.h),
-                      _SettingsTile(
-                        icon: Icons.login_rounded,
-                        iconColor: AppColors.primary,
-                        title: 'settings_login'.tr,
-                        subtitle: 'settings_login_sub'.tr,
-                        onTap: () => Get.toNamed(loginView),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+        appBar: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          centerTitle: true,
+          leading: GestureDetector(
+            onTap: Get.back,
+            child: Icon(Icons.arrow_back_rounded,
+                color: AppColors.textDefault, size: 22.sp),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [AppColors.primary, AppColors.primary80],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28.r),
-          bottomRight: Radius.circular(28.r),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: Get.back,
-                child: Container(
-                  width: 42.w,
-                  height: 42.w,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Icon(Icons.arrow_back_rounded,
-                      size: 20.sp, color: AppColors.white),
-                ),
-              ),
-              const Spacer(),
-            ],
-          ),
-          SizedBox(height: 18.h),
-          AppText(
+          title: AppText(
             text: 'settings_title'.tr,
-            textStyle: context.typography.xlBold.copyWith(
-              color: AppColors.white,
-              fontWeight: FontWeight.w800,
+            textStyle: context.typography.mdBold
+                .copyWith(color: AppColors.textDefault),
+          ),
+        ),
+        body: ListView(
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
+          children: [
+            _SettingsTile(
+              icon: Icons.language_rounded,
+              iconColor: AppColors.primary,
+              title: 'settings_language'.tr,
+              subtitle: 'settings_language_sub'.tr,
+              onTap: showLanguageSheet,
             ),
-          ),
-          SizedBox(height: 4.h),
-          AppText(
-            text: 'settings_subtitle'.tr,
-            textStyle: context.typography.smRegular
-                .copyWith(color: AppColors.white.withValues(alpha: 0.85)),
-          ),
-        ],
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.call_rounded,
+              iconColor: const Color(0xFF6366F1),
+              title: 'settings_contact_us'.tr,
+              subtitle: 'settings_contact_us_sub'.tr,
+              onTap: () => Get.toNamed(contactUsView),
+            ),
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.business_rounded,
+              iconColor: const Color(0xFF0EA5E9),
+              title: 'settings_about_us'.tr,
+              subtitle: 'settings_about_us_sub'.tr,
+              onTap: () => Get.toNamed(aboutUsView),
+            ),
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.headset_mic_rounded,
+              iconColor: const Color(0xFFF59E0B),
+              title: 'settings_support'.tr,
+              subtitle: 'settings_support_sub'.tr,
+              onTap: () => Get.toNamed(supportRequestView),
+            ),
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.handshake_rounded,
+              iconColor: const Color(0xFF10B981),
+              title: 'settings_join'.tr,
+              subtitle: 'settings_join_sub'.tr,
+              onTap: () => Get.toNamed(joinUsView),
+            ),
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.favorite_rounded,
+              iconColor: const Color(0xFFEC4899),
+              title: 'settings_review'.tr,
+              subtitle: 'settings_review_sub'.tr,
+              onTap: () => Get.toNamed(appReviewView),
+            ),
+            SizedBox(height: 14.h),
+            _SettingsTile(
+              icon: Icons.star_rounded,
+              iconColor: const Color(0xFFF59E0B),
+              title: 'settings_rate_store'.tr,
+              subtitle: 'settings_rate_store_sub'.tr,
+              onTap: _openStore,
+            ),
+            if (!SessionService().isLoggedIn) ...[
+              SizedBox(height: 14.h),
+              _SettingsTile(
+                icon: Icons.login_rounded,
+                iconColor: AppColors.primary,
+                title: 'settings_login'.tr,
+                subtitle: 'settings_login_sub'.tr,
+                onTap: openActivationLoginSheet,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

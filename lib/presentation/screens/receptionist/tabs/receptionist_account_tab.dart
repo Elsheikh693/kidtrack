@@ -37,6 +37,10 @@ class ReceptionistAccountTab extends StatelessWidget {
             child: _StaffProfileCard(session: session),
           ),
         ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
+        ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           sliver: SliverToBoxAdapter(
@@ -74,6 +78,10 @@ class NannyAccountTab extends StatelessWidget {
           sliver: SliverToBoxAdapter(
             child: _StaffProfileCard(session: session),
           ),
+        ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -186,16 +194,22 @@ class _SettingsCard extends StatelessWidget {
             ),
           ),
           _SettingsTile(
+            icon: Icons.language_rounded,
+            color: AppColors.primary,
+            labelKey: 'settings_language',
+            onTap: showLanguageSheet,
+          ),
+          _SettingsTile(
             icon: Icons.notifications_outlined,
             color: AppColors.primary,
             labelKey: 'owner_item_notifications',
             onTap: () => Get.toNamed(notificationsView),
           ),
           _SettingsTile(
-            icon: Icons.support_agent_outlined,
-            color: AppColors.blueForeground,
-            labelKey: 'contact_support_title',
-            onTap: () => showContactSheet(ContactType.support),
+            icon: Icons.ondemand_video_rounded,
+            color: const Color(0xFFDC2626),
+            labelKey: 'tutorial_menu_entry',
+            onTap: () => Get.toNamed(appTutorialView),
           ),
         ],
       ),

@@ -98,7 +98,7 @@ class InvoiceController extends GetxController {
     String? method;
     await Get.dialog(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text('invoice_mark_paid_title'.tr),
           content: Column(
@@ -142,6 +142,11 @@ class InvoiceController extends GetxController {
     if (ok) {
       Loader.showSuccess('invoice_paid_success'.tr);
       loadData();
+      // Keep the "unpaid subscriptions" home card (manager/owner/reception) in
+      // sync — settling an invoice may clear a child off it.
+      if (Get.isRegistered<UnpaidSubscriptionController>()) {
+        Get.find<UnpaidSubscriptionController>().load();
+      }
     } else {
       Loader.showError('invoice_paid_error'.tr);
     }

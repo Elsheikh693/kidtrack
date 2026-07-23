@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import '../../../../../index/index_main.dart';
 
 class PickupSheet extends StatefulWidget {
   final AuthorizedPickupModel? initial;
-  const PickupSheet({super.key, this.initial});
+
+  /// Preselects a child (used by the first-open prompt for the active child).
+  final String? initialChildId;
+  const PickupSheet({super.key, this.initial, this.initialChildId});
 
   @override
   State<PickupSheet> createState() => _PickupSheetState();
@@ -17,7 +22,10 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
   String _relationship = 'other';
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
-  final idCtrl = TextEditingController();
+
+  // ID-card photo: an existing stored URL and/or a freshly picked local file.
+  String? _idImageUrl;
+  File? _idImageFile;
   bool _loading = true;
 
   bool get isEdit => widget.initial != null;
@@ -42,7 +50,9 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
       _relationship = widget.initial!.relationship;
       nameCtrl.text = widget.initial!.name;
       phoneCtrl.text = widget.initial!.phone ?? '';
-      idCtrl.text = widget.initial!.idNumber ?? '';
+      _idImageUrl = widget.initial!.idImage;
+    } else {
+      _childId = widget.initialChildId;
     }
     _childService.getAll(
       callBack: (list) {
@@ -59,8 +69,16 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
   void dispose() {
     nameCtrl.dispose();
     phoneCtrl.dispose();
-    idCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickIdImage() async {
+    FocusScope.of(context).unfocus();
+    await PickedImage().pickImage(
+      callBack: (file) async {
+        if (file != null && mounted) setState(() => _idImageFile = file);
+      },
+    );
   }
 
   String _relLabel(String r) {
@@ -98,6 +116,25 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
     final id = isEdit
         ? (widget.initial!.key ?? const Uuid().v4())
         : const Uuid().v4();
+
+    Loader.show();
+
+    // Upload the freshly picked ID-card photo first; keep the existing one if
+    // none was picked. Abort the save on upload failure so we never lose it.
+    var idImageUrl = _idImageUrl;
+    if (_idImageFile != null) {
+      idImageUrl = await _service.uploadIdImage(
+        nurseryId: nurseryId,
+        childId: _childId!,
+        pickupId: id,
+        file: _idImageFile!,
+      );
+      if (idImageUrl == null) {
+        Loader.showError('pickup_id_image_upload_failed'.tr);
+        return;
+      }
+    }
+
     final item = AuthorizedPickupModel(
       key: id,
       nurseryId: nurseryId,
@@ -105,10 +142,11 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
       name: name,
       relationship: _relationship,
       phone: phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
-      idNumber: idCtrl.text.trim().isEmpty ? null : idCtrl.text.trim(),
+      idImage: idImageUrl,
       isActive: widget.initial?.isActive ?? true,
+      addedBy: widget.initial?.addedBy ?? SessionService().userId,
+      createdAt: widget.initial?.createdAt,
     );
-    Loader.show();
     if (isEdit) {
       await _service.update(
         item: item,
@@ -139,16 +177,24 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: wrapWithKeyboard(
-        context: context,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _Handle(),
+      textDirection: appTextDirection,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: wrapWithKeyboard(
+                context: context,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _Handle(),
               SizedBox(height: 20.h),
               Text(
                 isEdit ? 'pickup_edit_title'.tr : 'pickup_add_title'.tr,
@@ -213,9 +259,13 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
                   keyboardType: TextInputType.phone,
                 ),
                 SizedBox(height: 16.h),
-                _Label('pickup_id_label'.tr),
+                _Label('pickup_id_image_label'.tr),
                 SizedBox(height: 6.h),
-                _Field(controller: idCtrl, hint: 'pickup_id_hint'.tr),
+                _IdImagePicker(
+                  file: _idImageFile,
+                  url: _idImageUrl,
+                  onTap: _pickIdImage,
+                ),
                 SizedBox(height: 32.h),
                 SizedBox(
                   width: double.infinity,
@@ -241,6 +291,10 @@ class _PickupSheetState extends State<PickupSheet> with KeyboardSheetMixin {
               ],
             ],
           ),
+        ),
+      ),
+            ),
+          ],
         ),
       ),
     );
@@ -290,6 +344,68 @@ class _Label extends StatelessWidget {
       color: const Color(0xFF475569),
     ),
   );
+}
+
+class _IdImagePicker extends StatelessWidget {
+  final File? file;
+  final String? url;
+  final VoidCallback onTap;
+  const _IdImagePicker({required this.file, required this.url, required this.onTap});
+
+  bool get _hasImage => file != null || (url != null && url!.isNotEmpty);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 150.h,
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: _hasImage
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (file != null)
+                    Image.file(file!, fit: BoxFit.cover)
+                  else
+                    AppNetworkImage(url: url, fit: BoxFit.cover),
+                  Positioned(
+                    bottom: 8.h,
+                    right: 8.w,
+                    child: Container(
+                      padding: EdgeInsets.all(6.w),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Icon(Icons.edit_outlined, size: 16.sp, color: Colors.white),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_a_photo_outlined, size: 28.sp, color: const Color(0xFF94A3B8)),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'pickup_id_image_add'.tr,
+                    style: context.typography.smRegular.copyWith(
+                      fontSize: 14,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
 }
 
 class _Field extends StatelessWidget {

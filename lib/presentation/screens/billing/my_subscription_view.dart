@@ -3,6 +3,7 @@ import '../../../index/index_main.dart';
 import 'widgets/billing_month_bar.dart';
 import 'widgets/billing_status_pill.dart';
 import 'widgets/branch_breakdown_card.dart';
+import 'widgets/subscription_payment_card.dart';
 
 /// Owner / manager screen: "My platform subscription". Shows the monthly bill
 /// (children × 50 EGP) with a per-branch breakdown and this month's payment
@@ -26,7 +27,7 @@ class _MySubscriptionViewState extends State<MySubscriptionView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
@@ -78,6 +79,13 @@ class _MySubscriptionViewState extends State<MySubscriptionView> {
                 _HeroCard(bill: bill),
                 SizedBox(height: 16.h),
                 BranchBreakdownCard(bill: bill),
+                if (controller.paymentInfo.value?.hasAny ?? false) ...[
+                  SizedBox(height: 16.h),
+                  SubscriptionPaymentCard(
+                    controller: controller,
+                    info: controller.paymentInfo.value!,
+                  ),
+                ],
               ],
             ],
           );

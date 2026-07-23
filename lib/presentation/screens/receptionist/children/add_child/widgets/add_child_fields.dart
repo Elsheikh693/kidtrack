@@ -181,48 +181,66 @@ class AddChildClassroomDropdown extends StatelessWidget {
       );
 }
 
-class AddChildPackageDropdown extends StatelessWidget {
+class AddChildPackageSelector extends StatelessWidget {
   final List<PackageModel> packages;
-  final PackageModel? selected;
-  final ValueChanged<PackageModel?> onChanged;
+  final List<PackageModel> selected;
+  final ValueChanged<PackageModel> onToggle;
 
-  const AddChildPackageDropdown({
+  const AddChildPackageSelector({
     super.key,
     required this.packages,
     required this.selected,
-    required this.onChanged,
+    required this.onToggle,
   });
 
   @override
-  Widget build(BuildContext context) => _DropdownBox(
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<PackageModel?>(
-            value: selected,
-            isExpanded: true,
-            hint: Text(
-              'child_package_none'.tr,
-              style: context.typography.smRegular.copyWith(color: _hint, fontSize: 14),
-            ),
-            style: context.typography.smRegular.copyWith(fontSize: 14, color: _ink),
-            items: [
-              DropdownMenuItem<PackageModel?>(
-                value: null,
-                child: Text('child_package_none'.tr),
+  Widget build(BuildContext context) {
+    if (packages.isEmpty) {
+      return ReadonlyField('child_package_none'.tr);
+    }
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: packages.map((p) {
+        final isSelected = selected.any((s) => s.key == p.key);
+        return GestureDetector(
+          onTap: () => onToggle(p),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 11.h),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary : _fill,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : _border,
+                width: 1.2,
               ),
-              ...packages.map(
-                (p) => DropdownMenuItem(
-                  value: p,
-                  child: Text(
-                    '${p.name} • ${p.monthlyDue.toStringAsFixed(0)} ${'overdue_currency'.tr}',
-                    overflow: TextOverflow.ellipsis,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isSelected
+                      ? Icons.check_circle_rounded
+                      : Icons.circle_outlined,
+                  size: 18.sp,
+                  color: isSelected ? Colors.white : _hint,
+                ),
+                SizedBox(width: 7.w),
+                Text(
+                  '${p.name} • ${p.monthlyDue.toStringAsFixed(0)} ${'overdue_currency'.tr}',
+                  style: context.typography.smSemiBold.copyWith(
+                    fontSize: 14,
+                    color: isSelected ? Colors.white : _ink,
                   ),
                 ),
-              ),
-            ],
-            onChanged: onChanged,
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }).toList(),
+    );
+  }
 }
 
 class AddChildProgramSelector extends StatelessWidget {

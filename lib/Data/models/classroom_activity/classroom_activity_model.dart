@@ -1,3 +1,9 @@
+import 'package:get/get.dart';
+
+import 'activity_photo_model.dart';
+
+export 'activity_photo_model.dart';
+
 enum EvalLevel {
   excellent,      // 🟢 ممتاز
   needsFollow,    // 🟡 يحتاج متابعة
@@ -25,8 +31,17 @@ class ClassroomActivityModel {
   final String? key;
   final String nurseryId;
   final String classroomId;
+  // Branch that owns this activity — stamped from the teacher's branch at
+  // creation. Empty for legacy records (before branch-stamping / backfill).
+  // Used to keep classroom-scoped content from leaking across branches when a
+  // classroom is shared (isAllBranches). See SessionService.branchVisible.
+  final String? branchId;
   final String? subjectId;
   final String? subjectName;
+  // The schedule slot this session fulfils, when the teacher started it from the
+  // timetable. Null for ad-hoc activities. Lets late-session detection match a
+  // slot to its actual start exactly instead of guessing by subject/time.
+  final String? scheduleSlotId;
   final String title;
   final String teacherId;
   final String status; // 'active' | 'completed'
@@ -38,20 +53,26 @@ class ClassroomActivityModel {
   final Map<String, String> notes;
   // childId → list of selected reason titles (structured evaluation reasons)
   final Map<String, List<String>> childReasons;
-  // photoId → downloadUrl
-  final Map<String, String> photos;
+  // photoId → ActivityPhoto (url + approval + audience)
+  final Map<String, ActivityPhoto> photos;
   // general note for the whole class
   final String? groupNote;
   final int? createdAt;
   // snapshot of child IDs present when activity started — used for timeline fan-out
   final List<String> childIds;
+  // 'class'  → whole-classroom session (default; also all legacy records)
+  // 'activity' → teacher picked a specific subset of children; childIds is the
+  // fixed participant set the live panels + reports scope to.
+  final String mode;
 
   const ClassroomActivityModel({
     this.key,
     required this.nurseryId,
     required this.classroomId,
+    this.branchId,
     this.subjectId,
     this.subjectName,
+    this.scheduleSlotId,
     required this.title,
     required this.teacherId,
     this.status = 'active',
@@ -64,9 +85,14 @@ class ClassroomActivityModel {
     this.groupNote,
     this.createdAt,
     this.childIds = const [],
+    this.mode = 'class',
   });
 
   bool get isActive => status == 'active';
+
+  /// True when the teacher started this as a subset "activity" (picked
+  /// specific children) rather than a whole-class session.
+  bool get isActivityMode => mode == 'activity';
 
   Duration get elapsed =>
       DateTime.fromMillisecondsSinceEpoch(
@@ -77,8 +103,11 @@ class ClassroomActivityModel {
     final d = elapsed;
     final h = d.inHours;
     final m = d.inMinutes % 60;
-    if (h > 0) return '$h س ${m.toString().padLeft(2, '0')} د';
-    return '$m دقيقة';
+    if (h > 0) {
+      return 'datamodels2_elapsed_hours_minutes'
+          .trParams({'h': '$h', 'm': m.toString().padLeft(2, '0')});
+    }
+    return 'datamodels2_elapsed_minutes'.trParams({'m': '$m'});
   }
 
   EvalLevel? evalFor(String childId) {
@@ -86,6 +115,25 @@ class ClassroomActivityModel {
     if (v == null) return null;
     return EvalLevel.fromKey(v);
   }
+
+  // ── Photo helpers ──────────────────────────────────────────────────────────
+
+  /// Every photo URL regardless of approval — staff/teacher-facing views.
+  List<String> get allPhotoUrls =>
+      photos.values.map((p) => p.url).where((u) => u.isNotEmpty).toList();
+
+  /// Approved photo URLs a specific child's guardian may see (classroom-wide or
+  /// targeted to that child) — the guardian-facing filter.
+  List<String> approvedUrlsForChild(String childId) => photos.values
+      .where((p) => p.isApproved && p.visibleTo(childId))
+      .map((p) => p.url)
+      .where((u) => u.isNotEmpty)
+      .toList();
+
+  bool get hasPendingPhotos => photos.values.any((p) => !p.isApproved);
+
+  int get pendingPhotoCount =>
+      photos.values.where((p) => !p.isApproved).length;
 
   factory ClassroomActivityModel.fromJson(Map<dynamic, dynamic> json,
       {String? key}) {
@@ -101,8 +149,10 @@ class ClassroomActivityModel {
       key: key ?? json['key']?.toString(),
       nurseryId: json['nurseryId']?.toString() ?? '',
       classroomId: json['classroomId']?.toString() ?? '',
+      branchId: json['branchId']?.toString(),
       subjectId: json['subjectId']?.toString(),
       subjectName: json['subjectName']?.toString(),
+      scheduleSlotId: json['scheduleSlotId']?.toString(),
       title: json['title']?.toString() ?? '',
       teacherId: json['teacherId']?.toString() ?? '',
       status: json['status']?.toString() ?? 'active',
@@ -111,10 +161,11 @@ class ClassroomActivityModel {
       evaluations: _parseMap(json['evaluations']),
       notes: _parseMap(json['notes']),
       childReasons: _parseReasonsMap(json['childReasons']),
-      photos: _parseMap(json['photos']),
+      photos: _parsePhotos(json['photos']),
       groupNote: json['groupNote']?.toString(),
       createdAt: _parseInt(json['createdAt']),
       childIds: _parseStringList(json['childIds']),
+      mode: json['mode']?.toString() ?? 'class',
     );
   }
 
@@ -127,8 +178,10 @@ class ClassroomActivityModel {
     put('key', key);
     data['nurseryId'] = nurseryId;
     data['classroomId'] = classroomId;
+    put('branchId', branchId);
     put('subjectId', subjectId);
     put('subjectName', subjectName);
+    put('scheduleSlotId', scheduleSlotId);
     data['title'] = title;
     data['teacherId'] = teacherId;
     data['status'] = status;
@@ -142,10 +195,15 @@ class ClassroomActivityModel {
           e.key: {for (int i = 0; i < e.value.length; i++) '$i': e.value[i]},
       };
     }
-    if (photos.isNotEmpty) data['photos'] = photos;
+    if (photos.isNotEmpty) {
+      data['photos'] = {
+        for (final e in photos.entries) e.key: e.value.toJson(),
+      };
+    }
     put('groupNote', groupNote);
     put('createdAt', createdAt ?? _now());
     if (childIds.isNotEmpty) data['childIds'] = childIds;
+    data['mode'] = mode;
     return data;
   }
 
@@ -153,8 +211,10 @@ class ClassroomActivityModel {
     String? key,
     String? nurseryId,
     String? classroomId,
+    String? branchId,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
     String? title,
     String? teacherId,
     String? status,
@@ -163,17 +223,20 @@ class ClassroomActivityModel {
     Map<String, String>? evaluations,
     Map<String, String>? notes,
     Map<String, List<String>>? childReasons,
-    Map<String, String>? photos,
+    Map<String, ActivityPhoto>? photos,
     String? groupNote,
     int? createdAt,
     List<String>? childIds,
+    String? mode,
   }) =>
       ClassroomActivityModel(
         key: key ?? this.key,
         nurseryId: nurseryId ?? this.nurseryId,
         classroomId: classroomId ?? this.classroomId,
+        branchId: branchId ?? this.branchId,
         subjectId: subjectId ?? this.subjectId,
         subjectName: subjectName ?? this.subjectName,
+        scheduleSlotId: scheduleSlotId ?? this.scheduleSlotId,
         title: title ?? this.title,
         teacherId: teacherId ?? this.teacherId,
         status: status ?? this.status,
@@ -186,6 +249,7 @@ class ClassroomActivityModel {
         groupNote: groupNote ?? this.groupNote,
         createdAt: createdAt ?? this.createdAt,
         childIds: childIds ?? this.childIds,
+        mode: mode ?? this.mode,
       );
 
   static int _now() => DateTime.now().millisecondsSinceEpoch;
@@ -193,6 +257,14 @@ class ClassroomActivityModel {
     if (v == null) return null;
     if (v is int) return v;
     return int.tryParse(v.toString());
+  }
+
+  static Map<String, ActivityPhoto> _parsePhotos(dynamic raw) {
+    if (raw == null || raw is! Map) return {};
+    return {
+      for (final e in (raw as Map).entries)
+        e.key.toString(): ActivityPhoto.fromValue(e.key.toString(), e.value),
+    };
   }
 
   static Map<String, List<String>> _parseReasonsMap(dynamic raw) {

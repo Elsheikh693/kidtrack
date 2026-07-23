@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../../../Global/Utils/date_helpers.dart';
 
 // Shared visual language for the parent Daily Journal.
 
@@ -55,25 +57,25 @@ IconData journalEventIcon(String subjectName) {
   switch (level) {
     case 'excellent':
       return (
-        label: 'ممتاز',
+        label: 'parenteduc24_eval_excellent'.tr,
         color: const Color(0xFF059669),
         icon: Icons.star_rounded,
       );
     case 'needs_follow':
       return (
-        label: 'جيد جدًا',
+        label: 'parenteduc24_eval_very_good'.tr,
         color: const Color(0xFF2563EB),
         icon: Icons.thumb_up_rounded,
       );
     case 'needs_attention':
       return (
-        label: 'يحتاج متابعة',
+        label: 'parenteduc24_eval_needs_follow'.tr,
         color: const Color(0xFFD97706),
         icon: Icons.error_rounded,
       );
     default:
       return (
-        label: 'تم',
+        label: 'parenteduc24_eval_done'.tr,
         color: const Color(0xFF64748B),
         icon: Icons.check_circle_rounded,
       );
@@ -85,38 +87,30 @@ IconData journalEventIcon(String subjectName) {
   switch (level) {
     case 'excellent':
       return (
-        label: 'يوم ممتاز',
+        label: 'parenteduc24_day_excellent'.tr,
         icon: Icons.star_rounded,
         color: const Color(0xFF059669),
       );
     case 'needs_follow':
       return (
-        label: 'يوم جيد',
+        label: 'parenteduc24_day_good'.tr,
         icon: Icons.sentiment_satisfied_rounded,
         color: const Color(0xFF2563EB),
       );
     case 'needs_attention':
       return (
-        label: 'يحتاج متابعة',
+        label: 'parenteduc24_eval_needs_follow'.tr,
         icon: Icons.sentiment_neutral_rounded,
         color: const Color(0xFFD97706),
       );
     default:
       return (
-        label: 'بدون تقييم',
+        label: 'parenteduc24_day_no_eval'.tr,
         icon: Icons.menu_book_rounded,
         color: const Color(0xFF64748B),
       );
   }
 }
-
-const _kArDays = [
-  'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد',
-];
-const _kArMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
 
 /// "اليوم" / "أمس" / "السبت 20 يونيو"
 String journalDateLabel(DateTime d) {
@@ -124,20 +118,13 @@ String journalDateLabel(DateTime d) {
   final today = DateTime(now.year, now.month, now.day);
   final that = DateTime(d.year, d.month, d.day);
   final diff = today.difference(that).inDays;
-  if (diff == 0) return 'اليوم';
-  if (diff == 1) return 'أمس';
-  return '${_kArDays[that.weekday - 1]} ${that.day} ${_kArMonths[that.month - 1]}';
+  if (diff == 0) return 'filter_today'.tr;
+  if (diff == 1) return 'filter_yesterday'.tr;
+  return '${weekdayName(that.weekday)} ${that.day} ${monthName(that.month)}';
 }
 
 /// Full label, always with the weekday — used in the hero header.
 String journalFullDate(DateTime d) =>
-    '${_kArDays[d.weekday - 1]} ${d.day} ${_kArMonths[d.month - 1]}';
+    '${weekdayName(d.weekday)} ${d.day} ${monthName(d.month)}';
 
-String journalClock(int ms) {
-  final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-  final h24 = dt.hour;
-  final period = h24 < 12 ? 'ص' : 'م';
-  var h = h24 % 12;
-  if (h == 0) h = 12;
-  return '$h:${dt.minute.toString().padLeft(2, '0')} $period';
-}
+String journalClock(int ms) => arabicClockTime(ms);

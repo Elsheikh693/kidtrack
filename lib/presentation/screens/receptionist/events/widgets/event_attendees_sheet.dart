@@ -16,7 +16,7 @@ class EventAttendeesSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: const BoxDecoration(

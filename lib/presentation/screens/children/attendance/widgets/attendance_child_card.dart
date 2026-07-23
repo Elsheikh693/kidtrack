@@ -3,6 +3,7 @@ import '../../../../../index/index_main.dart';
 class AttendanceChildCard extends StatelessWidget {
   final ChildAttendanceModel item;
   final String childName;
+  final String? childImage;
   final String branchName;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -11,6 +12,7 @@ class AttendanceChildCard extends StatelessWidget {
     super.key,
     required this.item,
     required this.childName,
+    this.childImage,
     required this.branchName,
     required this.onEdit,
     required this.onDelete,
@@ -62,14 +64,13 @@ class AttendanceChildCard extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
-            Container(
-              width: 44.w,
-              height: 44.h,
-              decoration: BoxDecoration(
-                color: _statusBg,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(Icons.child_care, color: _statusColor, size: 22.sp),
+            ChildAvatar(
+              name: childName,
+              imageUrl: childImage,
+              size: 44.w,
+              color: _statusColor,
+              circle: false,
+              borderRadius: 12.r,
             ),
             SizedBox(width: 12.w),
             Expanded(

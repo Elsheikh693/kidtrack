@@ -21,7 +21,7 @@ class _TeacherClassesTabState extends State<TeacherClassesTab> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
         body: SafeArea(
@@ -92,13 +92,13 @@ class _TeacherClassesTabState extends State<TeacherClassesTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'فصولي',
+                      'teacheract34_my_classes'.tr,
                       style: context.typography.xlBold.copyWith(
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      'نظرة عامة على فصولك الدراسية',
+                      'teacheract34_classes_overview'.tr,
                       style: context.typography.xsRegular.copyWith(
                         color: Color(0xCCFFFFFF),
                       ),
@@ -117,7 +117,8 @@ class _TeacherClassesTabState extends State<TeacherClassesTab> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${controller.myClassrooms.length} فصل',
+                    'teacheract34_classrooms_count'.trParams(
+                        {'count': '${controller.myClassrooms.length}'}),
                     style: context.typography.xsMedium.copyWith(
                       color: Colors.white,
                     ),
@@ -138,11 +139,15 @@ class _TeacherClassesTabState extends State<TeacherClassesTab> {
             );
             return Row(
               children: [
-                _StatChip(icon: Icons.child_care_rounded, label: '$total طفل'),
+                _StatChip(
+                    icon: Icons.child_care_rounded,
+                    label: 'teacheract34_children_count'
+                        .trParams({'count': '$total'})),
                 const SizedBox(width: 8),
                 _StatChip(
                   icon: Icons.star_rounded,
-                  label: 'قُيِّم اليوم: $assessed',
+                  label: 'teacheract34_assessed_today'
+                      .trParams({'count': '$assessed'}),
                 ),
               ],
             );
@@ -166,14 +171,14 @@ class _TeacherClassesTabState extends State<TeacherClassesTab> {
             ),
             const SizedBox(height: 16),
             Text(
-              'لم يتم تعيين فصول لك بعد',
+              'teacheract34_no_classes_assigned'.tr,
               style: context.typography.mdBold.copyWith(
                 color: Colors.grey.shade600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'تواصلي مع مدير الحضانة لتعيين فصولك',
+              'teacheract34_contact_manager_classes'.tr,
               textAlign: TextAlign.center,
               style: context.typography.xsRegular.copyWith(
                 color: Colors.grey.shade400,
@@ -226,6 +231,7 @@ class _ClassroomCard extends StatelessWidget {
   static const _green = Color(0xFF16A34A);
   static const _purple = Color(0xFF7C3AED);
   static const _amber = Color(0xFFD97706);
+  static const _blue = Color(0xFF2563EB);
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +299,8 @@ class _ClassroomCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$childCount طفل',
+                          'teacheract34_children_count'
+                              .trParams({'count': '$childCount'}),
                           style: context.typography.xsRegular.copyWith(
                             color: Colors.grey.shade500,
                           ),
@@ -319,7 +326,7 @@ class _ClassroomCard extends StatelessWidget {
                   // Subjects
                   if (subjects.isNotEmpty) ...[
                     Text(
-                      'المواد الدراسية',
+                      'teacheract34_subjects'.tr,
                       style: context.typography.xsMedium.copyWith(
                         color: Colors.grey.shade500,
                       ),
@@ -341,7 +348,7 @@ class _ClassroomCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'التقييم اليومي',
+                          'teacheract34_daily_assessment'.tr,
                           style: context.typography.xsMedium.copyWith(
                             color: Colors.grey.shade500,
                           ),
@@ -380,7 +387,7 @@ class _ClassroomCard extends StatelessWidget {
                   Expanded(
                     child: _ActionButton(
                       icon: Icons.menu_book_rounded,
-                      label: 'الدروس',
+                      label: 'teacheract34_lessons'.tr,
                       color: _amber,
                       onTap: () => _goToLessons(context, cId, subjects),
                     ),
@@ -389,9 +396,18 @@ class _ClassroomCard extends StatelessWidget {
                   Expanded(
                     child: _ActionButton(
                       icon: Icons.star_rounded,
-                      label: 'التقييم',
+                      label: 'teacheract34_assessment'.tr,
                       color: _purple,
                       onTap: () => _goToAssessment(context, cId),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ActionButton(
+                      icon: Icons.assignment_rounded,
+                      label: 'exams_title'.tr,
+                      color: _blue,
+                      onTap: () => _goToExams(context, cId, classroom.name),
                     ),
                   ),
                 ],
@@ -418,6 +434,14 @@ class _ClassroomCard extends StatelessWidget {
   void _goToAssessment(BuildContext context, String cId) {
     final mainVm = Get.find<MainPageViewModel>();
     mainVm.changePage(3);
+  }
+
+  void _goToExams(BuildContext context, String cId, String name) {
+    Get.to(
+      () => const ClassroomExamsView(),
+      arguments: {'classroomId': cId, 'classroomName': name},
+      transition: Transition.rightToLeft,
+    );
   }
 }
 
@@ -453,7 +477,7 @@ class _AssessmentBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            isDone ? 'مكتمل' : '$assessed/$total',
+            isDone ? 'teacheract34_completed'.tr : '$assessed/$total',
             style: context.typography.xsMedium.copyWith(
               color: isDone ? const Color(0xFF166534) : const Color(0xFF92400E),
             ),

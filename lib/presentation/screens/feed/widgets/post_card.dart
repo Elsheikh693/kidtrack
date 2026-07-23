@@ -6,6 +6,7 @@ import '../../../../Data/models/feed/nursery_post_model.dart';
 import '../../../../index/index_main.dart';
 import '../feed_controller.dart';
 import 'create_post_sheet.dart';
+import 'post_photo_carousel.dart';
 
 class FeedPostCard extends StatelessWidget {
   const FeedPostCard({
@@ -27,6 +28,10 @@ class FeedPostCard extends StatelessWidget {
         return AppColors.yellowForeground;
       case PostCategory.reminder:
         return AppColors.teal;
+      case PostCategory.starOfWeek:
+        return AppColors.ratingStar;
+      case PostCategory.gallery:
+        return const Color(0xFF6366F1);
       default:
         return AppColors.primary;
     }
@@ -62,7 +67,16 @@ class FeedPostCard extends StatelessWidget {
                 ),
               ),
             ),
-          if (post.photos.isNotEmpty) _PhotosGrid(urls: post.photos),
+          if (post.photos.isNotEmpty)
+            post.isGallery
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: PostPhotoCarousel(urls: post.photos),
+                    ),
+                  )
+                : _PhotosGrid(urls: post.photos),
           _SeenRow(count: post.seenCount),
           SizedBox(height: 4.h),
         ],
@@ -117,10 +131,16 @@ class _Header extends StatelessWidget {
   String _timeAgo() {
     final diff = DateTime.now()
         .difference(DateTime.fromMillisecondsSinceEpoch(post.createdAt));
-    if (diff.inMinutes < 1) return 'الآن';
-    if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} د';
-    if (diff.inHours < 24) return 'منذ ${diff.inHours} س';
-    if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
+    if (diff.inMinutes < 1) return 'feed14_now'.tr;
+    if (diff.inMinutes < 60) {
+      return 'feed14_minutes_ago'.trParams({'n': '${diff.inMinutes}'});
+    }
+    if (diff.inHours < 24) {
+      return 'feed14_hours_ago'.trParams({'n': '${diff.inHours}'});
+    }
+    if (diff.inDays < 7) {
+      return 'feed14_days_ago'.trParams({'n': '${diff.inDays}'});
+    }
     final d = DateTime.fromMillisecondsSinceEpoch(post.createdAt);
     return '${d.day}/${d.month}/${d.year}';
   }
@@ -200,7 +220,7 @@ class _Header extends StatelessWidget {
                 child: Row(children: [
                   Icon(Icons.edit_rounded, size: 18.sp),
                   SizedBox(width: 8.w),
-                  Text('تعديل'),
+                  Text('feed14_edit'.tr),
                 ]),
               ),
               PopupMenuItem(
@@ -212,7 +232,7 @@ class _Header extends StatelessWidget {
                           : Icons.push_pin_rounded,
                       size: 18.sp),
                   SizedBox(width: 8.w),
-                  Text(post.isPinned ? 'إلغاء التثبيت' : 'تثبيت'),
+                  Text(post.isPinned ? 'feed14_unpin'.tr : 'feed14_pin'.tr),
                 ]),
               ),
               PopupMenuItem(
@@ -221,7 +241,7 @@ class _Header extends StatelessWidget {
                   Icon(Icons.delete_outline_rounded,
                       size: 18.sp, color: Colors.red),
                   SizedBox(width: 8.w),
-                  Text('حذف', style: context.typography.smRegular.copyWith(color: Colors.red)),
+                  Text('feed14_delete'.tr, style: context.typography.smRegular.copyWith(color: Colors.red)),
                 ]),
               ),
             ],

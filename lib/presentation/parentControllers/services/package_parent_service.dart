@@ -5,8 +5,17 @@ class PackageParentService {
   final BaseService<PackageModel> _service =
       Get.find<BaseService<PackageModel>>(tag: 'packages');
 
-  Future<void> getAll({required Function(List<PackageModel?>) callBack}) async {
-    await _service.getData(data: {}, voidCallBack: callBack);
+  /// [limit] caps the server-side result so existence probes fetch one row
+  /// instead of the whole list. Only safe when the caller does NOT filter the
+  /// result further (e.g. by branch), since the trimmed row might not match.
+  Future<void> getAll({
+    required Function(List<PackageModel?>) callBack,
+    int? limit,
+  }) async {
+    await _service.getData(
+      data: limit == null ? const {} : FirebaseFilter.firstN(limit),
+      voidCallBack: callBack,
+    );
   }
 
   Future<void> add({

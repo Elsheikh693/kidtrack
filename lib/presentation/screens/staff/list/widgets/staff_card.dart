@@ -2,26 +2,31 @@ import '../../../../../index/index_main.dart';
 
 class StaffCard extends StatelessWidget {
   final StaffModel staff;
-  final String branchName;
+  final List<String> shiftLabels;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onPermissions;
+  final VoidCallback onGenerateCode;
+  final VoidCallback onSendWhatsApp;
+  final VoidCallback onDelete;
+  final bool canDelete;
 
   const StaffCard({
     super.key,
     required this.staff,
-    required this.branchName,
+    this.shiftLabels = const [],
     required this.onEdit,
     required this.onToggleActive,
     required this.onPermissions,
+    required this.onGenerateCode,
+    required this.onSendWhatsApp,
+    required this.onDelete,
+    this.canDelete = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = _color(staff.template);
-    final initials = staff.name.trim().isNotEmpty
-        ? staff.name.trim().split(' ').take(2).map((w) => w[0]).join()
-        : '؟';
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -38,18 +43,34 @@ class StaffCard extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.all(16.w),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Avatar(initials: initials, color: color),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _Info(staff: staff, branchName: branchName, color: color),
-            ),
-            _Menu(
-              staff: staff,
-              onEdit: onEdit,
-              onToggleActive: onToggleActive,
-              onPermissions: onPermissions,
+            _Info(staff: staff, color: color, shiftLabels: shiftLabels),
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                _CardAction(
+                  icon: Icons.chat_rounded,
+                  color: const Color(0xFF25D366),
+                  onTap: onSendWhatsApp,
+                ),
+                SizedBox(width: 8.w),
+                _CardAction(
+                  icon: Icons.qr_code_rounded,
+                  color: AppColors.primary,
+                  onTap: onGenerateCode,
+                ),
+                const Spacer(),
+                _Menu(
+                  staff: staff,
+                  onEdit: onEdit,
+                  onToggleActive: onToggleActive,
+                  onPermissions: onPermissions,
+                  onDelete: onDelete,
+                  canDelete: canDelete,
+                ),
+              ],
             ),
           ],
         ),
@@ -71,35 +92,15 @@ class StaffCard extends StatelessWidget {
 
 // ── Internal pieces — private to this file ────────────────────────────────────
 
-class _Avatar extends StatelessWidget {
-  final String initials;
-  final Color color;
-  const _Avatar({required this.initials, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 52.w,
-    height: 52.h,
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(14.r),
-    ),
-    child: Center(
-      child: Text(
-        initials,
-        style: context.typography.lgBold.copyWith(
-          color: color, fontSize: 18,
-        ),
-      ),
-    ),
-  );
-}
-
 class _Info extends StatelessWidget {
   final StaffModel staff;
-  final String branchName;
   final Color color;
-  const _Info({required this.staff, required this.branchName, required this.color});
+  final List<String> shiftLabels;
+  const _Info({
+    required this.staff,
+    required this.color,
+    this.shiftLabels = const [],
+  });
 
   @override
   Widget build(BuildContext context) => Column(
@@ -125,14 +126,11 @@ class _Info extends StatelessWidget {
         _InfoRow(icon: Icons.phone_outlined, text: staff.phone!),
         SizedBox(height: 2.h),
       ],
-      _InfoRow(icon: Icons.location_on_outlined, text: branchName),
-      if (staff.shift != null) ...[
-        SizedBox(height: 2.h),
+      if (shiftLabels.isNotEmpty)
         _InfoRow(
-          icon: ShiftScope.fromName(staff.shift)?.icon ?? Icons.schedule,
-          text: (ShiftScope.fromName(staff.shift)?.labelKey ?? 'shift_morning').tr,
+          icon: Icons.schedule_rounded,
+          text: shiftLabels.join(' • '),
         ),
-      ],
     ],
   );
 }
@@ -192,16 +190,42 @@ class _InfoRow extends StatelessWidget {
   );
 }
 
+class _CardAction extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _CardAction({required this.icon, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: Container(
+      width: 40.w,
+      height: 40.w,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Icon(icon, size: 20.sp, color: color),
+    ),
+  );
+}
+
 class _Menu extends StatelessWidget {
   final StaffModel staff;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
   final VoidCallback onPermissions;
+  final VoidCallback onDelete;
+  final bool canDelete;
   const _Menu({
     required this.staff,
     required this.onEdit,
     required this.onToggleActive,
     required this.onPermissions,
+    required this.onDelete,
+    required this.canDelete,
   });
 
   @override
@@ -212,6 +236,7 @@ class _Menu extends StatelessWidget {
         case _MenuAction.edit:        onEdit();
         case _MenuAction.permissions: onPermissions();
         case _MenuAction.toggle:      onToggleActive();
+        case _MenuAction.delete:      onDelete();
       }
     },
     itemBuilder: (_) => [
@@ -231,6 +256,15 @@ class _Menu extends StatelessWidget {
           color: staff.isActive ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
         ),
       ),
+      if (canDelete)
+        PopupMenuItem(
+          value: _MenuAction.delete,
+          child: _MenuItem(
+            icon: Icons.delete_outline_rounded,
+            label: 'staff_menu_delete'.tr,
+            color: const Color(0xFFDC2626),
+          ),
+        ),
     ],
   );
 }
@@ -251,4 +285,4 @@ class _MenuItem extends StatelessWidget {
   );
 }
 
-enum _MenuAction { edit, permissions, toggle }
+enum _MenuAction { edit, permissions, toggle, delete }

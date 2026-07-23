@@ -103,45 +103,27 @@ class _DefaultEvalPicker extends StatelessWidget {
 
   final ActivityEndController endCtrl;
 
-  static const _items = [
-    (
-      EvalLevel.excellent,
-      'teacher_end_eval_excellent',
-      '🟢',
-      AppColors.activityGreen,
-    ),
-    (
-      EvalLevel.needsFollow,
-      'teacher_end_eval_follow',
-      '🟡',
-      AppColors.activityAmber,
-    ),
-    (
-      EvalLevel.needsAttention,
-      'teacher_end_eval_support',
-      '🔴',
-      AppColors.activityRed,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final selected = endCtrl.defaultEval.value;
+      final levels = endCtrl.levels;
+      if (levels.isEmpty) {
+        return const SizedBox.shrink();
+      }
       return Row(
         children: [
-          for (int i = 0; i < _items.length; i++) ...[
+          for (int i = 0; i < levels.length; i++) ...[
             if (i > 0) const SizedBox(width: 8),
             Expanded(
               child: _DefaultButton(
-                level: _items[i].$1,
-                labelKey: _items[i].$2,
-                emoji: _items[i].$3,
-                color: _items[i].$4,
-                isSelected: selected == _items[i].$1,
+                title: levels[i].title,
+                icon: EvalLevelIcons.iconFor(levels[i].icon),
+                color: Color(levels[i].color),
+                isSelected: selected == levels[i].key,
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  endCtrl.setDefaultEval(_items[i].$1);
+                  endCtrl.setDefaultEval(levels[i].key ?? '');
                 },
               ),
             ),
@@ -154,17 +136,15 @@ class _DefaultEvalPicker extends StatelessWidget {
 
 class _DefaultButton extends StatelessWidget {
   const _DefaultButton({
-    required this.level,
-    required this.labelKey,
-    required this.emoji,
+    required this.title,
+    required this.icon,
     required this.color,
     required this.isSelected,
     required this.onTap,
   });
 
-  final EvalLevel level;
-  final String labelKey;
-  final String emoji;
+  final String title;
+  final IconData icon;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
@@ -175,10 +155,11 @@ class _DefaultButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
         decoration: BoxDecoration(
           color: isSelected ? color : color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : color.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
@@ -186,9 +167,9 @@ class _DefaultButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    color: color.withValues(alpha: 0.28),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : null,
@@ -196,10 +177,27 @@ class _DefaultButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 22)),
-            const SizedBox(height: 5),
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : color.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 26,
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+            const SizedBox(height: 8),
             Text(
-              labelKey.tr,
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: context.typography.xsMedium.copyWith(
                 color: isSelected ? Colors.white : color,
                 fontWeight: FontWeight.w700,
@@ -221,8 +219,11 @@ class _SummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Container(
+    return Obx(() {
+      final levels = endCtrl.levels;
+      // Rebuild when evaluations change too.
+      endCtrl.childEvals.length;
+      return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
@@ -232,38 +233,30 @@ class _SummaryBar extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _SummaryChip(
-              emoji: '🟢',
-              count: endCtrl.summaryCount(EvalLevel.excellent),
-              color: AppColors.activityGreen,
-            ),
-            Container(width: 1, height: 18, color: Colors.grey.shade200),
-            _SummaryChip(
-              emoji: '🟡',
-              count: endCtrl.summaryCount(EvalLevel.needsFollow),
-              color: AppColors.activityAmber,
-            ),
-            Container(width: 1, height: 18, color: Colors.grey.shade200),
-            _SummaryChip(
-              emoji: '🔴',
-              count: endCtrl.summaryCount(EvalLevel.needsAttention),
-              color: AppColors.activityRed,
-            ),
+            for (int i = 0; i < levels.length; i++) ...[
+              if (i > 0)
+                Container(width: 1, height: 18, color: Colors.grey.shade200),
+              _SummaryChip(
+                icon: EvalLevelIcons.iconFor(levels[i].icon),
+                count: endCtrl.summaryCount(levels[i].key ?? ''),
+                color: Color(levels[i].color),
+              ),
+            ],
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
 class _SummaryChip extends StatelessWidget {
   const _SummaryChip({
-    required this.emoji,
+    required this.icon,
     required this.count,
     required this.color,
   });
 
-  final String emoji;
+  final IconData icon;
   final int count;
   final Color color;
 
@@ -272,7 +265,7 @@ class _SummaryChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 15)),
+        Icon(icon, size: 18, color: color),
         const SizedBox(width: 6),
         Text(
           '$count',

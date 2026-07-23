@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -543,10 +544,15 @@ class CourseService {
       }
 
       final body = StringBuffer(
-        'حضر $childName الحصة $sessionIndex من كورس «${course.title}»',
+        'globalserv7_course_attended'.trParams({
+          'name': childName,
+          'session': '$sessionIndex',
+          'course': course.title,
+        }),
       );
       if (lesson != null) {
-        body.write('\nمحتوى الحصة: ${lesson.title}');
+        body.write(
+            '\n${'globalserv7_course_session_content'.trParams({'title': lesson.title})}');
         final detail = (lesson.textContent?.trim().isNotEmpty ?? false)
             ? lesson.textContent!.trim()
             : (lesson.description?.trim() ?? '');
@@ -558,7 +564,7 @@ class CourseService {
         NotificationModel(
           userId: parentId,
           nurseryId: _nurseryId,
-          title: 'حضور الكورس',
+          title: 'globalserv7_course_attendance_title'.tr,
           body: body.toString(),
           type: 'course_attendance',
           entityId: course.id,

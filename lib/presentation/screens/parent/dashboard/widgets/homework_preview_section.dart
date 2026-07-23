@@ -117,8 +117,14 @@ class HomeworkPreviewSection extends StatelessWidget {
     showHomeworkSubmitSheet(
       context,
       homeworkTitle: hw.displayTitle ?? _hwTitles[hw.titleKey] ?? hw.titleKey,
-      onConfirm: (by, note) =>
-          controller.submitHomework(hw.titleKey, by: by, note: note),
+      onConfirm: (neededHelp, guidedHand, didEasily, note) =>
+          controller.submitHomework(
+        hw.titleKey,
+        neededHelp: neededHelp,
+        guidedHand: guidedHand,
+        didEasily: didEasily,
+        note: note,
+      ),
     );
   }
 }
@@ -170,7 +176,7 @@ class _AllDoneMiniState extends State<_AllDoneMini>
             Text('🎉', style: context.typography.mdRegular.copyWith(fontSize: 20)),
             SizedBox(width: 10.w),
             Text(
-              'ممتاز! أنجزنا كل الواجبات اليوم',
+              'parentcour21_all_homework_done'.tr,
               style: context.typography.smSemiBold
                   .copyWith(color: const Color(0xFF059669)),
             ),

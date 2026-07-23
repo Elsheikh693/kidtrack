@@ -40,7 +40,7 @@ class ManagerTeacherReportsView extends StatelessWidget {
     }
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(

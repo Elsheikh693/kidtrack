@@ -143,7 +143,8 @@ class _TodayBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'تقييمات اليوم — ${c.selectedClassroom.value?.name ?? ""}',
+                'teacheract34_today_assessments_of'.trParams(
+                    {'name': c.selectedClassroom.value?.name ?? ''}),
                 style: context.typography.xsMedium.copyWith(color: const Color(0xFF4C1D95)),
               ),
             ),
@@ -226,7 +227,7 @@ class _ChildAssessmentCard extends StatelessWidget {
                                   color: Colors.green.shade600),
                               const SizedBox(width: 4),
                               Text(
-                                'تم التقييم',
+                                'teacheract34_assessed'.tr,
                                 style: context.typography.xsMedium.copyWith(color: Colors.green.shade600),
                               ),
                             ],
@@ -387,10 +388,10 @@ class _RatingButton extends StatelessWidget {
 
   String _shortLabel(DailyRating r) {
     switch (r) {
-      case DailyRating.excellent:    return 'ممتاز';
-      case DailyRating.veryGood:     return 'جيد جداً';
-      case DailyRating.good:         return 'جيد';
-      case DailyRating.needsSupport: return 'يحتاج\nمتابعة';
+      case DailyRating.excellent:    return 'teacheract34_rating_excellent'.tr;
+      case DailyRating.veryGood:     return 'teacheract34_rating_very_good'.tr;
+      case DailyRating.good:         return 'teacheract34_rating_good'.tr;
+      case DailyRating.needsSupport: return 'teacheract34_rating_needs_support'.tr;
     }
   }
 }
@@ -428,7 +429,7 @@ class _CommentFieldState extends State<_CommentField> {
         onChanged: widget.onChanged,
         maxLines: 2,
         decoration: InputDecoration(
-          hintText: 'ملاحظة على الطالب (اختياري)...',
+          hintText: 'teacheract34_note_hint'.tr,
           hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
           prefixIcon: Icon(Icons.edit_note_rounded,
               color: Colors.grey.shade400, size: 20),
@@ -493,7 +494,8 @@ class _SaveButton extends StatelessWidget {
                             color: Colors.white, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'حفظ تقييمات ${c.children.length} طالب',
+                          'teacheract34_save_assessments_count'
+                              .trParams({'count': '${c.children.length}'}),
                           style: context.typography.mdBold.copyWith(color: Colors.white),
                         ),
                       ],
@@ -520,7 +522,7 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.groups_rounded, size: 56, color: Colors.grey.shade200),
             const SizedBox(height: 16),
             Text(
-              'لا يوجد طلاب في هذا الفصل',
+              'teacheract34_no_students'.tr,
               style: context.typography.mdBold.copyWith(color: const Color(0xFF9CA3AF)),
             ),
           ],

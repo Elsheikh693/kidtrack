@@ -29,7 +29,7 @@ class EndLabeledField extends StatelessWidget {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
-          textDirection: TextDirection.rtl,
+          textDirection: appTextDirection,
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hintKey.tr,

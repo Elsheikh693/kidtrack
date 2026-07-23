@@ -119,7 +119,9 @@ class TeacherStudentsController extends GetxController {
                   Map<String, dynamic>.from(e.value as Map),
                   key: e.key.toString(),
                 ))
-            .where((child) => child.status == 'active')
+            .where((child) =>
+                child.status == 'active' &&
+                _session.seesBranch(child.branchId))
             .toList();
         children.addAll(list);
       }

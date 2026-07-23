@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import '../../../../index/index_main.dart';
+import '../../../../Global/services/child_status_service.dart';
 import 'models/class_health_data.dart';
 import 'models/child_risk_data.dart';
 import 'models/long_absence_data.dart';
@@ -14,6 +15,11 @@ class ManagerChildrenController extends GetxController {
   final presentNow = 0.obs;
   final newThisMonth = 0.obs;
   final leftThisMonth = 0.obs;
+
+  /// This month's withdrawals for this branch, newest first — the surviving log
+  /// of hard-deleted children (name + reason + date) shown when the manager taps
+  /// the "withdrawn" movement stat.
+  final withdrawnThisMonth = <WithdrawalLogModel>[].obs;
   final occupancyRate = 0.obs;
   final unassignedCount = 0.obs;
 
@@ -51,7 +57,9 @@ class ManagerChildrenController extends GetxController {
   late final AssessmentParentService _assessmentSvc;
   late final InvoiceParentService _invoiceSvc;
   late final GuardianParentService _guardianSvc;
+  late final ParentChildParentService _linkSvc;
   late final StaffParentService _staffSvc;
+  late final WithdrawalParentService _withdrawalSvc;
 
   late Worker _searchWorker;
 
@@ -59,9 +67,29 @@ class ManagerChildrenController extends GetxController {
   final _db = FirebaseDatabase.instance;
   StreamSubscription<DatabaseEvent>? _activitySub;
 
+  // Live "present today". Presence (presentNow / insideNow / leftToday) is
+  // derived from the dated childAttendance node in real time, so a check-in or
+  // check-out reflects on the manager overview instantly — the one-shot getAll
+  // stays only for the multi-day long-absence signal, which needs full history.
+  final _statusSvc = ChildStatusService();
+  StreamSubscription<List<ChildAttendanceModel>>? _presenceSub;
+  List<ChildAttendanceModel> _todayAttendance = const [];
+
+  // Live nursery↔parent conversations (per child) for the chat entry point on
+  // each directory tile: drives the unread badge and lets the manager message
+  // the guardian directly from the child list.
+  final _chatService = ChatService();
+  final RxMap<String, ChatConversationModel> chatConvos =
+      <String, ChatConversationModel>{}.obs;
+  StreamSubscription<List<ChatConversationModel>>? _convoSub;
+
+  final _parentNames = <String, String>{};
+  final _parentIds = <String, String>{};
+
   final _classroomNames = <String, String>{};
   final _teacherNames = <String, String>{};
   final _childNames = <String, String>{};
+  final _childImages = <String, String>{};
   final _childClassroom = <String, String?>{};
   final _branchChildKeys = <String>{};
   final _riskReasons = <String, Set<String>>{};
@@ -73,11 +101,8 @@ class ManagerChildrenController extends GetxController {
   final _activeClassroomIds = <String>{};
 
   String get branchId => _session.branchId ?? '';
+  String get _nurseryId => _session.nurseryId ?? '';
 
-  static String get _todayStr {
-    final n = DateTime.now();
-    return '${n.year}-${n.month.toString().padLeft(2, '0')}-${n.day.toString().padLeft(2, '0')}';
-  }
 
   bool get hasAttention =>
       riskChildren.isNotEmpty ||
@@ -97,7 +122,9 @@ class ManagerChildrenController extends GetxController {
     _assessmentSvc = Get.find<AssessmentParentService>();
     _invoiceSvc = Get.find<InvoiceParentService>();
     _guardianSvc = Get.find<GuardianParentService>();
+    _linkSvc = Get.find<ParentChildParentService>();
     _staffSvc = Get.find<StaffParentService>();
+    _withdrawalSvc = Get.find<WithdrawalParentService>();
     _searchWorker = debounce(
       searchQuery,
       (_) => _filter(),
@@ -105,14 +132,34 @@ class ManagerChildrenController extends GetxController {
     );
     loadData();
     _watchActiveActivities();
+    _subscribePresence();
+    _convoSub = _chatService.watchConversations().listen((list) {
+      chatConvos.value = {for (final c in list) c.childId: c};
+    });
   }
 
   @override
   void onClose() {
     _searchWorker.dispose();
     _activitySub?.cancel();
+    _presenceSub?.cancel();
+    _convoSub?.cancel();
     super.onClose();
   }
+
+  /// Unread messages from the guardian for [childId] (nursery/staff side).
+  int chatUnread(String? childId) =>
+      childId == null ? 0 : (chatConvos[childId]?.unreadManager ?? 0);
+
+  String parentName(String? childId) =>
+      childId == null ? '' : (_parentNames[childId] ?? '');
+
+  /// Opens the nursery↔guardian conversation for [child] (staff side).
+  Future<void> openChat(ChildModel child) => openStaffChat(
+        child: child,
+        parentId: _parentIds[child.key] ?? child.parentId ?? '',
+        parentName: parentName(child.key),
+      );
 
   /// Live stream of every classroom's activities. Keeps [_activeClassroomIds]
   /// in sync so the health cards can flag classes with a running activity in
@@ -167,19 +214,50 @@ class ManagerChildrenController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     _riskReasons.clear();
-    // Phase 1: children, classrooms, and staff are independent — fetch together.
-    await Future.wait([_loadChildren(), _loadClassrooms(), _loadStaff()]);
-    // Phase 2: these all depend on phase 1's data but not on each other.
-    await Future.wait([
-      _loadEnrollments(),
-      _loadAttendance(),
-      _loadRiskSources(),
-      _loadOverdueFamilies(),
-      _loadWithdrawals(),
-    ]);
-    _buildRiskChildren();
-    _filter();
-    isLoading.value = false;
+    try {
+      // Phase 1: children, classrooms, staff and parents are independent.
+      await Future.wait(
+          [_loadChildren(), _loadClassrooms(), _loadStaff(), _loadParents()]);
+      // Phase 2: these all depend on phase 1's data but not on each other.
+      await Future.wait([
+        _loadEnrollments(),
+        _loadAttendance(),
+        _loadRiskSources(),
+        _loadOverdueFamilies(),
+        _loadWithdrawals(),
+      ]);
+      _buildRiskChildren();
+      // The roster (_branchChildKeys / names / images) is now fresh — fold in
+      // whatever the live attendance stream has already delivered.
+      _recomputePresence();
+      _filter();
+    } finally {
+      // Never leave the loader stuck if any step throws.
+      isLoading.value = false;
+    }
+  }
+
+  /// Maps each child to its primary guardian (name + id) so the chat entry
+  /// point on a directory tile can address the right parent.
+  Future<void> _loadParents() async {
+    final parentById = <String, String>{};
+    await _guardianSvc.getAll(callBack: (list) {
+      for (final p in list.whereType<ParentModel>()) {
+        parentById[p.uid] = p.name;
+      }
+    });
+    await _linkSvc.getAll(callBack: (list) {
+      _parentNames.clear();
+      _parentIds.clear();
+      for (final link in list.whereType<ParentChildModel>()) {
+        final name = parentById[link.parentId];
+        if (name == null) continue;
+        if (link.isPrimary || !_parentNames.containsKey(link.childId)) {
+          _parentNames[link.childId] = name;
+          _parentIds[link.childId] = link.parentId;
+        }
+      }
+    });
   }
 
   Future<void> _loadChildren() async {
@@ -198,6 +276,11 @@ class ManagerChildrenController extends GetxController {
         ..clear()
         ..addEntries(
             branch.where((c) => c.key != null).map((c) => MapEntry(c.key!, c.fullName)));
+      _childImages
+        ..clear()
+        ..addEntries(branch
+            .where((c) => c.key != null && c.hasImage)
+            .map((c) => MapEntry(c.key!, c.profileImage!)));
       _childClassroom
         ..clear()
         ..addEntries(branch
@@ -226,27 +309,32 @@ class ManagerChildrenController extends GetxController {
 
   /// Departures for the current month, read from the withdrawal log (children
   /// are hard-deleted on withdrawal, so we can't count them off the roster).
-  /// Counts log entries for this branch whose `withdrawnAt` falls in this month.
+  /// Keeps this branch's entries for this month (newest first) so the manager
+  /// can tap the "withdrawn" stat to see who left and why.
   Future<void> _loadWithdrawals() async {
     final now = DateTime.now();
-    int count = 0;
-    try {
-      final snap = await _db.ref(ApiConstants.withdrawals).get();
-      final root = snap.value;
-      if (root is Map) {
-        for (final entry in root.values) {
-          if (entry is! Map) continue;
-          if (entry['branchId']?.toString() != branchId) continue;
-          final ms = entry['withdrawnAt'];
-          if (ms is! int) continue;
-          final d = DateTime.fromMillisecondsSinceEpoch(ms);
-          if (d.year == now.year && d.month == now.month) count++;
-        }
-      }
-    } catch (_) {
-      // Log node may not exist yet (no withdrawals) — treat as zero.
-    }
-    leftThisMonth.value = count;
+    await _withdrawalSvc.getAll(
+      callBack: (list) {
+        final entries = list
+            .whereType<WithdrawalLogModel>()
+            .where((w) => branchId.isEmpty || w.branchId == branchId)
+            .where((w) {
+          final d = w.withdrawnDate;
+          return d != null && d.year == now.year && d.month == now.month;
+        }).toList()
+          ..sort((a, b) => (b.withdrawnAt ?? 0).compareTo(a.withdrawnAt ?? 0));
+        withdrawnThisMonth.assignAll(entries);
+        leftThisMonth.value = entries.length;
+      },
+    );
+  }
+
+  /// Opens the read-only list of this month's withdrawn children with reasons.
+  void openWithdrawnList() {
+    Get.bottomSheet(
+      WithdrawnChildrenSheet(entries: withdrawnThisMonth.toList()),
+      isScrollControlled: true,
+    );
   }
 
   Future<void> _loadClassrooms() async {
@@ -329,25 +417,46 @@ class ManagerChildrenController extends GetxController {
         totalCap > 0 ? ((totalEnrolled / totalCap) * 100).round() : 0;
   }
 
+  /// History-only load: the long-absence signal spans many days, so it still
+  /// reads the full attendance set once per refresh. Today's presence is no
+  /// longer computed here — it flows live through [_recomputePresence].
   Future<void> _loadAttendance() async {
     await _attendanceSvc.getAll(callBack: (list) {
+      // Scope by the branch roster (childId) rather than the record's stored
+      // branchId. A teacher check-in can land with an empty branchId (their
+      // staff record may lack one), so filtering on the record's branch would
+      // silently drop those present children. Roster membership is the
+      // authoritative branch scope and a child belongs to exactly one branch.
       final records = list
           .whereType<ChildAttendanceModel>()
-          .where((a) => a.branchId == branchId)
+          .where((a) => _branchChildKeys.contains(a.childId))
           .toList();
-
-      final today = records
-          .where((a) =>
-              a.date == _todayStr &&
-              (a.status == 'present' || a.status == 'late') &&
-              _branchChildKeys.contains(a.childId))
-          .toList();
-      final checkedOut = today.where((a) => a.checkOutTime != null).length;
-      presentNow.value = (today.length - checkedOut).clamp(0, today.length);
-
-      _buildPresence(today);
       _buildLongAbsence(records);
     });
+  }
+
+  /// Live presence stream — one write to childAttendance re-emits the whole
+  /// day, so the overview's present/inside/left figures update without a
+  /// refresh. Recompute is roster-dependent, so it also runs at the end of
+  /// [loadData] once the branch roster is known.
+  void _subscribePresence() {
+    _presenceSub?.cancel();
+    _presenceSub =
+        _statusSvc.watchAttendanceForDay(_nurseryId).listen((records) {
+      _todayAttendance = records;
+      _recomputePresence();
+    }, onError: (_) {});
+  }
+
+  void _recomputePresence() {
+    final today = _todayAttendance
+        .where((a) =>
+            _branchChildKeys.contains(a.childId) &&
+            (a.status == 'present' || a.status == 'late'))
+        .toList();
+    final checkedOut = today.where((a) => a.checkOutTime != null).length;
+    presentNow.value = (today.length - checkedOut).clamp(0, today.length);
+    _buildPresence(today);
   }
 
   Future<void> _loadRiskSources() async {
@@ -392,10 +501,9 @@ class ManagerChildrenController extends GetxController {
             .whereType<InvoiceModel>()
             .where((inv) => _branchChildKeys.contains(inv.childId))
             .where((inv) =>
-                inv.status == 'overdue' ||
-                (inv.status == 'pending' &&
-                    inv.dueDate != null &&
-                    inv.dueDate! < now))
+                inv.hasOutstanding &&
+                (inv.status == 'overdue' ||
+                    (inv.dueDate != null && inv.dueDate! < now)))
             .toList();
       }),
       _guardianSvc.getAll(callBack: (list) {
@@ -412,7 +520,7 @@ class ManagerChildrenController extends GetxController {
     }
 
     overdueFamilies.assignAll(byParent.entries.map((e) {
-      final total = e.value.fold<double>(0, (s, inv) => s + inv.totalAmount);
+      final total = e.value.fold<double>(0, (s, inv) => s + inv.remaining);
       return OverdueFamilyData(
         parentId: e.key,
         parentName: names[e.key] ?? 'manager_children_unknown_family'.tr,
@@ -433,6 +541,7 @@ class ManagerChildrenController extends GetxController {
         childId: a.childId,
         name: _childNames[a.childId] ?? 'manager_children_unknown_child'.tr,
         classroomName: classroomName(_childClassroom[a.childId]),
+        imageUrl: _childImages[a.childId],
         checkInMs: a.checkInTime,
         checkOutMs: a.checkOutTime,
       );

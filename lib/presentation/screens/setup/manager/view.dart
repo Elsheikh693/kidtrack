@@ -26,7 +26,7 @@ class _ManagerSetupViewState extends State<ManagerSetupView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8F7FF),
         body: SafeArea(

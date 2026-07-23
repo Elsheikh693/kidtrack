@@ -56,49 +56,49 @@ class ParentMedicalController extends GetxController {
 
   final String bloodType = 'A+';
 
-  final List<String> allergies = const [
-    'حساسية من البيض',
-    'حساسية من المكسرات',
+  final List<String> allergies = [
+    'parentlink25_allergy_eggs'.tr,
+    'parentlink25_allergy_nuts'.tr,
   ];
   final List<String> conditions = const [];
   final List<String> specialNotes = const [];
-  final List<String> medications = const [
-    'فيتامين د — قطرة يومياً',
-    'أوميجا 3 — كبسولة يومياً',
+  final List<String> medications = [
+    'parentlink25_med_vitd'.tr,
+    'parentlink25_med_omega3'.tr,
   ];
   final String? emergencyNotes = null;
 
-  final List<HealthHistoryEvent> healthHistory = const [
+  final List<HealthHistoryEvent> healthHistory = [
     HealthHistoryEvent(
-      title: 'حرارة مرتفعة (38.5°C)',
-      description: 'رُصدت حرارة مرتفعة أثناء وقت القيلولة، تم إبلاغ ولي الأمر فوراً',
+      title: 'parentlink25_health_temp_title'.tr,
+      description: 'parentlink25_health_temp_desc'.tr,
       dateTime: '10 يونيو 2026 — 11:30 ص',
       type: HealthEventType.temperature,
     ),
     HealthHistoryEvent(
-      title: 'إصابة بسيطة أثناء اللعب',
-      description: 'خدش خفيف في الركبة، تم تنظيفه ووضع ضماد بشكل مناسب',
+      title: 'parentlink25_health_injury_title'.tr,
+      description: 'parentlink25_health_injury_desc'.tr,
       dateTime: '5 مايو 2026 — 10:15 ص',
       type: HealthEventType.injury,
     ),
     HealthHistoryEvent(
-      title: 'إعطاء دواء',
-      description: 'أُعطيت جرعة فيتامين د اليومية حسب تعليمات ولي الأمر',
+      title: 'parentlink25_health_med_title'.tr,
+      description: 'parentlink25_health_med_desc'.tr,
       dateTime: '1 مايو 2026 — 9:00 ص',
       type: HealthEventType.medication,
     ),
     HealthHistoryEvent(
-      title: 'تم التواصل مع ولي الأمر',
-      description: 'تم الاتصال بالأم بسبب ظهور احمرار خفيف في الجلد',
+      title: 'parentlink25_health_contact_title'.tr,
+      description: 'parentlink25_health_contact_desc'.tr,
       dateTime: '15 أبريل 2026 — 2:45 م',
       type: HealthEventType.contact,
     ),
   ];
 
-  final DoctorNote? latestDoctorNote = const DoctorNote(
-    note: 'الطفل بصحة جيدة. يُنصح بالاستمرار في شرب الماء بانتظام وتناول الإفطار الصحي.',
+  final DoctorNote? latestDoctorNote = DoctorNote(
+    note: 'parentlink25_doctor_note_text'.tr,
     date: '1 يونيو 2026',
-    doctorName: 'د. سارة أحمد',
+    doctorName: 'parentlink25_doctor_name_sample'.tr,
   );
 
   bool get hasAlerts =>

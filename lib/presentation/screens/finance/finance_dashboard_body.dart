@@ -24,25 +24,31 @@ class FinanceDashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<FinanceDashboardController>(tag: tag);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator(color: _accent));
         }
-        return ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
-          children: [
-            _MonthBar(controller: controller),
-            SizedBox(height: 16.h),
-            _KpiTrio(summary: controller.summary.value),
-            SizedBox(height: 22.h),
-            _RevenueSplit(categories: controller.categories),
-            SizedBox(height: 22.h),
-            _RecentCollections(controller: controller, tag: tag),
-            SizedBox(height: 22.h),
-            _RecentExpenses(controller: controller, tag: tag),
-          ],
+        return RefreshIndicator(
+          color: _accent,
+          onRefresh: controller.reload,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
+            children: [
+              _MonthBar(controller: controller),
+              SizedBox(height: 16.h),
+              _KpiTrio(summary: controller.summary.value),
+              SizedBox(height: 22.h),
+              _RevenueSplit(categories: controller.categories),
+              SizedBox(height: 22.h),
+              _RecentCollections(controller: controller, tag: tag),
+              SizedBox(height: 22.h),
+              _RecentExpenses(controller: controller, tag: tag),
+            ],
+          ),
         );
       }),
     );
@@ -67,11 +73,11 @@ class _MonthBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // First child sits on the right → "next/newer" arrow.
+          // RTL: first child sits on the right → "previous/older" arrow (points
+          // right, like the back button); the left arrow steps forward.
           _StepBtn(
-            icon: Icons.chevron_left_rounded,
-            enabled: controller.canGoForward,
-            onTap: controller.nextMonth,
+            icon: Icons.chevron_right_rounded,
+            onTap: controller.previousMonth,
           ),
           Expanded(
             child: Text(
@@ -85,8 +91,9 @@ class _MonthBar extends StatelessWidget {
             ),
           ),
           _StepBtn(
-            icon: Icons.chevron_right_rounded,
-            onTap: controller.previousMonth,
+            icon: Icons.chevron_left_rounded,
+            enabled: controller.canGoForward,
+            onTap: controller.nextMonth,
           ),
         ],
       ),
@@ -408,7 +415,7 @@ class CollectionTile extends StatelessWidget {
             ),
             child: Text(
               item.childName.trim().isEmpty
-                  ? '؟'
+                  ? 'finance15_unknown_initial'.tr
                   : item.childName.trim().characters.first,
               style: context.typography.mdBold.copyWith(
                 color: _revenue,

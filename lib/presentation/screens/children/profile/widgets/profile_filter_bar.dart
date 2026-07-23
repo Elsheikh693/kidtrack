@@ -29,45 +29,56 @@ class ProfileFilterBar extends StatelessWidget {
         () => Row(
           children: [
             _Segment(
-              label: 'أسبوع',
-              selected: controller.filterByWeek.value,
-              onTap: () => controller.setWeekMode(true),
+              label: 'childrenpr12_period_month'.tr,
+              selected: controller.period.value == ProfilePeriod.month,
+              onTap: () => controller.setPeriod(ProfilePeriod.month),
             ),
             const SizedBox(width: 4),
             _Segment(
-              label: 'يوم',
-              selected: !controller.filterByWeek.value,
-              onTap: () => controller.setWeekMode(false),
+              label: 'childrenpr12_period_week'.tr,
+              selected: controller.period.value == ProfilePeriod.week,
+              onTap: () => controller.setPeriod(ProfilePeriod.week),
             ),
-            const Spacer(),
+            const SizedBox(width: 4),
+            _Segment(
+              label: 'childrenpr12_period_day'.tr,
+              selected: controller.period.value == ProfilePeriod.day,
+              onTap: () => controller.setPeriod(ProfilePeriod.day),
+            ),
+            const SizedBox(width: 6),
             _NavButton(
               icon: Icons.chevron_left_rounded,
               enabled: true,
               onTap: controller.stepBack,
             ),
-            GestureDetector(
-              onTap: () => controller.pickDate(context),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                constraints: const BoxConstraints(minWidth: 96),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 14,
-                      color: _accent,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      controller.rangeLabel,
-                      style: context.typography.xsMedium.copyWith(
-                        color: AppColors.textDefault,
+            Expanded(
+              child: GestureDetector(
+                onTap: () => controller.pickDate(context),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 14,
+                        color: _accent,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          controller.rangeLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.typography.xsMedium.copyWith(
+                            color: AppColors.textDefault,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -100,7 +111,7 @@ class _Segment extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: selected
               ? ProfileFilterBar._accent

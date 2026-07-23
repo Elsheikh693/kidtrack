@@ -19,7 +19,7 @@ class _SupportRequestViewState extends State<SupportRequestView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(

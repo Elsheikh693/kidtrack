@@ -13,12 +13,14 @@ class ChildStateTemplateParentService {
   Future<void> add({
     required ChildStateTemplateModel item,
     required Function(ResponseStatus) callBack,
+    bool silent = false,
   }) async {
     await _service.addData(
       item: item,
       toJson: (m) => m.toJson(),
       id: item.key ?? '',
       voidCallBack: callBack,
+      silent: silent,
     );
   }
 

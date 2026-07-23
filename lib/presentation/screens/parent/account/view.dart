@@ -23,73 +23,98 @@ class _ParentAccountViewState extends State<ParentAccountView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
-          title: Text(
-            'parent_account_title'.tr,
-            style: context.typography.lgBold.copyWith(
-              color: AppColors.textDefault,
-            ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: controller.navigateToNotifications,
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.textDefault,
-              ),
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(
-              height: 1,
-              color: AppColors.borderNeutralPrimary.withValues(alpha: 0.3),
-            ),
-          ),
+          scrolledUnderElevation: 0,
+          toolbarHeight: 76,
+          titleSpacing: 16,
+          title: AccountHeader(controller: controller),
         ),
         body: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.only(top: 16, bottom: 16),
           physics: const BouncingScrollPhysics(),
           children: [
-            AccountHeader(controller: controller),
             AccountChildCard(),
-            AccountMenuSection(
-              titleKey: 'parent_account_finance_section',
-              items: [
-                AccountMenuItem(
-                  labelKey: 'parent_account_finance',
-                  icon: Icons.account_balance_wallet_outlined,
-                  iconColor: const Color(0xFFD97706),
-                  onTap: controller.navigateToFinance,
-                ),
-              ],
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: RoleSwitchCard(),
             ),
             AccountMenuSection(
               titleKey: 'parent_account_support_section',
               items: [
-                AccountMenuItem(
-                  labelKey: 'chat_with_nursery',
-                  icon: Icons.forum_outlined,
-                  iconColor: const Color(0xFF6366F1),
-                  onTap: controller.navigateToChat,
-                  badge: Get.find<ActiveChildService>().chatUnread,
-                ),
+                // "تواصل مع الإدارة" removed — the chat is already reachable
+                // from the chat icon in the app bar.
                 AccountMenuItem(
                   labelKey: 'parent_account_technical_support',
                   icon: Icons.support_agent_outlined,
                   iconColor: AppColors.blueForeground,
                   onTap: controller.contactSupport,
                 ),
+                AccountMenuItem(
+                  labelKey: 'tutorial_menu_entry',
+                  icon: Icons.ondemand_video_outlined,
+                  iconColor: const Color(0xFFDC2626),
+                  onTap: controller.navigateToTutorial,
+                ),
+              ],
+            ),
+            AccountMenuSection(
+              titleKey: 'parent_account_kidtrack_section',
+              items: [
+                AccountMenuItem(
+                  labelKey: 'settings_about_us',
+                  icon: Icons.info_outline_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: controller.navigateToAboutUs,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_review',
+                  icon: Icons.favorite_rounded,
+                  iconColor: const Color(0xFFEC4899),
+                  onTap: controller.navigateToAppReview,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_rate_store',
+                  icon: Icons.star_rounded,
+                  iconColor: const Color(0xFFF59E0B),
+                  onTap: controller.rateOnStore,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_language',
+                  icon: Icons.language_outlined,
+                  iconColor: AppColors.primary,
+                  onTap: showLanguageSheet,
+                ),
               ],
             ),
             AccountMenuSection(
               titleKey: 'parent_account_title',
               items: [
+                AccountMenuItem(
+                  labelKey: 'parent_account_edit_profile',
+                  icon: Icons.person_outline_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: controller.editProfile,
+                ),
+                AccountMenuItem(
+                  labelKey: 'parent_account_pickup_section',
+                  icon: Icons.how_to_reg_outlined,
+                  iconColor: const Color(0xFFF59E0B),
+                  onTap: controller.navigateToPickup,
+                ),
+                // "الإشعارات" removed — the notifications inbox is already
+                // reachable from the bell in the app bar. Only the notification
+                // *settings* remain here.
+                AccountMenuItem(
+                  labelKey: 'notif_prefs_menu_item',
+                  icon: Icons.notifications_active_outlined,
+                  iconColor: AppColors.primary,
+                  onTap: controller.navigateToNotificationPrefs,
+                ),
                 AccountMenuItem(
                   labelKey: 'parent_account_logout',
                   icon: Icons.logout_rounded,

@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import '../../../../Global/services/child_status_service.dart';
 
 /// A pending pickup request resolved with display names + a formatted time.
 class PendingPickupData {
@@ -58,7 +59,6 @@ class ReceptionistDashboardController extends GetxController {
   final activeEvents = <NurseryEventModel>[].obs;
   final isLoading = true.obs;
 
-  late final ChildAttendanceParentService _attendanceSvc;
   late final ChildParentService _childSvc;
   late final ClassroomParentService _classroomSvc;
   late final EnrollmentParentService _enrollmentSvc;
@@ -70,6 +70,21 @@ class ReceptionistDashboardController extends GetxController {
   final _eventSvc = EventService();
   StreamSubscription<List<NurseryEventModel>>? _eventsSub;
 
+  // Live "present today" — the dated childAttendance node is the single source
+  // of truth (same stream the teacher home reads), so a check-in / check-out
+  // reflects on the dashboard instantly instead of only on pull-to-refresh.
+  final _statusSvc = ChildStatusService();
+  StreamSubscription<List<ChildAttendanceModel>>? _attendanceSub;
+  // Latest attendance snapshot, cached so presence can be recomputed once the
+  // in-shift roster (_childNames) finishes loading.
+  List<ChildAttendanceModel> _lastAttendance = const [];
+
+  // Live nursery↔parent conversations, for the unread badge on the home chat
+  // icon: sum of unreadManager across this branch's children.
+  final _chatService = ChatService();
+  final _convos = <String, ChatConversationModel>{}.obs;
+  StreamSubscription<List<ChatConversationModel>>? _convoSub;
+
   // Resolved-name lookups, filled as data loads.
   final _childNames = <String, String>{};
   final _parentNames = <String, String>{};
@@ -78,6 +93,7 @@ class ReceptionistDashboardController extends GetxController {
   final _session = SessionService();
 
   String get branchId => _session.branchId ?? '';
+  String get _nurseryId => _session.nurseryId ?? '';
 
   static String get _today {
     final now = DateTime.now();
@@ -87,7 +103,6 @@ class ReceptionistDashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _attendanceSvc = Get.find<ChildAttendanceParentService>();
     _childSvc = Get.find<ChildParentService>();
     _classroomSvc = Get.find<ClassroomParentService>();
     _enrollmentSvc = Get.find<EnrollmentParentService>();
@@ -96,13 +111,34 @@ class ReceptionistDashboardController extends GetxController {
     _guardianSvc = Get.find<GuardianParentService>();
     _waitingListSvc = Get.find<WaitingListParentService>();
     _subscribeEvents();
+    _subscribeAttendance();
+    _convoSub = _chatService.watchConversations().listen((list) {
+      _convos.value = {for (final c in list) c.childId: c};
+    }, onError: (_) {});
     loadDashboard();
   }
 
   @override
   void onClose() {
     _eventsSub?.cancel();
+    _attendanceSub?.cancel();
+    _convoSub?.cancel();
     super.onClose();
+  }
+
+  /// Total unread guardian messages across this branch's children — drives the
+  /// badge on the home chat icon (matches what the chat inbox shows).
+  int get chatUnread {
+    var total = 0;
+    // Touch the reactive map first so a surrounding Obx always registers it as a
+    // dependency — even before any child names have loaded (empty loop below),
+    // otherwise GetX throws "improper use of GetX" for reading no observable.
+    if (_convos.isNotEmpty) {
+      for (final key in _childNames.keys) {
+        total += _convos[key]?.unreadManager ?? 0;
+      }
+    }
+    return total;
   }
 
   void _subscribeEvents() {
@@ -130,33 +166,47 @@ class ReceptionistDashboardController extends GetxController {
 
   Future<void> loadDashboard() async {
     isLoading.value = true;
-    await _loadAttendanceStats();
     await _loadChildrenAndClassrooms();
     await _loadPickupAndInvoice();
     await _loadParentsAndWaiting();
     _buildPendingPickups();
+    // Children scope is now loaded — recompute the chat badge against it.
+    _convos.refresh();
     isLoading.value = false;
   }
 
-  Future<void> _loadAttendanceStats() async {
-    await _attendanceSvc.getAll(callBack: (list) {
-      final records = list
-          .whereType<ChildAttendanceModel>()
-          .where((a) => a.branchId == branchId && a.date == _today)
-          .toList();
+  /// Live presence: recomputes the today counters + activity feed on every
+  /// write to the childAttendance node, so the dashboard never shows stale
+  /// presence and no manual refresh is needed.
+  void _subscribeAttendance() {
+    _attendanceSub?.cancel();
+    _attendanceSub =
+        _statusSvc.watchAttendanceForDay(_nurseryId).listen(_applyAttendance,
+            onError: (_) {});
+  }
 
-      final present =
-          records.where((a) => a.status == 'present' || a.status == 'late').length;
-      final checkedOut = records.where((a) => a.checkOutTime != null).length;
+  void _applyAttendance(List<ChildAttendanceModel> list) {
+    _lastAttendance = list;
+    final records = list
+        .where((a) =>
+            a.branchId == branchId &&
+            a.date == _today &&
+            _childNames.containsKey(a.childId))
+        .toList();
 
-      presentToday.value = present;
-      checkedOutToday.value = checkedOut;
-      insideNow.value = (present - checkedOut).clamp(0, present);
+    final present =
+        records.where((a) => a.status == 'present' || a.status == 'late').length;
+    final checkedOut = records.where((a) => a.checkOutTime != null).length;
 
-      final sorted = records.where((a) => a.checkInTime != null).toList()
-        ..sort((a, b) => (b.checkInTime ?? 0).compareTo(a.checkInTime ?? 0));
-      activityItems.value = sorted.take(15).toList();
-    });
+    presentToday.value = present;
+    checkedOutToday.value = checkedOut;
+    insideNow.value = (present - checkedOut).clamp(0, present);
+    absentToday.value =
+        (totalStudents.value - present).clamp(0, totalStudents.value);
+
+    final sorted = records.where((a) => a.checkInTime != null).toList()
+      ..sort((a, b) => (b.checkInTime ?? 0).compareTo(a.checkInTime ?? 0));
+    activityItems.value = sorted.take(15).toList();
   }
 
   Future<void> _loadChildrenAndClassrooms() async {
@@ -164,9 +214,15 @@ class ReceptionistDashboardController extends GetxController {
     late List<EnrollmentModel> enrolls;
 
     await _childSvc.getAll(callBack: (list) {
+      // Scope to the receptionist's shift so the home stats match the Children
+      // tab: a shift-bound reception (e.g. evening only) manages just their
+      // shift's children plus the shared 'between' kids, not the whole nursery.
       final branch = list
           .whereType<ChildModel>()
-          .where((c) => c.branchId == branchId && c.status == 'active')
+          .where((c) =>
+              c.branchId == branchId &&
+              c.status == 'active' &&
+              _session.seesShift(c.shift))
           .toList();
       _childNames
         ..clear()
@@ -178,6 +234,9 @@ class ReceptionistDashboardController extends GetxController {
       unassignedStudents.value =
           branch.where((c) => c.classroomId == null || c.classroomId!.isEmpty).length;
     });
+    // Children scope is now known — recompute presence over the in-shift roster
+    // (attendance may have streamed in before the roster was ready).
+    _applyAttendance(_lastAttendance);
 
     await _classroomSvc.getAll(callBack: (list) {
       rooms = list
@@ -224,10 +283,9 @@ class ReceptionistDashboardController extends GetxController {
       overdueInvoices.value = list
           .whereType<InvoiceModel>()
           .where((inv) =>
-              inv.status == 'overdue' ||
-              (inv.status == 'pending' &&
-                  inv.dueDate != null &&
-                  inv.dueDate! < now))
+              inv.hasOutstanding &&
+              (inv.status == 'overdue' ||
+                  (inv.dueDate != null && inv.dueDate! < now)))
           .length;
     });
   }

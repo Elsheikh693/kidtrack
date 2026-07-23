@@ -29,7 +29,7 @@ class LbChildSummary extends GetView<LinkBookController> {
         _SummaryStatsRow(summary: summary),
         if (summary.participated.isNotEmpty)
           _Section(
-            title: 'مسار الأنشطة',
+            title: 'teacherlin37_activity_track'.tr,
             icon: Icons.timeline_rounded,
             color: _kBlue,
             child: Column(
@@ -40,7 +40,7 @@ class LbChildSummary extends GetView<LinkBookController> {
             ),
           ),
         _Section(
-          title: 'معدل المشاركة',
+          title: 'teacherlin37_engagement_rate'.tr,
           icon: Icons.donut_large_rounded,
           color: _kBlue,
           child: _EngagementMeter(
@@ -51,7 +51,7 @@ class LbChildSummary extends GetView<LinkBookController> {
         ),
         if (summary.allPhotoUrls.isNotEmpty)
           _Section(
-            title: 'لحظات اليوم',
+            title: 'teacherlin37_day_moments'.tr,
             icon: Icons.photo_library_rounded,
             color: _kPink,
             child: _PhotosGallery(urls: summary.allPhotoUrls),
@@ -241,7 +241,7 @@ class _HeroCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              '⭐ مثالي',
+                              'teacherlin37_ideal_badge'.tr,
                               style: context.typography.xsMedium.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -285,7 +285,7 @@ class _SummaryStatsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _MiniStatCard(
-            label: 'الأنشطة',
+            label: 'teacherlin37_stat_activities'.tr,
             value: '${summary.participated.length}',
             icon: Icons.play_circle_rounded,
             color: _kGreen,
@@ -294,7 +294,7 @@ class _SummaryStatsRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _MiniStatCard(
-            label: 'التقييم',
+            label: 'teacherlin37_stat_rating'.tr,
             value: summary.avgRatingLabel,
             icon: Icons.star_rounded,
             color: _kAmber,
@@ -303,7 +303,7 @@ class _SummaryStatsRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _MiniStatCard(
-            label: 'المشاركة',
+            label: 'teacherlin37_stat_engagement'.tr,
             value: '${summary.engagementScore.round()}%',
             icon: Icons.donut_large_rounded,
             color: _kBlue,
@@ -313,7 +313,7 @@ class _SummaryStatsRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: _MiniStatCard(
-              label: 'الأفضل',
+              label: 'teacherlin37_stat_best'.tr,
               value: summary.bestActivityTitle!,
               icon: Icons.emoji_events_rounded,
               color: _kPurple,
@@ -528,10 +528,10 @@ class _ActivityTimelineCard extends StatelessWidget {
 
   static String _evalLabel(EvalLevel? e) {
     switch (e) {
-      case EvalLevel.excellent:      return 'ممتاز';
-      case EvalLevel.needsFollow:    return 'جيد';
-      case EvalLevel.needsAttention: return 'يحتاج دعم';
-      default:                       return 'غير مقيّم';
+      case EvalLevel.excellent:      return 'teacherlin37_eval_excellent'.tr;
+      case EvalLevel.needsFollow:    return 'teacherlin37_eval_good'.tr;
+      case EvalLevel.needsAttention: return 'teacherlin37_eval_needs_support'.tr;
+      default:                       return 'teacherlin37_eval_not_rated'.tr;
     }
   }
 }
@@ -575,14 +575,17 @@ class _EngagementMeter extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$participated من أصل $total ${total == 1 ? "نشاط" : "أنشطة"}',
+                      'teacherlin37_participation_of_total'.trParams({
+                        'count': '$participated',
+                        'total': '$total',
+                      }),
                       style: context.typography.displaySmBold.copyWith(
                         color: const Color(0xFF111827),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${score.round()}% نسبة المشاركة',
+                      '${score.round()}% ${'teacherlin37_participation_rate'.tr}',
                       style: context.typography.xsRegular.copyWith(
                         color: Colors.grey.shade500,
                       ),
@@ -624,7 +627,11 @@ class _EngagementMeter extends StatelessWidget {
   static Color  _engagementColor(double s) =>
       s >= 80 ? _kGreen : s >= 50 ? _kAmber : _kRed;
   static String _engagementLabel(double s) =>
-      s >= 80 ? 'ممتاز' : s >= 50 ? 'جيد' : 'يحتاج متابعة';
+      s >= 80
+          ? 'teacherlin37_eval_excellent'.tr
+          : s >= 50
+              ? 'teacherlin37_eval_good'.tr
+              : 'teacherlin37_needs_followup'.tr;
 }
 
 // ─── Photos gallery ───────────────────────────────────────────────────────────

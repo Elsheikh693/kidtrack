@@ -24,19 +24,19 @@ class EvalSectionHeader extends StatelessWidget {
         Row(
           children: [
             Text(
-              'تقييم الطلاب',
+              'teacheract32_eval_students'.tr,
               style: context.typography.mdBold.copyWith(color: const Color(0xFF1F2937)),
             ),
             const Spacer(),
             if (unevaluated > 0)
               _Badge(
-                label: '$unevaluated لم يُقيَّم',
+                label: '$unevaluated ${'teacheract32_not_evaluated_suffix'.tr}',
                 color: const Color(0xFFD97706),
                 bg: Colors.orange.withValues(alpha: 0.1),
               )
             else if (total > 0)
               _Badge(
-                label: 'اكتمل التقييم',
+                label: 'teacheract32_eval_done'.tr,
                 color: _kGreen,
                 bg: _kGreen.withValues(alpha: 0.1),
                 icon: Icons.check_circle_rounded,

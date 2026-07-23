@@ -42,9 +42,10 @@ class StateCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
-            child: Text(
-              item.icon,
-              style: const TextStyle(fontSize: 22),
+            child: Icon(
+              ChildStateIcons.iconFor(item.icon),
+              size: 22,
+              color: _accent,
             ),
           ),
         ),

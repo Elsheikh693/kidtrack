@@ -11,7 +11,7 @@ class ActivitiesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfileSectionCard(
-      title: 'الأنشطة اللي حضرها',
+      title: 'childrenpr12_activities_attended'.tr,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
         child: Obx(() {
@@ -64,7 +64,7 @@ class _Empty extends StatelessWidget {
           Icon(Icons.spa_rounded, size: 28, color: Colors.grey.shade400),
           const SizedBox(height: 10),
           Text(
-            'لا توجد أنشطة في هذه الفترة',
+            'childrenpr12_activities_empty'.tr,
             style: context.typography.xsMedium
                 .copyWith(color: AppColors.textSecondaryParagraph),
           ),
@@ -98,7 +98,7 @@ class _ActivityCard extends StatelessWidget {
         (activity.childReasons[childId] ?? const []).where((r) => r.trim().isNotEmpty).toList();
     final note = activity.notes[childId]?.trim();
     final groupNote = activity.groupNote?.trim();
-    final photos = activity.photos.values.where((u) => u.isNotEmpty).toList();
+    final photos = activity.approvedUrlsForChild(childId);
 
     return Container(
       decoration: BoxDecoration(
@@ -175,14 +175,14 @@ class _ActivityCard extends StatelessWidget {
                       if (note != null && note.isNotEmpty)
                         _NoteRow(
                           icon: Icons.chat_bubble_rounded,
-                          title: 'تعليق المعلمة',
+                          title: 'childrenpr12_teacher_comment'.tr,
                           text: note,
                           color: const Color(0xFF7C3AED),
                         ),
                       if (groupNote != null && groupNote.isNotEmpty)
                         _NoteRow(
                           icon: Icons.campaign_rounded,
-                          title: 'ملاحظة عامة',
+                          title: 'childrenpr12_group_note'.tr,
                           text: groupNote,
                           color: const Color(0xFFD97706),
                         ),
@@ -336,7 +336,7 @@ class _HomeworkRow extends StatelessWidget {
     const accent = Color(0xFF8E44AD);
     final title = item.title.trim().isNotEmpty
         ? item.title.trim()
-        : (item.subjectName ?? 'واجب');
+        : (item.subjectName ?? 'childrenpr12_homework_fallback'.tr);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(

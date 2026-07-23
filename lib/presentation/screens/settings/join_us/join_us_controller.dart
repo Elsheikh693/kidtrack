@@ -10,18 +10,8 @@ class JoinUsController extends GetxController {
     _launch(Uri.parse('tel:$contactPhone'));
   }
 
-  void whatsapp() {
-    final text = Uri.encodeComponent('join_us_wa_message'.tr);
-    _launch(Uri.parse('https://wa.me/${_whatsappDigits(contactPhone)}?text=$text'));
-  }
-
-  /// wa.me needs an international number: drop the leading 0 and prefix
-  /// Egypt's country code (20). e.g. 01551061194 -> 201551061194
-  String _whatsappDigits(String raw) {
-    var d = raw.replaceAll(RegExp(r'[^0-9]'), '');
-    if (d.startsWith('0')) d = '20${d.substring(1)}';
-    return d;
-  }
+  void whatsapp() =>
+      MakeCall.openWhatsApp(contactPhone, message: 'join_us_wa_message'.tr);
 
   Future<void> _launch(Uri uri) async {
     if (await canLaunchUrl(uri)) {

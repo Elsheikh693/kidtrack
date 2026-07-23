@@ -1,6 +1,8 @@
 import '../../../../index/index_main.dart';
 import 'widgets/profile_shimmer.dart';
+import 'widgets/child_manage_section.dart';
 import 'widgets/withdraw_section.dart';
+import 'widgets/delete_child_section.dart';
 
 class ChildProfileView extends StatefulWidget {
   const ChildProfileView({super.key});
@@ -24,7 +26,7 @@ class _ChildProfileViewState extends State<ChildProfileView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -54,9 +56,14 @@ class _ChildProfileViewState extends State<ChildProfileView> {
               ParentsSection(controller: controller),
               ProfileFilterBar(controller: controller),
               AttendanceSection(controller: controller),
-              ActivitiesSection(controller: controller),
-              ChildProfileTeacherNotesSection(controller: controller),
+              // Pedagogical feed — hidden for reception, shown to everyone else.
+              if (controller.showsLearningFeed) ...[
+                ActivitiesSection(controller: controller),
+                ChildProfileTeacherNotesSection(controller: controller),
+              ],
+              ChildManageSection(controller: controller),
               WithdrawSection(controller: controller),
+              DeleteChildSection(controller: controller),
               const SizedBox(height: 32),
             ],
           );

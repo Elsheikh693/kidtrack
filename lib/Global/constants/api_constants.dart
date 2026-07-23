@@ -62,13 +62,39 @@ class ApiConstants {
 
   static String get assessments => '$_n/assessments';
 
+  // ─── Assessment Engine (Template → Run → ChildAssessment) ─────────────────
+  /// Nursery-wide reusable assessment plans (NOT branch-scoped): quiz /
+  /// observation / evaluation templates authored once, run anywhere.
+  static String get assessmentTemplates => '$_n/assessmentTemplates';
+
+  /// A concrete execution of a template on a branch + classes over a date
+  /// window (holds a full snapshot of the template). Branch-scoped.
+  static String get assessmentRuns => '$_n/assessmentRuns';
+
+  /// One child's participation in a run, keyed `{runId}_{childId}`. Carries the
+  /// per-child workflow + attempts. Branch-scoped.
+  static String get childAssessments => '$_n/childAssessments';
+
   static String get incidents => '$_n/incidents';
 
   static String get notes => '$_n/notes';
 
+  /// Guardian-authored notes on a session/activity their child attended (the
+  /// reverse of teacher→parent [notes]). Keyed `gn_{activityId}_{childId}`.
+  static String get guardianNotes => '$_n/guardianNotes';
+
+  /// Class-level written exams set by a teacher/manager, keyed by push id.
+  static String get exams => '$_n/exams';
+
+  /// Per-child written-exam outcomes, keyed `er_{examId}_{childId}`.
+  static String get examResults => '$_n/examResults';
+
   static String get lessonPlans => '$_n/lessonPlans';
 
   static String get classroomPosts => '$_n/classroomPosts';
+
+  /// Manager-picked "Star of the Week" records, keyed `{branchId}__{weekKey}`.
+  static String get starOfWeek => '$_n/starOfWeek';
 
   static String get announcements => '$_n/announcements';
 
@@ -81,6 +107,11 @@ class ApiConstants {
   static String get payments => '$_n/payments';
 
   static String get paymentCategories => '$_n/paymentCategories';
+
+  /// The nursery's own collection accounts (InstaPay / e-wallet) that guardians
+  /// transfer tuition TO. A nursery-scoped LIST, edited by the owner/manager and
+  /// read by guardians on the invoice-payment sheet.
+  static String get paymentAccounts => '$_n/paymentAccounts';
 
   static String get expenses => '$_n/expenses';
 
@@ -144,6 +175,10 @@ class ApiConstants {
 
   static String get childStateTemplates => '$_n/childStateTemplates';
 
+  static String get evalLevelTemplates => '$_n/evalLevelTemplates';
+
+  static String get shifts => '$_n/shifts';
+
   static String get nurseryContacts => '$_n/nurseryContacts';
 
   static String get onlineApplications => '$_n/onlineApplications';
@@ -165,6 +200,12 @@ class ApiConstants {
   // ─── Global Endpoints ─────────────────────────────────────────────────────
   static const String users = 'users';
   static const String superAdmins = 'superAdmins';
+
+  /// Global root for role-agnostic account-activation codes, keyed BY the code
+  /// itself: `activationCodes/{code}`. Global (not nursery-scoped) because it is
+  /// resolved BEFORE login — before the nursery/session is known.
+  static const String activationCodes = 'activationCodes';
+
   static const String auditLogs = 'auditLogs';
   static const String supportTickets = 'supportTickets';
 
@@ -181,6 +222,16 @@ class ApiConstants {
   /// Discovery city filter). NOT nursery-scoped.
   static const String cities = 'cities';
 
+  // ─── KidTrack app-rating campaigns (SuperAdmin → nursery survey) ───────────
+  /// Global registry of reusable app-rating campaigns, keyed by campaignId:
+  /// `kidtrackFeedbackCampaigns/{campaignId}`. NOT nursery-scoped.
+  static const String kidtrackFeedbackCampaigns = 'kidtrackFeedbackCampaigns';
+
+  /// Parent responses to an app-rating campaign, nursery-first for per-nursery
+  /// history: `platformFeedback/{nurseryId}/{campaignId}/{parentId}`.
+  static String platformFeedbackFor(String nurseryId, String campaignId) =>
+      'platformFeedback/$nurseryId/$campaignId';
+
   // ─── Platform billing (SuperAdmin → nursery subscription) ──────────────────
   /// Global root. Monthly subscription bills the platform charges each nursery,
   /// keyed by nursery then month: `platformBilling/{nurseryId}/{YYYYMM}`.
@@ -189,10 +240,29 @@ class ApiConstants {
   static String platformBillingFor(String nurseryId) =>
       'platformBilling/$nurseryId';
 
+  /// Global single record. The platform's own collection accounts (InstaPay
+  /// number / wallet number / InstaPay link) that nurseries pay their monthly
+  /// subscription TO. Edited by the SuperAdmin, read by owners/managers on the
+  /// "My subscription" screen.
+  static const String platformPaymentInfo = 'platformPaymentInfo';
+
+  /// Global list. In-app tutorial videos, uploaded & role-targeted by the
+  /// SuperAdmin, streamed by every role on the "Learn the App" screen.
+  static const String tutorialVideos = 'tutorialVideos';
+
+  /// Global list. Marketing screenshots for the public website "شوف كل تطبيق من
+  /// جوّه" albums. Uploaded & ordered per role by the SuperAdmin, read
+  /// anonymously by `public/index.html` via the RTDB REST endpoint.
+  static const String showcaseShots = 'showcaseShots';
+
   /// A specific nursery's children subtree, addressed by explicit id (used by
   /// SuperAdmin billing to recount active children per branch, outside session
   /// scope).
   static String childrenFor(String nurseryId) => 'platform/$nurseryId/children';
+
+  /// A specific nursery's parents subtree, addressed by explicit id (used by
+  /// SuperAdmin feedback reminders / response-rate, outside session scope).
+  static String parentsFor(String nurseryId) => 'platform/$nurseryId/parents';
 
   static String notifications(String userId) => 'notifications/$userId';
 

@@ -19,7 +19,7 @@ class _StaffListViewState extends State<StaffListView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
@@ -34,6 +34,17 @@ class _StaffListViewState extends State<StaffListView> {
             ),
           ),
           iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+          actions: [
+            Obx(
+              () => controller.staffList.isEmpty
+                  ? const SizedBox.shrink()
+                  : IconButton(
+                      onPressed: controller.printAllCards,
+                      tooltip: 'staff_print_cards'.tr,
+                      icon: const Icon(Icons.print_outlined),
+                    ),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: controller.openAdd,
@@ -60,10 +71,14 @@ class _StaffListViewState extends State<StaffListView> {
                 final staff = controller.staffList[i];
                 return StaffCard(
                   staff: staff,
-                  branchName: controller.branchName(staff.branchId),
+                  shiftLabels: controller.shiftLabelsFor(staff),
                   onEdit: () => controller.openEdit(staff),
                   onToggleActive: () => controller.toggleActive(staff),
                   onPermissions: () => controller.openPermissions(staff),
+                  onGenerateCode: () => controller.generateActivationCode(staff),
+                  onSendWhatsApp: () => controller.sendActivationWhatsApp(staff),
+                  onDelete: () => showStaffDeleteSheet(controller, staff),
+                  canDelete: controller.canDelete(staff),
                 );
               },
             ),

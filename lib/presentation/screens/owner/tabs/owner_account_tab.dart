@@ -28,6 +28,12 @@ class OwnerAccountTab extends StatelessWidget {
         color: const Color(0xFF0891B2),
         route: childStatesView,
       ),
+      DashboardItem(
+        labelKey: 'eval_levels_menu_item',
+        icon: Icons.star_rounded,
+        color: const Color(0xFF16A34A),
+        route: evalLevelsView,
+      ),
     ],
   );
 
@@ -39,7 +45,7 @@ class OwnerAccountTab extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       slivers: [
         KidTrackCollapsingHeader(
-          title: 'الحساب',
+          title: 'ownerchild19_account_title'.tr,
           icon: Icons.manage_accounts_rounded,
           accentColor: const Color(0xFF7C3AED),
           subtitle: session.currentUser?.displayName,
@@ -49,6 +55,10 @@ class OwnerAccountTab extends StatelessWidget {
           sliver: SliverToBoxAdapter(
             child: _OwnerProfileCard(session: session),
           ),
+        ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -174,6 +184,12 @@ class _SettingsCard extends StatelessWidget {
                 color: AppColors.textSecondaryParagraph,
               ),
             ),
+          ),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            color: AppColors.primary,
+            labelKey: 'settings_language',
+            onTap: showLanguageSheet,
           ),
           _SettingsTile(
             icon: Icons.contact_phone_outlined,

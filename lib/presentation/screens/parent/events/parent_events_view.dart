@@ -1,5 +1,6 @@
 import '../../../../index/index_main.dart';
 import '../../../../Data/models/nursery_event/nursery_event_model.dart';
+import '../../manager/media_approval/widgets/full_photo_view.dart';
 import 'parent_events_controller.dart';
 
 class ParentEventsView extends StatefulWidget {
@@ -21,7 +22,7 @@ class _ParentEventsViewState extends State<ParentEventsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'parent_events_title'.tr),
@@ -29,7 +30,9 @@ class _ParentEventsViewState extends State<ParentEventsView> {
           if (controller.isLoading.value) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (controller.upcomingEvents.isEmpty) {
+          final upcoming = controller.upcomingEvents;
+          final albums = controller.photoAlbums;
+          if (upcoming.isEmpty && albums.isEmpty) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -44,13 +47,28 @@ class _ParentEventsViewState extends State<ParentEventsView> {
               ),
             );
           }
-          return ListView.builder(
+          return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            itemCount: controller.upcomingEvents.length,
-            itemBuilder: (_, i) => _ParentEventCard(
-              event: controller.upcomingEvents[i],
-              controller: controller,
-            ),
+            children: [
+              ...upcoming.map((e) => _ParentEventCard(
+                    event: e,
+                    controller: controller,
+                  )),
+              if (albums.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+                  child: Text(
+                    'parent_event_albums_title'.tr,
+                    style: context.typography.smSemiBold
+                        .copyWith(color: AppColors.textSecondaryParagraph),
+                  ),
+                ),
+                ...albums.map((e) => _ParentEventAlbumCard(
+                      event: e,
+                      controller: controller,
+                    )),
+              ],
+            ],
           );
         }),
       ),
@@ -296,7 +314,7 @@ class _EventDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = event.category.color;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: const BoxDecoration(
@@ -448,6 +466,12 @@ class _EventDetailSheet extends StatelessWidget {
                       const SizedBox(height: 16),
                     ],
 
+                    // Approved photos for this child
+                    _EventPhotosSection(
+                      urls: event
+                          .approvedUrlsForChild(controller.activeChildId),
+                    ),
+
                     // Attendees count
                     Container(
                       padding: const EdgeInsets.all(14),
@@ -529,6 +553,162 @@ class _EventDetailSheet extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─── Approved photos grid (inside the event detail sheet) ──────────────────────
+
+class _EventPhotosSection extends StatelessWidget {
+  const _EventPhotosSection({required this.urls});
+
+  final List<String> urls;
+
+  @override
+  Widget build(BuildContext context) {
+    if (urls.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'event_photos_title'.tr,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemCount: urls.length,
+          itemBuilder: (_, i) => GestureDetector(
+            onTap: () => FullPhotoView.show(context, urls[i]),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image(
+                image: appCachedImageProvider(urls[i]),
+                fit: BoxFit.cover,
+                errorBuilder: (_, e, s) => Container(
+                  color: const Color(0xFFEDEFF3),
+                  child: const Icon(Icons.broken_image_rounded,
+                      color: AppColors.grayMedium, size: 20),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
+
+// ─── Compact past-event album card ─────────────────────────────────────────────
+
+class _ParentEventAlbumCard extends StatelessWidget {
+  const _ParentEventAlbumCard({required this.event, required this.controller});
+
+  final NurseryEventModel event;
+  final ParentEventsController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = event.category.color;
+    final count = event.approvedUrlsForChild(controller.activeChildId).length;
+    return GestureDetector(
+      onTap: () => showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _EventDetailSheet(event: event, controller: controller),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFEEF0F4)),
+        ),
+        child: Row(
+          children: [
+            _thumb(color),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: context.typography.smSemiBold
+                        .copyWith(color: AppColors.textDefault),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    event.formattedDate,
+                    style: context.typography.xsRegular
+                        .copyWith(color: AppColors.grayMedium),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.photo_library_rounded, size: 14, color: color),
+                  const SizedBox(width: 5),
+                  Text(
+                    '$count',
+                    style: context.typography.xsMedium.copyWith(color: color),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _thumb(Color color) {
+    final url = event.approvedUrlsForChild(controller.activeChildId).isNotEmpty
+        ? event.approvedUrlsForChild(controller.activeChildId).first
+        : event.coverImage;
+    if (url != null && url.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image(
+          image: appCachedImageProvider(url),
+          width: 52,
+          height: 52,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(event.category.icon, color: color, size: 24),
     );
   }
 }

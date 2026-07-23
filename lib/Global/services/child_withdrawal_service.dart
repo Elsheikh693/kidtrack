@@ -13,6 +13,21 @@ class ChildWithdrawalService {
   Future<bool> withdrawChild({
     required String childId,
     required String reason,
+  }) =>
+      _invoke(childId: childId, reason: reason, skipLog: false);
+
+  /// Permanently deletes [childId] — the "registered by mistake" variant. Runs
+  /// the exact same full server-side cleanup as [withdrawChild] (child data +
+  /// orphaned-parent records + Firebase Auth) but writes NO withdrawal log, so
+  /// it never surfaces as a departure in movement reports. Returns true on
+  /// success.
+  Future<bool> deleteChild({required String childId}) =>
+      _invoke(childId: childId, reason: '', skipLog: true);
+
+  Future<bool> _invoke({
+    required String childId,
+    required String reason,
+    required bool skipLog,
   }) async {
     final nurseryId = _session.nurseryId ?? '';
     if (nurseryId.isEmpty || childId.isEmpty) return false;
@@ -23,6 +38,7 @@ class ChildWithdrawalService {
         'nurseryId': nurseryId,
         'childId': childId,
         'reason': reason,
+        'skipLog': skipLog,
       });
       return result.data['ok'] == true;
     } catch (_) {

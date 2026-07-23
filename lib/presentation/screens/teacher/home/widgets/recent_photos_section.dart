@@ -10,7 +10,7 @@ class RecentPhotosSection extends StatelessWidget {
   List<String> get _photoUrls {
     final urls = <String>[];
     for (final a in activities.reversed) {
-      urls.addAll(a.photos.values);
+      urls.addAll(a.allPhotoUrls);
       if (urls.length >= 9) break;
     }
     return urls.take(9).toList();

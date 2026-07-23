@@ -49,7 +49,7 @@ class _OwnerFeedTabState extends State<OwnerFeedTab> {
               else ...[
                 if (controller.pinnedPosts.isNotEmpty)
                   _PostsSection(
-                    label: 'المثبتة',
+                    label: 'feed14_pinned'.tr,
                     icon: Icons.push_pin_rounded,
                     color: const Color(0xFFD97706),
                     posts: controller.pinnedPosts,
@@ -57,7 +57,7 @@ class _OwnerFeedTabState extends State<OwnerFeedTab> {
                   ),
                 if (controller.regularPosts.isNotEmpty)
                   _PostsSection(
-                    label: 'الأحدث',
+                    label: 'feed14_latest'.tr,
                     icon: Icons.article_rounded,
                     color: AppColors.primary,
                     posts: controller.regularPosts,
@@ -68,12 +68,17 @@ class _OwnerFeedTabState extends State<OwnerFeedTab> {
             ],
           );
         }),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () =>
-              showCreatePostSheet(context, controller: controller),
-          backgroundColor: AppColors.primary,
-          icon: const Icon(Icons.add_rounded, color: Colors.white),
-          label: Text('بوست جديد', style: context.typography.smSemiBold.copyWith(color: Colors.white)),
+        // Lifted above the floating bottom nav bar (68.h pill + 12.h gap)
+        // owned by the outer shell Scaffold, so the FAB clears it.
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 80.h),
+          child: FloatingActionButton.extended(
+            onPressed: () =>
+                showCreatePostSheet(context, controller: controller),
+            backgroundColor: AppColors.primary,
+            icon: const Icon(Icons.add_rounded, color: Colors.white),
+            label: Text('feed14_new_post'.tr, style: context.typography.smSemiBold.copyWith(color: Colors.white)),
+          ),
         ),
       );
   }
@@ -100,7 +105,7 @@ class _CategoryFilterBar extends StatelessWidget {
           child: Row(
             children: [
               _FilterChip(
-                label: 'الكل',
+                label: 'feed14_all'.tr,
                 selected: selected == null,
                 color: AppColors.primary,
                 onTap: () => controller.filterBy(null),
@@ -135,6 +140,10 @@ class _CategoryFilterBar extends StatelessWidget {
         return const Color(0xFFD97706);
       case PostCategory.reminder:
         return const Color(0xFF0891B2);
+      case PostCategory.starOfWeek:
+        return const Color(0xFFE0A100);
+      case PostCategory.gallery:
+        return const Color(0xFF6366F1);
       default:
         return const Color(0xFF7C3AED);
     }
@@ -244,12 +253,12 @@ class _EmptyState extends StatelessWidget {
               size: 64.sp, color: Colors.grey.shade300),
           SizedBox(height: 12.h),
           Text(
-            'لا يوجد منشورات بعد',
+            'feed14_empty_title'.tr,
             style: context.typography.mdMedium.copyWith(color: Colors.grey.shade500),
           ),
           SizedBox(height: 6.h),
           Text(
-            'ابدأ بنشر أول بوست للحضانة',
+            'feed14_empty_subtitle'.tr,
             style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
           ),
         ],

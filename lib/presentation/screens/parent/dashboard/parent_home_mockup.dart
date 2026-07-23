@@ -3,6 +3,7 @@ import '../../../../index/index_main.dart';
 import '../../../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../../../Data/models/child_daily_event/child_daily_event_model.dart';
 import 'widgets/latest_post_card.dart';
+import 'widgets/parent_quick_actions.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  Parent Home — adaptive "story of the child's day"
@@ -132,7 +133,7 @@ class ParentHomeMockup extends StatelessWidget {
                   children: [
                     StaggerItem(
                       index: 2,
-                      child: _AttentionStrip(controller: controller),
+                      child: ParentQuickActions(controller: controller),
                     ),
                     SizedBox(height: 18.h),
                     LatestPostCard(controller: controller),
@@ -490,7 +491,7 @@ void _showChildSwitcher(
 ) {
   Get.bottomSheet(
     Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -622,7 +623,7 @@ class _ChildSwitchTile extends StatelessWidget {
   }
 
   Widget _initial(String name) => Text(
-        name.isNotEmpty ? name.characters.first : '؟',
+        name.isNotEmpty ? name.characters.first : 'parentcour21_initial_fallback'.tr,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 18,
@@ -736,7 +737,7 @@ class _HomeDateSubtitle extends StatelessWidget {
                   children: [
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: Text('إلغاء',
+                      child: Text('parentcour21_cancel'.tr,
                           style: context.typography.smRegular.copyWith(color: _kMuted, fontSize: 14)),
                     ),
                     CupertinoButton(
@@ -744,7 +745,7 @@ class _HomeDateSubtitle extends StatelessWidget {
                         Navigator.pop(ctx);
                         controller.backToToday();
                       },
-                      child: Text('اليوم',
+                      child: Text('parentcour21_today'.tr,
                           style: context.typography.displaySmBold.copyWith(color: _kPurple, fontSize: 14)),
                     ),
                     CupertinoButton(
@@ -752,7 +753,7 @@ class _HomeDateSubtitle extends StatelessWidget {
                         Navigator.pop(ctx);
                         controller.setDate(temp);
                       },
-                      child: Text('تم',
+                      child: Text('parentcour21_done'.tr,
                           style: context.typography.displaySmBold.copyWith(color: _kPurple, fontSize: 14, fontWeight: FontWeight.w800)),
                     ),
                   ],
@@ -869,7 +870,7 @@ class _HistoryBanner extends StatelessWidget {
             SizedBox(width: 10.w),
             Expanded(
               child: Obx(() => Text(
-                    'بتشوف يوم ${controller.selectedDateLabel}',
+                    '${'parentcour21_viewing_day'.tr} ${controller.selectedDateLabel}',
                     style: context.typography.displaySmBold.copyWith(color: _kInk, fontSize: 13),
                   )),
             ),
@@ -881,7 +882,7 @@ class _HistoryBanner extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Text(
-                'العودة لليوم',
+                'parentcour21_back_to_today'.tr,
                 style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
               )),
           ],
@@ -956,7 +957,7 @@ class _HistoryRecapHero extends StatelessWidget {
                         SizedBox(width: 12.w),
                         Expanded(
                           child: Text(
-                            'مفيش نشاط مسجّل في اليوم ده',
+                            'parentcour21_no_activity_that_day'.tr,
                             style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 15),
                           ),
                         ),
@@ -984,41 +985,41 @@ class _HistoryRecapHero extends StatelessWidget {
     final lines = <_RecapStat>[];
     if (c.recapCheckIn.isNotEmpty) {
       lines.add(_RecapStat(
-          icon: Icons.login_rounded, label: 'حضر', value: c.recapCheckIn));
+          icon: Icons.login_rounded, label: 'parentcour21_recap_arrived'.tr, value: c.recapCheckIn));
     }
     if (c.recapActivities > 0) {
       lines.add(_RecapStat(
           icon: Icons.menu_book_rounded,
-          label: 'أنشطة',
+          label: 'parentcour21_recap_activities'.tr,
           value: ar('${c.recapActivities}')));
     }
     if (c.recapPhotos > 0) {
       lines.add(_RecapStat(
           icon: Icons.photo_camera_rounded,
-          label: 'صور',
+          label: 'parentcour21_recap_photos'.tr,
           value: ar('${c.recapPhotos}')));
     }
     if (c.recapMeals > 0) {
       lines.add(_RecapStat(
           icon: Icons.restaurant_menu_rounded,
-          label: 'وجبات',
+          label: 'parentcour21_recap_meals'.tr,
           value: ar('${c.recapMeals}')));
     }
     if (c.recapNaps > 0) {
       lines.add(_RecapStat(
           icon: Icons.bedtime_rounded,
-          label: 'نوم',
+          label: 'parentcour21_recap_naps'.tr,
           value: ar('${c.recapNaps}')));
     }
     if (c.recapNotes > 0) {
       lines.add(_RecapStat(
           icon: Icons.chat_bubble_rounded,
-          label: 'ملاحظات',
+          label: 'parentcour21_recap_notes'.tr,
           value: ar('${c.recapNotes}')));
     }
     if (c.recapCheckOut.isNotEmpty) {
       lines.add(_RecapStat(
-          icon: Icons.logout_rounded, label: 'انصرف', value: c.recapCheckOut));
+          icon: Icons.logout_rounded, label: 'parentcour21_recap_left'.tr, value: c.recapCheckOut));
     }
     final out = <Widget>[];
     for (var i = 0; i < lines.length; i++) {
@@ -1090,7 +1091,7 @@ class _HistoryNotesSection extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(2.w, 0.h, 2.w, 12.h),
             child: _SectionHeader(
               icon: Icons.chat_bubble_rounded,
-              title: 'ملاحظات المعلمة',
+              title: 'parentcour21_teacher_notes'.tr,
               accent: _kBlue,
             ),
           ),
@@ -1272,7 +1273,7 @@ class _HeaderHero extends StatelessWidget {
                           ],
                         ),
                         if (classroom.isNotEmpty) ...[
-                          SizedBox(height: 5.h),
+                          SizedBox(height: 10.h),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 2.h),
@@ -1326,7 +1327,7 @@ class _HeaderHero extends StatelessWidget {
   }
 
   Widget _avatarInitial(String name) => Text(
-        name.isNotEmpty ? name.characters.first : '؟',
+        name.isNotEmpty ? name.characters.first : 'parentcour21_initial_fallback'.tr,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 20,
@@ -1445,7 +1446,7 @@ class _HeaderHero extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'اليوم إجازة',
+                'parentcour21_today_holiday'.tr,
                 style: context.typography.xsBold.copyWith(
                     color: Colors.white,
                     fontSize: 22,
@@ -1475,7 +1476,7 @@ class _HeaderHero extends StatelessWidget {
       final c = controller;
       final s = c.effectiveStatus;
       final firstName =
-          c.childName.isNotEmpty ? c.childName.split(' ').first : 'طفلك';
+          c.childName.isNotEmpty ? c.childName.split(' ').first : 'parentcour21_your_child'.tr;
 
       // ── Subtitle: the single supporting sentence for the current state ──
       String subtitle;
@@ -1483,8 +1484,8 @@ class _HeaderHero extends StatelessWidget {
         case _Phase.before:
           final first = c.firstLesson;
           subtitle = first != null
-              ? 'أول حصة النهارده تبدأ ${c.fmtScheduleTime(first.startTime)}'
-              : 'لسه اليوم الدراسي ما بدأش';
+              ? '${'parentcour21_first_lesson_at'.tr} ${c.fmtScheduleTime(first.startTime)}'
+              : 'parentcour21_day_not_started'.tr;
           break;
         case _Phase.during:
           if (c.statusUpdatedLabel.isNotEmpty) {
@@ -1492,14 +1493,14 @@ class _HeaderHero extends StatelessWidget {
           } else {
             final next = c.nextLesson;
             subtitle = next != null
-                ? 'اللي جاي · ${c.scheduleLabel(next)} ${c.fmtScheduleTime(next.startTime)}'
-                : '$firstName داخل الحضانة دلوقتي';
+                ? '${'parentcour21_next_up'.tr} · ${c.scheduleLabel(next)} ${c.fmtScheduleTime(next.startTime)}'
+                : '$firstName ${'parentcour21_inside_now'.tr}';
           }
           break;
         case _Phase.after:
           subtitle = s.isOnBus
-              ? '$firstName في الطريق للبيت'
-              : 'انتهى اليوم الدراسي · يومه كان جميل';
+              ? '$firstName ${'parentcour21_on_way_home'.tr}'
+              : 'parentcour21_day_ended'.tr;
           break;
       }
 
@@ -1510,7 +1511,7 @@ class _HeaderHero extends StatelessWidget {
       if (s.isActive && c.realCheckInTime != '--:--') {
         meta.add((
           icon: Icons.login_rounded,
-          text: 'وصل ${ParentDashboardController.ar(c.realCheckInTime)}',
+          text: '${'parentcour21_arrived_at'.tr} ${ParentDashboardController.ar(c.realCheckInTime)}',
         ));
       }
       if (phase == _Phase.during && c.liveStateSinceLabel.isNotEmpty) {
@@ -1575,24 +1576,26 @@ class _HeaderHero extends StatelessWidget {
   // A single, optional action — only when the state invites one. It's an
   // action (a button), never another competing piece of information.
   List<Widget> _heroAction(BuildContext context, String firstName) {
-    if (phase == _Phase.during) {
-      return [
-        SizedBox(height: 16.h),
-        _HeroCtaButton(
-          icon: Icons.directions_car_rounded,
-          label: controller.pickupRequested.value
-              ? 'تم إرسال طلب الاستلام'
-              : 'اطلب استلام $firstName',
-          onTap: () => _showPickupSheet(context, controller),
-        ),
-      ];
-    }
+    // TEMP: pickup-request feature disabled for now. Restore by
+    // un-commenting the `_Phase.during` block below.
+    // if (phase == _Phase.during) {
+    //   return [
+    //     SizedBox(height: 16.h),
+    //     _HeroCtaButton(
+    //       icon: Icons.directions_car_rounded,
+    //       label: controller.pickupRequested.value
+    //           ? 'تم إرسال طلب الاستلام'
+    //           : 'اطلب استلام $firstName',
+    //       onTap: () => _showPickupSheet(context, controller),
+    //     ),
+    //   ];
+    // }
     if (phase == _Phase.after && controller.effectiveStatus.isOnBus) {
       return [
         SizedBox(height: 16.h),
         _HeroCtaButton(
           icon: Icons.location_on_rounded,
-          label: 'تتبّع $firstName على الخريطة',
+          label: '${'parentcour21_track_prefix'.tr} $firstName ${'parentcour21_on_map'.tr}',
           onTap: () => _showTrackMapSheet(context, controller),
         ),
       ];
@@ -1753,292 +1756,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _AttentionStrip extends StatelessWidget {
-  const _AttentionStrip({required this.controller});
-  final ParentDashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-    final c = controller;
-    final ar = ParentDashboardController.ar;
-    final items = <Widget>[];
-
-    // ── 1) Overdue / pending fees (informational only — no pay button) ──
-    for (final inv in c.pendingInvoices) {
-      final overdue = inv.status == 'overdue';
-      final amount = ar(inv.totalAmount.toStringAsFixed(0));
-      final isFee = inv.key?.startsWith('fee_') == true;
-      final due = isFee ? '' : _fmtInboxDate(inv.dueDate);
-      items.add(_InboxItem(
-        color: overdue ? _kRed : _kAmber,
-        icon: Icons.payments_rounded,
-        title: inv.title?.isNotEmpty == true
-            ? inv.title!
-            : (inv.categoryName?.isNotEmpty == true
-                ? inv.categoryName!
-                : 'رسوم مستحقة'),
-        sub: due.isNotEmpty
-            ? '$amount ج.م · آخر موعد $due'
-            : '$amount ج.م',
-        subIsAlert: overdue,
-        onTap: () => Get.toNamed(parentInvoicesView),
-      ));
-    }
-
-    // ── 2) Required homework ──
-    final hw = c.pendingHomework;
-    if (hw.isNotEmpty) {
-      items.add(_InboxItem(
-        color: _kAmber,
-        icon: Icons.assignment_rounded,
-        title: 'واجبات مطلوبة',
-        badge: hw.length,
-        lines: [
-          for (final h in hw)
-            _InboxLine(
-              subject: h.subjectKey.isNotEmpty ? h.subjectKey : null,
-              text: h.displayTitle?.isNotEmpty == true
-                  ? h.displayTitle!
-                  : h.titleKey,
-            ),
-        ],
-        onTap: () => Get.find<MainPageViewModel>().changePage(1),
-      ));
-    }
-
-    // ── 3) Teacher notes ──
-    final notes = c.dailyNotes;
-    if (notes.isNotEmpty) {
-      items.add(_InboxItem(
-        color: _kBlue,
-        icon: Icons.chat_bubble_rounded,
-        title: 'ملاحظات المعلمة',
-        badge: notes.length,
-        lines: [for (final n in notes) _InboxLine(text: n.text)],
-        onTap: () => Get.find<MainPageViewModel>().changePage(1),
-      ));
-    }
-
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(2.w, 0.h, 2.w, 12.h),
-          child: _SectionHeader(
-            icon: Icons.inbox_rounded,
-            title: 'محتاج انتباهك',
-            accent: _kAmber,
-            trailing: _CountBadge(count: items.length),
-          ),
-        ),
-        for (int i = 0; i < items.length; i++) ...[
-          if (i != 0) SizedBox(height: 10.h),
-          items[i],
-        ],
-      ],
-    );
-    });
-  }
-}
-
-// "1716163200000" → "25 مايو"
-String _fmtInboxDate(int? ms) {
-  if (ms == null) return '';
-  final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-  const months = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
-  return '${ParentDashboardController.ar('${dt.day}')} ${months[dt.month - 1]}';
-}
-
-class _InboxLine {
-  const _InboxLine({this.subject, required this.text});
-  final String? subject;
-  final String text;
-}
-
-class _InboxItem extends StatelessWidget {
-  const _InboxItem({
-    required this.color,
-    required this.icon,
-    required this.title,
-    this.sub,
-    this.subIsAlert = false,
-    this.badge,
-    this.lines = const [],
-    this.onTap,
-  });
-  final Color color;
-  final IconData icon;
-  final String title;
-  final String? sub;
-  final bool subIsAlert;
-  final int? badge;
-  final List<_InboxLine> lines;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: _kCardShadow,
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // colored status bar
-            Container(
-              width: 5.w,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.horizontal(
-                  right: Radius.circular(16.r),
-                ),
-              )),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 12.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── header row ──────────────────────────────────────
-                    Row(
-                      children: [
-                        Container(
-                          width: 38.w,
-                          height: 38.h,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(11.r),
-                          ),
-                          child: Icon(icon, color: color, size: 19.sp)),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.typography.displaySmBold.copyWith(color: _kInk, fontSize: 15, fontWeight: FontWeight.w800),
-                                ),
-                              ),
-                              if (badge != null) ...[
-                                SizedBox(width: 7.w),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 7.w, vertical: 1.h),
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: Text(
-                                    '$badge',
-                                    style: context.typography.displaySmBold.copyWith(color: color, fontSize: 12, fontWeight: FontWeight.w800),
-                                  )),
-                              ],
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        // reversed arrow (points the other way now)
-                        Icon(Icons.chevron_right_rounded,
-                            color: _kMuted, size: 22.sp),
-                      ],
-                    ),
-                    // ── single subtitle ─────────────────────────────────
-                    if (sub != null) ...[
-                      SizedBox(height: 8.h),
-                      Text(
-                        sub!,
-                        style: context.typography.displaySmBold.copyWith(color: subIsAlert ? _kRed : _kMuted, fontSize: 12.5),
-                      ),
-                    ],
-                    // ── multiple lines (homework / notes) ────────────────
-                    if (lines.isNotEmpty) ...[
-                      SizedBox(height: 10.h),
-                      for (int i = 0; i < lines.length; i++) ...[
-                        if (i != 0) SizedBox(height: 8.h),
-                        _InboxSubRow(line: lines[i], color: color),
-                      ],
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-}
-
-class _InboxSubRow extends StatelessWidget {
-  const _InboxSubRow({required this.line, required this.color});
-  final _InboxLine line;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(top: 5.h),
-          width: 5.w,
-          height: 5.h,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        SizedBox(width: 8.w),
-        if (line.subject != null) ...[
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(7.r),
-            ),
-            child: Text(
-              line.subject!,
-              style: context.typography.displaySmBold.copyWith(color: color, fontSize: 11.5, fontWeight: FontWeight.w800),
-            )),
-          SizedBox(width: 7.w),
-        ],
-        Expanded(
-          child: Text(
-            line.text,
-            style: context.typography.xsMedium.copyWith(color: _kInk, fontSize: 13.5, height: 1.35),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required this.count});
-  final int count;
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-        decoration: BoxDecoration(
-          color: _kAmber.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Text(
-          '$count',
-          style: context.typography.displaySmBold.copyWith(color: _kAmber, fontSize: 13, fontWeight: FontWeight.w800),
-        ));
-}
 
 // ─── "خط اليوم" compact timeline preview ─────────────────────────────────────
 
@@ -2074,7 +1791,7 @@ class _TodayTimelinePreview extends StatelessWidget {
           time: c.fmtClockMs(running.startedAt),
           icon: Icons.menu_book_rounded,
           title: subj.isNotEmpty ? '$subj — ${running.title}' : running.title,
-          caption: 'نشاط الفصل الحالي',
+          caption: 'parentcour21_current_class_activity'.tr,
           kind: _TLKind.academic,
           state: _TLState.current,
           activityId: running.key,
@@ -2089,7 +1806,7 @@ class _TodayTimelinePreview extends StatelessWidget {
         time: c.fmtScheduleTime(next.startTime),
         icon: Icons.schedule_rounded,
         title: c.scheduleLabel(next),
-        caption: 'الحصة الجاية',
+        caption: 'parentcour21_next_lesson_caption'.tr,
         kind: _TLKind.academic,
         state: _TLState.upcoming,
       ));
@@ -2116,10 +1833,10 @@ class _TodayTimelinePreview extends StatelessWidget {
           // ── Prominent header ───────────────────────────────────────
           _SectionHeader(
             icon: Icons.timeline_rounded,
-            title: 'خط اليوم',
+            title: 'parentcour21_day_plan'.tr,
             accent: _kPurple,
             subtitle:
-                history ? 'كل اللي حصل في اليوم ده' : 'كل اللي حصل ولسه جاي',
+                history ? 'parentcour21_day_plan_sub_history'.tr : 'parentcour21_day_plan_sub_live'.tr,
             trailing: specs.isEmpty
                 ? null
                 : _MiniPill(
@@ -2134,7 +1851,7 @@ class _TodayTimelinePreview extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 18.h),
               child: Center(
                 child: Text(
-                  history ? 'مفيش أحداث في اليوم ده' : 'لسه مفيش أحداث النهارده',
+                  history ? 'parentcour21_no_events_that_day'.tr : 'parentcour21_no_events_today'.tr,
                   style: context.typography.smSemiBold.copyWith(color: _kMuted, fontSize: 12.5),
                 ),
               ),
@@ -2170,8 +1887,8 @@ class _TodayTimelinePreview extends StatelessWidget {
                       children: [
                         Text(
                           collapsed
-                              ? 'عرض المزيد (${ParentDashboardController.ar('$hiddenCount')})'
-                              : 'عرض جدول اليوم الكامل',
+                              ? '${'parentcour21_show_more'.tr} (${ParentDashboardController.ar('$hiddenCount')})'
+                              : 'parentcour21_show_full_schedule'.tr,
                           style: context.typography.displaySmBold.copyWith(color: _kPurple, fontSize: 13.5, fontWeight: FontWeight.w800),
                         ),
                         SizedBox(width: 2.w),
@@ -2213,12 +1930,12 @@ class _TLSpec {
 
 String _mealCaption(ChildDailyEventModel e) {
   final s = switch (e.mealStatus) {
-    'ate_all' => 'أكل كل الوجبة',
-    'ate_half' => 'أكل نص الوجبة',
-    'refused' => 'رفض الأكل',
+    'ate_all' => 'parentcour21_meal_ate_all'.tr,
+    'ate_half' => 'parentcour21_meal_ate_half'.tr,
+    'refused' => 'parentcour21_meal_refused'.tr,
     _ => null,
   };
-  return s != null ? 'رعاية · $s' : 'رعاية';
+  return s != null ? '${'parentcour21_care_caption'.tr} · $s' : 'parentcour21_care_caption'.tr;
 }
 
 _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
@@ -2228,8 +1945,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.login_rounded,
-        title: e.title ?? 'سجّل الحضور',
-        caption: 'حضور',
+        title: e.title ?? 'parentcour21_event_checkin_title'.tr,
+        caption: 'parentcour21_event_checkin_caption'.tr,
         kind: _TLKind.attendance,
         state: _TLState.done,
       );
@@ -2237,8 +1954,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.logout_rounded,
-        title: e.title ?? 'انصرف',
-        caption: 'انصراف',
+        title: e.title ?? 'parentcour21_event_checkout_title'.tr,
+        caption: 'parentcour21_event_checkout_caption'.tr,
         kind: _TLKind.attendance,
         state: _TLState.done,
       );
@@ -2247,7 +1964,7 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.restaurant_menu_rounded,
-        title: e.title ?? 'وجبة',
+        title: e.title ?? 'parentcour21_event_meal_title'.tr,
         caption: _mealCaption(e),
         kind: _TLKind.care,
         state: _TLState.done,
@@ -2257,8 +1974,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.bedtime_rounded,
-        title: e.title ?? 'القيلولة',
-        caption: 'نوم',
+        title: e.title ?? 'parentcour21_event_nap_title'.tr,
+        caption: 'parentcour21_event_nap_caption'.tr,
         kind: _TLKind.sleep,
         state: _TLState.done,
       );
@@ -2266,8 +1983,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.wc_rounded,
-        title: e.title ?? 'دخل الحمام',
-        caption: 'رعاية',
+        title: e.title ?? 'parentcour21_event_bathroom_title'.tr,
+        caption: 'parentcour21_care_caption'.tr,
         kind: _TLKind.care,
         state: _TLState.done,
       );
@@ -2277,8 +1994,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.menu_book_rounded,
-        title: e.title ?? (subj.isNotEmpty ? subj : 'نشاط الفصل'),
-        caption: 'نشاط الفصل',
+        title: e.title ?? (subj.isNotEmpty ? subj : 'parentcour21_class_activity'.tr),
+        caption: 'parentcour21_class_activity'.tr,
         kind: _TLKind.academic,
         state: _TLState.done,
         activityId: e.activityId,
@@ -2287,8 +2004,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.child_care_rounded,
-        title: e.title ?? 'تغيّرت حالته',
-        caption: 'حالة الطفل',
+        title: e.title?.tr ?? 'parentcour21_event_state_changed'.tr,
+        caption: 'parentcour21_event_child_state_caption'.tr,
         kind: _TLKind.childState,
         state: _TLState.done,
       );
@@ -2296,8 +2013,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.chat_bubble_rounded,
-        title: e.title ?? 'ملاحظة من المعلمة',
-        caption: 'ملاحظة',
+        title: e.title ?? 'parentcour21_event_note_title'.tr,
+        caption: 'parentcour21_event_note_caption'.tr,
         kind: _TLKind.care,
         state: _TLState.done,
       );
@@ -2305,8 +2022,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.medical_services_rounded,
-        title: e.title ?? 'أخذ الدواء',
-        caption: 'رعاية',
+        title: e.title ?? 'parentcour21_event_medicine_title'.tr,
+        caption: 'parentcour21_care_caption'.tr,
         kind: _TLKind.care,
         state: _TLState.done,
       );
@@ -2314,8 +2031,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.directions_bus_rounded,
-        title: e.title ?? 'ركب الباص',
-        caption: 'الباص',
+        title: e.title ?? 'parentcour21_event_bus_boarded'.tr,
+        caption: 'parentcour21_bus_caption'.tr,
         kind: _TLKind.attendance,
         state: _TLState.done,
       );
@@ -2323,8 +2040,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.location_on_rounded,
-        title: e.title ?? 'وصل الباص',
-        caption: 'الباص',
+        title: e.title ?? 'parentcour21_event_bus_arrived'.tr,
+        caption: 'parentcour21_bus_caption'.tr,
         kind: _TLKind.attendance,
         state: _TLState.done,
       );
@@ -2332,8 +2049,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.assignment_rounded,
-        title: e.title ?? 'واجب جديد',
-        caption: 'واجب',
+        title: e.title ?? 'parentcour21_event_homework_title'.tr,
+        caption: 'parentcour21_event_homework_caption'.tr,
         kind: _TLKind.academic,
         state: _TLState.done,
       );
@@ -2341,8 +2058,8 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.directions_car_rounded,
-        title: e.title ?? 'طلب استلام',
-        caption: 'استلام',
+        title: e.title ?? 'parentcour21_event_pickup_title'.tr,
+        caption: 'parentcour21_event_pickup_caption'.tr,
         kind: _TLKind.care,
         state: _TLState.done,
       );
@@ -2350,7 +2067,7 @@ _TLSpec _specFromEvent(ParentDashboardController c, ChildDailyEventModel e) {
       return _TLSpec(
         time: time,
         icon: Icons.fiber_manual_record_rounded,
-        title: e.title ?? 'حدث',
+        title: e.title ?? 'parentcour21_event_default_title'.tr,
         caption: e.description ?? '',
         kind: _TLKind.care,
         state: _TLState.done,
@@ -2382,9 +2099,9 @@ _ActivityDetail _detailFromActivity(
   int rating = 0;
   String ratingLabel;
   if (a.isActive) {
-    ratingLabel = 'النشاط لسه شغّال — التقييم بعد ما يخلص';
+    ratingLabel = 'parentcour21_activity_running_eval'.tr;
   } else if (eval == null) {
-    ratingLabel = 'لم يتم التقييم بعد';
+    ratingLabel = 'parentcour21_not_rated_yet'.tr;
   } else {
     rating = switch (eval) {
       EvalLevel.excellent => 5,
@@ -2392,9 +2109,9 @@ _ActivityDetail _detailFromActivity(
       EvalLevel.needsAttention => 1,
     };
     ratingLabel = switch (eval) {
-      EvalLevel.excellent => 'ممتاز',
-      EvalLevel.needsFollow => 'يحتاج متابعة',
-      EvalLevel.needsAttention => 'يحتاج اهتمام',
+      EvalLevel.excellent => 'parentcour21_eval_excellent'.tr,
+      EvalLevel.needsFollow => 'parentcour21_eval_needs_follow'.tr,
+      EvalLevel.needsAttention => 'parentcour21_eval_needs_attention'.tr,
     };
   }
 
@@ -2410,7 +2127,7 @@ _ActivityDetail _detailFromActivity(
           ? reasons.join('، ')
           : c.teacherNoteForActivity(a.key ?? ''));
   final groupNote = a.groupNote?.trim();
-  final description = 'نشاط $title';
+  final description = '${'parentcour21_activity_word'.tr} $title';
 
   return _ActivityDetail(
     title: title,
@@ -2423,7 +2140,7 @@ _ActivityDetail _detailFromActivity(
     childName: c.childName,
     childNote: (childNote?.isNotEmpty == true) ? childNote : null,
     groupNote: (groupNote?.isNotEmpty == true) ? groupNote : null,
-    photoUrls: a.photos.values.toList(),
+    photoUrls: a.approvedUrlsForChild(childId),
   );
 }
 
@@ -2598,7 +2315,7 @@ class _TLItem extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
-                          'الآن',
+                          'parentcour21_now_tag'.tr,
                           style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w800),
                         ))
                     else if (tappable)
@@ -2615,7 +2332,7 @@ class _TLItem extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'التفاصيل',
+                              'parentcour21_details'.tr,
                               style: context.typography.displaySmBold.copyWith(color: accent, fontSize: 13.5, fontWeight: FontWeight.w800),
                             ),
                             SizedBox(width: 2.w),
@@ -2696,7 +2413,7 @@ class _PhotosStripState extends State<_PhotosStrip> {
             // ── header ───────────────────────────────────────────────
             _SectionHeader(
               icon: Icons.photo_library_rounded,
-              title: 'صور اليوم',
+              title: 'parentcour21_today_photos'.tr,
               accent: _kPurple,
               pill: _MiniPill(
                 label: ParentDashboardController.ar('${photos.length}'),
@@ -2711,7 +2428,7 @@ class _PhotosStripState extends State<_PhotosStrip> {
                   },
                 ),
                 child: Text(
-                  'عرض الكل',
+                  'parentcour21_view_all'.tr,
                   style: context.typography.displaySmBold.copyWith(color: _kPurple, fontSize: 13),
                 ),
               ),
@@ -2957,7 +2674,7 @@ class _ActivitySheetState extends State<_ActivitySheet>
     final rated = d.rating > 0;
     final screenH = MediaQuery.of(context).size.height;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: AnimatedBuilder(
         animation: _entrance,
         builder: (_, sheet) {
@@ -3070,7 +2787,7 @@ class _ActivitySheetState extends State<_ActivitySheet>
                         children: [
                           _ActivitySection(
                             icon: Icons.notes_rounded,
-                            label: 'النشاط',
+                            label: 'parentcour21_activity_section'.tr,
                             accent: d.accent,
                           ),
                           SizedBox(height: 8.h),
@@ -3099,10 +2816,10 @@ class _ActivitySheetState extends State<_ActivitySheet>
                           children: [
                             _ActivitySection(
                               icon: Icons.photo_library_rounded,
-                              label: 'صور النشاط',
+                              label: 'parentcour21_activity_photos'.tr,
                               accent: d.accent,
                               trailing:
-                                  '${ParentDashboardController.ar('${d.photoUrls.length}')} صور',
+                                  '${ParentDashboardController.ar('${d.photoUrls.length}')} ${'parentcour21_photos_unit'.tr}',
                             ),
                             SizedBox(height: 8.h),
                             SizedBox(
@@ -3133,7 +2850,7 @@ class _ActivitySheetState extends State<_ActivitySheet>
                         children: [
                           _ActivitySection(
                             icon: Icons.star_rounded,
-                            label: 'التقييم في النشاط',
+                            label: 'parentcour21_activity_rating'.tr,
                             accent: d.accent,
                           ),
                           SizedBox(height: 8.h),
@@ -3185,20 +2902,20 @@ class _ActivitySheetState extends State<_ActivitySheet>
                         children: [
                           _ActivitySection(
                             icon: Icons.chat_bubble_rounded,
-                            label: 'ملاحظات المعلمة',
+                            label: 'parentcour21_teacher_notes'.tr,
                             accent: d.accent,
                           ),
                           SizedBox(height: 8.h),
                           if (d.childNote == null && d.groupNote == null)
                             _NoteCard(
-                              text: 'مفيش ملاحظة خاصة على النشاط ده.',
+                              text: 'parentcour21_no_activity_note'.tr,
                               accent: d.accent,
                             ),
                           if (d.childNote != null) ...[
                             _NoteCard(
                               text: d.childNote!,
                               accent: d.accent,
-                              label: 'ملاحظة خاصة بـ${d.childName}',
+                              label: 'parentcour21_note_for_child'.trParams({'name': d.childName}),
                               icon: Icons.person_rounded,
                             ),
                             if (d.groupNote != null)
@@ -3208,7 +2925,7 @@ class _ActivitySheetState extends State<_ActivitySheet>
                             _NoteCard(
                               text: d.groupNote!,
                               accent: _kSky,
-                              label: 'ملاحظة عامة للفصل',
+                              label: 'parentcour21_class_general_note'.tr,
                               icon: Icons.groups_rounded,
                             ),
                         ],
@@ -3237,7 +2954,7 @@ class _ActivitySheetState extends State<_ActivitySheet>
                     ),
                   ),
                   child: Text(
-                    'تمام',
+                    'parentcour21_ok'.tr,
                     style: context.typography.displaySmBold.copyWith(fontSize: 14.5, fontWeight: FontWeight.w800),
                   ),
                 ),
@@ -3391,15 +3108,20 @@ class _PickupSheet extends StatefulWidget {
 
 class _PickupSheetState extends State<_PickupSheet> {
   String? _eta;
-  static const _options = ['١٠ دقايق', '١٥ دقيقة', '٢٠ دقيقة', '٣٠ دقيقة'];
+  List<String> get _options => [
+        'parentcour21_eta_10'.tr,
+        'parentcour21_eta_15'.tr,
+        'parentcour21_eta_20'.tr,
+        'parentcour21_eta_30'.tr,
+      ];
 
   @override
   Widget build(BuildContext context) {
     final firstName = widget.controller.childName.isNotEmpty
         ? widget.controller.childName.split(' ').first
-        : 'طفلك';
+        : 'parentcour21_your_child'.tr;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -3436,11 +3158,11 @@ class _PickupSheetState extends State<_PickupSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'طلب استلام $firstName',
+                      'parentcour21_request_pickup_for'.trParams({'name': firstName}),
                       style: context.typography.mdBold.copyWith(color: _kInk, fontSize: 16),
                     ),
                     Text(
-                      'اختر وقت وصولك المتوقع',
+                      'parentcour21_choose_arrival_time'.tr,
                       style: context.typography.xsRegular.copyWith(color: _kMuted, fontSize: 12),
                     ),
                   ],
@@ -3499,7 +3221,7 @@ class _PickupSheetState extends State<_PickupSheet> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'هيتبلّغ الاستقبال بموعد وصولك عشان يجهّزوا $firstName',
+                      'parentcour21_pickup_reception_note'.trParams({'name': firstName}),
                       style: context.typography.xsRegular.copyWith(color: Color(0xFF065F46), fontSize: 12, height: 1.4),
                     ),
                   ),
@@ -3520,7 +3242,9 @@ class _PickupSheetState extends State<_PickupSheet> {
                         },
                   icon: Icon(Icons.send_rounded, size: 18.sp),
                   label: Text(
-                    _eta != null ? 'هوصل خلال $_eta' : 'اختر وقت الوصول أولاً',
+                    _eta != null
+                        ? '${'parentcour21_will_arrive_in'.tr} $_eta'
+                        : 'parentcour21_choose_arrival_first'.tr,
                     style: context.typography.displaySmBold.copyWith(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -3561,10 +3285,10 @@ class _TrackMapSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstName = controller.childName.isNotEmpty
         ? controller.childName.split(' ').first
-        : 'طفلك';
+        : 'parentcour21_your_child'.tr;
     final h = MediaQuery.of(context).size.height * 0.62;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: h,
         decoration: BoxDecoration(
@@ -3601,13 +3325,13 @@ class _TrackMapSheet extends StatelessWidget {
                       child: CustomPaint(painter: _RoadsPainter()),
                     ),
                     // nursery marker
-                    const Positioned(
+                    Positioned(
                       top: 40,
                       right: 50,
                       child: _MapPin(
                         color: _kGreen,
                         icon: Icons.home_work_rounded,
-                        label: 'الحضانة',
+                        label: 'parentcour21_nursery'.tr,
                       ),
                     ),
                     // moving vehicle marker
@@ -3650,12 +3374,12 @@ class _TrackMapSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '$firstName في الطريق للبيت',
+                          '$firstName ${'parentcour21_on_way_home'.tr}',
                           style: context.typography.displaySmBold.copyWith(color: _kInk, fontSize: 14, fontWeight: FontWeight.w800),
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          'باقي ٧ دقايق تقريباً · ٢.٣ كم',
+                          'parentcour21_track_eta_mock'.tr,
                           style: context.typography.xsRegular.copyWith(color: _kMuted, fontSize: 12),
                         ),
                       ],
@@ -3669,7 +3393,7 @@ class _TrackMapSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
-                      '٧ د',
+                      'parentcour21_track_eta_badge_mock'.tr,
                       style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
                     )),
                 ],

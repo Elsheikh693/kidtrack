@@ -1,4 +1,9 @@
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+/// True when the app is currently showing Arabic. Defaults to Arabic when no
+/// locale is set. Drives every locale-aware date/number helper below.
+bool get _isAr => (Get.locale?.languageCode ?? 'ar') != 'en';
 
 String convertArabicToEnglishNumbers(String input) {
   const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -8,6 +13,23 @@ String convertArabicToEnglishNumbers(String input) {
     input = input.replaceAll(arabic[i], english[i]);
   }
   return input;
+}
+
+const _arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+/// Render Western digits in the active language: Arabic-Indic under Arabic,
+/// untouched under English. Use for any number shown inside a date/time string.
+String localizeDigits(String input) {
+  if (!_isAr) return input;
+  final buf = StringBuffer();
+  for (final ch in input.codeUnits) {
+    if (ch >= 0x30 && ch <= 0x39) {
+      buf.write(_arabicDigits[ch - 0x30]);
+    } else {
+      buf.writeCharCode(ch);
+    }
+  }
+  return buf.toString();
 }
 
 String toDashFormat(DateTime date) {
@@ -22,6 +44,16 @@ const _arabicWeekdays = <String>[
   'الجمعة',
   'السبت',
   'الأحد', // weekday 7
+];
+
+const _englishWeekdays = <String>[
+  'Monday', // weekday 1
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday', // weekday 7
 ];
 
 const _arabicMonths = <String>[
@@ -39,13 +71,42 @@ const _arabicMonths = <String>[
   'ديسمبر',
 ];
 
-/// Full Arabic date, e.g. "الأحد، 22 يونيو 2026".
+const _englishMonths = <String>[
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+/// Locale-aware list separator between weekday and the rest of a date.
+/// AR: "، " (Arabic comma) · EN: ", ".
+String get dateSep => _isAr ? '، ' : ', ';
+
+/// Locale-aware month name for a 1-based month (1 = Jan … 12 = Dec).
+String monthName(int month) =>
+    (_isAr ? _arabicMonths : _englishMonths)[(month - 1) % 12];
+
+/// Locale-aware weekday name for a Dart weekday int (1 = Mon … 7 = Sun).
+String weekdayName(int weekday) =>
+    (_isAr ? _arabicWeekdays : _englishWeekdays)[(weekday - 1) % 7];
+
+/// Full localized date.
+/// AR: "الأحد، 22 يونيو 2026" · EN: "Sunday, 22 June 2026".
 /// Built manually so it works without initializing intl locale data.
 String arabicFullDate([DateTime? date]) {
   final d = date ?? DateTime.now();
-  final day = _arabicWeekdays[d.weekday - 1];
-  final month = _arabicMonths[d.month - 1];
-  return '$day، ${d.day} $month ${d.year}';
+  final day = weekdayName(d.weekday);
+  final month = monthName(d.month);
+  final sep = _isAr ? '، ' : ', ';
+  return localizeDigits('$day$sep${d.day} $month ${d.year}');
 }
 
 /// Compact `1,250` style money formatting — no decimals, thousands separators.
@@ -61,22 +122,24 @@ String formatAmount(num value) {
   return '${neg ? '-' : ''}$buf';
 }
 
-/// Month + year label, e.g. "يونيو 2026". Manual so it works without
-/// initializing intl locale data.
+/// Month + year label. AR: "يونيو 2026" · EN: "June 2026". Manual so it works
+/// without initializing intl locale data.
 String arabicMonthYear([DateTime? date]) {
   final d = date ?? DateTime.now();
-  return '${_arabicMonths[d.month - 1]} ${d.year}';
+  return localizeDigits('${monthName(d.month)} ${d.year}');
 }
 
-/// 12-hour clock with an Arabic ص/م suffix, e.g. "7:35 م".
-/// Built manually to avoid depending on intl locale initialization.
+/// 12-hour clock with a localized meridiem suffix.
+/// AR: "7:35 م" · EN: "7:35 PM". Built manually to avoid depending on intl
+/// locale initialization.
 String arabicClockTime(int epochMs) {
   final d = DateTime.fromMillisecondsSinceEpoch(epochMs);
   final isPm = d.hour >= 12;
   var h = d.hour % 12;
   if (h == 0) h = 12;
   final m = d.minute.toString().padLeft(2, '0');
-  return '$h:$m ${isPm ? 'م' : 'ص'}';
+  final suffix = _isAr ? (isPm ? 'م' : 'ص') : (isPm ? 'PM' : 'AM');
+  return localizeDigits('$h:$m $suffix');
 }
 
 /// First school day strictly after [from] (defaults to today), i.e. the default

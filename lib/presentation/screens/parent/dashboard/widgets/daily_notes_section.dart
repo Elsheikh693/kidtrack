@@ -6,15 +6,7 @@ class DailyNotesSection extends StatelessWidget {
 
   String _todayLabel() {
     final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    const days = [
-      'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس',
-      'الجمعة', 'السبت', 'الأحد',
-    ];
-    return '${days[now.weekday - 1]}، ${now.day} ${months[now.month - 1]}';
+    return '${weekdayName(now.weekday)}${dateSep}${now.day} ${monthName(now.month)}';
   }
 
   @override
@@ -111,7 +103,7 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ملاحظات المعلمة',
+                  'parentcour21_teacher_notes'.tr,
                   style: context.typography.displaySmBold.copyWith(color: Color(0xFF4C1D95), fontSize: 15),
                 ),
                 SizedBox(height: 3.h),
@@ -123,7 +115,7 @@ class _Header extends StatelessWidget {
                       color: Color(0xFF7C3AED)),
                     SizedBox(width: 4.w),
                     Text(
-                      'المعلمة',
+                      'parentcour21_teacher'.tr,
                       style: context.typography.xsMedium.copyWith(color: Color(0xFF7C3AED), fontSize: 11),
                     ),
                     SizedBox(width: 6.w),
@@ -170,7 +162,7 @@ class _Header extends StatelessWidget {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      'عرض الكل',
+                      'parentcour21_view_all'.tr,
                       style: context.typography.xsMedium.copyWith(color: Color(0xFF7C3AED), fontSize: 9),
                     ),
                   ],
@@ -222,10 +214,10 @@ class _NoteTile extends StatelessWidget {
 
   String get _label {
     switch (note.severity) {
-      case 'positive':       return 'إيجابي';
-      case 'needs_followup': return 'يحتاج متابعة';
-      case 'important':      return 'تنبيه';
-      default:               return 'ملاحظة';
+      case 'positive':       return 'parentcour21_severity_positive'.tr;
+      case 'needs_followup': return 'parentcour21_severity_needs_followup'.tr;
+      case 'important':      return 'parentcour21_severity_important'.tr;
+      default:               return 'parentcour21_severity_note'.tr;
     }
   }
 

@@ -1,8 +1,9 @@
 import '../../../../../index/index_main.dart';
 import 'manager_grid_tile.dart';
 
-/// A titled white card that arranges its [tiles] in a fixed three-column grid,
-/// keeping every group compact and scannable instead of a long row list.
+/// A titled white card that stacks its [tiles] as full-width list rows with
+/// hairline dividers between them — clean and filled even when a group only has
+/// one or two items.
 class ManagerGridSection extends StatelessWidget {
   const ManagerGridSection({
     super.key,
@@ -12,8 +13,6 @@ class ManagerGridSection extends StatelessWidget {
 
   final String titleKey;
   final List<ManagerGridTile> tiles;
-
-  static const _columns = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,6 @@ class ManagerGridSection extends StatelessWidget {
           ),
         ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
           decoration: BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.circular(18.r),
@@ -41,16 +39,21 @@ class ManagerGridSection extends StatelessWidget {
               ),
             ],
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cellWidth = constraints.maxWidth / _columns;
-              return Wrap(
-                children: [
-                  for (final tile in tiles)
-                    SizedBox(width: cellWidth, child: tile),
-                ],
-              );
-            },
+          child: Column(
+            children: [
+              for (var i = 0; i < tiles.length; i++) ...[
+                tiles[i],
+                if (i != tiles.length - 1)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(start: 66.w),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.grayLight.withValues(alpha: 0.7),
+                    ),
+                  ),
+              ],
+            ],
           ),
         ),
       ],

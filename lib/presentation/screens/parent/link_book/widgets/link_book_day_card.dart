@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../link_book_controller.dart';
+import 'package:get/get.dart';
 
 /// A single "page" of the Link Book — one day, summarised at a glance.
 class LinkBookDayCard extends StatelessWidget {
@@ -125,19 +126,25 @@ class LinkBookDayCard extends StatelessWidget {
                   ),
                   if (subjects.isNotEmpty) ...[
                     const SizedBox(height: 11),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
+                    // Single row only — the grid cell is a fixed height, so a
+                    // wrapping chip list (long activity names) overflowed the
+                    // card. Long chips ellipsize instead of pushing a 2nd row.
+                    Row(
                       children: [
-                        for (final s in subjects) _SubjectChip(name: s),
-                        if (day.subjects.length > 2)
+                        for (var idx = 0; idx < subjects.length; idx++) ...[
+                          if (idx > 0) const SizedBox(width: 6),
+                          Flexible(child: _SubjectChip(name: subjects[idx])),
+                        ],
+                        if (day.subjects.length > 2) ...[
+                          const SizedBox(width: 6),
                           _SubjectChip(name: '+${day.subjects.length - 2}'),
+                        ],
                       ],
                     ),
                   ] else ...[
                     const SizedBox(height: 11),
                     Text(
-                      'ملاحظات المعلمة',
+                      'parentlink25_teacher_notes'.tr,
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,

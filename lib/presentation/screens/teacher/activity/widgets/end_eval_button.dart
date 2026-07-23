@@ -15,24 +15,24 @@ class EndEvalButton extends StatelessWidget {
   static const _data = {
     EvalLevel.excellent: (
       'teacher_eval_excellent',
-      '🟢',
+      Icons.sentiment_very_satisfied_rounded,
       AppColors.activityGreen
     ),
     EvalLevel.needsFollow: (
       'teacher_eval_follow_short',
-      '🟡',
+      Icons.sentiment_neutral_rounded,
       AppColors.activityAmber
     ),
     EvalLevel.needsAttention: (
       'teacher_eval_attention_short',
-      '🔴',
+      Icons.sentiment_dissatisfied_rounded,
       AppColors.activityRed
     ),
   };
 
   @override
   Widget build(BuildContext context) {
-    final (labelKey, emoji, color) = _data[level]!;
+    final (labelKey, icon, color) = _data[level]!;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -50,7 +50,11 @@ class EndEvalButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(emoji, style: context.typography.smMedium),
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? Colors.white : color,
+              ),
               const SizedBox(height: 2),
               Text(
                 labelKey.tr,

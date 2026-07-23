@@ -28,6 +28,7 @@ export 'package:google_fonts/google_fonts.dart';
 export 'package:lottie/lottie.dart';
 export 'package:flutter_svg/svg.dart';
 export '../Global/widgets/app_network_image.dart';
+export '../Global/widgets/image_viewer.dart';
 export 'package:shimmer/shimmer.dart';
 export 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -61,6 +62,7 @@ export '../Global/constants/device_info.dart';
 export '../Global/constants/api_constants.dart';
 
 // ─── Localization ─────────────────────────────────────────────────────────────
+export '../Global/Localization/app_direction.dart';
 export '../Global/Localization/app_language.dart';
 export '../Global/Localization/ar.dart';
 export '../Global/Localization/en.dart';
@@ -76,6 +78,8 @@ export '../Global/Utils/responsive.dart';
 export '../Global/Utils/network_image.dart';
 export '../Global/Utils/svg_icon.dart';
 export '../Global/Utils/make_call.dart';
+export '../Global/Utils/phone_utils.dart';
+export '../Global/Utils/shift_visuals.dart';
 export '../Global/Utils/parse_map.dart';
 export '../Global/Utils/image_picker.dart';
 export '../Global/Utils/remote_config_keys.dart';
@@ -88,13 +92,20 @@ export '../Global/services/branch_management_service.dart';
 export '../Global/services/session_service.dart';
 export '../Global/services/notification_stream_service.dart';
 export '../Global/services/access_watcher_service.dart';
+export '../Global/services/deep_link_service.dart';
 export '../Global/services/access_control_service.dart';
 export '../Global/services/setup_local_check.dart';
+export '../Global/services/pickup_prompt_seen.dart';
+export '../Global/services/privacy_policy_seen.dart';
+export '../Global/services/star_of_week_seen.dart';
 export '../Global/services/nursery_feedback_gate.dart';
+export '../Global/services/kidtrack_feedback_gate.dart';
 export '../Global/services/notification_send_service.dart';
 export '../Global/services/fcm_token_service.dart';
+export '../Global/services/notification_prefs_service.dart';
 export '../Global/services/active_child_service.dart';
 export '../Global/services/parent_engagement_service.dart';
+export '../Global/services/auth_bootstrap_service.dart';
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 export '../Global/validation/validators.dart';
@@ -104,6 +115,9 @@ export '../Global/middleware/route_middleware.dart';
 
 // ─── Widgets ─────────────────────────────────────────────────────────────────
 export '../Global/widgets/loader.dart';
+export '../Global/widgets/child_avatar.dart';
+export '../Global/widgets/country_code_picker.dart';
+export '../Global/widgets/withdrawn_children_sheet.dart';
 export '../Global/widgets/animated_info.dart';
 export '../Global/widgets/animated_success.dart';
 export '../Global/widgets/animated_error.dart';
@@ -112,6 +126,7 @@ export '../Global/widgets/kidtrack_tab_header.dart';
 export '../Global/widgets/owner_app_bar.dart';
 export '../Global/widgets/parent_sliver_app_bar.dart';
 export '../Global/widgets/child_switcher_sheet.dart';
+export '../Global/widgets/image_source_sheet.dart';
 export '../Global/widgets/teacher_classic_app_bar.dart';
 
 // ─── Domain Layer ────────────────────────────────────────────────────────────
@@ -139,6 +154,7 @@ export '../Data/models/core/api_error_model.dart';
 
 // ─── Data Layer — Core Models ─────────────────────────────────────────────────
 export '../Data/models/core/api_result.dart';
+export '../Data/models/core/branch_scoped.dart';
 export '../Data/models/core/app_error.dart';
 export '../Data/models/core/error_model.dart';
 export '../Data/models/core/no_params.dart';
@@ -147,6 +163,7 @@ export '../Data/models/core/success_model.dart';
 export '../Data/models/core/sign_up_error.dart';
 export '../Data/models/user/user_model.dart';
 export '../Data/models/user/user_type.dart';
+export '../Data/models/membership/membership_model.dart';
 export '../Data/models/shared/generic_list_model.dart';
 export '../Data/models/shared/pagination.dart';
 export '../Data/models/shared/firebase_auth_model.dart';
@@ -166,15 +183,20 @@ export '../Data/models/support_ticket/support_ticket_model.dart';
 export '../Data/models/contact_info/contact_info_model.dart';
 export '../Data/models/about_us/about_us_model.dart';
 export '../Data/models/city/city_model.dart';
+export '../Data/models/tutorial_video/tutorial_video_model.dart';
+export '../Data/models/showcase/showcase_shot_model.dart';
 export '../Data/models/support_request/support_request_model.dart';
 export '../Data/models/app_review/app_review_model.dart';
 export '../Data/models/nursery_feedback/nursery_feedback_model.dart';
+export '../Data/models/kidtrack_feedback/kidtrack_feedback_campaign_model.dart';
+export '../Data/models/kidtrack_feedback/kidtrack_feedback_response_model.dart';
 export '../Data/models/online_application/online_application_model.dart';
 export '../Data/models/classroom/classroom_model.dart';
 export '../Data/models/schedule/schedule_model.dart';
 export '../Data/models/program/program_model.dart';
 export '../Data/models/subject/subject_model.dart';
 export '../Data/models/child/child_model.dart';
+export '../Data/models/withdrawal/withdrawal_log_model.dart';
 export '../Data/models/enrollment/enrollment_model.dart';
 export '../Data/models/medical_profile/medical_profile_model.dart';
 export '../Data/models/document/document_model.dart';
@@ -182,6 +204,7 @@ export '../Data/models/authorized_pickup/authorized_pickup_model.dart';
 export '../Data/models/waiting_list/waiting_list_model.dart';
 export '../Data/models/parent/parent_model.dart';
 export '../Data/models/parent_child/parent_child_model.dart';
+export '../Data/models/activation_code/activation_code_model.dart';
 export '../Data/models/child_attendance/child_attendance_model.dart';
 export '../Data/models/staff_attendance/staff_attendance_model.dart';
 export '../Data/models/staff_leave/staff_leave_model.dart';
@@ -189,6 +212,16 @@ export '../Data/models/child_leave_request/child_leave_request_model.dart';
 export '../Data/models/child_report/child_report_model.dart';
 export '../Data/models/assessment/assessment_model.dart';
 export '../Data/models/daily_assessment/daily_assessment_model.dart';
+// Assessment Engine (Template → Run → ChildAssessment) + value objects
+export '../Data/models/assessment_engine/assessment_enums.dart';
+export '../Data/models/assessment_engine/assessment_scale_level.dart';
+export '../Data/models/assessment_engine/assessment_scale.dart';
+export '../Data/models/assessment_engine/assessment_item.dart';
+export '../Data/models/assessment_engine/assessment_item_result.dart';
+export '../Data/models/assessment_engine/assessment_attempt.dart';
+export '../Data/models/assessment_engine/assessment_template_model.dart';
+export '../Data/models/assessment_engine/assessment_run_model.dart';
+export '../Data/models/assessment_engine/child_assessment_model.dart';
 export '../Data/models/academic_topic/academic_topic_model.dart';
 export '../Data/models/teacher_assignment/teacher_assignment_model.dart';
 export '../Data/models/topic_progress/topic_progress_model.dart';
@@ -197,15 +230,19 @@ export '../Data/models/note/note_model.dart';
 export '../Data/models/lesson_plan/lesson_plan_model.dart';
 export '../Data/models/homework/homework_model.dart';
 export '../Data/models/homework_status/homework_status_model.dart';
+export '../Data/models/homework_submission/homework_submission_model.dart';
 export '../Data/models/session/session_model.dart';
 export '../Data/models/classroom_post/classroom_post_model.dart';
+export '../Data/models/star_of_week/star_of_week_model.dart';
 export '../Data/models/announcement/announcement_model.dart';
 export '../Data/models/notification/notification_model.dart';
 export '../Data/models/daily_care_log/daily_care_log_model.dart';
 export '../Data/models/invoice/invoice_model.dart';
 export '../Data/models/payment/payment_model.dart';
+export '../Data/models/payment_account/payment_account_model.dart';
 export '../Data/models/expense/expense_model.dart';
 export '../Data/models/fee_category/fee_category_model.dart';
+export '../Data/models/shift/shift_model.dart';
 export '../Data/models/financial_transaction/financial_transaction_model.dart';
 
 // ─── Data Layer — Data Sources ───────────────────────────────────────────────
@@ -233,8 +270,14 @@ export 'package:kidtrack/presentation/parentControllers/services/notification_se
 export 'package:kidtrack/presentation/screens/onboarding/onboard_view.dart';
 export 'package:kidtrack/presentation/screens/onboarding/onboard_controller.dart';
 export 'package:kidtrack/presentation/screens/force_update/force_update_view.dart';
-export 'package:kidtrack/presentation/screens/auth/login/view.dart';
-export 'package:kidtrack/presentation/screens/auth/login/controller.dart';
+export 'package:kidtrack/presentation/screens/auth/activation/view.dart';
+export 'package:kidtrack/presentation/screens/auth/activation/landing_view.dart';
+export 'package:kidtrack/presentation/screens/auth/activation/controller.dart';
+export 'package:kidtrack/presentation/screens/auth/membership_picker/view.dart';
+export 'package:kidtrack/presentation/screens/auth/membership_picker/controller.dart';
+export 'package:kidtrack/presentation/screens/auth/activation/widgets/activation_login_sheet.dart';
+export 'package:kidtrack/Global/services/activation_login_service.dart';
+export 'package:kidtrack/Global/services/identity_service.dart';
 export 'package:kidtrack/presentation/screens/auth/renewal/renewal_view.dart';
 export 'package:kidtrack/presentation/screens/main/main_page.dart';
 export 'package:kidtrack/presentation/screens/main/main_page_controller.dart';
@@ -247,6 +290,7 @@ export 'package:kidtrack/presentation/screens/notification_settings/controller.d
 export 'package:kidtrack/presentation/screens/staff/list/view.dart';
 export 'package:kidtrack/presentation/screens/staff/list/controller.dart';
 export 'package:kidtrack/presentation/screens/staff/list/widgets/staff_card.dart';
+export 'package:kidtrack/presentation/screens/staff/list/widgets/staff_delete_sheet.dart';
 export 'package:kidtrack/presentation/screens/staff/list/widgets/staff_empty.dart';
 export 'package:kidtrack/presentation/screens/staff/list/widgets/staff_form_view.dart';
 export 'package:kidtrack/presentation/screens/staff/list/widgets/staff_form_controller.dart';
@@ -263,6 +307,7 @@ export 'package:kidtrack/presentation/parentControllers/services/classroom_paren
 export 'package:kidtrack/presentation/parentControllers/services/program_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/subject_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/withdrawal_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/enrollment_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/medical_profile_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/document_parent_service.dart';
@@ -270,21 +315,49 @@ export 'package:kidtrack/presentation/parentControllers/services/authorized_pick
 export 'package:kidtrack/presentation/parentControllers/services/waiting_list_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/guardian_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/parent_child_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/activation_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_attendance_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/staff_attendance_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/staff_leave_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_leave_request_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_report_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/assessment_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/assessment_template_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/assessment_run_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/child_assessment_parent_service.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/templates/assessment_templates_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/templates/assessment_templates_view.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/templates/assessment_template_edit_view.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/assessment_runs_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/assessment_runs_view.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/assessment_run_create_view.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/manager_run_detail_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/manager_run_detail_view.dart';
+export 'package:kidtrack/presentation/screens/manager/assessments/runs/manager_child_result_view.dart';
+export 'package:kidtrack/presentation/screens/parent/assessments/parent_assessments_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/assessments/parent_assessments_view.dart';
+export 'package:kidtrack/presentation/screens/parent/assessments/parent_assessment_result_view.dart';
+export 'package:kidtrack/presentation/screens/teacher/assessments/teacher_assessments_controller.dart';
+export 'package:kidtrack/presentation/screens/teacher/assessments/teacher_assessments_view.dart';
+export 'package:kidtrack/presentation/screens/teacher/assessments/teacher_run_grading_controller.dart';
+export 'package:kidtrack/presentation/screens/teacher/assessments/teacher_run_grading_view.dart';
+export 'package:kidtrack/presentation/screens/teacher/assessments/teacher_grade_child_view.dart';
 export 'package:kidtrack/presentation/parentControllers/services/incident_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/note_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/lesson_plan_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/classroom_post_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/star_of_week_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/announcement_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/schedule_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/daily_care_log_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/invoice_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/child_charge_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/payment_account_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/fee_category_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/shift_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/daily_assessment_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/topic_progress_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/academic_topic_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/financial_transaction_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/payment_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/expense_parent_service.dart';
@@ -293,6 +366,8 @@ export 'package:kidtrack/presentation/parentControllers/services/support_ticket_
 export 'package:kidtrack/presentation/parentControllers/services/contact_info_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/about_us_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/city_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/tutorial_video_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/showcase_shot_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/support_request_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/app_review_parent_service.dart';
 export 'package:kidtrack/presentation/parentControllers/services/nursery_feedback_parent_service.dart';
@@ -404,6 +479,7 @@ export 'package:kidtrack/presentation/screens/children/documents/widgets/documen
 
 // ─── Authorized Pickup Screens ────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/children/authorized_pickup/controller.dart';
+export 'package:kidtrack/presentation/screens/children/authorized_pickup/pickup_prompt_sheet.dart';
 export 'package:kidtrack/presentation/screens/children/authorized_pickup/view.dart';
 export 'package:kidtrack/presentation/screens/children/authorized_pickup/widgets/pickup_card.dart';
 export 'package:kidtrack/presentation/screens/children/authorized_pickup/widgets/pickup_empty.dart';
@@ -440,8 +516,80 @@ export 'package:kidtrack/presentation/screens/owner/executive/owner_executive_da
 export 'package:kidtrack/presentation/screens/owner/executive/owner_executive_controller.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/models/owner_scope.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/services/owner_scope_service.dart';
+export 'package:kidtrack/Global/services/owner_photo_review_service.dart';
+export 'package:kidtrack/Global/services/photo_approval_policy_service.dart';
+export 'package:kidtrack/Global/services/fee_collection_window_service.dart';
+export 'package:kidtrack/Global/services/late_session_settings_service.dart';
+export 'package:kidtrack/Global/services/late_session_monitor_service.dart';
+export 'package:kidtrack/presentation/screens/manager/dashboard/models/late_session_entry.dart';
+export 'package:kidtrack/presentation/screens/owner/photo_review/owner_photo_review_settings_view.dart';
+export 'package:kidtrack/presentation/screens/manager/photo_approval/manager_photo_approval_settings_view.dart';
+export 'package:kidtrack/presentation/screens/manager/fee_window/manager_fee_window_view.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/owner_finance_tab.dart';
 export 'package:kidtrack/presentation/screens/owner/executive/owner_more_tab.dart';
+// ─── Owner Analytics Center ───────────────────────────────────────────────
+export 'package:kidtrack/presentation/screens/owner/analytics/services/owner_analytics_service.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/services/owner_finance_data_service.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/collection_rate/owner_collection_rate_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/collection_rate/owner_collection_rate_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_method/owner_revenue_method_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_method/owner_revenue_method_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_category/owner_revenue_category_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_category/owner_revenue_category_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/payment_behavior/owner_payment_behavior_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/payment_behavior/owner_payment_behavior_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_forecast/owner_revenue_forecast_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/revenue_forecast/owner_revenue_forecast_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/analytics_center_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/analytics_center_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/finance_trend/owner_finance_trend_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/finance_trend/owner_finance_trend_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/collections/owner_collections_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/collections/owner_collections_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/receivables/owner_receivables_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/receivables/owner_receivables_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/branch_pnl/owner_branch_pnl_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/branch_pnl/owner_branch_pnl_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/branch_health/owner_branch_health_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/branch_health/owner_branch_health_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/occupancy/owner_occupancy_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/occupancy/owner_occupancy_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/insights/owner_insights_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/insights/owner_insights_view.dart';
+// Phase-2 reports
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/churn/owner_churn_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/churn/owner_churn_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/engagement/owner_engagement_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/engagement/owner_engagement_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/teacher_perf/owner_teacher_perf_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/teacher_perf/owner_teacher_perf_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/evaluations/owner_evaluations_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/evaluations/owner_evaluations_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/attendance/owner_attendance_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/attendance/owner_attendance_view.dart';
+// New reports (academic, satisfaction, safety, staff-cost) + their shared data layer.
+export 'package:kidtrack/presentation/screens/owner/analytics/services/owner_reports_data_service.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/academic/owner_academic_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/academic/owner_academic_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/satisfaction/owner_satisfaction_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/satisfaction/owner_satisfaction_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/safety/owner_safety_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/safety/owner_safety_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/staff_cost/owner_staff_cost_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/staff_cost/owner_staff_cost_view.dart';
+// Phase-5 reports (funnel, curriculum, punctuality, care, events, homework).
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/funnel/owner_funnel_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/funnel/owner_funnel_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/curriculum/owner_curriculum_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/curriculum/owner_curriculum_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/punctuality/owner_punctuality_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/punctuality/owner_punctuality_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/care/owner_care_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/care/owner_care_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/events/owner_events_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/events/owner_events_view.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/homework/owner_homework_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/analytics/reports/homework/owner_homework_view.dart';
 export 'package:kidtrack/presentation/screens/finance/services/finance_analytics_service.dart';
 export 'package:kidtrack/presentation/screens/finance/models/finance_summary.dart';
 export 'package:kidtrack/presentation/screens/finance/finance_dashboard_controller.dart';
@@ -462,14 +610,24 @@ export 'package:kidtrack/presentation/screens/manager/more/manager_more_controll
 export 'package:kidtrack/presentation/screens/manager/dashboard/manager_dashboard_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/profile/manager_nursery_profile_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/profile/manager_nursery_profile_view.dart';
+export 'package:kidtrack/presentation/screens/setup/logo/nursery_logo_controller.dart';
+export 'package:kidtrack/presentation/screens/setup/logo/nursery_logo_view.dart';
 export 'package:kidtrack/presentation/screens/manager/application_file/manager_application_file_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/application_file/manager_application_file_view.dart';
+export 'package:kidtrack/presentation/screens/manager/privacy_policy/manager_privacy_policy_view.dart';
 export 'package:kidtrack/presentation/screens/manager/teacher_reports/manager_teacher_reports_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/teacher_reports/manager_teacher_reports_view.dart';
+export 'package:kidtrack/presentation/screens/manager/live_teaching/live_teaching_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/live_teaching/live_teaching_card.dart';
+export 'package:kidtrack/presentation/screens/manager/live_teaching/detail/teacher_today_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/applications/manager_applications_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/applications/manager_applications_view.dart';
 export 'package:kidtrack/presentation/screens/manager/presence/manager_presence_controller.dart';
 export 'package:kidtrack/presentation/screens/manager/presence/manager_presence_view.dart';
+export 'package:kidtrack/presentation/screens/manager/star_of_week/star_of_week_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/star_of_week/star_of_week_view.dart';
+export 'package:kidtrack/presentation/screens/manager/star_of_week/reveal/star_reveal_view.dart';
+export 'package:kidtrack/presentation/screens/manager/star_of_week/reveal/star_reveal_prompt.dart';
 
 // ─── Receptionist Check-In Screen ────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/receptionist/checkin/receptionist_checkin_controller.dart';
@@ -536,6 +694,26 @@ export 'package:kidtrack/Data/models/payment_category/payment_category_model.dar
 export 'package:kidtrack/presentation/screens/finance/categories/payment_categories_controller.dart';
 export 'package:kidtrack/presentation/screens/finance/categories/payment_categories_view.dart';
 export 'package:kidtrack/presentation/screens/finance/categories/widgets/category_sheet.dart';
+
+// ─── Reception — Daily Expenses (ad-hoc child charges) ──────────────────────────
+export 'package:kidtrack/presentation/screens/receptionist/child_charges/controller.dart';
+export 'package:kidtrack/presentation/screens/receptionist/child_charges/view.dart';
+
+export 'package:kidtrack/presentation/screens/settings/shifts/shifts_controller.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/shifts_view.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/widgets/shift_card.dart';
+export 'package:kidtrack/presentation/screens/settings/shifts/widgets/shift_sheet.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/reports_hub_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/attendance/weekly_attendance_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/attendance/weekly_attendance_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/evaluation/weekly_evaluation_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/evaluation/weekly_evaluation_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/learning/weekly_learning_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/learning/weekly_learning_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/financial/financial_report_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/financial/financial_report_view.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/monthly/monthly_report_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/reports/monthly/monthly_report_view.dart';
 export 'package:kidtrack/Global/services/finance_service.dart';
 export 'package:kidtrack/Global/services/monthly_invoice_service.dart';
 
@@ -548,6 +726,10 @@ export 'package:kidtrack/presentation/screens/owner/contacts/widgets/nursery_con
 export 'package:kidtrack/presentation/screens/shared/nursery_feedback/nursery_feedback_list_controller.dart';
 export 'package:kidtrack/presentation/screens/shared/nursery_feedback/nursery_feedback_list_view.dart';
 export 'package:kidtrack/presentation/screens/shared/nursery_whatsapp_sheet.dart';
+export 'package:kidtrack/presentation/screens/shared/activation_message.dart';
+export 'package:kidtrack/presentation/screens/shared/activation_qr.dart';
+export 'package:kidtrack/presentation/screens/shared/activation_sheet.dart';
+export 'package:kidtrack/presentation/screens/shared/activation_pdf.dart';
 
 // ─── Parent Invoices ───────────────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/parent/invoices/parent_invoices_controller.dart';
@@ -580,6 +762,22 @@ export 'package:kidtrack/presentation/screens/super_admin/support_tickets/widget
 // ─── Platform Subscription Billing ────────────────────────────────────────────
 export 'package:kidtrack/Data/models/platform_bill/platform_bill_model.dart';
 export 'package:kidtrack/Global/services/platform_billing_service.dart';
+export 'package:kidtrack/Data/models/platform_payment/platform_payment_info_model.dart';
+export 'package:kidtrack/Global/services/platform_payment_service.dart';
+export 'package:kidtrack/presentation/screens/super_admin/payment_accounts/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/payment_accounts/view.dart';
+export 'package:kidtrack/presentation/screens/manager/payment_accounts/controller.dart';
+export 'package:kidtrack/presentation/screens/manager/payment_accounts/view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/tutorial_videos/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/tutorial_videos/view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/showcase_albums/controller.dart';
+export 'package:kidtrack/presentation/screens/super_admin/showcase_albums/view.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/app_tutorial_controller.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/app_tutorial_view.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/player/tutorial_player_controller.dart';
+export 'package:kidtrack/presentation/screens/app_tutorial/player/tutorial_player_view.dart';
+export '../Global/services/kidtrack_campaign_service.dart';
+export '../Global/services/kidtrack_feedback_service.dart';
 export 'package:kidtrack/presentation/screens/billing/my_subscription_controller.dart';
 export 'package:kidtrack/presentation/screens/billing/my_subscription_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/billing/sa_billing_controller.dart';
@@ -617,6 +815,9 @@ export 'package:kidtrack/presentation/screens/parent/courses/view.dart';
 export 'package:kidtrack/Data/models/nursery_course/nursery_course_model.dart';
 export 'package:kidtrack/presentation/screens/parent/account/controller.dart';
 export 'package:kidtrack/presentation/screens/parent/account/view.dart';
+export 'package:kidtrack/presentation/screens/parent/notifications/notification_prefs_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/notifications/notification_prefs_sheet.dart';
+export 'package:kidtrack/presentation/screens/parent/privacy_policy/privacy_policy_sheet.dart';
 export 'package:kidtrack/presentation/screens/parent/home_location/controller.dart';
 export 'package:kidtrack/presentation/screens/parent/home_location/view.dart';
 export 'package:kidtrack/presentation/screens/owner/bus_assignment/controller.dart';
@@ -645,6 +846,8 @@ export 'package:kidtrack/presentation/screens/settings/join_us/join_us_view.dart
 export 'package:kidtrack/presentation/screens/settings/app_review/app_review_controller.dart';
 export 'package:kidtrack/presentation/screens/settings/app_review/app_review_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/cities/cities_view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/feedback_campaigns/kidtrack_campaigns_view.dart';
+export 'package:kidtrack/presentation/screens/super_admin/feedback_responses/kidtrack_feedback_responses_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/platform_content_view.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/contact_info_form_controller.dart';
 export 'package:kidtrack/presentation/screens/super_admin/platform_content/contact_info_form_view.dart';
@@ -664,6 +867,7 @@ export 'package:kidtrack/presentation/screens/shared/language_sheet.dart';
 export 'package:kidtrack/presentation/screens/shared/contact_sheet.dart';
 export 'package:kidtrack/presentation/screens/shared/logout_helper.dart';
 export 'package:kidtrack/presentation/screens/shared/role_switch_helper.dart';
+export 'package:kidtrack/presentation/screens/shared/role_switch_card.dart';
 
 // ─── Parent Requests History ──────────────────────────────────────────────────
 export 'package:kidtrack/presentation/screens/parent/requests_history/controller.dart';
@@ -681,12 +885,17 @@ export 'package:kidtrack/presentation/screens/setup/owner/controller.dart';
 export 'package:kidtrack/presentation/screens/setup/owner/view.dart';
 export 'package:kidtrack/presentation/screens/setup/manager/controller.dart';
 export 'package:kidtrack/presentation/screens/setup/manager/view.dart';
+export 'package:kidtrack/presentation/screens/setup/checklist/controller.dart';
+export 'package:kidtrack/presentation/screens/setup/checklist/view.dart';
 
 // ─── Receptionist Screens ─────────────────────────────────────────────────────
 export 'package:kidtrack/Data/models/pickup_request/pickup_request_model.dart';
 export 'package:kidtrack/presentation/parentControllers/services/pickup_request_parent_service.dart';
 export 'package:kidtrack/presentation/screens/receptionist/dashboard/controller.dart';
 export 'package:kidtrack/presentation/screens/receptionist/dashboard/view.dart';
+export 'package:kidtrack/presentation/screens/receptionist/absent/absent_today_controller.dart';
+export 'package:kidtrack/presentation/screens/receptionist/absent/widgets/absent_today_section.dart';
+export 'package:kidtrack/presentation/screens/receptionist/absent/widgets/absent_child_tile.dart';
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_dashboard_tab.dart';
 export 'package:kidtrack/presentation/screens/receptionist/tabs/receptionist_children_tab.dart';
 export 'package:kidtrack/presentation/screens/receptionist/children/add_child/add_child_view.dart';
@@ -721,6 +930,7 @@ export 'package:kidtrack/presentation/screens/teacher/home/teacher_home_tab.dart
 export 'package:kidtrack/presentation/screens/teacher/home/teacher_home_controller.dart';
 export 'package:kidtrack/presentation/screens/teacher/activity/teacher_activity_tab.dart';
 export 'package:kidtrack/presentation/screens/teacher/activity/teacher_activity_controller.dart';
+export 'package:kidtrack/presentation/screens/teacher/activity/activity_participants_mixin.dart';
 export 'package:kidtrack/presentation/screens/teacher/students/teacher_students_tab.dart';
 export 'package:kidtrack/presentation/screens/teacher/students/teacher_students_controller.dart';
 export 'package:kidtrack/presentation/screens/teacher/onboarding/teacher_onboarding_view.dart';
@@ -762,6 +972,7 @@ export 'package:kidtrack/presentation/screens/chat/chat_list_view.dart';
 export 'package:kidtrack/presentation/screens/chat/chat_thread_controller.dart';
 export 'package:kidtrack/presentation/screens/chat/chat_thread_view.dart';
 export 'package:kidtrack/presentation/screens/chat/parent_chat_launcher.dart';
+export 'package:kidtrack/presentation/screens/chat/staff_chat_launcher.dart';
 export 'package:kidtrack/presentation/screens/chat/widgets/chat_unread_badge.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
@@ -770,6 +981,10 @@ export 'package:kidtrack/Data/models/event_attendance/event_attendance_model.dar
 export 'package:kidtrack/Global/services/event_service.dart';
 export 'package:kidtrack/presentation/screens/receptionist/events/events_controller.dart';
 export 'package:kidtrack/presentation/screens/receptionist/events/events_view.dart';
+export 'package:kidtrack/presentation/screens/staff/events/staff_events_controller.dart';
+export 'package:kidtrack/presentation/screens/staff/events/staff_events_view.dart';
+export 'package:kidtrack/presentation/screens/staff/event_photos/event_photos_controller.dart';
+export 'package:kidtrack/presentation/screens/staff/event_photos/event_photos_view.dart';
 export 'package:kidtrack/Data/models/holiday/holiday_model.dart';
 export 'package:kidtrack/Global/services/holiday_service.dart';
 export 'package:kidtrack/presentation/screens/holidays/holidays_controller.dart';
@@ -796,14 +1011,39 @@ export 'package:kidtrack/presentation/screens/teacher/activity_reasons/evaluatio
 export 'package:kidtrack/presentation/screens/teacher/activity_reasons/evaluation_reasons_view.dart';
 
 // ── Child State Templates ─────────────────────────────────────────────────────
+export 'package:kidtrack/Data/models/child_state_template/child_state_option.dart';
 export 'package:kidtrack/Data/models/child_state_template/child_state_template_model.dart';
 export 'package:kidtrack/Global/services/child_state_service.dart';
+export 'package:kidtrack/Global/widgets/child_state_dropdown.dart';
+export 'package:kidtrack/Global/widgets/child_state_picker_sheet.dart';
+export 'package:kidtrack/Global/widgets/child_state_icons.dart';
 export 'package:kidtrack/presentation/parentControllers/services/child_state_template_parent_service.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/child_states_controller.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/child_states_view.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/child_state_edit_view.dart';
 export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_card.dart';
-export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_sheet.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/child_state_icon_picker.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/child_state_title_field.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/child_state_preview_tile.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/child_state_classification_toggle.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_classification_editor.dart';
+export 'package:kidtrack/presentation/screens/owner/child_states/widgets/state_option_editor_card.dart';
+// ── Activity Eval Levels (dynamic evaluations) ──────────────────────────────
+export 'package:kidtrack/Data/models/eval_level_template/eval_level_template_model.dart';
+export 'package:kidtrack/Global/widgets/eval_level_icons.dart';
+export 'package:kidtrack/Global/services/eval_level_service.dart';
+export 'package:kidtrack/Global/services/eval_levels_registry.dart';
+export 'package:kidtrack/presentation/parentControllers/services/eval_level_template_parent_service.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/eval_levels_controller.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/eval_levels_view.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/eval_level_edit_view.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/widgets/eval_level_card.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/widgets/eval_level_icon_picker.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/widgets/eval_level_color_picker.dart';
+export 'package:kidtrack/presentation/screens/owner/eval_levels/widgets/eval_level_score_selector.dart';
 export 'package:kidtrack/presentation/screens/teacher/home/classroom_states_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/schedule/manager_schedule_controller.dart';
+export 'package:kidtrack/presentation/screens/manager/schedule/manager_schedule_view.dart';
 export 'package:kidtrack/presentation/screens/teacher/schedule/teacher_weekly_schedule_controller.dart';
 export 'package:kidtrack/presentation/screens/teacher/schedule/teacher_weekly_schedule_view.dart';
 export 'package:kidtrack/presentation/screens/teacher/schedule/widgets/schedule_slot_card.dart';
@@ -813,3 +1053,18 @@ export 'package:kidtrack/presentation/screens/teacher/schedule/widgets/schedule_
 export 'package:kidtrack/presentation/screens/teacher/schedule/widgets/schedule_filter_bar.dart';
 export 'package:kidtrack/presentation/screens/teacher/home/widgets/weekly_schedule_widget.dart';
 export 'package:kidtrack/presentation/screens/teacher/home/widgets/quick_tasks_card.dart';
+// ── Guardian session notes (parent → nursery) ───────────────────────────────
+export 'package:kidtrack/Data/models/guardian_note/guardian_note_model.dart';
+export 'package:kidtrack/presentation/parentControllers/services/guardian_note_parent_service.dart';
+export 'package:kidtrack/presentation/screens/parent/link_book/guardian_note_controller.dart';
+export 'package:kidtrack/presentation/screens/parent/link_book/widgets/guardian_note_sheet.dart';
+export 'package:kidtrack/presentation/screens/parent/education/widgets/session_note_button.dart';
+export 'package:kidtrack/presentation/screens/staff/parent_notes/parent_notes_inbox_controller.dart';
+export 'package:kidtrack/presentation/screens/staff/parent_notes/parent_notes_inbox_view.dart';
+// ── Written exams (class-level exam + per-child result) ─────────────────────
+export 'package:kidtrack/Data/models/exam/exam_grade.dart';
+export 'package:kidtrack/Data/models/exam/exam_model.dart';
+export 'package:kidtrack/Data/models/exam/exam_result_model.dart';
+export 'package:kidtrack/presentation/parentControllers/services/exam_parent_service.dart';
+export 'package:kidtrack/presentation/parentControllers/services/exam_result_parent_service.dart';
+export 'package:kidtrack/presentation/screens/staff/exams/classroom_exams_view.dart';

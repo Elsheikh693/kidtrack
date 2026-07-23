@@ -53,7 +53,7 @@ class _OwnerCoursesTabState extends State<OwnerCoursesTab> {
           backgroundColor: AppColors.primary,
           icon: const Icon(Icons.add_rounded, color: Colors.white),
           label: Text(
-            'كورس جديد',
+            'coursesown13_new_course'.tr,
             style: context.typography.smSemiBold.copyWith(color: Colors.white),
           ),
         ),
@@ -142,12 +142,12 @@ class _CoursesHeader extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'الكورسات',
+                                'coursesown13_courses_title'.tr,
                                 style: context.typography.xlBold
                                     .copyWith(color: Colors.white),
                               ),
                               Text(
-                                'إدارة الكورسات التعليمية',
+                                'coursesown13_courses_subtitle'.tr,
                                 style: context.typography.xsRegular.copyWith(
                                     color: Colors.white.withOpacity(0.85)),
                               ),
@@ -182,19 +182,19 @@ class _CoursesHeader extends StatelessWidget {
                         children: [
                           _StatCard(
                             value: '$total',
-                            label: 'إجمالي الكورسات',
+                            label: 'coursesown13_stat_total'.tr,
                             icon: Icons.layers_rounded,
                           ),
                           SizedBox(width: 10.w),
                           _StatCard(
                             value: '$active',
-                            label: 'متاح',
+                            label: 'coursesown13_available'.tr,
                             icon: Icons.lock_open_rounded,
                           ),
                           SizedBox(width: 10.w),
                           _StatCard(
                             value: '$lessons',
-                            label: 'الدروس',
+                            label: 'coursesown13_stat_lessons'.tr,
                             icon: Icons.menu_book_rounded,
                           ),
                         ],
@@ -361,7 +361,7 @@ class _OwnerCourseCard extends StatelessWidget {
                   children: [
                     _Chip(
                       icon: Icons.play_lesson_rounded,
-                      label: '${course.lessonCount} درس',
+                      label: '${course.lessonCount} ${'coursesown13_lessons_suffix'.tr}',
                       color: catColor,
                     ),
                     SizedBox(width: 6.w),
@@ -375,7 +375,7 @@ class _OwnerCourseCard extends StatelessWidget {
                     if (course.ageGroup.isNotEmpty)
                       _Chip(
                         icon: Icons.child_care_rounded,
-                        label: '${course.ageGroup} سنة',
+                        label: '${course.ageGroup} ${'coursesown13_years_suffix'.tr}',
                         color: catColor,
                       ),
                   ],
@@ -400,7 +400,7 @@ class _OwnerCourseCard extends StatelessWidget {
                         ),
                         icon: Icon(Icons.menu_book_rounded, size: 14.sp, color: catColor),
                         label: Text(
-                          'إدارة الدروس',
+                          'coursesown13_manage_lessons'.tr,
                           style: context.typography.xsMedium.copyWith(color: catColor),
                         ),
                         style: OutlinedButton.styleFrom(
@@ -441,7 +441,7 @@ class _OwnerCourseCard extends StatelessWidget {
                             ),
                             SizedBox(width: 4.w),
                             Text(
-                              course.isActive ? 'متاح' : 'مقفول',
+                              course.isActive ? 'coursesown13_available'.tr : 'coursesown13_closed'.tr,
                               style: context.typography.xsMedium.copyWith(
                                 color: course.isActive ? const Color(0xFF059669) : Colors.grey.shade500,
                               ),
@@ -575,7 +575,7 @@ class _CardHeader extends StatelessWidget {
                         children: [
                           Icon(Icons.edit_outlined, size: 16.sp),
                           SizedBox(width: 8.w),
-                          const Text('تعديل'),
+                          Text('coursesown13_edit'.tr),
                         ],
                       ),
                     ),
@@ -585,7 +585,7 @@ class _CardHeader extends StatelessWidget {
                         children: [
                           Icon(Icons.delete_outline_rounded, size: 16.sp, color: const Color(0xFFDC2626)),
                           SizedBox(width: 8.w),
-                          Text('حذف', style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
+                          Text('coursesown13_delete'.tr, style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
                         ],
                       ),
                     ),
@@ -603,21 +603,21 @@ class _CardHeader extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
-          title: const Text('حذف الكورس'),
-          content: Text('هل تريد حذف "${course.title}" وكل دروسه؟'),
+          title: Text('coursesown13_delete_course_title'.tr),
+          content: Text('coursesown13_delete_course_confirm'.trParams({'title': course.title})),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء'),
+              child: Text('coursesown13_cancel'.tr),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 controller.deleteCourse(course);
               },
-              child: Text('حذف', style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
+              child: Text('coursesown13_delete'.tr, style: context.typography.smRegular.copyWith(color: const Color(0xFFDC2626))),
             ),
           ],
         ),
@@ -664,12 +664,12 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.school_outlined, size: 64.sp, color: Colors.grey.shade300),
           SizedBox(height: 12.h),
           Text(
-            'لا يوجد كورسات بعد',
+            'coursesown13_no_courses_title'.tr,
             style: context.typography.mdMedium.copyWith(color: Colors.grey.shade500),
           ),
           SizedBox(height: 6.h),
           Text(
-            'اضغط + لإنشاء أول كورس',
+            'coursesown13_no_courses_hint'.tr,
             style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
           ),
         ],

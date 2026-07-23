@@ -55,12 +55,29 @@ class BaseService<T> {
   Future<void> getData({
     required Map<String, dynamic> data,
     required Function(List<T?>) voidCallBack,
+    bool allBranches = false,
   }) async {
     final result = await useCase.getItems(data);
 
     result.fold(
       (l) => Loader.showError("Something went wrong"),
-      (r) => voidCallBack(r),
+      (r) => voidCallBack(allBranches ? r : _scopeToBranch(r)),
     );
+  }
+
+  /// Single choke point for cross-branch scoping. Drops records that belong to
+  /// a branch other than the current user's. No-op for unbound users
+  /// (owner / super-admin, whose session branch is empty) and for models that
+  /// don't implement [BranchScoped], so behaviour is unchanged everywhere a
+  /// model hasn't opted in. Pass `allBranches: true` on the rare screen where a
+  /// branch-bound user must legitimately see every branch. See [BranchScoped]
+  /// for the empty-scope (not-yet-backfilled) policy.
+  List<T?> _scopeToBranch(List<T?> items) {
+    final session = SessionService();
+    return items
+        .where((e) =>
+            e is! BranchScoped ||
+            session.seesAnyBranch((e as BranchScoped).scopeBranches))
+        .toList();
   }
 }

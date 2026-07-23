@@ -21,7 +21,7 @@ class _PickupVerificationViewState extends State<PickupVerificationView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'pickup_verification_title'.tr),

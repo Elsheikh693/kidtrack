@@ -5,7 +5,9 @@ import '../index/index_main.dart';
 // Entry
 const String forceUpdateView = "/ForceUpdateView";
 const String onBoardView = "/OnBoardView";
-const String loginView = "/LoginView";
+const String activationLandingView = "/ActivationLandingView";
+const String activationCodeView = "/ActivationCodeView";
+const String membershipPickerView = "/MembershipPickerView";
 // Nursery Discovery (pre-login)
 const String nurseryDiscoveryView = "/NurseryDiscoveryView";
 const String nurseryProfileView = "/NurseryProfileView";
@@ -26,6 +28,10 @@ const String supportTicketsView = "/SupportTicketsView";
 const String platformBillingView = "/PlatformBillingView";
 const String platformBillingDetailView = "/PlatformBillingDetailView";
 const String mySubscriptionView = "/MySubscriptionView";
+const String ownerPhotoReviewSettingsView = "/OwnerPhotoReviewSettingsView";
+const String managerPhotoApprovalSettingsView =
+    "/ManagerPhotoApprovalSettingsView";
+const String managerFeeWindowView = "/ManagerFeeWindowView";
 
 // Branches
 const String branchesView = "/BranchesView";
@@ -33,7 +39,6 @@ const String branchesView = "/BranchesView";
 // Staff
 const String staffView = "/StaffView";
 const String staffPermissionsView = "/StaffPermissionsView";
-const String staffFormView = "/StaffFormView";
 
 // Children
 const String childLeaveRequestsView = "/ChildLeaveRequestsView";
@@ -71,6 +76,41 @@ const String parentHomeView = "/ParentHomeView";
 const String parentOnboardingView = "/ParentOnboardingView";
 const String parentTodayScheduleView = "/ParentTodayScheduleView";
 const String parentPickupHistoryView = "/ParentPickupHistoryView";
+const String reportsHubView = "/ReportsHubView";
+const String weeklyAttendanceReportView = "/WeeklyAttendanceReportView";
+const String weeklyEvaluationReportView = "/WeeklyEvaluationReportView";
+const String weeklyLearningReportView = "/WeeklyLearningReportView";
+const String financialReportView = "/FinancialReportView";
+const String monthlyReportView = "/MonthlyReportView";
+// ─── Owner Analytics Center ───────────────────────────────────────────────
+const String ownerAnalyticsCenterView = "/OwnerAnalyticsCenterView";
+const String ownerFinanceTrendReportView = "/OwnerFinanceTrendReportView";
+const String ownerCollectionsReportView = "/OwnerCollectionsReportView";
+const String ownerReceivablesReportView = "/OwnerReceivablesReportView";
+const String ownerBranchPnlReportView = "/OwnerBranchPnlReportView";
+const String ownerBranchHealthReportView = "/OwnerBranchHealthReportView";
+const String ownerOccupancyReportView = "/OwnerOccupancyReportView";
+const String ownerInsightsReportView = "/OwnerInsightsReportView";
+const String ownerChurnReportView = "/OwnerChurnReportView";
+const String ownerEngagementReportView = "/OwnerEngagementReportView";
+const String ownerTeacherPerfReportView = "/OwnerTeacherPerfReportView";
+const String ownerEvaluationsReportView = "/OwnerEvaluationsReportView";
+const String ownerAttendanceReportView = "/OwnerAttendanceReportView";
+const String ownerCollectionRateReportView = "/OwnerCollectionRateReportView";
+const String ownerRevenueMethodReportView = "/OwnerRevenueMethodReportView";
+const String ownerRevenueCategoryReportView = "/OwnerRevenueCategoryReportView";
+const String ownerPaymentBehaviorReportView = "/OwnerPaymentBehaviorReportView";
+const String ownerRevenueForecastReportView = "/OwnerRevenueForecastReportView";
+const String ownerAcademicReportView = "/OwnerAcademicReportView";
+const String ownerSatisfactionReportView = "/OwnerSatisfactionReportView";
+const String ownerSafetyReportView = "/OwnerSafetyReportView";
+const String ownerStaffCostReportView = "/OwnerStaffCostReportView";
+const String ownerFunnelReportView = "/OwnerFunnelReportView";
+const String ownerCurriculumReportView = "/OwnerCurriculumReportView";
+const String ownerPunctualityReportView = "/OwnerPunctualityReportView";
+const String ownerCareReportView = "/OwnerCareReportView";
+const String ownerEventsReportView = "/OwnerEventsReportView";
+const String ownerHomeworkReportView = "/OwnerHomeworkReportView";
 const String parentHomeworkView = "/ParentHomeworkView";
 const String parentSubjectsAllView = "/ParentSubjectsAllView";
 const String parentClassPhotosView = "/ParentClassPhotosView";
@@ -80,8 +120,11 @@ const String parentHomeLocationView = "/ParentHomeLocationView";
 const String invoicesView = "/InvoicesView";
 const String paymentsView = "/PaymentsView";
 const String paymentCategoriesView = "/PaymentCategoriesView";
+const String childChargesView = "/ChildChargesView";
+const String shiftsView = "/ShiftsView";
 const String nurseryContactsView = "/NurseryContactsView";
 const String nurseryFeedbackListView = "/NurseryFeedbackListView";
+const String starOfWeekView = "/StarOfWeekView";
 const String parentInvoicesView = "/ParentInvoicesView";
 const String overdueView = "/OverdueView";
 
@@ -89,6 +132,8 @@ const String overdueView = "/OverdueView";
 const String pickupRequestsView = "/PickupRequestsView";
 const String pickupVerificationView = "/PickupVerificationView";
 const String receptionistEventsView = "/ReceptionistEventsView";
+const String staffEventsListView = "/StaffEventsListView";
+const String staffEventPhotosView = "/StaffEventPhotosView";
 const String latePayersView = "/LatePayersView";
 const String holidaysView = "/HolidaysView";
 
@@ -130,17 +175,30 @@ const String aboutUsFormView = "/AboutUsFormView";
 const String supportRequestsAdminView = "/SupportRequestsAdminView";
 const String appReviewsAdminView = "/AppReviewsAdminView";
 const String citiesView = "/CitiesView";
+const String kidtrackCampaignsView = "/KidtrackCampaignsView";
+const String kidtrackFeedbackResponsesView = "/KidtrackFeedbackResponsesView";
+const String platformPaymentAccountsView = "/PlatformPaymentAccountsView";
+const String saTutorialVideosView = "/SaTutorialVideosView";
+const String saShowcaseAlbumsView = "/SaShowcaseAlbumsView";
+
+// App Tutorial ("Learn the App") — shared across roles
+const String appTutorialView = "/AppTutorialView";
+const String tutorialPlayerView = "/TutorialPlayerView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
+const String managerNurseryLogoView = "/ManagerNurseryLogoView";
+const String nurseryPaymentAccountsView = "/NurseryPaymentAccountsView";
 const String managerApplicationFileView = "/ManagerApplicationFileView";
+const String managerPrivacyPolicyView = "/ManagerPrivacyPolicyView";
 const String managerTeacherReportsView = "/ManagerTeacherReportsView";
 const String managerApplicationsView = "/ManagerApplicationsView";
 const String managerPresenceView = "/ManagerPresenceView";
 
 // First-Login Setup
-const String ownerSetupView        = "/OwnerSetupView";
-const String managerSetupView      = "/ManagerSetupView";
+const String ownerSetupView = "/OwnerSetupView";
+const String managerSetupView = "/ManagerSetupView";
+const String setupChecklistView = "/SetupChecklistView";
 const String teacherOnboardingView = "/TeacherOnboardingView";
 const String teacherAcademicSettingsView = "/TeacherAcademicSettingsView";
 
@@ -152,6 +210,15 @@ const String evaluationReasonsView = "/EvaluationReasonsView";
 
 // Child State Templates (Settings)
 const String childStatesView = "/ChildStatesView";
+
+// Activity Eval Levels (Settings)
+const String evalLevelsView = "/EvalLevelsView";
+
+// Assessment Engine — Templates (manager/supervisor)
+const String assessmentTemplatesView = "/AssessmentTemplatesView";
+const String assessmentRunsView = "/AssessmentRunsView";
+const String teacherAssessmentsView = "/TeacherAssessmentsView";
+const String parentAssessmentsView = "/ParentAssessmentsView";
 
 // Teacher Weekly Schedule
 const String teacherWeeklyScheduleView = "/TeacherWeeklyScheduleView";
@@ -176,11 +243,29 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 400),
       ),
       GetPage(
-        name: loginView,
-        page: () => const LoginView(),
+        name: activationLandingView,
+        page: () => const ActivationLandingView(),
+        binding: Binding(),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 350),
+      ),
+      GetPage(
+        name: activationCodeView,
+        page: () => const ActivationCodeView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 400),
+      ),
+      // Post-login role picker (no guard — reached mid-auth, before the session
+      // is saved, so the access gate must not bounce it).
+      GetPage(
+        name: membershipPickerView,
+        page: () => const MembershipPickerView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => MembershipPickerController()),
+        ),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 300),
       ),
 
       // ── Nursery Discovery (no guard — pre-login) ───────────────────────────
@@ -292,20 +377,6 @@ class Routes {
         page: () => const StaffPermissionsView(),
         binding: BindingsBuilder(
           () => Get.lazyPut(() => StaffPermissionsController()),
-        ),
-        transition: Transition.cupertino,
-        transitionDuration: const Duration(milliseconds: 300),
-        middlewares: guard,
-      ),
-      GetPage(
-        name: staffFormView,
-        page: () => const StaffFormView(),
-        binding: BindingsBuilder(
-          () => Get.lazyPut(
-            () => StaffFormController(
-              initialStaff: Get.arguments as StaffModel?,
-            ),
-          ),
         ),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -538,6 +609,301 @@ class Routes {
         middlewares: guard,
       ),
 
+      // ── Reception — Daily Expenses (ad-hoc child charges) ─────────────────
+      GetPage(
+        name: childChargesView,
+        page: () => const ChildChargesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Nursery Shifts ────────────────────────────────────────────────────
+      GetPage(
+        name: shiftsView,
+        page: () => const ShiftsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Parent Reports ────────────────────────────────────────────────────
+      GetPage(
+        name: reportsHubView,
+        page: () => const ReportsHubView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyAttendanceReportView,
+        page: () => const WeeklyAttendanceView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyEvaluationReportView,
+        page: () => const WeeklyEvaluationView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: weeklyLearningReportView,
+        page: () => const WeeklyLearningView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: financialReportView,
+        page: () => const FinancialReportView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: monthlyReportView,
+        page: () => const MonthlyReportView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      // ─── Owner Analytics Center ─────────────────────────────────────────
+      GetPage(
+        name: ownerAnalyticsCenterView,
+        page: () => const AnalyticsCenterView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerFinanceTrendReportView,
+        page: () => const OwnerFinanceTrendView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCollectionsReportView,
+        page: () => const OwnerCollectionsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerReceivablesReportView,
+        page: () => const OwnerReceivablesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerBranchPnlReportView,
+        page: () => const OwnerBranchPnlView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerBranchHealthReportView,
+        page: () => const OwnerBranchHealthView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerOccupancyReportView,
+        page: () => const OwnerOccupancyView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerInsightsReportView,
+        page: () => const OwnerInsightsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerChurnReportView,
+        page: () => const OwnerChurnView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCollectionRateReportView,
+        page: () => const OwnerCollectionRateView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueMethodReportView,
+        page: () => const OwnerRevenueMethodView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueCategoryReportView,
+        page: () => const OwnerRevenueCategoryView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerPaymentBehaviorReportView,
+        page: () => const OwnerPaymentBehaviorView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerRevenueForecastReportView,
+        page: () => const OwnerRevenueForecastView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEngagementReportView,
+        page: () => const OwnerEngagementView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerTeacherPerfReportView,
+        page: () => const OwnerTeacherPerfView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEvaluationsReportView,
+        page: () => const OwnerEvaluationsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerAttendanceReportView,
+        page: () => const OwnerAttendanceView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerAcademicReportView,
+        page: () => const OwnerAcademicView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerSatisfactionReportView,
+        page: () => const OwnerSatisfactionView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerSafetyReportView,
+        page: () => const OwnerSafetyView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerStaffCostReportView,
+        page: () => const OwnerStaffCostView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerFunnelReportView,
+        page: () => const OwnerFunnelView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCurriculumReportView,
+        page: () => const OwnerCurriculumView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerPunctualityReportView,
+        page: () => const OwnerPunctualityView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCareReportView,
+        page: () => const OwnerCareView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEventsReportView,
+        page: () => const OwnerEventsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerHomeworkReportView,
+        page: () => const OwnerHomeworkView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
       // ── Nursery Contact Numbers ───────────────────────────────────────────
       GetPage(
         name: nurseryContactsView,
@@ -643,11 +1009,51 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      GetPage(
+        name: ownerPhotoReviewSettingsView,
+        page: () => const OwnerPhotoReviewSettingsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: managerPhotoApprovalSettingsView,
+        page: () => const ManagerPhotoApprovalSettingsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: managerFeeWindowView,
+        page: () => const ManagerFeeWindowView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Platform Content Management (Super Admin) ──────────────────────────
       GetPage(
         name: platformContentView,
         page: () => const PlatformContentView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: platformPaymentAccountsView,
+        page: () => const PlatformPaymentAccountsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: nurseryPaymentAccountsView,
+        page: () => const NurseryPaymentAccountsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -688,6 +1094,69 @@ class Routes {
       GetPage(
         name: citiesView,
         page: () => const CitiesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: saTutorialVideosView,
+        page: () => const SaTutorialVideosView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SaTutorialVideosController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: saShowcaseAlbumsView,
+        page: () => const SaShowcaseAlbumsView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SaShowcaseAlbumsController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: starOfWeekView,
+        page: () => const StarOfWeekView(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: appTutorialView,
+        page: () => const AppTutorialView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => AppTutorialController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: tutorialPlayerView,
+        page: () => const TutorialPlayerView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => TutorialPlayerController(), fenix: true),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: kidtrackCampaignsView,
+        page: () => const KidtrackCampaignsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: kidtrackFeedbackResponsesView,
+        page: () => const KidtrackFeedbackResponsesView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -785,10 +1254,30 @@ class Routes {
         middlewares: guard,
       ),
 
+      // ── Manager Nursery Logo (setup step — logo only) ──────────────────────
+      GetPage(
+        name: managerNurseryLogoView,
+        page: () => const NurseryLogoView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
       // ── Manager Application File (fee, terms, apply-form config) ────────────
       GetPage(
         name: managerApplicationFileView,
         page: () => const ManagerApplicationFileView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Manager Privacy Policy (numbered clauses, shown to guardians) ───────
+      GetPage(
+        name: managerPrivacyPolicyView,
+        page: () => const ManagerPrivacyPolicyView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -833,7 +1322,9 @@ class Routes {
       GetPage(
         name: ownerSetupView,
         page: () => const OwnerSetupView(),
-        binding: BindingsBuilder(() => Get.lazyPut(() => OwnerSetupController())),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => OwnerSetupController()),
+        ),
         transition: Transition.fade,
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: guard,
@@ -843,7 +1334,21 @@ class Routes {
       GetPage(
         name: managerSetupView,
         page: () => const ManagerSetupView(),
-        binding: BindingsBuilder(() => Get.lazyPut(() => ManagerSetupController())),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => ManagerSetupController()),
+        ),
+        transition: Transition.fade,
+        transitionDuration: const Duration(milliseconds: 400),
+        middlewares: guard,
+      ),
+
+      // ── First-Login Setup Checklist (owner + manager) ──────────────────────
+      GetPage(
+        name: setupChecklistView,
+        page: () => const SetupChecklistView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => SetupChecklistController()),
+        ),
         transition: Transition.fade,
         transitionDuration: const Duration(milliseconds: 400),
         middlewares: guard,
@@ -912,6 +1417,30 @@ class Routes {
         name: receptionistEventsView,
         page: () => const ReceptionistEventsView(),
         binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Staff Events list (all staff) ──────────────────────────────────────
+      GetPage(
+        name: staffEventsListView,
+        page: () => const StaffEventsView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => StaffEventsController()),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Staff Event Photos (all staff) ─────────────────────────────────────
+      GetPage(
+        name: staffEventPhotosView,
+        page: () => const EventPhotosView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => EventPhotosController()),
+        ),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
@@ -990,6 +1519,56 @@ class Routes {
       GetPage(
         name: childStatesView,
         page: () => const ChildStatesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Activity Eval Levels ──────────────────────────────────────────────
+      GetPage(
+        name: evalLevelsView,
+        page: () => const EvalLevelsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Assessment Templates ──────────────────────────────────────────────
+      GetPage(
+        name: assessmentTemplatesView,
+        page: () => const AssessmentTemplatesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Assessment Runs (hub) ─────────────────────────────────────────────
+      GetPage(
+        name: assessmentRunsView,
+        page: () => const AssessmentRunsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Teacher Assessments (grading) ─────────────────────────────────────
+      GetPage(
+        name: teacherAssessmentsView,
+        page: () => const TeacherAssessmentsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Parent Assessments (results) ──────────────────────────────────────
+      GetPage(
+        name: parentAssessmentsView,
+        page: () => const ParentAssessmentsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

@@ -1,16 +1,11 @@
 import '../../../../../index/index_main.dart';
 
-// Shift palette (matches the approved mock).
-const _morning = Color(0xFFF59E0B);
-const _morningBg = Color(0xFFFEF6E7);
-const _between = Color(0xFF14B8A6);
-const _betweenBg = Color(0xFFE6FAF7);
-const _evening = Color(0xFF6366F1);
-const _eveningBg = Color(0xFFEEF0FE);
 const _line = Color(0xFFEEF0F4);
 const _ink = Color(0xFF111827);
 const _muted = Color(0xFF8A93A4);
 
+/// Horizontal count-by-shift filter driven by the nursery's dynamic shifts.
+/// Tapping a card filters the roster to that shift; tapping it again clears.
 class ShiftSwitcher extends StatelessWidget {
   final ChildListController controller;
   const ShiftSwitcher({super.key, required this.controller});
@@ -19,62 +14,58 @@ class ShiftSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 4.h),
-      child: Obx(
-        () => Row(
-          children: [
-            Expanded(
-              child: _ShiftCard(
-                value: 'morning',
-                label: 'shift_morning'.tr,
-                count: controller.morningCount,
-                icon: Icons.wb_sunny_rounded,
-                color: _morning,
-                bg: _morningBg,
-                selected: controller.selectedShift.value == 'morning',
-                onTap: () => _toggle('morning'),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: _ShiftCard(
-                value: 'between',
-                label: 'shift_between'.tr,
-                count: controller.betweenCount,
-                icon: Icons.brightness_6_rounded,
-                color: _between,
-                bg: _betweenBg,
-                selected: controller.selectedShift.value == 'between',
-                onTap: () => _toggle('between'),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: _ShiftCard(
-                value: 'evening',
-                label: 'shift_evening'.tr,
-                count: controller.eveningCount,
-                icon: Icons.bedtime_rounded,
-                color: _evening,
-                bg: _eveningBg,
-                selected: controller.selectedShift.value == 'evening',
-                onTap: () => _toggle('evening'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      child: Obx(() {
+        final shifts = controller.shifts;
+        if (shifts.isEmpty) return const SizedBox.shrink();
+        final selected = controller.selectedShift.value;
 
-  void _toggle(String shift) {
-    controller.setShift(
-      controller.selectedShift.value == shift ? null : shift,
+        Widget card(ShiftModel s) {
+          final vis = shiftVisuals(s.startMinutes);
+          return _ShiftCard(
+            label: s.name,
+            count: controller.countForShift(s.key),
+            icon: vis.icon,
+            color: vis.color,
+            bg: vis.bg,
+            selected: selected == s.key,
+            onTap: () => controller.setShift(selected == s.key ? null : s.key),
+          );
+        }
+
+        // Up to 3 shifts fill the row; more become a horizontal scroll so the
+        // cards keep a comfortable size.
+        if (shifts.length <= 3) {
+          return Row(
+            children: [
+              for (var i = 0; i < shifts.length; i++) ...[
+                if (i > 0) SizedBox(width: 10.w),
+                Expanded(child: card(shifts[i])),
+              ],
+            ],
+          );
+        }
+        return LayoutBuilder(
+          builder: (context, c) {
+            final w = (c.maxWidth - 20.w) / 3;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (var i = 0; i < shifts.length; i++) ...[
+                    if (i > 0) SizedBox(width: 10.w),
+                    SizedBox(width: w, child: card(shifts[i])),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      }),
     );
   }
 }
 
 class _ShiftCard extends StatelessWidget {
-  final String value;
   final String label;
   final int count;
   final IconData icon;
@@ -84,7 +75,6 @@ class _ShiftCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ShiftCard({
-    required this.value,
     required this.label,
     required this.count,
     required this.icon,
@@ -137,6 +127,8 @@ class _ShiftCard extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: context.typography.displaySmBold.copyWith(
                 fontSize: 13,
                 color: selected ? _ink : _muted,

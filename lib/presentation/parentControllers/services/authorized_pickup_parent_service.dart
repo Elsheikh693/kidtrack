@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../index/index_main.dart';
 
 class AuthorizedPickupParentService {
@@ -6,6 +8,25 @@ class AuthorizedPickupParentService {
 
   Future<void> getAll({required Function(List<AuthorizedPickupModel?>) callBack}) async {
     await _service.getData(data: {}, voidCallBack: callBack);
+  }
+
+  /// Uploads an authorized person's ID-card photo to Firebase Storage and
+  /// returns its public download URL, or `null` on failure. The [file] is
+  /// expected to already be compressed (e.g. via [PickedImage]).
+  Future<String?> uploadIdImage({
+    required String nurseryId,
+    required String childId,
+    required String pickupId,
+    required File file,
+  }) async {
+    try {
+      final ref = FirebaseStorage.instance
+          .ref('nurseries/$nurseryId/children/$childId/pickups/$pickupId.jpg');
+      await ref.putFile(file);
+      return await ref.getDownloadURL();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> add({

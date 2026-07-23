@@ -49,7 +49,7 @@ class _LessonViewerViewState extends State<LessonViewerView> {
     final catColor = course.category.color;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(
@@ -71,7 +71,10 @@ class _LessonViewerViewState extends State<LessonViewerView> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'درس ${args.lessonIndex + 1} من ${args.totalLessons}',
+                    'coursesown13_lesson_x_of_y'.trParams({
+                      'index': '${args.lessonIndex + 1}',
+                      'total': '${args.totalLessons}',
+                    }),
                     style: context.typography.xsRegular.copyWith(color: Colors.white54),
                   ),
                 ],
@@ -154,7 +157,7 @@ class _LessonViewerViewState extends State<LessonViewerView> {
                                   Icon(Icons.check_circle_rounded, size: 12.sp, color: const Color(0xFF059669)),
                                   SizedBox(width: 4.w),
                                   Text(
-                                    'مكتمل',
+                                    'coursesown13_completed'.tr,
                                     style: context.typography.xsMedium.copyWith(color: Color(0xFF059669)),
                                   ),
                                 ],
@@ -175,7 +178,7 @@ class _LessonViewerViewState extends State<LessonViewerView> {
                           Icon(Icons.schedule_rounded, size: 13.sp, color: Colors.grey.shade500),
                           SizedBox(width: 4.w),
                           Text(
-                            '${lesson.durationMinutes} دقيقة',
+                            '${lesson.durationMinutes} ${'coursesown13_minutes_full'.tr}',
                             style: context.typography.xsRegular.copyWith(color: Colors.grey.shade500),
                           ),
                         ],
@@ -228,16 +231,16 @@ class _LessonContent extends StatelessWidget {
       LessonContentType.video => _UrlContent(
           url: lesson.contentUrl,
           icon: Icons.play_circle_rounded,
-          label: 'فتح الفيديو',
+          label: 'coursesown13_open_video'.tr,
           color: const Color(0xFFDC2626),
-          hint: 'سيتم فتح الفيديو في المتصفح',
+          hint: 'coursesown13_open_video_hint'.tr,
         ),
       LessonContentType.pdf   => _UrlContent(
           url: lesson.contentUrl,
           icon: Icons.picture_as_pdf_rounded,
-          label: 'فتح الـ PDF',
+          label: 'coursesown13_open_pdf'.tr,
           color: const Color(0xFFD97706),
-          hint: 'سيتم فتح الملف في المتصفح',
+          hint: 'coursesown13_open_file_hint'.tr,
         ),
       LessonContentType.image => _ImageContent(url: lesson.contentUrl),
     };
@@ -257,7 +260,7 @@ class _TextContent extends StatelessWidget {
     if (text == null || text!.isEmpty) {
       return Center(
         child: Text(
-          'لا يوجد محتوى نصي',
+          'coursesown13_no_text_content'.tr,
           style: context.typography.smRegular.copyWith(color: Colors.grey.shade400),
         ),
       );
@@ -315,7 +318,7 @@ class _UrlContentState extends State<_UrlContent> {
     if (widget.url == null || widget.url!.isEmpty) {
       return Center(
         child: Text(
-          'لم يتم إضافة رابط بعد',
+          'coursesown13_no_link'.tr,
           style: context.typography.smRegular.copyWith(color: Colors.grey.shade400),
         ),
       );
@@ -381,7 +384,7 @@ class _UrlContentState extends State<_UrlContent> {
                 Icon(Icons.check_circle_outline_rounded, size: 16.sp, color: const Color(0xFF059669)),
                 SizedBox(width: 8.w),
                 Text(
-                  'تم فتح المحتوى',
+                  'coursesown13_content_opened'.tr,
                   style: context.typography.xsMedium.copyWith(color: Color(0xFF059669)),
                 ),
               ],
@@ -403,7 +406,7 @@ class _ImageContent extends StatelessWidget {
   Widget build(BuildContext context) {
     if (url == null || url!.isEmpty) {
       return Center(
-        child: Text('لم يتم إضافة صورة', style: context.typography.smRegular.copyWith(color: Colors.grey.shade400)),
+        child: Text('coursesown13_no_image'.tr, style: context.typography.smRegular.copyWith(color: Colors.grey.shade400)),
       );
     }
     return GestureDetector(

@@ -228,7 +228,7 @@ void showFieldEditorSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
     ),
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(ctx).viewInsets.bottom,

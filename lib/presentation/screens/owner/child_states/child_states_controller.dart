@@ -2,6 +2,7 @@ import '../../../../index/index_main.dart';
 
 class ChildStatesController extends GetxController {
   late final ChildStateTemplateParentService _service;
+  final _session = SessionService();
 
   final RxList<ChildStateTemplateModel> items =
       <ChildStateTemplateModel>[].obs;
@@ -22,21 +23,52 @@ class ChildStatesController extends GetxController {
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
       },
     );
+    if (items.isEmpty) {
+      await _seedDefaults();
+    }
     isLoading.value = false;
   }
 
-  void openAdd() => _openSheet(null);
-  void openEdit(ChildStateTemplateModel item) => _openSheet(item);
+  /// First-run seeding: when the nursery has no states yet, create the ready-made
+  /// ones (الأكل with its evaluation tree, النوم, الحمام). The owner can edit or
+  /// delete them afterwards.
+  Future<void> _seedDefaults() async {
+    final nurseryId = _session.nurseryId ?? '';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    for (var i = 0; i < ChildStateDefaults.seed.length; i++) {
+      final d = ChildStateDefaults.seed[i];
+      final model = ChildStateTemplateModel(
+        key: d.key,
+        nurseryId: nurseryId,
+        title: d.titleKey.tr,
+        icon: d.icon,
+        createdAt: now + i,
+        kind: d.kind,
+        options: d.options
+            .map((o) => ChildStateOption(
+                  label: o.labelKey.tr,
+                  subOptions: o.subLabelKeys.map((k) => k.tr).toList(),
+                ))
+            .toList(),
+      );
+      await _service.add(item: model, callBack: (_) {}, silent: true);
+    }
+    await _service.getAll(
+      callBack: (list) {
+        items.value = list.whereType<ChildStateTemplateModel>().toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      },
+    );
+  }
 
-  void _openSheet(ChildStateTemplateModel? item) {
-    Get.bottomSheet(
-      ChildStateSheet(existing: item),
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-    ).then((_) => loadData());
+  void openAdd() => _openEditor(null);
+  void openEdit(ChildStateTemplateModel item) => _openEditor(item);
+
+  void _openEditor(ChildStateTemplateModel? item) {
+    Get.to(
+      () => ChildStateEditView(existing: item),
+      transition: Transition.cupertino,
+    )?.then((_) => loadData());
   }
 
   Future<void> delete(ChildStateTemplateModel item) async {

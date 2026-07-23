@@ -261,7 +261,7 @@ class _StartButton extends StatelessWidget {
           ],
         ),
         child: Text(
-          'بدء',
+          'teacheract33_start'.tr,
           style: context.typography.xsMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,

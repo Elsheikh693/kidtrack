@@ -137,14 +137,14 @@ class TeacherAssessmentController extends GetxController {
       // Refresh to show saved state
       await _loadChildren();
       Get.snackbar(
-        'تم الحفظ ✅',
-        'تم حفظ تقييمات ${children.length} طالب',
+        'teacheract34_saved_title'.tr,
+        'teacheract34_saved_body'.trParams({'count': '${children.length}'}),
         backgroundColor: const Color(0xFF16A34A).withValues(alpha: 0.1),
         colorText: const Color(0xFF166534),
         duration: const Duration(seconds: 2),
       );
     } catch (_) {
-      Get.snackbar('خطأ', 'تعذر حفظ التقييمات، حاولي مرة أخرى');
+      Get.snackbar('teacheract34_error_title'.tr, 'teacheract34_save_error'.tr);
     } finally {
       isSaving.value = false;
     }

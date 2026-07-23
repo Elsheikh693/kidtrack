@@ -126,12 +126,7 @@ class NurseryProfileController extends GetxController {
       );
 
   Future<void> _openWhatsapp(String raw) async {
-    final number = MakeCall.formatForWhatsApp(raw);
-    if (number.isEmpty) return;
-    final uri = Uri.parse('https://wa.me/$number');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await MakeCall.openWhatsApp(raw);
   }
 
   Future<void> openMaps() async {
@@ -159,7 +154,7 @@ class NurseryProfileController extends GetxController {
     }
   }
 
-  void goToLogin() => Get.toNamed(loginView, arguments: nursery);
+  void goToLogin() => openActivationLoginSheet();
 
   void goToApply() =>
       Get.toNamed(onlineApplicationView, arguments: nursery);

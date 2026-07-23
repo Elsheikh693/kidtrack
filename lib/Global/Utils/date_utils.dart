@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class DatesUtilis {
@@ -51,19 +52,29 @@ class DatesUtilis {
   }
 
   static String humanizeTimestamp(int? timestamp) {
-    if (timestamp == null) return "غير معروف";
+    if (timestamp == null) return 'datamodels5_unknown'.tr;
 
     final now = DateTime.now();
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
     final diff = now.difference(date);
 
-    if (diff.inMinutes < 1) return "منذ لحظات";
-    if (diff.inMinutes < 60) return "منذ ${diff.inMinutes} دقيقة";
-    if (diff.inHours < 24) return "منذ ${diff.inHours} ساعة";
-    if (diff.inDays < 30) return "منذ ${diff.inDays} يوم";
-    if (diff.inDays < 365) return "منذ ${diff.inDays ~/ 30} شهر";
+    if (diff.inMinutes < 1) return 'datamodels5_moments_ago'.tr;
+    if (diff.inMinutes < 60) {
+      return 'datamodels5_minutes_ago'
+          .trParams({'count': '${diff.inMinutes}'});
+    }
+    if (diff.inHours < 24) {
+      return 'datamodels5_hours_ago'.trParams({'count': '${diff.inHours}'});
+    }
+    if (diff.inDays < 30) {
+      return 'datamodels5_days_ago'.trParams({'count': '${diff.inDays}'});
+    }
+    if (diff.inDays < 365) {
+      return 'datamodels5_months_ago'
+          .trParams({'count': '${diff.inDays ~/ 30}'});
+    }
 
-    return "منذ ${diff.inDays ~/ 365} سنة";
+    return 'datamodels5_years_ago'.trParams({'count': '${diff.inDays ~/ 365}'});
   }
 
   static void checkDateEndBiggerThanStart({
@@ -80,7 +91,7 @@ class DatesUtilis {
           // End date is before start date
           onValidationResult(
             true,
-            "تاريخ النهاية يجب أن يكون بعد تاريخ البداية",
+            'datamodels5_end_after_start'.tr,
           );
         } else {
           // Calculate the duration between the two dates
@@ -88,10 +99,10 @@ class DatesUtilis {
 
           if (duration.inDays < 30) {
             // Duration is less than 30 days
-            onValidationResult(true, "المدة يجب أن تكون على الأقل 30 يومًا");
+            onValidationResult(true, 'datamodels5_duration_min_30'.tr);
           } else if (duration.inDays > 365) {
             // Duration is more than 1 year
-            onValidationResult(true, "المدة يجب أن لا تتجاوز سنة واحدة");
+            onValidationResult(true, 'datamodels5_duration_max_year'.tr);
           } else {
             // Dates and duration are valid
             onValidationResult(false, null); // No error
@@ -99,7 +110,7 @@ class DatesUtilis {
         }
       } else {
         // One or both dates could not be parsed
-        onValidationResult(true, "تأكد من صحة التواريخ المدخلة");
+        onValidationResult(true, 'datamodels5_invalid_dates'.tr);
       }
     }
   }

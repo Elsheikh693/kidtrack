@@ -17,11 +17,6 @@ class UnpaidChildTile extends StatelessWidget {
   final bool hasRecipients;
   final VoidCallback onSend;
 
-  String get _initial {
-    final t = child.fullName.trim();
-    return t.isEmpty ? '؟' : t.characters.first;
-  }
-
   @override
   Widget build(BuildContext context) {
     const accent = AppColors.activityAmberBrand;
@@ -40,18 +35,11 @@ class UnpaidChildTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 42.w,
-            height: 42.w,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              _initial,
-              style: context.typography.smSemiBold.copyWith(color: accent),
-            ),
+          ChildAvatar(
+            name: child.fullName,
+            imageUrl: child.profileImage,
+            size: 42.w,
+            color: accent,
           ),
           SizedBox(width: 12.w),
           Expanded(

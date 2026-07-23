@@ -18,62 +18,95 @@ class SaActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(20.w),
-        margin: EdgeInsets.only(bottom: 14.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10.r,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 54.w,
-              height: 54.h,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14.r),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        splashColor: color.withValues(alpha: 0.08),
+        highlightColor: color.withValues(alpha: 0.04),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: const Color(0xFFEEF1F6)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1E293B).withValues(alpha: 0.05),
+                blurRadius: 14.r,
+                offset: Offset(0, 5.h),
               ),
-              child: Icon(icon, color: color, size: 26.sp),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: context.typography.mdBold.copyWith(
-                      fontSize: 16,
-                      color: const Color(0xFF1E293B),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(18.w),
+            child: Row(
+              children: [
+                Container(
+                  width: 56.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        color.withValues(alpha: 0.18),
+                        color.withValues(alpha: 0.08),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(16.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.18),
+                        blurRadius: 12.r,
+                        offset: Offset(0, 5.h),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    subtitle,
-                    style: context.typography.xsRegular.copyWith(
-                      fontSize: 13,
-                      color: const Color(0xFF64748B),
-                    ),
+                  child: Icon(icon, color: color, size: 27.sp),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: context.typography.mdBold.copyWith(
+                          fontSize: 16,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        subtitle,
+                        style: context.typography.xsRegular.copyWith(
+                          fontSize: 13,
+                          height: 1.35,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  width: 30.w,
+                  height: 30.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13.sp,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
             ),
-            Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16.sp,
-              color: Colors.grey.shade400,
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -28,12 +28,12 @@ class NoActivityCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: AppColors.activityGreen.withValues(alpha: 0.20),
+            color: AppColors.activityPurple.withValues(alpha: 0.20),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.activityGreen.withValues(alpha: 0.06),
+              color: AppColors.activityPurple.withValues(alpha: 0.06),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
@@ -47,12 +47,12 @@ class NoActivityCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.activityGreen.withValues(alpha: 0.08),
+                    color: AppColors.activityPurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
                     Icons.play_circle_outline_rounded,
-                    color: AppColors.activityGreen,
+                    color: AppColors.activityPurple,
                     size: 24,
                   ),
                 ),
@@ -63,7 +63,8 @@ class NoActivityCard extends StatelessWidget {
                     children: [
                       Text(
                         hasActivities && remaining > 0
-                            ? '$remaining أنشطة متبقية اليوم'
+                            ? 'teacherhom35_activities_remaining_today'
+                                .trParams({'count': '$remaining'})
                             : 'teacher_home_no_active_title'.tr,
                         style: context.typography.smSemiBold
                             .copyWith(color: AppColors.activitySlate),
@@ -71,7 +72,10 @@ class NoActivityCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         hasActivities
-                            ? '$activitiesDone من $activitiesTotal مكتملة'
+                            ? 'teacherhom35_completed_of_total'.trParams({
+                                'done': '$activitiesDone',
+                                'total': '$activitiesTotal',
+                              })
                             : 'teacher_home_no_active_hint'.tr,
                         style: context.typography.xsRegular
                             .copyWith(color: AppColors.activityMuted),
@@ -85,7 +89,7 @@ class NoActivityCard extends StatelessWidget {
                     vertical: 9,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.activityGreen,
+                    color: AppColors.activityPurple,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -103,9 +107,9 @@ class NoActivityCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   backgroundColor:
-                      AppColors.activityGreen.withValues(alpha: 0.12),
+                      AppColors.activityPurple.withValues(alpha: 0.12),
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.activityGreen,
+                    AppColors.activityPurple,
                   ),
                   minHeight: 4,
                 ),

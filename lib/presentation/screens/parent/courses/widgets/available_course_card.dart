@@ -227,9 +227,9 @@ class _PriceTag extends StatelessWidget {
           color: const Color(0xFF059669).withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Text(
-          'مجاني',
-          style: TextStyle(
+        child: Text(
+          'parentcour21_free'.tr,
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
             color: Color(0xFF059669),
@@ -250,7 +250,7 @@ class _PriceTag extends StatelessWidget {
             ),
           ),
           TextSpan(
-            text: ' جنيه',
+            text: ' ${'parentcour21_egp'.tr}',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,

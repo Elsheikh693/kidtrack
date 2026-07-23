@@ -1,9 +1,15 @@
+import '../core/branch_scoped.dart';
+
 enum PostCategory {
   general,
   announcement,
   event,
   achievement,
-  reminder;
+  reminder,
+  starOfWeek,
+  // A photo-slider post (renders as a swipeable carousel instead of the collage
+  // grid). Used for event-photo albums, and selectable for manual galleries.
+  gallery;
 
   String get labelKey => 'feed_category_$name';
 
@@ -15,7 +21,10 @@ enum PostCategory {
   }
 }
 
-class NurseryPostModel {
+class NurseryPostModel implements BranchScoped {
+  @override
+  List<String> get scopeBranches => branchIds;
+
   final String id;
   final String nurseryId;
   // Empty list = visible in all branches; otherwise restricted to these branch ids.
@@ -28,6 +37,9 @@ class NurseryPostModel {
   final List<String> photos;
   final PostCategory category;
   final bool isPinned;
+  /// When a pin expires (ms). Null = pinned indefinitely (while [isPinned]).
+  /// Past this moment the post drops out of the pinned section automatically.
+  final int? pinnedUntil;
   final int createdAt;
   final int? updatedAt;
   // Distinct parents who have seen this post. Derived from the `seenBy/{uid}`
@@ -46,12 +58,19 @@ class NurseryPostModel {
     this.photos = const [],
     this.category = PostCategory.general,
     this.isPinned = false,
+    this.pinnedUntil,
     required this.createdAt,
     this.updatedAt,
     this.seenCount = 0,
   });
 
   bool get isAllBranches => branchIds.isEmpty;
+
+  /// Whether this post is still pinned at [nowMs] — pinned and not yet expired.
+  bool effectivePinnedAt(int nowMs) =>
+      isPinned && (pinnedUntil == null || nowMs <= pinnedUntil!);
+
+  bool get isGallery => category == PostCategory.gallery;
 
   factory NurseryPostModel.fromJson(Map<String, dynamic> json, {required String id}) {
     return NurseryPostModel(
@@ -66,6 +85,7 @@ class NurseryPostModel {
       photos: _parseList(json['photos']),
       category: PostCategory.fromString(json['category']?.toString()),
       isPinned: json['isPinned'] == true,
+      pinnedUntil: _parseInt(json['pinnedUntil']),
       createdAt: _parseInt(json['createdAt']) ?? DateTime.now().millisecondsSinceEpoch,
       updatedAt: _parseInt(json['updatedAt']),
       seenCount: _countMap(json['seenBy']),
@@ -82,6 +102,7 @@ class NurseryPostModel {
       'isPinned': isPinned,
       'createdAt': createdAt,
     };
+    if (pinnedUntil != null) m['pinnedUntil'] = pinnedUntil;
     if (branchIds.isNotEmpty) m['branchIds'] = branchIds;
     if (classroomId != null) m['classroomId'] = classroomId;
     if (authorPhotoUrl != null) m['authorPhotoUrl'] = authorPhotoUrl;
@@ -102,6 +123,7 @@ class NurseryPostModel {
     List<String>? photos,
     PostCategory? category,
     bool? isPinned,
+    int? pinnedUntil,
     int? createdAt,
     int? updatedAt,
     int? seenCount,
@@ -118,6 +140,7 @@ class NurseryPostModel {
         photos: photos ?? this.photos,
         category: category ?? this.category,
         isPinned: isPinned ?? this.isPinned,
+        pinnedUntil: pinnedUntil ?? this.pinnedUntil,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         seenCount: seenCount ?? this.seenCount,

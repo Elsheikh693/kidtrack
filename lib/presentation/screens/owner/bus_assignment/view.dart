@@ -19,7 +19,7 @@ class _BusAssignmentViewState extends State<BusAssignmentView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'bus_assign_title'.tr),

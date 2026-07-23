@@ -7,12 +7,7 @@ class TeacherNotesSection extends StatelessWidget {
 
   String _dateLabel() {
     final d = date ?? DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
-    return '${days[d.weekday - 1]}، ${d.day} ${months[d.month - 1]}';
+    return localizeDigits('${weekdayName(d.weekday)}${dateSep}${d.day} ${monthName(d.month)}');
   }
 
   @override
@@ -220,10 +215,10 @@ class _NoteTile extends StatelessWidget {
 
   String get _label {
     switch (note.severity) {
-      case NoteSeverity.positive:  return 'إيجابي';
-      case NoteSeverity.followup:  return 'يحتاج متابعة';
-      case NoteSeverity.important: return 'تنبيه';
-      case NoteSeverity.info:      return 'ملاحظة';
+      case NoteSeverity.positive:  return 'parenteduc24_note_positive'.tr;
+      case NoteSeverity.followup:  return 'parenteduc24_eval_needs_follow'.tr;
+      case NoteSeverity.important: return 'parenteduc24_note_alert'.tr;
+      case NoteSeverity.info:      return 'parenteduc24_note_info'.tr;
     }
   }
 

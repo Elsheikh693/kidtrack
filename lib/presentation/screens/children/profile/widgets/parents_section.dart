@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import 'guardian_edit_sheet.dart';
 
 class ParentsSection extends StatelessWidget {
   final ChildProfileController controller;
@@ -28,7 +29,7 @@ class ParentsSection extends StatelessWidget {
             else
               for (int i = 0; i < parents.length; i++) ...[
                 if (i > 0) const _Divider(),
-                _ParentRow(parent: parents[i]),
+                _ParentRow(parent: parents[i], controller: controller),
               ],
             const SizedBox(height: 12),
             _AddParentButton(onTap: controller.addParent),
@@ -92,43 +93,51 @@ class _AddParentButton extends StatelessWidget {
 
 class _ParentRow extends StatelessWidget {
   final ParentModel parent;
-  const _ParentRow({required this.parent});
+  final ChildProfileController controller;
+  const _ParentRow({required this.parent, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _ParentAvatar(parent: parent),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                parent.name,
-                style: context.typography.smSemiBold
-                    .copyWith(color: AppColors.textDefault),
-              ),
-              if (parent.phone != null) ...[
-                const SizedBox(height: 3),
+    return GestureDetector(
+      onTap: () => showGuardianEditSheet(controller, parent),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          _ParentAvatar(parent: parent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  parent.phone!,
-                  style: context.typography.xsRegular
-                      .copyWith(color: AppColors.textSecondaryParagraph),
+                  parent.name,
+                  style: context.typography.smSemiBold
+                      .copyWith(color: AppColors.textDefault),
                 ),
+                if (parent.phone != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    parent.phone!,
+                    style: context.typography.xsRegular
+                        .copyWith(color: AppColors.textSecondaryParagraph),
+                  ),
+                ],
+                if (parent.email != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    parent.email!,
+                    style: context.typography.xsRegular
+                        .copyWith(color: AppColors.textSecondaryParagraph),
+                  ),
+                ],
               ],
-              if (parent.email != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  parent.email!,
-                  style: context.typography.xsRegular
-                      .copyWith(color: AppColors.textSecondaryParagraph),
-                ),
-              ],
-            ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          const Icon(Icons.edit_outlined,
+              size: 18, color: Color(0xFF7C3AED)),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,5 @@
 import '../../../../index/index_main.dart';
 import '../../../../Global/services/parent_education_service.dart';
-import '../../../../Data/models/homework_submission/homework_submission_model.dart';
 
 // ── Local UI models ────────────────────────────────────────────────────────────
 
@@ -128,6 +127,8 @@ class TeacherNote {
 // ── Daily Journal models (parent-first design) ──────────────────────────────────
 
 class DayTimelineItem {
+  final String? activityId; // the session/activity this item represents
+  final String? classroomId;
   final int startedAt;
   final int? endedAt;
   final String subjectName;
@@ -141,6 +142,8 @@ class DayTimelineItem {
   final List<String> photos;
 
   const DayTimelineItem({
+    this.activityId,
+    this.classroomId,
     required this.startedAt,
     this.endedAt,
     required this.subjectName,
@@ -249,6 +252,9 @@ class ParentEducationController extends GetxController {
   // Child state
   final _childId = ''.obs;
   final _classroomId = ''.obs;
+  // Active child's branch — filters classroom-scoped content so a shared
+  // classroom never shows the other branch's activities/homework/photos.
+  final _branchId = ''.obs;
   final _childFullName = ''.obs;
 
   // Reactive UI state
@@ -317,7 +323,7 @@ class ParentEducationController extends GetxController {
   final List<EduSkill> skills = const [];
   final RxInt selectedDayIndex = 0.obs;
   HomeworkDay get selectedDay => HomeworkDay(
-        label: 'اليوم',
+        label: 'parentdash22_today'.tr,
         dateStr: '',
         homeworkList: homework.toList(),
         notes: teacherNotes.toList(),
@@ -406,8 +412,10 @@ class ParentEducationController extends GetxController {
     });
 
     if (classroomId.isNotEmpty) {
-      _activitySub =
-          _eduSvc.watchActiveActivity(nurseryId, classroomId).listen((act) {
+      _activitySub = _eduSvc
+          .watchActiveActivity(nurseryId, classroomId,
+              childBranchId: _branchId.value)
+          .listen((act) {
         final prevLesson = activeActivity.value?.lessonTitle;
         activeActivity.value = act == null ? null : _mapActivity(act);
         // The day's completed activities are fetched one-shot, but this tab is
@@ -428,7 +436,8 @@ class ParentEducationController extends GetxController {
 
     // Load subjects once + today's activities, then set up reactive assessments stream
     final todayFuture = classroomId.isNotEmpty
-        ? _eduSvc.getTodayActivities(nurseryId, classroomId)
+        ? _eduSvc.getTodayActivities(nurseryId, classroomId,
+            childBranchId: _branchId.value)
         : Future.value(<ClassroomActivityModel>[]);
     final subjectsFuture = _eduSvc.loadSubjects(nurseryId);
 
@@ -530,6 +539,8 @@ class ParentEducationController extends GetxController {
     final items = _rangeActivities
         .where((a) => _childParticipated(a, childId))
         .map((a) => DayTimelineItem(
+              activityId: a.key,
+              classroomId: a.classroomId,
               startedAt: a.startedAt,
               endedAt: a.endedAt,
               subjectName:
@@ -541,7 +552,7 @@ class ParentEducationController extends GetxController {
               note: a.notes[childId],
               reasons: a.childReasons[childId] ?? const [],
               groupNote: a.groupNote,
-              photos: a.photos.values.where((u) => u.isNotEmpty).toList(),
+              photos: a.approvedUrlsForChild(childId),
             ))
         .toList()
       ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
@@ -627,6 +638,7 @@ class ParentEducationController extends GetxController {
         classroomId,
         startMs: r.start,
         endMs: r.end,
+        childBranchId: _branchId.value,
       );
     } catch (_) {
       _rangeActivities = const [];
@@ -655,10 +667,11 @@ class ParentEducationController extends GetxController {
     final nurseryId = _session.nurseryId ?? '';
     final classroomId = _classroomId.value;
     if (classroomId.isNotEmpty && _isViewingToday()) {
-      todayActivities.value =
-          (await _eduSvc.getTodayActivities(nurseryId, classroomId))
-              .map(_mapTodayActivity)
-              .toList();
+      todayActivities.value = (await _eduSvc.getTodayActivities(
+              nurseryId, classroomId,
+              childBranchId: _branchId.value))
+          .map(_mapTodayActivity)
+          .toList();
     }
     await _fetchRangeActivities();
     _rebuildGroups(); // also rebuilds the day journal + summary
@@ -764,6 +777,7 @@ class ParentEducationController extends GetxController {
     final svc = Get.find<ActiveChildService>();
     _childId.value = svc.childId.value;
     _classroomId.value = svc.classroomId.value;
+    _branchId.value = svc.branchId.value;
     _childFullName.value = svc.childName.value;
   }
 
@@ -773,7 +787,8 @@ class ParentEducationController extends GetxController {
       String nurseryId, String classroomId, String childId) {
     _hwSub?.cancel();
     _hwSub = _eduSvc
-        .watchAllClassroomHomework(nurseryId, classroomId)
+        .watchAllClassroomHomework(nurseryId, classroomId,
+            childBranchId: _branchId.value)
         .asyncMap((hwList) async {
           final ids = hwList
               .map((hw) => hw.key)
@@ -817,19 +832,23 @@ class ParentEducationController extends GetxController {
   }
 
   static String _formatDueDate(int? ms) {
-    if (ms == null) return 'اليوم';
+    if (ms == null) return 'parentdash22_today'.tr;
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    final months = [
+      'parentdash22_month_1'.tr, 'parentdash22_month_2'.tr,
+      'parentdash22_month_3'.tr, 'parentdash22_month_4'.tr,
+      'parentdash22_month_5'.tr, 'parentdash22_month_6'.tr,
+      'parentdash22_month_7'.tr, 'parentdash22_month_8'.tr,
+      'parentdash22_month_9'.tr, 'parentdash22_month_10'.tr,
+      'parentdash22_month_11'.tr, 'parentdash22_month_12'.tr,
     ];
     return '${dt.day} ${months[dt.month - 1]}';
   }
 
   // ── Homework submission ───────────────────────────────────────────────────────
   // A submission records the parent's confirmation that the homework was done
-  // at home (who helped + an optional note). It carries no quality judgment —
-  // the teacher's review is a separate record.
+  // at home, plus a light "how did it go" self-report (needed help / guided
+  // hand / did it easily). The teacher's own review is a separate record.
 
   bool isSubmitted(String homeworkId) => _submittedIds.contains(homeworkId);
 
@@ -857,7 +876,9 @@ class ParentEducationController extends GetxController {
 
   Future<void> submitHomework(
     String homeworkId, {
-    required SubmittedBy by,
+    bool? neededHelp,
+    bool? guidedHand,
+    bool? didEasily,
     String? note,
   }) async {
     final nurseryId = _session.nurseryId ?? '';
@@ -870,8 +891,10 @@ class ParentEducationController extends GetxController {
       classroomId: classroomId,
       homeworkId: homeworkId,
       childId: childId,
-      submittedBy: by,
       submittedByUid: _session.currentUser?.uid ?? '',
+      neededHelp: neededHelp,
+      guidedHand: guidedHand,
+      didEasily: didEasily,
       note: note,
     );
   }
@@ -911,10 +934,11 @@ class ParentEducationController extends GetxController {
   CurrentActivity _mapActivity(ClassroomActivityModel act) {
     final mins = act.elapsed.inMinutes;
     final ago = mins < 1
-        ? 'الآن'
+        ? 'parentdash22_now'.tr
         : mins < 60
-            ? 'منذ $mins دقيقة'
-            : 'منذ ${act.elapsed.inHours} ساعة';
+            ? 'parentdash22_minutes_ago'.trParams({'n': '$mins'})
+            : 'parentdash22_hours_ago'
+                .trParams({'n': '${act.elapsed.inHours}'});
     return CurrentActivity(
       subjectKey: act.subjectName ?? act.subjectId ?? act.title,
       lessonTitle: act.title,
@@ -954,9 +978,13 @@ class ParentEducationController extends GetxController {
   }
 
   String _monthName(int m) {
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    final months = [
+      'parentdash22_month_1'.tr, 'parentdash22_month_2'.tr,
+      'parentdash22_month_3'.tr, 'parentdash22_month_4'.tr,
+      'parentdash22_month_5'.tr, 'parentdash22_month_6'.tr,
+      'parentdash22_month_7'.tr, 'parentdash22_month_8'.tr,
+      'parentdash22_month_9'.tr, 'parentdash22_month_10'.tr,
+      'parentdash22_month_11'.tr, 'parentdash22_month_12'.tr,
     ];
     return months[m - 1];
   }

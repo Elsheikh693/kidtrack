@@ -29,7 +29,14 @@ class ReceptionistEventsController extends GetxController {
   void _subscribe() {
     _sub?.cancel();
     _sub = _service.watchAllEvents().listen((list) {
-      events.assignAll(list);
+      // Events are streamed nursery-wide; keep only this user's branch (plus
+      // all-branch events whose branchId is empty). Owner/super-admin (no
+      // session branch) sees every branch — same session-driven rule as the
+      // rest of the app.
+      final session = SessionService();
+      events.assignAll(
+        list.where((e) => session.seesBranch(e.branchId)).toList(),
+      );
       isLoading.value = false;
     }, onError: (_) => isLoading.value = false);
   }

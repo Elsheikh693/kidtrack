@@ -1,30 +1,30 @@
 import '../../../../../index/index_main.dart';
-import '../child_preview.dart';
 
+/// Compact classroom card sized for a horizontal rail on the teacher home.
+/// Kept intentionally light: name, child count, today's attendance ring, and a
+/// details affordance — no activities count.
 class ClassCard extends StatelessWidget {
   const ClassCard({
     super.key,
     required this.classroom,
     required this.childCount,
-    required this.previews,
-    required this.subjects,
-    required this.attentionCount,
+    required this.presentCount,
+    required this.programName,
     required this.onTap,
   });
 
   final ClassroomModel classroom;
   final int childCount;
-  final List<ChildPreview> previews;
-  final List<SubjectModel> subjects;
-  final int attentionCount;
+  final int presentCount;
+  final String programName;
   final VoidCallback onTap;
 
   static const List<Color> _accents = [
-    AppColors.activityBlue,
     AppColors.activityPurple,
+    AppColors.activityBlue,
     AppColors.activityOrange,
     AppColors.activityGreen,
-    Color(0xFFEC4899),
+    Color(0xFF4F46E5), // indigo
     AppColors.activityAmberBrand,
   ];
 
@@ -34,9 +34,10 @@ class ClassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _accent;
+    final pct = childCount == 0 ? 0 : (presentCount * 100 / childCount).round();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+    return SizedBox(
+      width: 244,
       child: Material(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
@@ -44,11 +45,10 @@ class ClassCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(22),
           child: Container(
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: AppColors.borderNeutralPrimary.withValues(alpha: .10),
-              ),
+              border: Border.all(color: accent.withValues(alpha: .14)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: .04),
@@ -59,133 +59,58 @@ class ClassCard extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // ── Header: icon · name · count pill ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: accent.withValues(alpha: .10),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.meeting_room_rounded,
-                          size: 24,
-                          color: accent,
-                        ),
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: .10),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          classroom.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.typography.lgBold.copyWith(
-                            color: AppColors.activitySlate,
-                          ),
-                        ),
-                      ),
-                      _CountPill(count: childCount, accent: accent),
-                    ],
-                  ),
-                ),
-
-                // ── Avatar stack / empty ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                  child: childCount == 0
-                      ? Row(
-                          children: [
-                            const Icon(
-                              Icons.person_add_alt_1_rounded,
-                              size: 16,
-                              color: AppColors.activityMuted,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'لا يوجد أطفال بعد',
-                              style: context.typography.xsRegular.copyWith(
-                                color: AppColors.activityMuted,
-                              ),
-                            ),
-                          ],
-                        )
-                      : _AvatarStack(
-                          previews: previews,
-                          totalCount: childCount,
-                          accent: accent,
-                        ),
-                ),
-
-                // ── Subject chips ──
-                if (subjects.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: subjects
-                          .map((s) => _SubjectChip(name: s.name))
-                          .toList(),
+                      alignment: Alignment.center,
+                      child: Icon(Icons.menu_book_rounded,
+                          size: 24, color: accent),
                     ),
-                  ),
-
-                // ── Footer ──
-                const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  child: Row(
-                    children: [
-                      if (attentionCount > 0) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.activityRed.withValues(alpha: .08),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.warning_amber_rounded,
-                                size: 13,
-                                color: AppColors.activityRed,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$attentionCount يحتاج متابعة',
-                                style: context.typography.xsMedium.copyWith(
-                                  color: AppColors.activityRed,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      const Spacer(),
-                      Text(
-                        'افتح الفصل',
-                        style: context.typography.smSemiBold.copyWith(
-                          color: accent,
-                        ),
+                    const Spacer(),
+                    if (programName.isNotEmpty)
+                      Flexible(
+                        child: _StageBadge(label: programName, accent: accent),
                       ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18,
-                        color: accent,
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
+                const SizedBox(height: 14),
+                Text(
+                  classroom.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typography.smSemiBold
+                      .copyWith(color: AppColors.activitySlate),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.groups_rounded,
+                        size: 14, color: AppColors.activityMuted),
+                    const SizedBox(width: 5),
+                    Text(
+                      '$childCount ${'teacher_home_children_unit'.tr}',
+                      style: context.typography.xsRegular
+                          .copyWith(color: AppColors.activityMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _AttendanceBlock(
+                  present: presentCount,
+                  total: childCount,
+                  pct: pct,
+                  accent: accent,
+                ),
+                const SizedBox(height: 12),
+                _DetailsButton(accent: accent),
               ],
             ),
           ),
@@ -195,182 +120,135 @@ class ClassCard extends StatelessWidget {
   }
 }
 
-class _CountPill extends StatelessWidget {
-  const _CountPill({required this.count, required this.accent});
+// ── Stage badge ───────────────────────────────────────────────────────────────
 
-  final int count;
+class _StageBadge extends StatelessWidget {
+  const _StageBadge({required this.label, required this.accent});
+
+  final String label;
   final Color accent;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: .10),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.groups_rounded, size: 15, color: accent),
-          const SizedBox(width: 5),
-          Text(
-            '$count طفل',
-            style: context.typography.mdRegular.copyWith(color: accent),
-          ),
-        ],
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: context.typography.xsMedium.copyWith(color: accent),
       ),
     );
   }
 }
 
-class _AvatarStack extends StatelessWidget {
-  const _AvatarStack({
-    required this.previews,
-    required this.totalCount,
+// ── Attendance: label + count on one side, a progress ring on the other ───────
+
+class _AttendanceBlock extends StatelessWidget {
+  const _AttendanceBlock({
+    required this.present,
+    required this.total,
+    required this.pct,
     required this.accent,
   });
 
-  final List<ChildPreview> previews;
-  final int totalCount;
+  final int present;
+  final int total;
+  final int pct;
   final Color accent;
-
-  // Outer avatar diameter (38 glyph + 2px white ring on each side).
-  static const double _size = 42;
-  static const double _step = 26;
 
   @override
   Widget build(BuildContext context) {
-    final shown = previews.take(5).toList();
-    final remaining = totalCount - shown.length;
-    final bubbleCount = remaining > 0 ? 1 : 0;
-    final items = shown.length + bubbleCount;
-    final width = items == 0 ? 0.0 : _size + (items - 1) * _step;
-
-    return SizedBox(
-      height: _size,
-      width: width,
-      child: Stack(
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: .06),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
         children: [
-          for (int i = 0; i < shown.length; i++)
-            Positioned(
-              right: i * _step,
-              child: _Avatar(preview: shown[i], accent: accent),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'teacher_home_attendance_today'.tr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typography.xsRegular
+                      .copyWith(color: AppColors.activityMuted),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$present ${'teacher_home_of'.tr} $total',
+                  style: context.typography.smSemiBold
+                      .copyWith(color: AppColors.activitySlate),
+                ),
+              ],
             ),
-          if (remaining > 0)
-            Positioned(
-              right: shown.length * _step,
-              child: _MoreBubble(count: remaining),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 42,
+            height: 42,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: CircularProgressIndicator(
+                    value: total == 0 ? 0 : present / total,
+                    strokeWidth: 4,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: accent.withValues(alpha: .15),
+                    valueColor: AlwaysStoppedAnimation(accent),
+                  ),
+                ),
+                Text(
+                  '$pct%',
+                  style: context.typography.xsMedium.copyWith(color: accent),
+                ),
+              ],
             ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.preview, required this.accent});
+// ── Footer: full-width details button ─────────────────────────────────────────
 
-  final ChildPreview preview;
+class _DetailsButton extends StatelessWidget {
+  const _DetailsButton({required this.accent});
+
   final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    final initial = preview.name.trim().isNotEmpty
-        ? preview.name.trim().characters.first
-        : '?';
-    final fallback = Container(
-      width: 38,
-      height: 38,
-      color: accent.withValues(alpha: .14),
-      alignment: Alignment.center,
-      child: Text(
-        initial,
-        style: context.typography.smSemiBold.copyWith(color: accent),
-      ),
-    );
-
     return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: ClipOval(
-        child: SizedBox(
-          width: 38,
-          height: 38,
-          child: AppNetworkImage(
-            url: preview.image,
-            width: 38,
-            height: 38,
-            errorWidget: fallback,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MoreBubble extends StatelessWidget {
-  const _MoreBubble({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(2),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: const BoxDecoration(
-          color: Color(0xFFEEF1F6),
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          '+$count',
-          style: context.typography.xsBold.copyWith(
-            color: AppColors.activitySlate,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SubjectChip extends StatelessWidget {
-  const _SubjectChip({required this.name});
-
-  final String name;
-
-  static const List<Color> _colors = [
-    AppColors.activityBlue,
-    AppColors.activityPurple,
-    AppColors.activityAmberBrand,
-    AppColors.activityGreen,
-    Color(0xFFEC4899),
-    AppColors.activityOrange,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _colors[name.hashCode.abs() % _colors.length];
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 11),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: .10),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: .22)),
+        color: accent.withValues(alpha: .10),
+        borderRadius: BorderRadius.circular(13),
       ),
-      child: Text(
-        name,
-        style: context.typography.xsMedium.copyWith(color: color),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'teacher_home_class_details'.tr,
+            style: context.typography.xsMedium.copyWith(color: accent),
+          ),
+          const SizedBox(width: 2),
+          Icon(Icons.chevron_right_rounded, size: 16, color: accent),
+        ],
       ),
     );
   }

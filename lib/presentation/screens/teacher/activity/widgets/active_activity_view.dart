@@ -2,6 +2,7 @@ import '../../../../../index/index_main.dart';
 import '../teacher_activity_controller.dart';
 import 'activity_header.dart';
 import 'activity_photos_section.dart';
+import 'activity_states_section.dart';
 
 class ActiveActivityView extends StatelessWidget {
   const ActiveActivityView({
@@ -40,8 +41,10 @@ class ActiveActivityView extends StatelessWidget {
                     // Photos card
                     Obx(() => ActivityPhotosSection(
                           photos: ctrl.activeActivity.value?.photos ?? {},
+                          children: ctrl.children,
                           onAdd: ctrl.uploadActivityPhoto,
                           onDelete: ctrl.removeActivityPhoto,
+                          onSetAudience: ctrl.setPhotoAudience,
                           isUploading: ctrl.isUploadingPhoto.value,
                         )),
                     const SizedBox(height: 14),
@@ -57,11 +60,18 @@ class ActiveActivityView extends StatelessWidget {
                         child: _NoteCard(note: note),
                       );
                     }),
+
+                    // Children live states
+                    ActivityStatesSection(ctrl: ctrl),
                   ],
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            // Clearance for the floating action bar AND the shell's floating
+            // nav bar (extendBody:true lets it overlap the scroll). Without
+            // enough tail space the last child rows sit behind those bars with
+            // no room to scroll them into view.
+            SliverToBoxAdapter(child: SizedBox(height: 190.h)),
           ],
         ),
 

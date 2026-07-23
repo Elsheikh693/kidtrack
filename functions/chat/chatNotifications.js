@@ -1,6 +1,9 @@
 const admin = require("firebase-admin");
 const notificationService = require("../shared/notificationService");
-const { branchManagers } = require("../shared/audienceService");
+const {
+  branchManagers,
+  branchReceptionists,
+} = require("../shared/audienceService");
 const { NotificationType, Role } = require("../shared/constants");
 
 // ============================================================
@@ -40,7 +43,7 @@ async function handleChatMessage({ message, nurseryId, childId }) {
       await notificationService.send({
         recipients: [{ uid: meta.parentId, role: Role.parent }],
         nurseryId,
-        title: `رسالة من الحضانة بخصوص ${childName} 💬`,
+        title: `رسالة من الحضانة بخصوص ${childName}`,
         body: text,
         type: NotificationType.chat,
         entityId: childId,
@@ -49,18 +52,23 @@ async function handleChatMessage({ message, nurseryId, childId }) {
       return;
     }
 
-    // Parent → responsible branch manager(s)
-    const managerIds = await branchManagers(nurseryId, meta.branchId);
-    if (managerIds.length === 0) {
-      console.log(`📭 chat: no branch manager for branch ${meta.branchId}`);
+    // Parent → responsible nursery staff. Reception shares the manager side of
+    // the thread, so notify both branch managers AND receptionists.
+    const [managerIds, receptionIds] = await Promise.all([
+      branchManagers(nurseryId, meta.branchId),
+      branchReceptionists(nurseryId, meta.branchId),
+    ]);
+    const staffIds = [...new Set([...managerIds, ...receptionIds])];
+    if (staffIds.length === 0) {
+      console.log(`📭 chat: no staff for branch ${meta.branchId}`);
       return;
     }
-    const recipients = managerIds.map((uid) => ({ uid, role: Role.staff }));
+    const recipients = staffIds.map((uid) => ({ uid, role: Role.staff }));
 
     await notificationService.send({
       recipients,
       nurseryId,
-      title: `رسالة من ${meta.parentName || "ولي أمر"} (${childName}) 💬`,
+      title: `رسالة من ${meta.parentName || "ولي أمر"} (${childName})`,
       body: text,
       type: NotificationType.chat,
       entityId: childId,

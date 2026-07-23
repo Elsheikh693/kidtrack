@@ -38,7 +38,7 @@ class ActiveEventsSection extends StatelessWidget {
             ),
             const Spacer(),
             GestureDetector(
-              onTap: () => Get.toNamed(receptionistEventsView),
+              onTap: () => Get.find<MainPageViewModel>().changePage(4),
               child: Icon(Icons.arrow_forward_ios_rounded,
                   size: 14.sp, color: _muted),
             ),
@@ -78,7 +78,7 @@ class _EventTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(receptionistEventsView),
+      onTap: () => Get.find<MainPageViewModel>().changePage(4),
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.fromLTRB(14.w, 12.h, 12.w, 12.h),

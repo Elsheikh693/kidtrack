@@ -7,13 +7,13 @@ class ProfileWorkingDaysEditor extends StatelessWidget {
   final ManagerNurseryProfileController controller;
 
   static const _days = <int, String>{
-    6: 'السبت',
-    7: 'الأحد',
-    1: 'الاثنين',
-    2: 'الثلاثاء',
-    3: 'الأربعاء',
-    4: 'الخميس',
-    5: 'الجمعة',
+    6: 'managerpro18_day_saturday',
+    7: 'managerpro18_day_sunday',
+    1: 'managerpro18_day_monday',
+    2: 'managerpro18_day_tuesday',
+    3: 'managerpro18_day_wednesday',
+    4: 'managerpro18_day_thursday',
+    5: 'managerpro18_day_friday',
   };
 
   @override
@@ -52,7 +52,7 @@ class ProfileWorkingDaysEditor extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      e.value,
+                      e.value.tr,
                       style: context.typography.smMedium.copyWith(
                         color: selected
                             ? AppColors.primary

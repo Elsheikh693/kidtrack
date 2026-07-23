@@ -78,31 +78,22 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
   ) async {
     Loader.show();
     final nurseryId = const Uuid().v4();
-    final ownerEmail = '$ownerPhone@gmail.com';
-
-    final secondaryApp = await Firebase.initializeApp(
-      name: 'owner_${DateTime.now().millisecondsSinceEpoch}',
-      options: Firebase.app().options,
-    );
 
     try {
-      final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final credential = await secondaryAuth.createUserWithEmailAndPassword(
-        email: ownerEmail,
-        password: password,
-      );
-      final ownerUid = credential.user!.uid;
+      // Reuse the identity if this phone already owns a nursery — one person can
+      // own several nurseries (an owner membership per nursery).
+      final identity = Get.find<IdentityService>();
+      final resolved =
+          await identity.resolveByPhone(phone: ownerPhone, name: ownerName);
+      final ownerUid = resolved.uid;
 
-      await FirebaseDatabase.instance.ref('users/$ownerUid').set({
-        'uid': ownerUid,
-        'name': ownerName,
-        'phone': ownerPhone,
-        'email': ownerEmail,
-        'userType': 'owner',
-        'nurseryId': nurseryId,
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      await identity.attachMembership(
+        uid: ownerUid,
+        role: 'owner',
+        nurseryId: nurseryId,
+        name: ownerName,
+        phone: ownerPhone,
+      );
 
       final nursery = NurseryModel(
         key: nurseryId,
@@ -115,28 +106,52 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
         isActive: true,
       );
 
+      bool added = false;
       await _service.add(
         item: nursery,
         callBack: (status) async {
           Loader.dismiss();
           if (status == ResponseStatus.success) {
-            Loader.showSuccess('nursery_success_added'.tr);
-            Get.back();
+            added = true;
           } else {
-            await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
-            await secondaryAuth.currentUser?.delete();
+            await identity.removeMembership(
+              uid: ownerUid,
+              nurseryId: nurseryId,
+              role: 'owner',
+            );
+            if (resolved.created &&
+                (await identity.memberships(ownerUid)).isEmpty) {
+              await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
+            }
             Loader.showError('nursery_error_failed'.tr);
           }
         },
       );
-    } on FirebaseAuthException {
-      Loader.dismiss();
-      Loader.showError('nursery_error_auth_failed'.tr);
+
+      if (added) {
+        // Mint the owner's durable login code (passwordless) and hand it to the
+        // super admin to deliver — same engine as reception→parent.
+        final code = await Get.find<ActivationParentService>().generate(
+          role: 'owner',
+          targetId: ownerUid,
+          nurseryId: nurseryId,
+          createdBy: SessionService().userId ?? '',
+          silent: true,
+        );
+        Loader.showSuccess('nursery_success_added'.tr);
+        Get.back(); // close this sheet first
+        if (code != null) {
+          unawaited(openActivationSheet(
+            code: code,
+            recipientName: ownerName,
+            phone: ownerPhone,
+            nurseryName: name,
+          ));
+        }
+      }
     } catch (_) {
       Loader.dismiss();
       Loader.showError('nursery_error_failed'.tr);
-    } finally {
-      await secondaryApp.delete();
     }
   }
 
@@ -164,7 +179,7 @@ class _NurserySheetState extends State<NurserySheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

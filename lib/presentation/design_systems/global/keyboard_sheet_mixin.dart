@@ -1,4 +1,5 @@
 import '../../../index/index.dart';
+import 'package:get/get.dart';
 
 /// Mixin for bottom-sheet [State] classes that contain text fields.
 ///
@@ -43,7 +44,7 @@ mixin KeyboardSheetMixin<T extends StatefulWidget> on State<T> {
     final done = TextButton(
       onPressed: () => FocusScope.of(context).unfocus(),
       child: Text(
-        'تم',
+        'binding9_done'.tr,
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
@@ -64,7 +65,7 @@ mixin KeyboardSheetMixin<T extends StatefulWidget> on State<T> {
                   (n) => TextButton(
                         onPressed: () => n.unfocus(),
                         child: Text(
-                          'تم',
+                          'binding9_done'.tr,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,

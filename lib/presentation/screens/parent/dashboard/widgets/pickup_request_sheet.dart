@@ -22,12 +22,17 @@ class _PickupSheet extends StatefulWidget {
 class _PickupSheetState extends State<_PickupSheet> {
   String? _selectedEta;
 
-  static const _etaOptions = ['10 دقائق', '15 دقيقة', '20 دقيقة', '30 دقيقة'];
+  List<String> get _etaOptions => [
+        'parentdash22_eta_10min'.tr,
+        'parentdash22_eta_15min'.tr,
+        'parentdash22_eta_20min'.tr,
+        'parentdash22_eta_30min'.tr,
+      ];
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -72,11 +77,13 @@ class _PickupSheetState extends State<_PickupSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'طلب استلام ${widget.controller.childName.split(' ').first}',
+                      'parentdash22_request_pickup_name'.trParams({
+                        'name': widget.controller.childName.split(' ').first
+                      }),
                       style: context.typography.mdBold.copyWith(color: Color(0xFF1E293B), fontSize: 16),
                     ),
                     Text(
-                      'اختر وقت وصولك المتوقع',
+                      'parentdash22_pickup_choose_eta'.tr,
                       style: context.typography.xsRegular.copyWith(color: AppColors.textSecondaryParagraph, fontSize: 12),
                     ),
                   ],
@@ -155,7 +162,9 @@ class _PickupSheetState extends State<_PickupSheet> {
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'سيتم إبلاغ الاستقبال بموعد وصولك لتجهيز ${widget.controller.childName.split(' ').first}',
+                      'parentdash22_pickup_reception_notice'.trParams({
+                        'name': widget.controller.childName.split(' ').first
+                      }),
                       style: context.typography.xsRegular.copyWith(color: Color(0xFF065F46), fontSize: 12, height: 1.4),
                     ),
                   ),
@@ -178,8 +187,9 @@ class _PickupSheetState extends State<_PickupSheet> {
                   icon: Icon(Icons.send_rounded, size: 18.sp),
                   label: Text(
                     _selectedEta != null
-                        ? 'سأصل خلال $_selectedEta'
-                        : 'اختر وقت الوصول أولاً',
+                        ? 'parentdash22_arrive_within_eta'
+                            .trParams({'eta': _selectedEta!})
+                        : 'parentdash22_choose_arrival_first'.tr,
                     style: context.typography.displaySmBold.copyWith(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -223,7 +233,7 @@ class PickupFab extends StatelessWidget {
           icon: Icon(Icons.directions_car_rounded,
               color: Colors.white, size: 20.sp),
           label: Text(
-            'في الطريق • $eta',
+            'parentdash22_on_way_eta'.trParams({'eta': eta}),
             style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 13),
           ),
         );
@@ -237,7 +247,7 @@ class PickupFab extends StatelessWidget {
         icon: Icon(Icons.directions_car_rounded,
             color: Colors.white, size: 20.sp),
         label: Text(
-          'طلب استلام',
+          'parentdash22_request_pickup'.tr,
           style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 13),
         ),
       );
@@ -248,25 +258,25 @@ class PickupFab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-          title: Text('إلغاء طلب الاستلام؟',
+          title: Text('parentdash22_cancel_pickup_title'.tr,
               style: context.typography.mdBold.copyWith(fontSize: 16)),
-          content: Text('هل تريد إلغاء طلب الاستلام الحالي؟',
+          content: Text('parentdash22_cancel_pickup_confirm'.tr,
               style: context.typography.xsRegular.copyWith(fontSize: 13)),
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: Text('لا', style: context.typography.smRegular.copyWith(color: AppColors.textSecondaryParagraph)),
+              child: Text('parentdash22_no'.tr, style: context.typography.smRegular.copyWith(color: AppColors.textSecondaryParagraph)),
             ),
             TextButton(
               onPressed: () {
                 controller.cancelPickup();
                 Get.back();
               },
-              child: Text('نعم، إلغاء',
+              child: Text('parentdash22_yes_cancel'.tr,
                   style: context.typography.displaySmBold.copyWith(color: Color(0xFFDC2626))),
             ),
           ],

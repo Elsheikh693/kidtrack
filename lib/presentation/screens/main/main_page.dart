@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import '../../../index/index_main.dart';
 
 // ── Tab header configuration ──────────────────────────────────────────────────
@@ -122,7 +124,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Obx(() {
         // Hold a blank surface under the native splash until the access gate
         // resolves the restored session.
@@ -150,6 +152,7 @@ class _MainPageState extends State<MainPage> {
         _visited.add(current);
         return Scaffold(
           backgroundColor: AppColors.backgroundNeutral100,
+          extendBody: true,
           body: Column(
             children: [
               _DynamicHeader(controller: controller),
@@ -259,19 +262,25 @@ const _teacherItems = [
     activeIcon: Icons.home_rounded,
     inactiveIcon: Icons.home_outlined,
     labelKey: 'teacher_tab_home',
-    color: Color(0xFF16A34A),
+    color: Color(0xFF7C3AED),
   ),
   _NavItemData(
     activeIcon: Icons.play_circle_rounded,
     inactiveIcon: Icons.play_circle_outline_rounded,
     labelKey: 'teacher_tab_activities',
-    color: Color(0xFF059669),
+    color: Color(0xFF7C3AED),
   ),
   _NavItemData(
-    activeIcon: Icons.import_contacts_rounded,
-    inactiveIcon: Icons.import_contacts_outlined,
-    labelKey: 'teacher_tab_link_book',
-    color: Color(0xFF2563EB),
+    activeIcon: Icons.event_note_rounded,
+    inactiveIcon: Icons.event_note_outlined,
+    labelKey: 'teacher_tab_work_log',
+    color: Color(0xFF7C3AED),
+  ),
+  _NavItemData(
+    activeIcon: Icons.forum_rounded,
+    inactiveIcon: Icons.forum_outlined,
+    labelKey: 'parent_notes_tab',
+    color: Color(0xFF7C3AED),
   ),
   // مخفي مؤقتاً: تاب الواجبات
   // _NavItemData(
@@ -282,30 +291,44 @@ const _teacherItems = [
   // ),
 ];
 
+// Analytics Center lives at page index 4 but is surfaced as the 2nd nav slot,
+// so every owner item carries an explicit pageIndex to keep the bar order
+// independent of the IndexedStack order.
 const _ownerItems = [
   _NavItemData(
     activeIcon: Icons.insights_rounded,
     inactiveIcon: Icons.insights_outlined,
     labelKey: 'owner_tab_dashboard',
     color: Color(0xFF4F46E5),
+    pageIndex: 0,
+  ),
+  _NavItemData(
+    activeIcon: Icons.analytics_rounded,
+    inactiveIcon: Icons.analytics_outlined,
+    labelKey: 'owner_tab_analytics',
+    color: Color(0xFF0891B2),
+    pageIndex: 4,
   ),
   _NavItemData(
     activeIcon: Icons.account_balance_wallet_rounded,
     inactiveIcon: Icons.account_balance_wallet_outlined,
     labelKey: 'owner_tab_finance',
     color: Color(0xFFD97706),
+    pageIndex: 1,
   ),
   _NavItemData(
     activeIcon: Icons.dynamic_feed_rounded,
     inactiveIcon: Icons.dynamic_feed_outlined,
     labelKey: 'owner_tab_communication',
     color: Color(0xFFEC4899),
+    pageIndex: 2,
   ),
   _NavItemData(
     activeIcon: Icons.grid_view_rounded,
     inactiveIcon: Icons.grid_view_outlined,
     labelKey: 'owner_tab_more',
     color: Color(0xFF7C3AED),
+    pageIndex: 3,
   ),
 ];
 
@@ -335,6 +358,8 @@ const _managerItems = [
     color: Color(0xFF0891B2),
     pageIndex: 2,
   ),
+  // Schedule is reached from the home quick-links (page index 7 stays in the
+  // stack), not the bottom bar — keeps the bar at four items.
   _NavItemData(
     activeIcon: Icons.grid_view_rounded,
     inactiveIcon: Icons.grid_view_outlined,
@@ -363,11 +388,18 @@ const _parentItems = [
     labelKey: 'parent_tab_posts',
     color: Color(0xFFEC4899),
   ),
+  // مخفي مؤقتاً: تاب الكورسات
+  // _NavItemData(
+  //   activeIcon: Icons.local_library_rounded,
+  //   inactiveIcon: Icons.local_library_outlined,
+  //   labelKey: 'parent_tab_courses',
+  //   color: Color(0xFF0891B2),
+  // ),
   _NavItemData(
-    activeIcon: Icons.local_library_rounded,
-    inactiveIcon: Icons.local_library_outlined,
-    labelKey: 'parent_tab_courses',
-    color: Color(0xFF0891B2),
+    activeIcon: Icons.insert_chart_rounded,
+    inactiveIcon: Icons.insert_chart_outlined_rounded,
+    labelKey: 'parent_tab_reports',
+    color: Color(0xFF16A34A),
   ),
 ];
 
@@ -392,19 +424,27 @@ const _receptionistItems = [
     color: Color(0xFF16A34A),
     pageIndex: 2,
   ),
-  _NavItemData(
-    activeIcon: Icons.school_rounded,
-    inactiveIcon: Icons.school_outlined,
-    labelKey: 'reception_tab_courses',
-    color: Color(0xFF7C3AED),
-    pageIndex: 3,
-  ),
+  // مخفي مؤقتاً: تاب الكورسات (الصفحة ما زالت في الـ stack لكن غير ظاهرة في الشريط)
+  // _NavItemData(
+  //   activeIcon: Icons.school_rounded,
+  //   inactiveIcon: Icons.school_outlined,
+  //   labelKey: 'reception_tab_courses',
+  //   color: Color(0xFF7C3AED),
+  //   pageIndex: 3,
+  // ),
   _NavItemData(
     activeIcon: Icons.celebration_rounded,
     inactiveIcon: Icons.celebration_outlined,
     labelKey: 'reception_tab_events',
     color: Color(0xFFF59E0B),
     pageIndex: 4,
+  ),
+  _NavItemData(
+    activeIcon: Icons.chat_bubble_rounded,
+    inactiveIcon: Icons.chat_bubble_outline_rounded,
+    labelKey: 'reception_tab_chat',
+    color: Color(0xFF7C3AED),
+    pageIndex: 6,
   ),
 ];
 
@@ -491,26 +531,41 @@ class _KidNavBarState extends State<_KidNavBar>
       top: false,
       child: Padding(
         padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
-        child: Container(
-          height: 68.h,
+        child: DecoratedBox(
+          // Shadow sits outside the clip so the blur stays inside the pill.
           decoration: BoxDecoration(
-            color: AppColors.white,
             borderRadius: BorderRadius.circular(28.r),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.14),
+                color: AppColors.primary.withValues(alpha: 0.10),
                 blurRadius: 32.r,
                 spreadRadius: 0,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: LayoutBuilder(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28.r),
+            child: BackdropFilter(
+              // Frosted-glass blur so the scrolling content shows through
+              // the translucent bar — Pinterest-style.
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(
+                height: 68.h,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(28.r),
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
+                ),
+                child: LayoutBuilder(
             builder: (ctx, constraints) {
               final itemW = constraints.maxWidth / count;
 
@@ -565,6 +620,9 @@ class _KidNavBarState extends State<_KidNavBar>
                 ],
               );
             },
+                ),
+              ),
+            ),
           ),
         ),
       ),

@@ -2,7 +2,6 @@ import '../../../../index/index_main.dart';
 import 'widgets/profile_age_fee_editor.dart';
 import 'widgets/profile_cover_picker.dart';
 import 'widgets/profile_gallery_editor.dart';
-import 'widgets/profile_location_field.dart';
 import 'widgets/profile_branches_editor.dart';
 import 'widgets/profile_city_selector.dart';
 import 'widgets/profile_tag_editor.dart';
@@ -30,7 +29,7 @@ class _ManagerNurseryProfileViewState extends State<ManagerNurseryProfileView>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: HomeAppBar(
@@ -84,17 +83,12 @@ class _ManagerNurseryProfileViewState extends State<ManagerNurseryProfileView>
               ),
               _section(
                 context,
-                'manager_profile_location'.tr,
-                ProfileLocationField(controller: controller),
-              ),
-              _section(
-                context,
                 'manager_profile_branches'.tr,
                 ProfileBranchesEditor(controller: controller),
               ),
               _section(
                 context,
-                'أيام الدراسة',
+                'managerass17_working_days'.tr,
                 ProfileWorkingDaysEditor(controller: controller),
               ),
               _section(

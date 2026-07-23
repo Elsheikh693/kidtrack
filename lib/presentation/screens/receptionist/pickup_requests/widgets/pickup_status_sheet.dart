@@ -21,7 +21,7 @@ class PickupStatusSheet extends StatelessWidget {
     final nexts = _nextStatuses[request.status] ?? [];
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,

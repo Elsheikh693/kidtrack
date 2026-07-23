@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 enum HomeworkStatus { completed, partiallyCompleted, notCompleted, absent }
 
@@ -11,10 +12,10 @@ extension HomeworkStatusX on HomeworkStatus {
       };
 
   String get label => switch (this) {
-        HomeworkStatus.completed => 'أكمل',
-        HomeworkStatus.partiallyCompleted => 'جزئي',
-        HomeworkStatus.notCompleted => 'لم يكمل',
-        HomeworkStatus.absent => 'غائب',
+        HomeworkStatus.completed => 'datamodels3_homework_completed'.tr,
+        HomeworkStatus.partiallyCompleted => 'datamodels3_homework_partial'.tr,
+        HomeworkStatus.notCompleted => 'datamodels3_homework_not_completed'.tr,
+        HomeworkStatus.absent => 'datamodels3_homework_absent'.tr,
       };
 
   Color get color => switch (this) {

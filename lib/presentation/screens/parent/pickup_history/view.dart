@@ -20,7 +20,7 @@ class _PickupHistoryViewState extends State<PickupHistoryView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -154,13 +154,13 @@ class _PickupCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'تم الاستلام',
+                        'parentpick26_pickup_received'.tr,
                         style: context.typography.smSemiBold
                             .copyWith(color: AppColors.textDefault),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'غادر الطفل الحضانة بأمان',
+                        'parentpick26_pickup_left_safely'.tr,
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondaryParagraph,

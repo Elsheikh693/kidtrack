@@ -171,7 +171,7 @@ class _UploadProgressOverlay extends StatelessWidget {
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
-                      'جاري رفع الصورة...',
+                      'globalserv8_uploading_image'.tr,
                       style: context.typography.smMedium.copyWith(
                         color: AppColors.white,
                       ),

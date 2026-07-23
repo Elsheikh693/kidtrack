@@ -41,6 +41,7 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                       const _BackToOwnerCard(),
                       const SizedBox(height: 16),
                     ],
+                    const RoleSwitchCard(),
                     ManagerProfileCard(
                       controller: controller,
                       onTap: () => showEditProfileSheet(isStaff: true),
@@ -50,9 +51,7 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                     const SizedBox(height: 20),
                     _operationsSection(),
                     const SizedBox(height: 20),
-                    Obx(() => _businessSection()),
-                    const SizedBox(height: 20),
-                    _settingsSection(),
+                    _businessSection(),
                     const SizedBox(height: 24),
                     const ManagerLogoutButton(),
                   ]),
@@ -71,11 +70,19 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
       titleKey: 'owner_section_nursery',
       tiles: [
         ManagerGridTile(
-          icon: Icons.storefront_rounded,
-          color: AppColors.secondary80,
-          labelKey: 'manager_more_link_nursery_profile',
-          onTap: () => Get.toNamed(managerNurseryProfileView),
+          icon: Icons.checklist_rounded,
+          color: AppColors.primary,
+          labelKey: 'owner_item_setup_checklist',
+          onTap: () => Get.toNamed(setupChecklistView),
         ),
+        ManagerGridTile(
+          icon: Icons.ondemand_video_rounded,
+          color: const Color(0xFFDC2626),
+          labelKey: 'tutorial_menu_entry',
+          onTap: () => Get.toNamed(appTutorialView),
+        ),
+        // "الفروع" now lives inside "خطوات الإعداد"; "الكورسات" temporarily
+        // removed — both dropped from this section for manager/owner.
       ],
     );
   }
@@ -85,59 +92,43 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
     return ManagerGridSection(
       titleKey: 'manager_more_section_operations',
       tiles: [
-        ManagerGridTile(
-          icon: Icons.badge_rounded,
-          color: AppColors.activityBlue,
-          labelKey: 'manager_more_link_staff',
-          onTap: () => Get.toNamed(staffView),
-        ),
-        ManagerGridTile(
-          icon: Icons.meeting_room_rounded,
-          color: AppColors.activityOrange,
-          labelKey: 'manager_more_link_classrooms',
-          onTap: () => Get.toNamed(classroomsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.contact_phone_rounded,
-          color: const Color(0xFF25D366),
-          labelKey: 'owner_item_contact_numbers',
-          onTap: () => Get.toNamed(nurseryContactsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.play_lesson_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'manager_more_link_courses',
-          onTap: () => Get.toNamed(coursesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.library_books_rounded,
-          color: AppColors.activityAmberBrand,
-          labelKey: 'owner_item_programs',
-          onTap: () => Get.toNamed(programsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.menu_book_rounded,
-          color: AppColors.teal,
-          labelKey: 'owner_item_subjects',
-          onTap: () => Get.toNamed(subjectsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.account_balance_rounded,
-          color: AppColors.activityPurple,
-          labelKey: 'owner_item_branches',
-          onTap: () => Get.toNamed(branchesView),
-        ),
-        ManagerGridTile(
-          icon: Icons.card_membership_rounded,
-          color: AppColors.primary,
-          labelKey: 'owner_item_packages',
-          onTap: () => Get.toNamed(nurseryPackagesView),
-        ),
+        // "أرقام التواصل" now lives inside "خطوات الإعداد".
         ManagerGridTile(
           icon: Icons.event_busy_rounded,
           color: AppColors.activityOrange,
           labelKey: 'manager_more_link_holidays',
           onTap: () => Get.toNamed(holidaysView),
+        ),
+        // "الأطفال" moved to the Children tab (ManagerChildrenTab).
+        ManagerGridTile(
+          icon: Icons.emoji_events_rounded,
+          color: const Color(0xFFE0A100),
+          labelKey: 'sotw_menu_entry',
+          onTap: () => Get.toNamed(starOfWeekView),
+        ),
+        ManagerGridTile(
+          icon: Icons.reviews_rounded,
+          color: AppColors.ratingStar,
+          labelKey: 'nursery_feedback_view_title',
+          onTap: () => Get.toNamed(nurseryFeedbackListView),
+        ),
+        ManagerGridTile(
+          icon: Icons.rate_review_rounded,
+          color: const Color(0xFF0891B2),
+          labelKey: 'manager_item_photo_approval',
+          onTap: () => Get.toNamed(managerPhotoApprovalSettingsView),
+        ),
+        ManagerGridTile(
+          icon: Icons.forum_rounded,
+          color: AppColors.activityPurple,
+          labelKey: 'parent_notes_tab',
+          onTap: () => Get.to(() => const ParentNotesInboxView()),
+        ),
+        ManagerGridTile(
+          icon: Icons.assignment_rounded,
+          color: const Color(0xFF4F46E5),
+          labelKey: 'assessment_templates_menu_item',
+          onTap: () => Get.toNamed(assessmentRunsView),
         ),
       ],
     );
@@ -149,60 +140,32 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
       titleKey: 'owner_more_business',
       tiles: [
         ManagerGridTile(
-          icon: Icons.child_care_rounded,
-          color: AppColors.activityGreen,
-          labelKey: 'manager_more_link_children',
-          onTap: () => Get.toNamed(childrenView),
-        ),
-        ManagerGridTile(
           icon: Icons.payments_rounded,
           color: AppColors.activityGreen,
           labelKey: 'billing_my_subscription',
           onTap: () => Get.toNamed(mySubscriptionView),
         ),
         ManagerGridTile(
-          icon: Icons.app_registration_rounded,
-          color: AppColors.secondary80,
-          labelKey: 'apply_manage_title',
-          badgeCount: controller.pendingApplications.value,
-          onTap: () => Get.toNamed(managerApplicationsView)
-              ?.then((_) => controller.loadPendingApplications()),
+          icon: Icons.event_available_rounded,
+          color: const Color(0xFF16A34A),
+          labelKey: 'manager_profile_fee_window',
+          onTap: () => Get.toNamed(managerFeeWindowView),
         ),
         ManagerGridTile(
-          icon: Icons.reviews_rounded,
-          color: AppColors.ratingStar,
-          labelKey: 'nursery_feedback_view_title',
-          onTap: () => Get.toNamed(nurseryFeedbackListView),
+          icon: Icons.language_rounded,
+          color: AppColors.primary,
+          labelKey: 'settings_language',
+          onTap: showLanguageSheet,
         ),
-        ManagerGridTile(
-          icon: Icons.assignment_rounded,
-          color: AppColors.teal,
-          labelKey: 'manager_more_link_application_file',
-          onTap: () => Get.toNamed(managerApplicationFileView),
-        ),
+        // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
+        // "طلبات الالتحاق" and "ملف التقديم" tiles temporarily removed
+        // for manager/owner.
       ],
     );
   }
 
-  Widget _settingsSection() {
-    return ManagerGridSection(
-      titleKey: 'manager_more_section_settings',
-      tiles: [
-        ManagerGridTile(
-          icon: Icons.notifications_none_rounded,
-          color: AppColors.primary,
-          labelKey: 'manager_more_link_notifications',
-          onTap: () => Get.toNamed(notificationsView),
-        ),
-        ManagerGridTile(
-          icon: Icons.support_agent_rounded,
-          color: AppColors.blueForeground,
-          labelKey: 'staff_account_contact_support',
-          onTap: () => showContactSheet(ContactType.support),
-        ),
-      ],
-    );
-  }
+  // "الإعدادات" section removed — its only remaining item (الإشعارات) is
+  // already reachable from the bell icon in the app bar.
 }
 
 /// Shown only when a real owner is currently acting as a branch manager.

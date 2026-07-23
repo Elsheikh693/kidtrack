@@ -36,7 +36,7 @@ class MainPageViewModel extends GetxController {
         try {
           await FirebaseAuth.instance.signOut();
         } catch (_) {}
-        Get.offAllNamed(loginView);
+        Get.offAllNamed(activationLandingView);
         if (outcome.reasonKey != null) {
           await Future.delayed(const Duration(milliseconds: 400));
           Get.snackbar(
@@ -112,6 +112,8 @@ class MainPageViewModel extends GetxController {
     const OwnerFinanceTab(),
     const OwnerFeedTab(),
     const OwnerMoreTab(),
+    // index 4: Analytics Center — surfaced as the 2nd nav slot via pageIndex.
+    const AnalyticsCenterView(),
   ];
   static final _managerPages = <Widget>[
     const ManagerDashboardTab(),
@@ -121,6 +123,8 @@ class MainPageViewModel extends GetxController {
     const ManagerFinanceTab(),
     const ManagerSocialTab(),
     const ManagerMoreTab(),
+    // index 7: manager-owned weekly timetable editor (schedule tab).
+    const ManagerScheduleView(),
   ];
   static final _receptionistPages = <Widget>[
     const ReceptionistDashboardTab(),
@@ -129,11 +133,16 @@ class MainPageViewModel extends GetxController {
     const ReceptionistCoursesTab(),
     const ReceptionistEventsView(),
     const ReceptionistFinanceTab(),
+    // index 6: shared staff↔guardian chat inbox (same threads the manager uses).
+    const ManagerChatTab(),
   ];
   static final _teacherPages = <Widget>[
     const TeacherHomeTab(),
     const TeacherActivityTab(),
-    const TeacherLinkBookTab(),
+    const TeacherReportsTab(),
+    const ParentNotesInboxView(),
+    // مخفي مؤقتاً: دفتر التواصل
+    // const TeacherLinkBookTab(),
     // مخفي مؤقتاً: صفحة الواجبات
     // const TeacherHomeworkTab(),
   ];
@@ -146,6 +155,8 @@ class MainPageViewModel extends GetxController {
     const ParentDashboardView(),
     const ParentEducationView(),
     const ParentPostsView(),
-    const ParentCoursesView(),
+    // مخفي مؤقتاً: تاب الكورسات
+    // const ParentCoursesView(),
+    const ReportsHubView(),
   ];
 }

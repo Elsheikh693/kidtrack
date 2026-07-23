@@ -11,7 +11,7 @@ class IdleHeaderExpandedContent extends StatelessWidget {
       final classrooms = ctrl.myClassrooms;
       final active = ctrl.activeActivity.value;
       final subtitle = active != null
-          ? 'نشاط جارٍ: ${active.title}'
+          ? 'teacheract33_activity_running'.trParams({'title': active.title})
           : 'teacher_activity_no_active'.tr;
 
       return Column(

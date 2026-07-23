@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../link_book_controller.dart';
+import 'package:get/get.dart';
 
 /// A subject's at-a-glance card in the "by subject" view of the Link Book:
 /// icon + name, activity/photo counts, the latest evaluation, and a mini trend.
@@ -84,7 +85,7 @@ class SubjectHistoryCard extends StatelessWidget {
                     children: [
                       _MetaBit(
                         icon: Icons.auto_awesome_rounded,
-                        text: '${subject.activityCount} نشاط',
+                        text: '${subject.activityCount} ${'parentlink25_activities_unit'.tr}',
                         color: const Color(0xFF2563EB),
                       ),
                       if (subject.photoCount > 0) ...[
@@ -118,9 +119,9 @@ class _TrendPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (IconData icon, Color color, String label) = switch (trend) {
-      'up' => (Icons.trending_up_rounded, const Color(0xFF059669), 'تطور'),
-      'down' => (Icons.trending_down_rounded, const Color(0xFFD97706), 'تراجع'),
-      _ => (Icons.trending_flat_rounded, const Color(0xFF64748B), 'ثابت'),
+      'up' => (Icons.trending_up_rounded, const Color(0xFF059669), 'parentlink25_trend_up'.tr),
+      'down' => (Icons.trending_down_rounded, const Color(0xFFD97706), 'parentlink25_trend_down'.tr),
+      _ => (Icons.trending_flat_rounded, const Color(0xFF64748B), 'parentlink25_trend_flat'.tr),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

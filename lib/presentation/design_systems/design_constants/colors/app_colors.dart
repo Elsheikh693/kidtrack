@@ -132,6 +132,8 @@ class AppColors {
   static const Color activityBlue = Color(0xFF0891B2);
   static const Color activitySlate = Color(0xFF1E293B);
   static const Color activityMuted = Color(0xFF94A3B8);
+  // Neutral rail behind donut/ring slices (the un-filled track).
+  static const Color chartTrack = Color(0xFFEDF0F4);
 
   static const Color dividerAndLines = Color(0xFFE0E0E2);
 

@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
 import 'activity_detail_sheet.dart';
+import 'session_note_button.dart';
 
 /// Time-ordered list of the child's activities for the selected day.
 class JournalTimelineSection extends StatelessWidget {
-  const JournalTimelineSection({super.key, required this.items});
+  const JournalTimelineSection({
+    super.key,
+    required this.items,
+    this.enableNotes = false,
+  });
   final List<DayTimelineItem> items;
+
+  /// When true, each activity card shows the guardian's "add your note" action.
+  /// Only the main Link Book tab (education view) opts in — the Link Book
+  /// history day pages stay read-only.
+  final bool enableNotes;
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +40,9 @@ class JournalTimelineSection extends StatelessWidget {
                     size: 15, color: Color(0xFF2563EB)),
               ),
               const SizedBox(width: 9),
-              const Text(
-                'أنشطة اليوم',
-                style: TextStyle(
+              Text(
+                'parenteduc24_day_activities_title'.tr,
+                style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.w800, color: kJInk),
               ),
               const SizedBox(width: 8),
@@ -61,7 +72,11 @@ class JournalTimelineSection extends StatelessWidget {
           )
         else
           for (int i = 0; i < items.length; i++)
-            _TimelineTile(item: items[i], isLast: i == items.length - 1),
+            _TimelineTile(
+              item: items[i],
+              isLast: i == items.length - 1,
+              enableNotes: enableNotes,
+            ),
       ],
     );
   }
@@ -80,13 +95,13 @@ class _EmptyTimeline extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: kJBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.event_busy_rounded, size: 30, color: kJMuted),
-          SizedBox(height: 10),
+          const Icon(Icons.event_busy_rounded, size: 30, color: kJMuted),
+          const SizedBox(height: 10),
           Text(
-            'لم يتم تسجيل أنشطة لهذا اليوم',
-            style: TextStyle(
+            'parenteduc24_timeline_empty'.tr,
+            style: const TextStyle(
                 fontSize: 13, fontWeight: FontWeight.w600, color: kJMuted),
           ),
         ],
@@ -96,9 +111,14 @@ class _EmptyTimeline extends StatelessWidget {
 }
 
 class _TimelineTile extends StatelessWidget {
-  const _TimelineTile({required this.item, required this.isLast});
+  const _TimelineTile({
+    required this.item,
+    required this.isLast,
+    this.enableNotes = false,
+  });
   final DayTimelineItem item;
   final bool isLast;
+  final bool enableNotes;
 
   @override
   Widget build(BuildContext context) {
@@ -261,6 +281,7 @@ class _TimelineTile extends StatelessWidget {
                     const SizedBox(height: 11),
                     _CommentBox(text: item.note!.trim()),
                   ],
+                  if (enableNotes) SessionNoteButton(item: item),
                 ],
               ),
             ),
@@ -358,13 +379,13 @@ class _CommentBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.chat_bubble_outline_rounded,
+            children: [
+              const Icon(Icons.chat_bubble_outline_rounded,
                   size: 13, color: Color(0xFF7C3AED)),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
-                'تعليق المعلمة',
-                style: TextStyle(
+                'parenteduc24_teacher_comment'.tr,
+                style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF7C3AED)),

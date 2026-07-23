@@ -18,7 +18,7 @@ class ApplicationDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = application;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(

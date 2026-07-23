@@ -1,42 +1,25 @@
-/// Who helped the child complete the homework at home.
-enum SubmittedBy { mother, father, self, other }
-
-extension SubmittedByX on SubmittedBy {
-  String get key => switch (this) {
-        SubmittedBy.mother => 'mother',
-        SubmittedBy.father => 'father',
-        SubmittedBy.self => 'self',
-        SubmittedBy.other => 'other',
-      };
-
-  String get label => switch (this) {
-        SubmittedBy.mother => 'الأم',
-        SubmittedBy.father => 'الأب',
-        SubmittedBy.self => 'بنفسه',
-        SubmittedBy.other => 'آخر',
-      };
-
-  static SubmittedBy fromKey(String? k) => switch (k) {
-        'mother' => SubmittedBy.mother,
-        'father' => SubmittedBy.father,
-        'self' => SubmittedBy.self,
-        _ => SubmittedBy.other,
-      };
-}
-
-/// A PARENT'S confirmation that the homework was done at home.
+/// A PARENT'S confirmation that the homework was done at home, together with a
+/// light "how did it go" self-report.
 ///
-/// This is a pure completion EVENT — it carries no quality judgment. The
-/// teacher's assessment is a separate "review" ([HomeworkStatusModel]).
-/// Stored at `platform/{nurseryId}/homeworkSubmissions/{homeworkId}/{childId}`.
+/// The old "who did it" (mother/father/self) field was dropped in favour of
+/// three optional yes/no answers describing HOW the child did the homework:
+///   • [neededHelp]  — احتاج مساعدة؟
+///   • [guidedHand]  — مسكت إيده؟ (an adult physically guided the hand)
+///   • [didEasily]   — عملها بسهولة؟
+///
+/// Each answer is nullable — the parent may confirm completion without
+/// answering. Stored at
+/// `platform/{nurseryId}/homeworkSubmissions/{homeworkId}/{childId}`.
 class HomeworkSubmissionModel {
   final String homeworkId;
   final String childId;
   final String nurseryId;
   final String classroomId;
   final int submittedAt;
-  final SubmittedBy submittedBy;
   final String submittedByUid;
+  final bool? neededHelp;
+  final bool? guidedHand;
+  final bool? didEasily;
   final String? note;
   final String? photo;
 
@@ -46,11 +29,17 @@ class HomeworkSubmissionModel {
     required this.nurseryId,
     required this.classroomId,
     required this.submittedAt,
-    this.submittedBy = SubmittedBy.other,
     required this.submittedByUid,
+    this.neededHelp,
+    this.guidedHand,
+    this.didEasily,
     this.note,
     this.photo,
   });
+
+  /// True when the parent answered at least one of the "how did it go" questions.
+  bool get hasAnswers =>
+      neededHelp != null || guidedHand != null || didEasily != null;
 
   factory HomeworkSubmissionModel.fromJson(
     Map<dynamic, dynamic> json, {
@@ -63,8 +52,10 @@ class HomeworkSubmissionModel {
       nurseryId: json['nurseryId']?.toString() ?? '',
       classroomId: json['classroomId']?.toString() ?? '',
       submittedAt: _int(json['submittedAt']) ?? 0,
-      submittedBy: SubmittedByX.fromKey(json['submittedBy']?.toString()),
       submittedByUid: json['submittedByUid']?.toString() ?? '',
+      neededHelp: _bool(json['neededHelp']),
+      guidedHand: _bool(json['guidedHand']),
+      didEasily: _bool(json['didEasily']),
       note: (json['note']?.toString().trim().isEmpty ?? true)
           ? null
           : json['note'].toString(),
@@ -79,9 +70,11 @@ class HomeworkSubmissionModel {
       'nurseryId': nurseryId,
       'classroomId': classroomId,
       'submittedAt': submittedAt,
-      'submittedBy': submittedBy.key,
       'submittedByUid': submittedByUid,
     };
+    if (neededHelp != null) d['neededHelp'] = neededHelp;
+    if (guidedHand != null) d['guidedHand'] = guidedHand;
+    if (didEasily != null) d['didEasily'] = didEasily;
     if ((note ?? '').trim().isNotEmpty) d['note'] = note!.trim();
     if ((photo ?? '').trim().isNotEmpty) d['photo'] = photo!.trim();
     return d;
@@ -91,5 +84,14 @@ class HomeworkSubmissionModel {
     if (v == null) return null;
     if (v is int) return v;
     return int.tryParse(v.toString());
+  }
+
+  static bool? _bool(dynamic v) {
+    if (v == null) return null;
+    if (v is bool) return v;
+    final s = v.toString().toLowerCase();
+    if (s == 'true' || s == '1') return true;
+    if (s == 'false' || s == '0') return false;
+    return null;
   }
 }

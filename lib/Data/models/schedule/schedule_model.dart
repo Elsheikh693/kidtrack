@@ -7,6 +7,12 @@ class ScheduleModel {
   final String endTime;   // "09:00"
   final String activityType; // lesson, break, outdoor, lunch, nap, other
   final String? subjectId;
+  // Teacher the manager assigned to this slot. Null for legacy slots (before the
+  // manager-owned timetable) — detection then falls back to the classroom teacher.
+  final String? teacherId;
+  // Optional lesson title the manager sets in advance ("حرف الكاف"). When empty,
+  // the teacher types it at the moment she presses "start".
+  final String? topic;
   final String? note;
   final int? createdAt;
   final int? updatedAt;
@@ -20,6 +26,8 @@ class ScheduleModel {
     required this.endTime,
     this.activityType = 'lesson',
     this.subjectId,
+    this.teacherId,
+    this.topic,
     this.note,
     this.createdAt,
     this.updatedAt,
@@ -35,6 +43,8 @@ class ScheduleModel {
       endTime: json['endTime']?.toString() ?? '09:00',
       activityType: json['activityType']?.toString() ?? 'lesson',
       subjectId: json['subjectId']?.toString(),
+      teacherId: json['teacherId']?.toString(),
+      topic: json['topic']?.toString(),
       note: json['note']?.toString(),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
@@ -52,6 +62,8 @@ class ScheduleModel {
     data['endTime'] = endTime;
     data['activityType'] = activityType;
     put('subjectId', subjectId);
+    put('teacherId', teacherId);
+    put('topic', topic);
     put('note', note);
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
@@ -61,13 +73,15 @@ class ScheduleModel {
   ScheduleModel copyWith({
     String? key, String? nurseryId, String? classroomId, String? day,
     String? startTime, String? endTime, String? activityType,
-    String? subjectId, String? note, int? createdAt, int? updatedAt,
+    String? subjectId, String? teacherId, String? topic, String? note,
+    int? createdAt, int? updatedAt,
   }) => ScheduleModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
     classroomId: classroomId ?? this.classroomId, day: day ?? this.day,
     startTime: startTime ?? this.startTime, endTime: endTime ?? this.endTime,
     activityType: activityType ?? this.activityType,
-    subjectId: subjectId ?? this.subjectId, note: note ?? this.note,
+    subjectId: subjectId ?? this.subjectId, teacherId: teacherId ?? this.teacherId,
+    topic: topic ?? this.topic, note: note ?? this.note,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
 

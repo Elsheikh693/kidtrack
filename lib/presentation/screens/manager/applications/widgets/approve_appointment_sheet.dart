@@ -31,7 +31,7 @@ class _ApproveAppointmentSheetState extends State<ApproveAppointmentSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w,
             18.h + MediaQuery.of(context).viewInsets.bottom),

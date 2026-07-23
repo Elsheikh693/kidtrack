@@ -19,7 +19,7 @@ class _ProgramListViewState extends State<ProgramListView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(

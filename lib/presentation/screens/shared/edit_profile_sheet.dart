@@ -103,7 +103,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
         child: SafeArea(
@@ -240,7 +240,7 @@ class _DeleteAccountConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Dialog(
         backgroundColor: AppColors.white,
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),

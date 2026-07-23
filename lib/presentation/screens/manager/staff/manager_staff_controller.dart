@@ -92,18 +92,22 @@ class ManagerStaffController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
-    // Classrooms is independent. The staff → leaves → attendance chain stays
-    // ordered (attendance reads the approved-leave set built in leaves), but
-    // runs in parallel with the classrooms fetch.
-    await Future.wait([
-      _loadStaff().then((_) async {
-        await _loadLeaves();
-        await _loadAttendance();
-      }),
-      _loadClassrooms(),
-    ]);
-    _filter();
-    isLoading.value = false;
+    try {
+      // Classrooms is independent. The staff → leaves → attendance chain stays
+      // ordered (attendance reads the approved-leave set built in leaves), but
+      // runs in parallel with the classrooms fetch.
+      await Future.wait([
+        _loadStaff().then((_) async {
+          await _loadLeaves();
+          await _loadAttendance();
+        }),
+        _loadClassrooms(),
+      ]);
+      _filter();
+    } finally {
+      // Never leave the loader stuck if any step throws.
+      isLoading.value = false;
+    }
   }
 
   Future<void> _loadStaff() async {
@@ -113,7 +117,7 @@ class ManagerStaffController extends GetxController {
           .where((s) =>
               s.branchId == branchId &&
               s.isActive &&
-              _session.seesShift(s.shift))
+              _session.seesAnyShift(s.shiftIds))
           .toList()
         ..sort((a, b) => a.name.compareTo(b.name));
 

@@ -6,21 +6,22 @@ class TeacherOnboardingView extends StatelessWidget {
 
   final bool editMode;
 
-  static const _green = Color(0xFF16A34A);
-
   @override
   Widget build(BuildContext context) {
     final c = Get.put(TeacherOnboardingController(editMode: editMode));
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
-        body: SafeArea(
-          child: Obx(() {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: Directionality(
+        textDirection: appTextDirection,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF9FAFB),
+          body: Obx(() {
             if (c.isLoading.value) {
-              return const Center(
-                child: CircularProgressIndicator(color: _green),
-              );
+              return const _OnboardingShimmer();
             }
             return Column(
               children: [
@@ -55,22 +56,36 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final step = controller.currentStep.value;
-      final titles = ['اختاري الفصول التي تدرسينها', 'حددي مواد كل فصل'];
+      final titles = [
+        'teacherlin37_step1_title'.tr,
+        'teacherlin37_step2_title'.tr,
+      ];
       final subtitles = [
-        'ضعي علامة على كل فصل تتولين تدريسه',
-        'اختاري المواد لكل فصل من الجدول أدناه',
+        'teacherlin37_step1_subtitle'.tr,
+        'teacherlin37_step2_subtitle'.tr,
       ];
       return Column(
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
+            padding: EdgeInsets.fromLTRB(
+                16, MediaQuery.of(context).padding.top + 12, 16, 18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF16A34A), Color(0xFF15803D)],
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
               ),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,13 +115,14 @@ class _Header extends StatelessWidget {
                         children: [
                           Text(
                             controller.editMode
-                                ? 'تعديل الملف الأكاديمي'
-                                : 'إعداد الملف الأكاديمي',
+                                ? 'teacherlin37_edit_academic_profile'.tr
+                                : 'teacherlin37_setup_academic_profile'.tr,
                             style: context.typography.smSemiBold
                                 .copyWith(color: Colors.white),
                           ),
                           Text(
-                            'خطوة ${step + 1} من 2',
+                            'teacherlin37_step_of'
+                                .trParams({'step': '${step + 1}'}),
                             style: context.typography.xsRegular.copyWith(
                                 color: Colors.white.withValues(alpha: 0.8)),
                           ),
@@ -122,7 +138,7 @@ class _Header extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${controller.totalAssignments} تكليف',
+                          '${controller.totalAssignments} ${'teacherlin37_assignment_unit'.tr}',
                           style: context.typography.xsMedium
                               .copyWith(color: Colors.white),
                         ),
@@ -209,12 +225,12 @@ class _Step1Classrooms extends StatelessWidget {
                     size: 52, color: Colors.grey.shade300),
                 const SizedBox(height: 12),
                 Text(
-                  'لا توجد فصول في هذا الفرع',
+                  'teacherlin37_no_branch_classrooms'.tr,
                   style: context.typography.smRegular.copyWith(color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'تواصلي مع مدير الحضانة',
+                  'teacherlin37_contact_manager'.tr,
                   style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
                 ),
               ],
@@ -232,7 +248,7 @@ class _Step1Classrooms extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'الفصول الدراسية المتاحة',
+                  'teacherlin37_available_classrooms'.tr,
                   style: context.typography.displaySmBold.copyWith(color: Color(0xFF374151)),
                 ),
                 const SizedBox(width: 8),
@@ -245,7 +261,7 @@ class _Step1Classrooms extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '$selectedCount محدد',
+                    '$selectedCount ${'teacherlin37_selected_unit'.tr}',
                     style: context.typography.xsMedium.copyWith(color: Color(0xFF16A34A)),
                   ),
                 ),
@@ -285,29 +301,29 @@ class _ClassroomTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: selected ? _green.withValues(alpha: 0.07) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: selected ? _green : Colors.grey.shade200,
           width: selected ? 1.5 : 1,
         ),
-        boxShadow: selected
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                )
-              ],
+        boxShadow: [
+          BoxShadow(
+            color: selected
+                ? _green.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: selected ? 12 : 6,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 14),
@@ -342,7 +358,7 @@ class _ClassroomTile extends StatelessWidget {
                       if (capacity != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          'السعة: $capacity طالب',
+                          'teacherlin37_capacity'.trParams({'count': '$capacity'}),
                           style: context.typography.xsRegular.copyWith(color: Colors.grey.shade500),
                         ),
                       ],
@@ -402,12 +418,12 @@ class _Step2Matrix extends StatelessWidget {
                     size: 52, color: Colors.grey.shade300),
                 const SizedBox(height: 12),
                 Text(
-                  'لا توجد مواد دراسية',
+                  'teacherlin37_no_subjects'.tr,
                   style: context.typography.smRegular.copyWith(color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'تواصلي مع مدير الحضانة لإضافة المواد',
+                  'teacherlin37_contact_manager_subjects'.tr,
                   style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
                 ),
               ],
@@ -436,7 +452,7 @@ class _Step2Matrix extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'اضغطي على عنوان العمود لتحديد المادة لجميع الفصول، أو على اسم الفصل لتحديد جميع مواده',
+                    'teacherlin37_matrix_hint'.tr,
                     style: context.typography.xsRegular.copyWith(color: const Color(0xFF166534).withValues(alpha: 0.85)),
                   ),
                 ),
@@ -472,7 +488,7 @@ class _Step2Matrix extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Text(
-                                  'الفصل \\ المادة',
+                                  'teacherlin37_class_subject_header'.tr,
                                   style: context.typography.xsMedium.copyWith(color: Color(0xFF6B7280)),
                                   textAlign: TextAlign.center,
                                 ),
@@ -646,6 +662,109 @@ class _Step2Matrix extends StatelessWidget {
   }
 }
 
+// ── Loading Shimmer ───────────────────────────────────────────────────────────
+
+class _OnboardingShimmer extends StatelessWidget {
+  const _OnboardingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final topInset = MediaQuery.of(context).padding.top;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Header placeholder — real gradient so the open transition is smooth.
+        Container(
+          padding: EdgeInsets.fromLTRB(16, topInset + 12, 16, 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF16A34A), Color(0xFF15803D)],
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            ),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF16A34A).withValues(alpha: 0.25),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _ghost(38, 38, radius: 12),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ghost(120, 12),
+                      const SizedBox(height: 6),
+                      _ghost(70, 10, alpha: 0.6),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _ghost(230, 16),
+              const SizedBox(height: 8),
+              _ghost(170, 12, alpha: 0.6),
+            ],
+          ),
+        ),
+        // List placeholder.
+        Expanded(
+          child: Shimmer.fromColors(
+            baseColor: const Color(0xFFE2E8F0),
+            highlightColor: const Color(0xFFF8FAFC),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 22, 16, 24),
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16, right: 4),
+                  height: 16,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                for (var i = 0; i < 5; i++)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _ghost(double width, double height,
+      {double radius = 6, double alpha = 0.35}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: alpha),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
 // ── Circle Icon Button ────────────────────────────────────────────────────────
 
 class _CircleIconButton extends StatelessWidget {
@@ -736,8 +855,10 @@ class _BottomBar extends StatelessWidget {
                         children: [
                           Text(
                             isLast
-                                ? (c.editMode ? 'حفظ التعديلات' : 'حفظ وابدأي')
-                                : 'التالي',
+                                ? (c.editMode
+                                    ? 'teacherlin37_save_changes'.tr
+                                    : 'teacherlin37_save_and_start'.tr)
+                                : 'teacherlin37_next'.tr,
                             style: context.typography.mdBold.copyWith(color: Colors.white),
                           ),
                           const SizedBox(width: 8),

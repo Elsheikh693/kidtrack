@@ -56,6 +56,9 @@ class MonthlyMovementSection extends StatelessWidget {
                           value: controller.leftThisMonth.value,
                           icon: Icons.arrow_downward_rounded,
                           color: AppColors.activityRed,
+                          onTap: controller.leftThisMonth.value == 0
+                              ? null
+                              : controller.openWithdrawnList,
                         ),
                       ),
                     ],
@@ -79,6 +82,7 @@ class _MovementStat extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 
   final String label;
@@ -86,39 +90,51 @@ class _MovementStat extends StatelessWidget {
   final IconData icon;
   final Color color;
 
+  /// When non-null the stat is tappable (e.g. withdrawn → list with reasons);
+  /// a small chevron next to the count signals the affordance.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(9),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: color, size: 17),
               ),
-              child: Icon(icon, color: color, size: 17),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '$value',
-              style: context.typography.xlBold
-                  .copyWith(color: AppColors.textDefault),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: context.typography.xsMedium
-              .copyWith(color: AppColors.textSecondaryParagraph),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+              const SizedBox(width: 8),
+              Text(
+                '$value',
+                style: context.typography.xlBold
+                    .copyWith(color: AppColors.textDefault),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 2),
+                Icon(Icons.chevron_right_rounded, color: color, size: 18),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: context.typography.xsMedium
+                .copyWith(color: AppColors.textSecondaryParagraph),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

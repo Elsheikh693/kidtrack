@@ -2,6 +2,9 @@ class SessionModel {
   final String? key;
   final String nurseryId;
   final String classroomId;
+  // Branch that owns this session — stamped from the teacher's branch so a
+  // shared (isAllBranches) classroom's schedule doesn't leak across branches.
+  final String? branchId;
   final String subjectId;
   final String? subjectName;
   final String teacherId;
@@ -16,6 +19,7 @@ class SessionModel {
     this.key,
     required this.nurseryId,
     required this.classroomId,
+    this.branchId,
     required this.subjectId,
     this.subjectName,
     required this.teacherId,
@@ -32,6 +36,7 @@ class SessionModel {
       key: key ?? json['key']?.toString(),
       nurseryId: json['nurseryId']?.toString() ?? '',
       classroomId: json['classroomId']?.toString() ?? '',
+      branchId: json['branchId']?.toString(),
       subjectId: json['subjectId']?.toString() ?? '',
       subjectName: json['subjectName']?.toString(),
       teacherId: json['teacherId']?.toString() ?? '',
@@ -53,6 +58,7 @@ class SessionModel {
     put('key', key);
     d['nurseryId'] = nurseryId;
     d['classroomId'] = classroomId;
+    put('branchId', branchId);
     d['subjectId'] = subjectId;
     put('subjectName', subjectName);
     d['teacherId'] = teacherId;
@@ -69,6 +75,7 @@ class SessionModel {
     String? key,
     String? nurseryId,
     String? classroomId,
+    String? branchId,
     String? subjectId,
     String? subjectName,
     String? teacherId,
@@ -83,6 +90,7 @@ class SessionModel {
         key: key ?? this.key,
         nurseryId: nurseryId ?? this.nurseryId,
         classroomId: classroomId ?? this.classroomId,
+        branchId: branchId ?? this.branchId,
         subjectId: subjectId ?? this.subjectId,
         subjectName: subjectName ?? this.subjectName,
         teacherId: teacherId ?? this.teacherId,

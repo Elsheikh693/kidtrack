@@ -24,10 +24,10 @@ IconData _evalIcon(String? k) => switch (k) {
 };
 
 String _evalLabel(String? k) => switch (k) {
-  'excellent' => 'ممتاز',
-  'needs_follow' => 'جيد',
-  'needs_attention' => 'يحتاج دعم',
-  _ => 'لم يُقيَّم',
+  'excellent' => 'teacherlin37_eval_excellent'.tr,
+  'needs_follow' => 'teacherlin37_eval_good'.tr,
+  'needs_attention' => 'teacherlin37_eval_needs_support'.tr,
+  _ => 'teacherlin37_eval_not_rated'.tr,
 };
 
 // ── Main view ─────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
     final timeLabel =
         '${startDt.hour.toString().padLeft(2, '0')}:${startDt.minute.toString().padLeft(2, '0')}';
     final durationMin = act.elapsed.inMinutes;
-    final photos = act.photos.values.toList();
+    final photos = act.allPhotoUrls;
     final childMap = {for (final c in widget.children) c.key!: c};
 
     final attentionIds = act.evaluations.entries
@@ -181,7 +181,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                         [
                           if (act.subjectName != null) act.subjectName!,
                           timeLabel,
-                          '$durationMin د',
+                          '$durationMin ${'teacherlin37_min_unit'.tr}',
                         ].join('  •  '),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -213,7 +213,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                     _animated(
                       1,
                       _Section(
-                        title: 'توزيع التقييمات',
+                        title: 'teacherlin37_eval_distribution'.tr,
                         icon: Icons.bar_chart_rounded,
                         color: _kBlue,
                         trailing: _CountBadge(
@@ -234,7 +234,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                     _animated(
                       2,
                       _Section(
-                        title: 'لحظات النشاط',
+                        title: 'teacherlin37_activity_moments'.tr,
                         icon: Icons.photo_library_rounded,
                         color: _kPink,
                         child: _PhotosGrid(urls: photos),
@@ -247,7 +247,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                   _animated(
                     4,
                     _Section(
-                      title: 'أداء الطلاب',
+                      title: 'teacherlin37_student_performance'.tr,
                       icon: Icons.people_rounded,
                       color: _kPurple,
                       child: Column(
@@ -270,7 +270,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                     _animated(
                       5,
                       _Section(
-                        title: 'يحتاجون دعماً',
+                        title: 'teacherlin37_need_support'.tr,
                         icon: Icons.support_agent_rounded,
                         color: _kRed,
                         child: _AttentionSection(
@@ -287,7 +287,7 @@ class _LbActivityDetailViewState extends State<LbActivityDetailView>
                     _animated(
                       6,
                       _Section(
-                        title: 'ملاحظة عامة',
+                        title: 'teacherlin37_group_note'.tr,
                         icon: Icons.sticky_note_2_rounded,
                         color: _kAmber,
                         child: _NoteCard(note: act.groupNote!),
@@ -376,7 +376,7 @@ class _CountBadge extends StatelessWidget {
           Icon(Icons.people_rounded, size: 13, color: color),
           const SizedBox(width: 5),
           Text(
-            '$count طالب',
+            '$count ${'teacherlin37_students_unit'.tr}',
             style: context.typography.xsMedium.copyWith(
               color: color,
               fontWeight: FontWeight.w700,
@@ -428,7 +428,7 @@ class _EvalBreakdown extends StatelessWidget {
       child: Column(
         children: [
           _EvalBarRow(
-            label: 'ممتاز',
+            label: 'teacherlin37_eval_excellent'.tr,
             icon: Icons.star_rounded,
             count: excellent,
             total: total,
@@ -438,7 +438,7 @@ class _EvalBreakdown extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _EvalBarRow(
-            label: 'جيد',
+            label: 'teacherlin37_eval_good'.tr,
             icon: Icons.remove_circle_rounded,
             count: follow,
             total: total,
@@ -448,7 +448,7 @@ class _EvalBreakdown extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _EvalBarRow(
-            label: 'يحتاج دعم',
+            label: 'teacherlin37_eval_needs_support'.tr,
             icon: Icons.warning_rounded,
             count: attention,
             total: total,
@@ -629,7 +629,7 @@ class _EvalChildrenSheetState extends State<_EvalChildrenSheet>
     final label = _evalLabel(widget.evalKey);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -683,7 +683,7 @@ class _EvalChildrenSheetState extends State<_EvalChildrenSheet>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${widget.children.length} طالب',
+                          '${widget.children.length} ${'teacherlin37_students_unit'.tr}',
                           style: context.typography.xsRegular.copyWith(
                             color: const Color(0xFF9CA3AF),
                           ),
@@ -991,7 +991,7 @@ class _AttentionSection extends StatelessWidget {
                       const Icon(Icons.support_rounded, size: 12, color: _kRed),
                       const SizedBox(width: 4),
                       Text(
-                        'يحتاج دعم',
+                        'teacherlin37_eval_needs_support'.tr,
                         style: context.typography.xsRegular.copyWith(
                           color: _kRed,
                           fontWeight: FontWeight.w600,

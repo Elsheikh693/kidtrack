@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../Data/models/schedule/schedule_model.dart';
 
 class NextScheduleCard extends StatelessWidget {
@@ -43,7 +44,7 @@ class NextScheduleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'النشاط القادم',
+                  'teacheract34_next_activity'.tr,
                   style: TextStyle(
                     fontSize: 11,
                     color: _blue.withValues(alpha: 0.65),
@@ -99,14 +100,14 @@ class _StartBtn extends StatelessWidget {
                 child: CircularProgressIndicator(
                     color: Colors.white, strokeWidth: 2),
               )
-            : const Column(
+            : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_arrow_rounded,
+                  const Icon(Icons.play_arrow_rounded,
                       color: Colors.white, size: 18),
                   Text(
-                    'بدء',
-                    style: TextStyle(
+                    'teacheract34_start'.tr,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

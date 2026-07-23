@@ -1,4 +1,5 @@
 import '../../../../../index/index_main.dart';
+import '../../../feed/widgets/post_photo_carousel.dart';
 import 'post_detail_sheet.dart';
 
 const _kInk = Color(0xFF0F172A);
@@ -14,6 +15,7 @@ class ParentPostCard extends StatelessWidget {
     PostCategory.event => AppColors.blueForeground,
     PostCategory.achievement => AppColors.yellowForeground,
     PostCategory.reminder => AppColors.teal,
+    PostCategory.gallery => const Color(0xFF6366F1),
     _ => AppColors.primary,
   };
 
@@ -79,7 +81,9 @@ class ParentPostCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: _PhotosGrid(urls: post.photos),
+                  child: post.isGallery
+                      ? PostPhotoCarousel(urls: post.photos)
+                      : _PhotosGrid(urls: post.photos),
                 ),
               ),
           ],
@@ -186,7 +190,9 @@ class _Header extends StatelessWidget {
                     Flexible(
                       child: Text(
                         ParentFeedController.timeAgo(post.createdAt) +
-                            (post.updatedAt != null ? ' · معدّل' : ''),
+                            (post.updatedAt != null
+                                ? ' · ${'parentpick26_edited'.tr}'
+                                : ''),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

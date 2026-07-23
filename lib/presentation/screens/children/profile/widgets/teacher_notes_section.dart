@@ -10,7 +10,7 @@ class ChildProfileTeacherNotesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProfileSectionCard(
-      title: 'ملاحظات المعلمة',
+      title: 'childrenpr12_teacher_notes_title'.tr,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
         child: Obx(() {
@@ -60,7 +60,7 @@ class _Empty extends StatelessWidget {
               size: 28, color: Colors.grey.shade400),
           const SizedBox(height: 10),
           Text(
-            'لا توجد ملاحظات من المعلمة في هذه الفترة',
+            'childrenpr12_teacher_notes_empty'.tr,
             textAlign: TextAlign.center,
             style: context.typography.xsMedium
                 .copyWith(color: AppColors.textSecondaryParagraph),
@@ -77,25 +77,25 @@ _CatMeta _metaFor(String category) {
   switch (category) {
     case 'positive':
       return (
-        label: 'إيجابية',
+        label: 'childrenpr12_note_positive'.tr,
         color: const Color(0xFF16A34A),
         icon: Icons.sentiment_very_satisfied_rounded,
       );
     case 'needs_follow':
       return (
-        label: 'تحتاج متابعة',
+        label: 'childrenpr12_note_needs_follow'.tr,
         color: const Color(0xFFD97706),
         icon: Icons.flag_rounded,
       );
     case 'important':
       return (
-        label: 'مهمة',
+        label: 'childrenpr12_note_important'.tr,
         color: const Color(0xFFDC2626),
         icon: Icons.priority_high_rounded,
       );
     default:
       return (
-        label: 'ملاحظة',
+        label: 'childrenpr12_note_default'.tr,
         color: const Color(0xFF2563EB),
         icon: Icons.chat_bubble_rounded,
       );
@@ -167,15 +167,8 @@ class _NoteCard extends StatelessWidget {
   }
 }
 
-const _arMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
-
 String _stamp(int ms) {
   final d = DateTime.fromMillisecondsSinceEpoch(ms);
-  final hour12 = d.hour % 12 == 0 ? 12 : d.hour % 12;
-  final period = d.hour < 12 ? 'ص' : 'م';
-  final minute = d.minute.toString().padLeft(2, '0');
-  return '${d.day} ${_arMonths[d.month - 1]} · $hour12:$minute $period';
+  final date = localizeDigits('${d.day} ${monthName(d.month)}');
+  return '$date · ${arabicClockTime(ms)}';
 }

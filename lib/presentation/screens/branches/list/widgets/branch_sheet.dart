@@ -92,52 +92,74 @@ class _BranchSheetState extends State<BranchSheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: wrapWithKeyboard(
-        context: context,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SheetHandle(),
-              SizedBox(height: 20.h),
-              _SheetTitle(text: isEdit ? 'branch_edit'.tr : 'branch_add'.tr),
-              SizedBox(height: 24.h),
-              _FieldLabel('branch_name_label'.tr),
-              SizedBox(height: 6.h),
-              _InputField(controller: nameCtrl, hint: 'branch_name_hint'.tr),
-              SizedBox(height: 16.h),
-              _FieldLabel('branch_address_label'.tr),
-              SizedBox(height: 6.h),
-              _InputField(
-                controller: addressCtrl,
-                hint: 'branch_address_hint'.tr,
+      textDirection: appTextDirection,
+      child: ConstrainedBox(
+        // Cap the height so the sheet hugs its content (Column.min) and never
+        // reaches the status bar. The field area scrolls if it grows past the
+        // cap or when the keyboard opens.
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 12.h),
+            _SheetHandle(),
+            SizedBox(height: 20.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child:
+                  _SheetTitle(text: isEdit ? 'branch_edit'.tr : 'branch_add'.tr),
+            ),
+            SizedBox(height: 24.h),
+            Flexible(
+              child: wrapWithKeyboard(
+                context: context,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FieldLabel('branch_name_label'.tr),
+                      SizedBox(height: 6.h),
+                      _InputField(
+                          controller: nameCtrl, hint: 'branch_name_hint'.tr),
+                      SizedBox(height: 16.h),
+                      _FieldLabel('branch_address_label'.tr),
+                      SizedBox(height: 6.h),
+                      _InputField(
+                        controller: addressCtrl,
+                        hint: 'branch_address_hint'.tr,
+                      ),
+                      SizedBox(height: 16.h),
+                      _FieldLabel('branch_phone_label'.tr),
+                      SizedBox(height: 6.h),
+                      _InputField(
+                        controller: phoneCtrl,
+                        hint: 'branch_phone_hint'.tr,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      SizedBox(height: 16.h),
+                      _FieldLabel('branch_capacity_label'.tr),
+                      SizedBox(height: 6.h),
+                      _InputField(
+                        controller: capacityCtrl,
+                        hint: 'branch_capacity_hint'.tr,
+                        keyboardType: TextInputType.number,
+                      ),
+                      SizedBox(height: 32.h),
+                      _SubmitButton(
+                        label: isEdit ? 'branch_save'.tr : 'branch_save'.tr,
+                        onTap: _submit,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              SizedBox(height: 16.h),
-              _FieldLabel('branch_phone_label'.tr),
-              SizedBox(height: 6.h),
-              _InputField(
-                controller: phoneCtrl,
-                hint: 'branch_phone_hint'.tr,
-                keyboardType: TextInputType.phone,
-              ),
-              SizedBox(height: 16.h),
-              _FieldLabel('branch_capacity_label'.tr),
-              SizedBox(height: 6.h),
-              _InputField(
-                controller: capacityCtrl,
-                hint: 'branch_capacity_hint'.tr,
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 32.h),
-              _SubmitButton(
-                label: isEdit ? 'branch_save'.tr : 'branch_save'.tr,
-                onTap: _submit,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

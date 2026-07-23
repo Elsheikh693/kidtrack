@@ -6,7 +6,7 @@ class StaffModel {
   final String uid;
   final String nurseryId;
   final String? branchId;
-  final String? shift; // 'morning' / 'evening' / 'both'
+  final List<String> shiftIds; // ShiftModel keys — empty = works all shifts
   final String? classroomId;
   final List<String> subjectIds;
   final String name;
@@ -31,7 +31,7 @@ class StaffModel {
     required this.uid,
     required this.nurseryId,
     this.branchId,
-    this.shift,
+    this.shiftIds = const [],
     this.classroomId,
     this.subjectIds = const [],
     required this.name,
@@ -59,7 +59,7 @@ class StaffModel {
       uid: json['uid']?.toString() ?? '',
       nurseryId: json['nurseryId']?.toString() ?? '',
       branchId: json['branchId']?.toString(),
-      shift: json['shift']?.toString(),
+      shiftIds: _parseShiftIds(json),
       classroomId: json['classroomId']?.toString(),
       subjectIds: _parseStringList(json['subjectIds']),
       name: json['name']?.toString() ?? '',
@@ -87,7 +87,7 @@ class StaffModel {
     put('uid', uid);
     put('nurseryId', nurseryId);
     put('branchId', branchId);
-    put('shift', shift);
+    data['shiftIds'] = shiftIds;
     put('classroomId', classroomId);
     if (subjectIds.isNotEmpty) data['subjectIds'] = subjectIds;
     put('name', name);
@@ -109,7 +109,8 @@ class StaffModel {
   }
 
   StaffModel copyWith({
-    String? key, String? uid, String? nurseryId, String? branchId, String? shift,
+    String? key, String? uid, String? nurseryId, String? branchId,
+    List<String>? shiftIds,
     String? classroomId, List<String>? subjectIds, String? name, String? phone,
     String? email, String? profileImage, UserType? role, StaffTemplate? template,
     bool? isActive, String? fcmToken, double? salary, int? hireDate,
@@ -118,7 +119,7 @@ class StaffModel {
   }) => StaffModel(
     key: key ?? this.key, uid: uid ?? this.uid,
     nurseryId: nurseryId ?? this.nurseryId, branchId: branchId ?? this.branchId,
-    shift: shift ?? this.shift,
+    shiftIds: shiftIds ?? this.shiftIds,
     classroomId: classroomId ?? this.classroomId,
     subjectIds: subjectIds ?? this.subjectIds,
     name: name ?? this.name,
@@ -136,6 +137,17 @@ class StaffModel {
     if (v is List) return v.map((e) => e.toString()).toList();
     if (v is Map) return v.values.map((e) => e.toString()).toList();
     return [];
+  }
+
+  /// Reads the multi-shift list, migrating legacy single-string `shift` records
+  /// ('morning'/'evening'/'between' → one-element list; 'both'/null → empty =
+  /// works every shift) so old staff keep resolving.
+  static List<String> _parseShiftIds(Map<String, dynamic> json) {
+    final ids = _parseStringList(json['shiftIds']);
+    if (ids.isNotEmpty) return ids;
+    final legacy = json['shift']?.toString();
+    if (legacy == null || legacy.isEmpty || legacy == 'both') return const [];
+    return [legacy];
   }
 
   static int _now() => DateTime.now().millisecondsSinceEpoch;

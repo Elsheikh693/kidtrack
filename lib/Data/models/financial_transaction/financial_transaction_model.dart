@@ -26,6 +26,10 @@ class FinancialTransactionModel {
 
   final double amount;
 
+  /// How the money was collected: 'cash' | 'instapay' | 'wallet' | '' (legacy).
+  /// Drives the owner "revenue by payment method" report.
+  final String method;
+
   /// When the money was received (ms since epoch).
   final int date;
 
@@ -49,6 +53,7 @@ class FinancialTransactionModel {
     required this.categoryId,
     required this.categoryName,
     required this.amount,
+    this.method = '',
     required this.date,
     this.collectedBy,
     this.collectedByName,
@@ -71,6 +76,7 @@ class FinancialTransactionModel {
       categoryId: json['categoryId']?.toString() ?? '',
       categoryName: json['categoryName']?.toString() ?? '',
       amount: _parseDouble(json['amount']) ?? 0,
+      method: json['method']?.toString() ?? '',
       date: _parseInt(json['date']) ?? _now(),
       collectedBy: json['collectedBy']?.toString(),
       collectedByName: json['collectedByName']?.toString(),
@@ -95,6 +101,7 @@ class FinancialTransactionModel {
     data['categoryId'] = categoryId;
     data['categoryName'] = categoryName;
     data['amount'] = amount;
+    if (method.isNotEmpty) data['method'] = method;
     data['date'] = date;
     put('collectedBy', collectedBy);
     put('collectedByName', collectedByName);
@@ -114,6 +121,7 @@ class FinancialTransactionModel {
     String? categoryId,
     String? categoryName,
     double? amount,
+    String? method,
     int? date,
     String? collectedBy,
     String? collectedByName,
@@ -131,6 +139,7 @@ class FinancialTransactionModel {
         categoryId: categoryId ?? this.categoryId,
         categoryName: categoryName ?? this.categoryName,
         amount: amount ?? this.amount,
+        method: method ?? this.method,
         date: date ?? this.date,
         collectedBy: collectedBy ?? this.collectedBy,
         collectedByName: collectedByName ?? this.collectedByName,

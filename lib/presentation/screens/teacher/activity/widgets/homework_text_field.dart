@@ -22,7 +22,7 @@ class HomeworkTextField extends StatelessWidget {
       controller: controller,
       autofocus: autofocus,
       maxLines: maxLines,
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       style: context.typography.smRegular,
       decoration: InputDecoration(
         hintText: hint,

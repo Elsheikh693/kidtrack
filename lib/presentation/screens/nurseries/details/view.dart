@@ -1,4 +1,6 @@
 import '../../../../index/index_main.dart';
+import 'widgets/nursery_feedback_card.dart';
+import 'widgets/nursery_roster_section.dart';
 
 class NurseryDetailsView extends StatefulWidget {
   const NurseryDetailsView({super.key});
@@ -19,7 +21,7 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
@@ -49,6 +51,8 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
           children: [
             _infoCard(),
             SizedBox(height: 20.h),
+            NurseryFeedbackCard(controller: controller),
+            SizedBox(height: 20.h),
             Text(
               'nursery_owners_count'.tr,
               style: context.typography.displaySmBold.copyWith(
@@ -57,6 +61,8 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
             ),
             SizedBox(height: 10.h),
             _ownersList(),
+            SizedBox(height: 20.h),
+            NurseryRosterSection(controller: controller),
           ],
         ),
       ),
@@ -163,6 +169,9 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
                 owner: owner,
                 onEdit: () => controller.openEditOwner(owner),
                 onDelete: () => controller.confirmDeleteOwner(owner),
+                onShowCode: () => controller.showOwnerActivation(owner),
+                onSendWhatsApp: () =>
+                    controller.sendOwnerActivationWhatsApp(owner),
               ),
             )
             .toList(),

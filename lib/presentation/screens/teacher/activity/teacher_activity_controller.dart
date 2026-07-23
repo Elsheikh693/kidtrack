@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import '../../../../index/index_main.dart';
+import 'activity_child_states_mixin.dart';
+import 'activity_participants_mixin.dart';
 
-
-enum EvalFilter { all, unevaluated, excellent, needsFollow, needsAttention }
-
-class TeacherActivityController extends GetxController {
+class TeacherActivityController extends GetxController
+    with ActivityChildStatesMixin, ActivityParticipantsMixin {
   late final SessionService _session;
   late final TeacherActivityService _activityService;
   final _academicService = TeacherAcademicService();
 
+  @override
   final activeActivity = Rxn<ClassroomActivityModel>();
+  @override
   final children = <ChildModel>[].obs;
   // Children checked-in (present/late) today. When attendance hasn't been taken
   // for the classroom, this stays null and every child is treated as present.
@@ -17,12 +21,16 @@ class TeacherActivityController extends GetxController {
   // classroomId → set of subjectIds assigned to that classroom (teacher matrix)
   final classroomSubjects = <String, Set<String>>{}.obs;
   final myClassrooms = <ClassroomModel>[].obs;
+  // Display name of the teacher assigned to the active classroom ('' = hide).
+  final currentTeacherName = ''.obs;
   final todayCompleted = <ClassroomActivityModel>[].obs;
   final todayScheduleSlots = <ScheduleModel>[].obs;
   final isLoading = true.obs;
   final isSaving = false.obs;
   final isUploadingPhoto = false.obs;
+  @override
   final searchQuery = ''.obs;
+  @override
   final evalFilter = EvalFilter.all.obs;
   final selectedClassroomId = ''.obs;
 
@@ -36,8 +44,32 @@ class TeacherActivityController extends GetxController {
 
   StreamSubscription<ClassroomActivityModel?>? _activitySub;
 
+  @override
   String get nurseryId => _session.nurseryId ?? '';
+  @override
   String get teacherId => _session.userId ?? '';
+  @override
+  String get branchId => _session.branchId ?? '';
+  @override
+  // Class session: show every classroom child in the states panel — present
+  // ones with their state controls, absent ones dimmed with an inline check-in
+  // button (present/absent split comes from the dated attendance set, not the
+  // stale childCurrentStatus cache). Subset activity: show only the picked
+  // participants so the panel stays focused on the group in the activity.
+  List<ChildModel> get stateChildren {
+    final a = activeActivity.value;
+    if (a != null && a.isActivityMode && a.childIds.isNotEmpty) {
+      final set = a.childIds.toSet();
+      return children.where((c) => set.contains(c.key)).toList();
+    }
+    return children;
+  }
+
+  @override
+  Set<String>? get presentTodayIds => presentChildIds.value;
+
+  @override
+  Future<void> refreshPresence() => refreshPresentChildren();
   String get activeClassroomId => selectedClassroomId.value;
   String get _classroomId => selectedClassroomId.value;
   set _classroomId(String v) => selectedClassroomId.value = v;
@@ -48,6 +80,14 @@ class TeacherActivityController extends GetxController {
     _session = Get.find<SessionService>();
     _activityService = Get.find<TeacherActivityService>();
     _load();
+  }
+
+  /// Ensures classrooms + subjects are loaded before the start-activity sheet is
+  /// opened from OUTSIDE the Activities tab (e.g. the teacher-home quick action),
+  /// where this fenix controller may have just been created and not yet loaded.
+  Future<void> ensureLoaded() async {
+    if (myClassrooms.isNotEmpty) return;
+    await _load();
   }
 
   Future<void> _load() async {
@@ -64,6 +104,8 @@ class TeacherActivityController extends GetxController {
           _loadSubjects(),
           _loadAssignment(),
           _loadTodayCompleted(),
+          loadStateTemplates(),
+          _loadTeacherName(),
         ]);
         await _loadTodaySchedule();
         _watchActivity();
@@ -78,55 +120,32 @@ class TeacherActivityController extends GetxController {
     _activitySub?.cancel();
     _watchActivity();
     _loadChildren();
+    _loadTeacherName();
     _reloadTodayData();
+  }
+
+  /// Resolves the active classroom's assigned teacher name for the header.
+  Future<void> _loadTeacherName() async {
+    final cls = myClassrooms.firstWhereOrNull((c) => c.key == _classroomId);
+    currentTeacherName.value = await _activityService.resolveStaffName(
+      nurseryId,
+      cls?.teacherId ?? '',
+    );
   }
 
   void _watchActivity() {
     _activitySub?.cancel();
-    _activitySub =
-        _activityService.watchActiveActivity(nurseryId, _classroomId).listen(
+    _activitySub = _activityService
+        .watchActiveActivity(nurseryId, _classroomId, teacherId: teacherId)
+        .listen(
       (a) {
         activeActivity.value = a;
       },
     );
   }
 
-  // ── Computed ──────────────────────────────────────────────────────────────
-
-  List<ChildModel> get filteredChildren {
-    var list = presentChildren;
-    final q = searchQuery.value.trim();
-    if (q.isNotEmpty) {
-      list = list
-          .where((c) =>
-              c.fullName.contains(q) ||
-              c.firstName.contains(q) ||
-              c.lastName.contains(q))
-          .toList();
-    }
-    final filter = evalFilter.value;
-    final activity = activeActivity.value;
-    if (filter != EvalFilter.all && activity != null) {
-      list = list.where((c) {
-        final eval = activity.evalFor(c.key ?? '');
-        return switch (filter) {
-          EvalFilter.unevaluated => eval == null,
-          EvalFilter.excellent => eval == EvalLevel.excellent,
-          EvalFilter.needsFollow => eval == EvalLevel.needsFollow,
-          EvalFilter.needsAttention => eval == EvalLevel.needsAttention,
-          EvalFilter.all => true,
-        };
-      }).toList();
-    }
-    return list;
-  }
-
-  int get evaluatedCount => activeActivity.value?.evaluations.length ?? 0;
-  int get unevaluatedCount =>
-      (children.length - evaluatedCount).clamp(0, children.length);
-  double get evalProgress => children.isEmpty
-      ? 0.0
-      : (evaluatedCount / children.length).clamp(0.0, 1.0);
+  // Computed participant-scoped getters (filteredChildren, evaluatedCount,
+  // unevaluatedCount, evalProgress) live in ActivityParticipantsMixin.
 
   // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -134,6 +153,7 @@ class TeacherActivityController extends GetxController {
     children.value =
         await _activityService.loadChildren(nurseryId, _classroomId);
     await _loadPresentToday();
+    watchChildStates();
   }
 
   /// Recomputes the present set from live statuses — call when opening the
@@ -155,6 +175,7 @@ class TeacherActivityController extends GetxController {
 
   /// Children to evaluate: only those present today when attendance was taken,
   /// otherwise every child in the classroom.
+  @override
   List<ChildModel> get presentChildren {
     final ids = presentChildIds.value;
     if (ids == null) return children.toList();
@@ -188,8 +209,9 @@ class TeacherActivityController extends GetxController {
   }
 
   Future<void> _loadTodayCompleted() async {
-    todayCompleted.value =
-        await _activityService.getTodayCompleted(nurseryId, _classroomId);
+    todayCompleted.value = await _activityService.getTodayCompleted(
+        nurseryId, _classroomId,
+        teacherId: teacherId);
   }
 
   Future<void> _reloadTodayData() async {
@@ -220,17 +242,20 @@ class TeacherActivityController extends GetxController {
   }
 
   String scheduleTitle(ScheduleModel s) {
+    // The manager-set lesson topic wins when present ("حرف الكاف"); otherwise
+    // fall back to the subject name, then the activity-type label.
+    if (s.topic != null && s.topic!.trim().isNotEmpty) return s.topic!.trim();
     if (s.subjectId != null) {
       final sub = _subjectById(s.subjectId);
       if (sub != null) return sub.name;
     }
-    const labels = {
-      'lesson': 'حصة دراسية',
-      'break': 'استراحة',
-      'outdoor': 'وقت خارجي',
-      'lunch': 'وجبة الغداء',
-      'nap': 'قيلولة',
-      'other': 'نشاط',
+    final labels = {
+      'lesson': 'teacheract32_label_lesson'.tr,
+      'break': 'teacheract32_label_break'.tr,
+      'outdoor': 'teacheract32_label_outdoor'.tr,
+      'lunch': 'teacheract32_label_lunch'.tr,
+      'nap': 'teacheract32_label_nap'.tr,
+      'other': 'teacheract32_label_other'.tr,
     };
     return s.note ?? labels[s.activityType] ?? s.activityType;
   }
@@ -249,7 +274,12 @@ class TeacherActivityController extends GetxController {
     required String title,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
     String? classroomId,
+    String mode = 'class',
+    // Explicit participant subset — only honoured in 'activity' mode. When null
+    // (or class mode) the present class is used, preserving the old behaviour.
+    List<String>? childIds,
   }) async {
     final cId = classroomId ?? _classroomId;
     if (cId.isEmpty) return;
@@ -263,11 +293,14 @@ class TeacherActivityController extends GetxController {
     // activity is fanned out to the present children only — a not-yet-arrived
     // child must not get it on their track. Falls back to every child when
     // attendance isn't tracked (presentChildIds == null via presentChildren).
+    // A subset activity carries its own picked participant list instead.
     await refreshPresentChildren();
-    final ids = presentChildren
-        .map((c) => c.key ?? '')
-        .where((id) => id.isNotEmpty)
-        .toList();
+    final ids = (mode == 'activity' && childIds != null)
+        ? childIds.where((id) => id.isNotEmpty).toList()
+        : presentChildren
+            .map((c) => c.key ?? '')
+            .where((id) => id.isNotEmpty)
+            .toList();
     isSaving.value = true;
     final result = await _activityService.startActivity(
       nurseryId: nurseryId,
@@ -278,6 +311,8 @@ class TeacherActivityController extends GetxController {
       childIds: ids,
       subjectId: subjectId,
       subjectName: subjectName,
+      scheduleSlotId: scheduleSlotId,
+      mode: mode,
     );
     currentSessionId.value = result.sessionId;
     isSaving.value = false;
@@ -326,19 +361,32 @@ class TeacherActivityController extends GetxController {
     isSaving.value = false;
   }
 
-  Future<void> startFromSchedule(ScheduleModel s) async {
-    final title = scheduleTitle(s);
+  /// True when the manager already wrote a lesson topic for this slot, so the
+  /// teacher can start straight away. When false, the view asks her to type one.
+  bool slotHasTopic(ScheduleModel s) =>
+      s.topic != null && s.topic!.trim().isNotEmpty;
+
+  /// Starts the session bound to a timetable slot. [titleOverride] carries the
+  /// title the teacher typed when the manager left the topic blank.
+  Future<void> startFromSchedule(ScheduleModel s, {String? titleOverride}) async {
+    final typed = titleOverride?.trim();
+    final title = (typed != null && typed.isNotEmpty) ? typed : scheduleTitle(s);
     final subName = _subjectById(s.subjectId)?.name;
     await startActivity(
-        title: title, subjectId: s.subjectId, subjectName: subName);
+      title: title,
+      subjectId: s.subjectId,
+      subjectName: subName,
+      scheduleSlotId: s.key,
+    );
     todayScheduleSlots.removeWhere((slot) => slot.key == s.key);
   }
 
   Future<void> setAllEval(EvalLevel level) async {
     final a = activeActivity.value;
-    if (a?.key == null || children.isEmpty) return;
+    final targets = participantChildren;
+    if (a?.key == null || targets.isEmpty) return;
     isSaving.value = true;
-    final ids = children
+    final ids = targets
         .map((c) => c.key ?? '')
         .where((id) => id.isNotEmpty)
         .toList();
@@ -391,23 +439,26 @@ class TeacherActivityController extends GetxController {
     final a = activeActivity.value;
     final activityKey = a?.key;
     if (activityKey == null) return;
-    await PickedImage().pickMultiImages(callBack: (files) async {
+    final source = await showImageSourceSheet();
+    if (source == null) return;
+
+    Future<void> upload(List<File> files) async {
       if (files.isEmpty) return;
       isUploadingPhoto.value = true;
       for (final file in files) {
-        final result = await _activityService.uploadActivityPhoto(
+        final photo = await _activityService.uploadActivityPhoto(
           nurseryId: nurseryId,
           classroomId: _classroomId,
           activityId: activityKey,
           file: file,
+          uploadedBy: teacherId,
         );
-        if (result != null) {
-          final (photoId, url) = result;
+        if (photo != null) {
           final current = activeActivity.value;
           if (current != null) {
             activeActivity.value = current.copyWith(
-              photos: Map<String, String>.from(current.photos)
-                ..[photoId] = url,
+              photos: Map<String, ActivityPhoto>.from(current.photos)
+                ..[photo.id] = photo,
             );
           }
         } else {
@@ -415,7 +466,16 @@ class TeacherActivityController extends GetxController {
         }
       }
       isUploadingPhoto.value = false;
-    });
+    }
+
+    final picker = PickedImage();
+    if (source == ImageSource.camera) {
+      await picker.capturePhoto(
+        callBack: (file) async => file == null ? null : upload([file]),
+      );
+    } else {
+      await picker.pickMultiImages(callBack: upload);
+    }
   }
 
   Future<void> removeActivityPhoto(String photoId) async {
@@ -424,7 +484,8 @@ class TeacherActivityController extends GetxController {
     final current = activeActivity.value;
     if (current != null) {
       activeActivity.value = current.copyWith(
-        photos: Map<String, String>.from(current.photos)..remove(photoId),
+        photos: Map<String, ActivityPhoto>.from(current.photos)
+          ..remove(photoId),
       );
     }
     await _activityService.deleteActivityPhoto(
@@ -432,6 +493,37 @@ class TeacherActivityController extends GetxController {
       classroomId: _classroomId,
       activityId: a!.key!,
       photoId: photoId,
+    );
+  }
+
+  /// Teacher sets who a photo is for: classroom-wide (default) or a set of
+  /// children (a "private moment"). Passing an empty list reverts to classroom.
+  Future<void> setPhotoAudience(
+    String photoId,
+    List<String> targetChildren,
+  ) async {
+    final a = activeActivity.value;
+    if (a?.key == null) return;
+    final audienceType =
+        targetChildren.isEmpty ? AudienceType.classroom : AudienceType.children;
+    final current = activeActivity.value;
+    final existing = current?.photos[photoId];
+    if (current != null && existing != null) {
+      activeActivity.value = current.copyWith(
+        photos: Map<String, ActivityPhoto>.from(current.photos)
+          ..[photoId] = existing.copyWith(
+            audienceType: audienceType,
+            targetChildren: targetChildren,
+          ),
+      );
+    }
+    await _activityService.updatePhotoAudience(
+      nurseryId: nurseryId,
+      classroomId: _classroomId,
+      activityId: a!.key!,
+      photoId: photoId,
+      audienceType: audienceType,
+      targetChildren: targetChildren,
     );
   }
 
@@ -509,7 +601,7 @@ class TeacherActivityController extends GetxController {
   }
 
   void setAllHomeworkStatus(HomeworkStatus status) {
-    for (final c in children) {
+    for (final c in participantChildren) {
       final id = c.key ?? '';
       if (id.isNotEmpty) pendingHomeworkStatuses[id] = status;
     }
@@ -551,6 +643,7 @@ class TeacherActivityController extends GetxController {
   @override
   void onClose() {
     _activitySub?.cancel();
+    disposeChildStates();
     super.onClose();
   }
 }

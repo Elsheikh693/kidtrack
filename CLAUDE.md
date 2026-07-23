@@ -1741,6 +1741,111 @@ AppText(
 
 ---
 
+# Localization Workflow — App-Wide AR / EN Pass
+
+We are localizing the ENTIRE app into Arabic + English.
+
+Much of the UI is already built with hardcoded text.
+
+The task is to sweep the app widget by widget and localize each one.
+
+---
+
+## The Per-Widget Process
+
+For EACH widget, do EXACTLY these steps — nothing more:
+
+### Step 1 — Extract & Add Keys
+
+Find every hardcoded user-facing string in the widget.
+
+Replace it with:
+
+```dart
+'key'.tr
+```
+
+Add the key to BOTH:
+
+```text
+ar.dart
+en.dart
+```
+
+- Arabic value in `ar.dart`
+- English value in `en.dart`
+
+Key naming follows:
+
+```text
+feature_action
+```
+
+(see Translation Naming Convention)
+
+---
+
+### Step 2 — Fix UI
+
+After swapping strings, fix any UI that breaks:
+
+- Overflow
+- Truncation
+- Wrapping
+- Spacing / padding
+- Widths that no longer fit the new text
+
+Text length differs between Arabic and English — the layout MUST hold for both.
+
+---
+
+### Step 3 — Check RTL Alignment
+
+Verify the widget is correct in RTL (Arabic):
+
+- Alignment (start / end, not hardcoded left / right)
+- Row / padding / margin direction
+- Icons that must mirror
+- `EdgeInsetsDirectional` instead of `EdgeInsets` where side-specific
+- `Alignment` / `TextAlign` respect directionality
+- No hardcoded `left` / `right` that breaks in RTL
+
+---
+
+## Scope Limit
+
+Per widget, ONLY:
+
+```text
+1. Add keys (ar + en)
+2. Fix UI
+3. Check RTL alignment
+```
+
+Do NOT:
+
+- Refactor architecture
+- Restructure widgets
+- Change logic
+- Rename files
+- Add features
+- Touch anything unrelated to localization
+
+Keep each pass minimal and focused on localization only.
+
+---
+
+## Rules Recap
+
+- Every user-facing string → `'key'.tr`
+- Key added to BOTH `ar.dart` and `en.dart` in the same pass
+- Never leave a key in only one file
+- Never invent a value in only one language
+- UI must not overflow or break in either language
+- Widget must be correct in RTL
+
+---
+
 # Roles & Access
 
 Role checks belong ONLY in controllers.

@@ -1,9 +1,16 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'index/index_main.dart';
 
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Load locale date symbols for every locale (ar/en) BEFORE any screen runs.
+    // Without this, `DateFormat(..., 'ar')` — used e.g. on the reception home
+    // header — throws LocaleDataException on first build and takes the app down
+    // on iOS. Owner/super-admin homes use no DateFormat, so only reception crashed.
+    await initializeDateFormatting();
 
     await Firebase.initializeApp();
 
@@ -49,11 +56,13 @@ void main() {
     final session = SessionService();
     final restoredUid = session.userId;
     if (session.isLoggedIn && !session.isGuest && restoredUid != null) {
-      unawaited(FcmTokenService().attach(
-        uid: restoredUid,
-        isStaff: session.hasStaffRecord,
-        nurseryId: session.nurseryId,
-      ));
+      unawaited(
+        FcmTokenService().attach(
+          uid: restoredUid,
+          isStaff: session.hasStaffRecord,
+          nurseryId: session.nurseryId,
+        ),
+      );
     }
 
     // NOTE: we deliberately do NOT call FlutterNativeSplash.preserve()/remove().
@@ -85,8 +94,8 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [Locale('ar')],
-      locale: const Locale('ar'),
+      supportedLocales: const [Locale('ar'), Locale('en')],
+      locale: Locale(LocalStorageLanguage().read()),
       fallbackLocale: const Locale('ar'),
       initialRoute: mainView,
       getPages: Routes.handleRoutes(),

@@ -33,9 +33,15 @@ class _ActivityElapsedBadgeState extends State<ActivityElapsedBadge> {
     final h = elapsed.inHours;
     final m = elapsed.inMinutes % 60;
     final s = elapsed.inSeconds % 60;
-    if (h > 0) return '${h}س ${m.toString().padLeft(2, '0')}د';
-    if (m > 0) return '${m}د ${s.toString().padLeft(2, '0')}ث';
-    return '${elapsed.inSeconds}ث';
+    if (h > 0) {
+      return '$h${'teacheract32_unit_hour'.tr} '
+          '${m.toString().padLeft(2, '0')}${'teacheract32_unit_minute'.tr}';
+    }
+    if (m > 0) {
+      return '$m${'teacheract32_unit_minute'.tr} '
+          '${s.toString().padLeft(2, '0')}${'teacheract32_unit_second'.tr}';
+    }
+    return '${elapsed.inSeconds}${'teacheract32_unit_second'.tr}';
   }
 
   @override

@@ -125,10 +125,13 @@ class ManagerPresenceController extends GetxController {
 
   Future<void> _loadAttendance() async {
     await _attendanceSvc.getAll(callBack: (list) {
+      // Scope by the branch roster (childId), not the record's stored branchId:
+      // a teacher check-in may carry an empty branchId, which would otherwise
+      // drop those present children from the presence list.
       final day = list
           .whereType<ChildAttendanceModel>()
           .where((a) =>
-              a.branchId == branchId &&
+              _childNames.containsKey(a.childId) &&
               a.date == _dateStr &&
               (a.status == 'present' || a.status == 'late'))
           .toList();

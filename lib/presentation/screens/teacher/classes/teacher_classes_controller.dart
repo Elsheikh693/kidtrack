@@ -76,7 +76,10 @@ class TeacherClassesController extends GetxController {
         if (snap.exists && snap.value is Map) {
           counts[cl.key ?? ''] = (snap.value as Map)
               .values
-              .where((v) => v is Map && (v['status'] ?? 'active') == 'active')
+              .where((v) =>
+                  v is Map &&
+                  (v['status'] ?? 'active') == 'active' &&
+                  _session.seesBranch(v['branchId']?.toString()))
               .length;
         } else {
           counts[cl.key ?? ''] = 0;

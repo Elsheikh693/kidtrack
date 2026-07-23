@@ -5,11 +5,13 @@ import '../parent_invite_row.dart';
 class BulkInviteParentCard extends StatelessWidget {
   final ParentInviteRow row;
   final VoidCallback onSend;
+  final VoidCallback onShowCode;
 
   const BulkInviteParentCard({
     super.key,
     required this.row,
     required this.onSend,
+    required this.onShowCode,
   });
 
   static const _whatsappGreen = Color(0xFF25D366);
@@ -72,30 +74,53 @@ class BulkInviteParentCard extends StatelessWidget {
           SizedBox(height: 12.h),
           _childrenLine(context),
           SizedBox(height: 12.h),
-          SizedBox(
-            width: double.infinity,
-            height: 46.h,
-            child: ElevatedButton.icon(
-              onPressed: row.hasPhone ? onSend : null,
-              icon: Icon(
-                sent ? Icons.done_all_rounded : Icons.chat_rounded,
-                size: 19.sp,
-              ),
-              label: Text(
-                sent ? 'rc_invite_resend'.tr : 'rc_invite_send'.tr,
-                style: context.typography.displaySmBold.copyWith(fontSize: 14.5),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    sent ? const Color(0xFF16A34A) : _whatsappGreen,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFFCBD5E1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 46.h,
+                  child: ElevatedButton.icon(
+                    onPressed: row.hasPhone ? onSend : null,
+                    icon: Icon(
+                      sent ? Icons.done_all_rounded : Icons.chat_rounded,
+                      size: 19.sp,
+                    ),
+                    label: Text(
+                      sent ? 'rc_invite_resend'.tr : 'rc_invite_send'.tr,
+                      style: context.typography.displaySmBold
+                          .copyWith(fontSize: 14.5),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          sent ? const Color(0xFF16A34A) : _whatsappGreen,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFCBD5E1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
                 ),
-                elevation: 0,
               ),
-            ),
+              SizedBox(width: 10.w),
+              SizedBox(
+                height: 46.h,
+                width: 52.w,
+                child: OutlinedButton(
+                  onPressed: onShowCode,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(color: AppColors.primaryLight),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: Icon(Icons.qr_code_rounded, size: 22.sp),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -36,12 +36,12 @@ class CheckInChildEntry {
 
   String get statusLabel {
     switch (_effectiveStatus) {
-      case ChildStatus.checkedIn:    return 'داخل الحضانة';
-      case ChildStatus.havingMeal:   return 'يتناول الوجبة';
-      case ChildStatus.sleeping:     return 'قيلولة';
-      case ChildStatus.onBus:        return 'في الباص';
-      case ChildStatus.checkedOut:   return 'انصرف اليوم';
-      default:                       return 'لم يصل';
+      case ChildStatus.checkedIn:    return 'programssu27_status_checked_in'.tr;
+      case ChildStatus.havingMeal:   return 'programssu27_status_having_meal'.tr;
+      case ChildStatus.sleeping:     return 'programssu27_status_sleeping'.tr;
+      case ChildStatus.onBus:        return 'programssu27_status_on_bus'.tr;
+      case ChildStatus.checkedOut:   return 'programssu27_status_checked_out'.tr;
+      default:                       return 'programssu27_status_not_arrived'.tr;
     }
   }
 
@@ -72,6 +72,10 @@ class ReceptionistCheckInController extends GetxController {
   final _db = FirebaseDatabase.instance;
   final _statusSvc = ChildStatusService();
   late final SessionService _session;
+  late final AuthorizedPickupParentService _pickupSvc;
+
+  // Valid authorized-pickup persons grouped by childId, for the per-child badge.
+  final _pickupsByChild = <String, List<AuthorizedPickupModel>>{};
 
   final children = <CheckInChildEntry>[].obs;
   final isLoading = true.obs;
@@ -86,8 +90,27 @@ class ReceptionistCheckInController extends GetxController {
   void onInit() {
     super.onInit();
     _session = SessionService();
+    _pickupSvc = Get.find<AuthorizedPickupParentService>();
     _loadChildren();
   }
+
+  Future<void> _loadPickups() async {
+    await _pickupSvc.getAll(callBack: (list) {
+      final map = <String, List<AuthorizedPickupModel>>{};
+      for (final p in list.whereType<AuthorizedPickupModel>()) {
+        if (!p.isCurrentlyValid) continue;
+        map.putIfAbsent(p.childId, () => []).add(p);
+      }
+      _pickupsByChild
+        ..clear()
+        ..addAll(map);
+    });
+    _rebuild();
+  }
+
+  /// Valid authorized-pickup persons for a child (empty if none registered).
+  List<AuthorizedPickupModel> pickupsFor(String? childId) =>
+      childId == null ? const [] : (_pickupsByChild[childId] ?? const []);
 
   @override
   void onClose() {
@@ -142,6 +165,10 @@ class ReceptionistCheckInController extends GetxController {
 
     isLoading.value = false;
     _rebuild();
+
+    // Load authorized-pickup persons in the background; the list rebuilds once
+    // ready so each child card can show its badge.
+    _loadPickups();
   }
 
   void _rebuild() {

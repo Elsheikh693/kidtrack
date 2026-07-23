@@ -22,7 +22,7 @@ class HomeworkFollowUpSheet extends StatelessWidget {
     if (hw == null) return const SizedBox.shrink();
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: const BoxDecoration(
@@ -53,7 +53,7 @@ class HomeworkFollowUpSheet extends StatelessWidget {
               child: Obx(() {
                 final children = ctrl.children;
                 if (children.isEmpty) {
-                  return const Center(child: Text('لا يوجد طلاب'));
+                  return Center(child: Text('teacheract33_no_students'.tr));
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
@@ -136,7 +136,7 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'متابعة الواجب',
+                  'teacheract33_hw_followup'.tr,
                   style: context.typography.xsRegular
                       .copyWith(color: Colors.white.withValues(alpha: 0.8)),
                 ),
@@ -197,15 +197,15 @@ class _StatsBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatChip(value: completed, label: 'أكمل',
+          _StatChip(value: completed, label: 'teacheract33_hw_completed'.tr,
               color: const Color(0xFF16A34A)),
-          _StatChip(value: partial, label: 'جزئي',
+          _StatChip(value: partial, label: 'teacheract33_hw_partial'.tr,
               color: const Color(0xFFD97706)),
-          _StatChip(value: notCompleted, label: 'لم يكمل',
+          _StatChip(value: notCompleted, label: 'teacheract33_hw_not_completed'.tr,
               color: const Color(0xFFDC2626)),
-          _StatChip(value: absent, label: 'غائب',
+          _StatChip(value: absent, label: 'teacheract33_hw_absent'.tr,
               color: Colors.grey.shade500),
-          _StatChip(value: unmarked, label: 'بدون',
+          _StatChip(value: unmarked, label: 'teacheract33_hw_unmarked'.tr,
               color: Colors.grey.shade300),
         ],
       ),
@@ -246,32 +246,32 @@ class _BulkBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Row(
         children: [
-          Text('الكل:',
+          Text('teacheract33_hw_bulk_all'.tr,
               style: context.typography.xsMedium
                   .copyWith(color: Colors.grey.shade500)),
           const SizedBox(width: 10),
           _BulkBtn(
-            label: 'أكمل',
+            label: 'teacheract33_hw_completed'.tr,
             color: const Color(0xFF16A34A),
             onTap: () => ctrl.setAllHomeworkStatus(HomeworkStatus.completed),
           ),
           const SizedBox(width: 6),
           _BulkBtn(
-            label: 'جزئي',
+            label: 'teacheract33_hw_partial'.tr,
             color: const Color(0xFFD97706),
             onTap: () =>
                 ctrl.setAllHomeworkStatus(HomeworkStatus.partiallyCompleted),
           ),
           const SizedBox(width: 6),
           _BulkBtn(
-            label: 'لم يكمل',
+            label: 'teacheract33_hw_not_completed'.tr,
             color: const Color(0xFFDC2626),
             onTap: () =>
                 ctrl.setAllHomeworkStatus(HomeworkStatus.notCompleted),
           ),
           const SizedBox(width: 6),
           _BulkBtn(
-            label: 'غائب',
+            label: 'teacheract33_hw_absent'.tr,
             color: Colors.grey.shade600,
             onTap: () => ctrl.setAllHomeworkStatus(HomeworkStatus.absent),
           ),
@@ -453,7 +453,7 @@ class _SaveButton extends StatelessWidget {
                 Get.back();
               },
               icon: const Icon(Icons.save_rounded, size: 20),
-              label: Text('حفظ المتابعة',
+              label: Text('teacheract33_hw_save_followup'.tr,
                   style: context.typography.mdBold),
             ),
           ),

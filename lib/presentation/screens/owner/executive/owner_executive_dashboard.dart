@@ -1,7 +1,9 @@
 import '../../../../index/index_main.dart';
+import '../../manager/media_approval/widgets/media_approval_banner.dart';
 import 'models/owner_dashboard_data.dart';
 import 'widgets/executive_widgets.dart';
 import 'widgets/owner_exec_shimmer.dart';
+import 'widgets/owner_withdrawn_card.dart';
 
 /// The owner's home tab. A DECISION surface, not an operations console:
 /// Daily Brief → Needs Attention → Business Snapshot (incl. growth) → Finance.
@@ -16,11 +18,13 @@ class OwnerExecutiveDashboard extends StatefulWidget {
 
 class _OwnerExecutiveDashboardState extends State<OwnerExecutiveDashboard> {
   late final OwnerExecutiveController controller;
+  late final OwnerPhotoReviewService _photoReview;
 
   @override
   void initState() {
     super.initState();
     controller = Get.find<OwnerExecutiveController>();
+    _photoReview = Get.find<OwnerPhotoReviewService>()..load();
   }
 
   @override
@@ -64,6 +68,12 @@ class _OwnerExecutiveDashboardState extends State<OwnerExecutiveDashboard> {
 
   List<Widget> _sections(OwnerDashboardData data) {
     return [
+      // Cross-branch photo review — owner opt-in (default off, settings-gated).
+      // The banner self-hides when nothing is pending or the flag is off.
+      Obx(() => _photoReview.enabled.value
+          ? const MediaApprovalBanner()
+          : const SizedBox.shrink()),
+
       // 3 ── Business snapshot (vital signs + growth, merged)
       const ExecSectionLabel(
         titleKey: 'owner_exec_business',
@@ -75,6 +85,7 @@ class _OwnerExecutiveDashboardState extends State<OwnerExecutiveDashboard> {
         growth: data.growth,
         isNetwork: data.isNetwork,
       ),
+      OwnerWithdrawnCard(controller: controller),
 
       SizedBox(height: 22.h),
       const UnpaidSubscriptionCard(),

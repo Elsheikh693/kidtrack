@@ -16,8 +16,6 @@ class ManagerNurseryProfileController extends GetxController {
   final coverPhoto = RxnString();
   final logo = RxnString();
   final photos = <String>[].obs;
-  final lat = RxnDouble();
-  final lng = RxnDouble();
 
   /// Programs shown in the tag editor. Backed by the canonical
   /// `platform/{nurseryId}/programs` store (the same one the standalone
@@ -87,8 +85,6 @@ class ManagerNurseryProfileController extends GetxController {
 
   String get nurseryId => _session.nurseryId ?? '';
 
-  bool get hasLocation => lat.value != null && lng.value != null;
-
   DatabaseReference get _ref =>
       FirebaseDatabase.instance.ref('platform/info/$nurseryId');
 
@@ -129,8 +125,6 @@ class ManagerNurseryProfileController extends GetxController {
         coverPhoto.value = model.coverPhoto;
         logo.value = model.logo;
         photos.assignAll(model.photos);
-        lat.value = model.lat;
-        lng.value = model.lng;
         cityId.value = model.cityId;
         cityName.value = model.cityName;
         activities.assignAll(model.activities);
@@ -254,11 +248,6 @@ class ManagerNurseryProfileController extends GetxController {
     workingDays.sort();
   }
 
-  void setLocation(double latitude, double longitude) {
-    lat.value = latitude;
-    lng.value = longitude;
-  }
-
   void setMinAge(int years, int months) =>
       minAgeMonths.value = years * 12 + months;
   void setMaxAge(int years, int months) =>
@@ -346,7 +335,7 @@ class ManagerNurseryProfileController extends GetxController {
     Loader.show();
     try {
       // Never persist a listing that no longer meets the readiness bar (e.g.
-      // the cover or location was cleared after the toggle was switched on).
+      // the cover was cleared after the toggle was switched on).
       final listed = isListed.value && canList;
       isListed.value = listed;
       await _ref.update({
@@ -358,8 +347,6 @@ class ManagerNurseryProfileController extends GetxController {
         'coverPhoto': coverPhoto.value,
         'logo': logo.value,
         'photos': photos.toList(),
-        'lat': lat.value,
-        'lng': lng.value,
         'cityId': cityId.value,
         'cityName': cityName.value,
         'activities': activities.toList(),

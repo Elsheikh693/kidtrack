@@ -7,7 +7,7 @@ class EvaluationReasonsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = Get.find<EvaluationReasonsController>();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutralDefault,
         appBar: AppBar(
@@ -66,7 +66,7 @@ class EvaluationReasonsView extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: _ReasonFormSheet(
           title: 'eval_reasons_add_title'.tr,
           onSave: (v) => ctrl.addReason(v),
@@ -82,7 +82,7 @@ class EvaluationReasonsView extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: _ReasonFormSheet(
           title: 'eval_reasons_edit_title'.tr,
           initialValue: reason.title,
@@ -206,7 +206,7 @@ class _ReasonTile extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -307,7 +307,7 @@ class _ReasonFormSheetState extends State<_ReasonFormSheet> {
           const SizedBox(height: 14),
           TextField(
             controller: _ctrl,
-            textDirection: TextDirection.rtl,
+            textDirection: appTextDirection,
             autofocus: true,
             maxLength: 60,
             decoration: InputDecoration(
@@ -353,7 +353,8 @@ class _ReasonFormSheetState extends State<_ReasonFormSheet> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2),
                     )
-                  : Text('save'.tr, style: context.typography.smSemiBold),
+                  : Text('eval_reasons_save'.tr,
+                      style: context.typography.smSemiBold),
             ),
           ),
         ],

@@ -28,7 +28,7 @@ class _ChatThreadViewState extends State<ChatThreadView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF3F4F6),
         appBar: _buildAppBar(context),

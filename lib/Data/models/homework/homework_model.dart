@@ -2,6 +2,9 @@ class HomeworkModel {
   final String? key;
   final String nurseryId;
   final String classroomId;
+  // Branch that owns this homework — stamped from the teacher's branch so a
+  // shared (isAllBranches) classroom's homework doesn't leak across branches.
+  final String? branchId;
   final String? subjectId;
   final String? subjectName;
   final String? activityId;
@@ -16,6 +19,7 @@ class HomeworkModel {
     this.key,
     required this.nurseryId,
     required this.classroomId,
+    this.branchId,
     this.subjectId,
     this.subjectName,
     this.activityId,
@@ -32,6 +36,7 @@ class HomeworkModel {
       key: key ?? json['key']?.toString(),
       nurseryId: json['nurseryId']?.toString() ?? '',
       classroomId: json['classroomId']?.toString() ?? '',
+      branchId: json['branchId']?.toString(),
       subjectId: json['subjectId']?.toString(),
       subjectName: json['subjectName']?.toString(),
       activityId: json['activityId']?.toString(),
@@ -53,6 +58,7 @@ class HomeworkModel {
     put('key', key);
     d['nurseryId'] = nurseryId;
     d['classroomId'] = classroomId;
+    put('branchId', branchId);
     put('subjectId', subjectId);
     put('subjectName', subjectName);
     put('activityId', activityId);
@@ -69,6 +75,7 @@ class HomeworkModel {
     String? key,
     String? nurseryId,
     String? classroomId,
+    String? branchId,
     String? subjectId,
     String? subjectName,
     String? activityId,
@@ -83,6 +90,7 @@ class HomeworkModel {
         key: key ?? this.key,
         nurseryId: nurseryId ?? this.nurseryId,
         classroomId: classroomId ?? this.classroomId,
+        branchId: branchId ?? this.branchId,
         subjectId: subjectId ?? this.subjectId,
         subjectName: subjectName ?? this.subjectName,
         activityId: activityId ?? this.activityId,

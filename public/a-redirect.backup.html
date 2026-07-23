@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KidTrack</title>
+  <script>
+    // Instant, invisible redirect straight to the right app store. The QR only
+    // needs to get people to download the app; once installed they open it and
+    // scan the same QR again (or type the code) on the login screen.
+    // TODO: replace IOS_STORE with the real KidTrack App Store listing.
+    var IOS_STORE = "https://apps.apple.com/us/app/diwan-%D8%AF%D9%8A%D9%88%D8%A7%D9%86%D9%83/id6630387762";
+    var ANDROID_STORE = "https://play.google.com/store/apps/details?id=com.elsheikh.marketingwhats";
+    var ua = navigator.userAgent || "";
+    var isIOS = /iphone|ipad|ipod/i.test(ua) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    // .replace() so the blank hop never lands in history / the back button.
+    window.location.replace(isIOS ? IOS_STORE : ANDROID_STORE);
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #5E35B1; color: #fff; min-height: 100vh; margin: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 24px;
+    }
+    a { color: #fff; font-weight: 700; }
+    .links { margin-top: 20px; font-size: 14px; opacity: .9; }
+    .links a { display: inline-block; margin: 6px 10px; }
+  </style>
+</head>
+<body>
+  <div style="font-size:48px">🔑</div>
+  <p>جاري تحويلك لتحميل تطبيق KidTrack…</p>
+  <!-- Fallback if the auto-redirect is blocked -->
+  <div class="links">
+    <a href="https://play.google.com/store/apps/details?id=com.elsheikh.marketingwhats">Android</a>
+    <a href="https://apps.apple.com/us/app/diwan-%D8%AF%D9%8A%D9%88%D8%A7%D9%86%D9%83/id6630387762">iPhone</a>
+  </div>
+</body>
+</html>

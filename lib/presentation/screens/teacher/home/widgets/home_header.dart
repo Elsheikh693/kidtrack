@@ -21,9 +21,13 @@ class HomeHeader extends StatelessWidget {
 
   String get _dateLabel {
     final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    final months = [
+      'teacherhom35_month_1'.tr, 'teacherhom35_month_2'.tr,
+      'teacherhom35_month_3'.tr, 'teacherhom35_month_4'.tr,
+      'teacherhom35_month_5'.tr, 'teacherhom35_month_6'.tr,
+      'teacherhom35_month_7'.tr, 'teacherhom35_month_8'.tr,
+      'teacherhom35_month_9'.tr, 'teacherhom35_month_10'.tr,
+      'teacherhom35_month_11'.tr, 'teacherhom35_month_12'.tr,
     ];
     return '${now.day} ${months[now.month - 1]} ${now.year}';
   }

@@ -39,7 +39,7 @@ class _AddNoteSheetState extends State<AddNoteSheet> with KeyboardSheetMixin {
     const purple = Color(0xFF7C3AED);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: Padding(
@@ -74,9 +74,9 @@ class _AddNoteSheetState extends State<AddNoteSheet> with KeyboardSheetMixin {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'إضافة ملاحظة',
-                      style: TextStyle(
+                    Text(
+                      'teacheract32_add_note'.tr,
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF1F2937),
@@ -96,11 +96,11 @@ class _AddNoteSheetState extends State<AddNoteSheet> with KeyboardSheetMixin {
             const SizedBox(height: 20),
             TextFormField(
               controller: _ctrl,
-              textDirection: TextDirection.rtl,
+              textDirection: appTextDirection,
               maxLines: 4,
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'اكتب ملاحظتك هنا...',
+                hintText: 'teacheract32_note_hint'.tr,
                 hintTextDirection: TextDirection.rtl,
                 hintStyle: TextStyle(color: Colors.grey.shade400),
                 filled: true,
@@ -131,8 +131,8 @@ class _AddNoteSheetState extends State<AddNoteSheet> with KeyboardSheetMixin {
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text('إلغاء',
-                        style: TextStyle(color: Color(0xFF374151))),
+                    child: Text('teacheract32_cancel'.tr,
+                        style: const TextStyle(color: Color(0xFF374151))),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -151,8 +151,8 @@ class _AddNoteSheetState extends State<AddNoteSheet> with KeyboardSheetMixin {
                       widget.onSave(_ctrl.text);
                       Get.back();
                     },
-                    child: const Text('حفظ الملاحظة',
-                        style: TextStyle(fontWeight: FontWeight.w700)),
+                    child: Text('teacheract32_save_note'.tr,
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],

@@ -91,7 +91,8 @@ class TeacherOnboardingController extends GetxController {
   void nextStep() {
     if (currentStep.value == 0) {
       if (selectedClassroomIds.isEmpty) {
-        Get.snackbar('تنبيه', 'اختاري فصلاً واحداً على الأقل',
+        Get.snackbar(
+            'teacherlin37_alert_title'.tr, 'teacherlin37_select_one_classroom'.tr,
             backgroundColor: Colors.orange.shade100,
             colorText: Colors.orange.shade800,
             duration: const Duration(seconds: 2));
@@ -164,7 +165,8 @@ class TeacherOnboardingController extends GetxController {
 
   Future<void> saveAndFinish() async {
     if (totalAssignments == 0) {
-      Get.snackbar('تنبيه', 'حددي مادة واحدة على الأقل في الجدول',
+      Get.snackbar(
+          'teacherlin37_alert_title'.tr, 'teacherlin37_select_one_subject'.tr,
           backgroundColor: Colors.orange.shade100,
           colorText: Colors.orange.shade800);
       return;
@@ -192,7 +194,8 @@ class TeacherOnboardingController extends GetxController {
       await SetupLocalCheck.markDone(_session.userId ?? '');
       if (editMode) {
         Get.back();
-        Get.snackbar('تم الحفظ', 'تم تحديث ملفك الأكاديمي',
+        Get.snackbar(
+            'teacherlin37_saved_title'.tr, 'teacherlin37_profile_updated'.tr,
             backgroundColor: Colors.green.shade100,
             colorText: Colors.green.shade800,
             duration: const Duration(seconds: 2));
@@ -200,7 +203,8 @@ class TeacherOnboardingController extends GetxController {
         Get.offAllNamed(mainView);
       }
     } catch (_) {
-      Get.snackbar('خطأ', 'تعذر الحفظ، حاولي مرة أخرى',
+      Get.snackbar(
+          'teacherlin37_error_title'.tr, 'teacherlin37_save_failed'.tr,
           backgroundColor: Colors.red.shade100, colorText: Colors.red.shade800);
     } finally {
       isSaving.value = false;

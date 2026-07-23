@@ -19,7 +19,7 @@ class _ChildAttendanceViewState extends State<ChildAttendanceView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(
@@ -55,6 +55,7 @@ class _ChildAttendanceViewState extends State<ChildAttendanceView> {
                     itemBuilder: (_, i) => AttendanceChildCard(
                       item: controller.items[i],
                       childName: controller.childName(controller.items[i].childId),
+                      childImage: controller.childImage(controller.items[i].childId),
                       branchName: controller.branchName(controller.items[i].branchId),
                       onEdit: () => controller.openEdit(controller.items[i]),
                       onDelete: () => controller.delete(controller.items[i]),

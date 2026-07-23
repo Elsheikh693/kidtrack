@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -30,10 +31,13 @@ class FeedService {
           posts.add(NurseryPostModel.fromJson(map, id: entry.key.toString()));
         } catch (_) {}
       }
-      // pinned first, then by createdAt descending
+      // Effectively-pinned (not expired) first, then by createdAt descending.
+      final now = DateTime.now().millisecondsSinceEpoch;
       posts.sort((a, b) {
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
+        final ap = a.effectivePinnedAt(now);
+        final bp = b.effectivePinnedAt(now);
+        if (ap && !bp) return -1;
+        if (!ap && bp) return 1;
         return b.createdAt.compareTo(a.createdAt);
       });
       return posts;
@@ -46,6 +50,7 @@ class FeedService {
     required List<XFile> images,
     required PostCategory category,
     required bool isPinned,
+    int? pinnedUntil,
     List<String> branchIds = const [],
     String? classroomId,
   }) async {
@@ -59,17 +64,58 @@ class FeedService {
         branchIds: branchIds,
         classroomId: classroomId,
         authorId: _session.userId ?? '',
-        authorName: user?.displayName ?? 'المدير',
+        authorName: user?.displayName ?? 'globalserv7_role_manager'.tr,
         text: text,
         photos: photoUrls,
         category: category,
         isPinned: isPinned,
+        pinnedUntil: pinnedUntil,
         createdAt: DateTime.now().millisecondsSinceEpoch,
       );
       await _feedRef.child(id).set(post.toJson());
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  // ─── Create from already-hosted photo URLs ─────────────────────────────────
+  // Publishes a post without re-uploading any images — the [photoUrls] are
+  // existing Storage download URLs (e.g. a child's profile photo). Returns the
+  // new post id, or null on failure. Used by "Star of the Week", which reuses
+  // the child's avatar rather than asking the manager to attach a new photo.
+  Future<String?> createPostRaw({
+    required String text,
+    required PostCategory category,
+    bool isPinned = false,
+    int? pinnedUntil,
+    List<String> branchIds = const [],
+    String? classroomId,
+    List<String> photoUrls = const [],
+    String? authorName,
+  }) async {
+    try {
+      final user = _session.currentUser;
+      final id = const Uuid().v4();
+      final post = NurseryPostModel(
+        id: id,
+        nurseryId: _nurseryId,
+        branchIds: branchIds,
+        classroomId: classroomId,
+        authorId: _session.userId ?? '',
+        authorName:
+            authorName ?? user?.displayName ?? 'globalserv7_role_manager'.tr,
+        text: text,
+        photos: photoUrls,
+        category: category,
+        isPinned: isPinned,
+        pinnedUntil: pinnedUntil,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      );
+      await _feedRef.child(id).set(post.toJson());
+      return id;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -113,6 +159,18 @@ class FeedService {
     }
   }
 
+  // ─── Delete just the post node (no image cleanup) ──────────────────────────
+  // For posts whose photos are shared URLs the feed doesn't own (e.g. a "Star
+  // of the Week" post reuses the child's profile photo). Removing the node must
+  // NOT delete those images from Storage, so this skips the image cleanup that
+  // [deletePost] does. Best-effort.
+  Future<void> deletePostNode(String id) async {
+    if (id.isEmpty) return;
+    try {
+      await _feedRef.child(id).remove();
+    } catch (_) {}
+  }
+
   // ─── Delete ───────────────────────────────────────────────────────────────
   Future<bool> deletePost(NurseryPostModel post) async {
     try {
@@ -135,11 +193,15 @@ class FeedService {
         .map((event) {
           final data = event.snapshot.value;
           if (data == null || data is! Map) return <NurseryPostModel>[];
+          final now = DateTime.now().millisecondsSinceEpoch;
           final posts = <NurseryPostModel>[];
           for (final entry in data.entries) {
             try {
               final map = Map<String, dynamic>.from(entry.value as Map);
-              posts.add(NurseryPostModel.fromJson(map, id: entry.key.toString()));
+              final p =
+                  NurseryPostModel.fromJson(map, id: entry.key.toString());
+              // Drop expired pins — they fall back to the regular feed.
+              if (p.effectivePinnedAt(now)) posts.add(p);
             } catch (_) {}
           }
           posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -167,7 +229,8 @@ class FeedService {
           all.add(NurseryPostModel.fromJson(map, id: entry.key.toString()));
         } catch (_) {}
       }
-      final regular = all.where((p) => !p.isPinned).toList()
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final regular = all.where((p) => !p.effectivePinnedAt(now)).toList()
         ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       all.sort((a, b) => a.createdAt.compareTo(b.createdAt));
       return (
@@ -182,7 +245,29 @@ class FeedService {
 
   // ─── Toggle pin ───────────────────────────────────────────────────────────
   Future<void> togglePin(String id, bool current) async {
-    await _feedRef.child(id).update({'isPinned': !current});
+    // A manual re-pin clears any expiry window (indefinite pin).
+    await _feedRef.child(id).update({'isPinned': !current, 'pinnedUntil': null});
+  }
+
+  // ─── Update an existing post's media + pin window ──────────────────────────
+  // Used when an event's photos are re-approved: refresh the gallery post's
+  // photos and re-pin it for a new window instead of creating a duplicate.
+  Future<void> updatePostMedia({
+    required String postId,
+    List<String>? photoUrls,
+    bool? isPinned,
+    int? pinnedUntil,
+  }) async {
+    if (postId.isEmpty) return;
+    final m = <String, dynamic>{
+      'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      'pinnedUntil': pinnedUntil, // explicit — null clears the window
+    };
+    if (photoUrls != null) m['photos'] = photoUrls;
+    if (isPinned != null) m['isPinned'] = isPinned;
+    try {
+      await _feedRef.child(postId).update(m);
+    } catch (_) {}
   }
 
   // ─── Mark a post as seen by the current parent ─────────────────────────────

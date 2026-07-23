@@ -47,7 +47,7 @@ class _SendReminderSheetState extends State<SendReminderSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         padding: EdgeInsets.fromLTRB(
           20.w,

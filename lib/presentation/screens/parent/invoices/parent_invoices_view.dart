@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart' hide TextDirection;
 import '../../../../index/index_main.dart';
+import 'widgets/outstanding_invoice_card.dart';
 
 const _accent = Color(0xFF7C3AED);
 const _ink = Color(0xFF1E293B);
@@ -26,7 +27,7 @@ class _ParentInvoicesViewState extends State<ParentInvoicesView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(
@@ -36,48 +37,81 @@ class _ParentInvoicesViewState extends State<ParentInvoicesView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator(color: _accent));
+            return const _LoadingSkeleton();
           }
           final items = controller.items;
+          final outstanding = controller.outstanding;
+          if (items.isEmpty && outstanding.isEmpty) {
+            return RefreshIndicator(
+              color: _accent,
+              onRefresh: () => controller.loadData(showLoader: false),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                children: [
+                  SizedBox(height: 120.h),
+                  const _EmptyState(),
+                ],
+              ),
+            );
+          }
           return RefreshIndicator(
             color: _accent,
-            onRefresh: controller.loadData,
-            child: items.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
+            onRefresh: () => controller.loadData(showLoader: false),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
+              children: [
+                if (outstanding.isNotEmpty) ...[
+                  Text(
+                    'parent_pay_outstanding_title'.tr,
+                    style: context.typography.smSemiBold.copyWith(
+                      color: _ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
                     ),
-                    children: [
-                      SizedBox(height: 120.h),
-                      const _EmptyState(),
-                    ],
-                  )
-                : ListView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
-                    children: [
-                      _SummaryCard(
-                        total: controller.totalPaid,
-                        count: controller.count,
-                      ),
-                      SizedBox(height: 20.h),
-                      Text(
-                        'parent_payments_history'.tr,
-                        style: context.typography.smSemiBold.copyWith(
-                          color: _ink,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                      ...items.map((t) => Padding(
-                            padding: EdgeInsets.only(bottom: 10.h),
-                            child: _PaymentCard(tx: t),
-                          )),
-                    ],
                   ),
+                  SizedBox(height: 12.h),
+                  ...outstanding.map((inv) => OutstandingInvoiceCard(
+                        invoice: inv,
+                        onPay: () => controller.openPay(inv),
+                      )),
+                  SizedBox(height: 20.h),
+                ],
+                _SummaryCard(
+                  total: controller.totalPaid,
+                  count: controller.count,
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'parent_payments_history'.tr,
+                  style: context.typography.smSemiBold.copyWith(
+                    color: _ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                if (items.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20.h),
+                    child: Text(
+                      'parent_payments_empty'.tr,
+                      textAlign: TextAlign.center,
+                      style: context.typography.xsRegular
+                          .copyWith(color: _muted),
+                    ),
+                  )
+                else
+                  ...items.map((t) => Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: _PaymentCard(tx: t),
+                      )),
+              ],
+            ),
           );
         }),
       ),
@@ -337,6 +371,52 @@ class _EmptyState extends StatelessWidget {
               .copyWith(color: _muted, fontSize: 13),
         ),
       ],
+    );
+  }
+}
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+
+class _LoadingSkeleton extends StatelessWidget {
+  const _LoadingSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget box(double h, double r) => Container(
+          height: h,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(r),
+          ),
+        );
+    return Shimmer.fromColors(
+      baseColor: const Color(0xFFE9ECF2),
+      highlightColor: const Color(0xFFF7F8FB),
+      period: const Duration(milliseconds: 1100),
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+        children: [
+          box(18.h, 6.r),
+          SizedBox(height: 12.h),
+          box(96.h, 16.r),
+          SizedBox(height: 10.h),
+          box(96.h, 16.r),
+          SizedBox(height: 24.h),
+          box(110.h, 22.r),
+          SizedBox(height: 20.h),
+          box(18.h, 6.r),
+          SizedBox(height: 12.h),
+          ...List.generate(
+            3,
+            (_) => Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: box(70.h, 16.r),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

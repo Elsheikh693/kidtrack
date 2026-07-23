@@ -8,6 +8,7 @@ class ChildAttendanceController extends GetxController {
   final RxList<ChildAttendanceModel> items = <ChildAttendanceModel>[].obs;
   final RxList<ChildAttendanceModel> _all = <ChildAttendanceModel>[].obs;
   final RxMap<String, String> childNames = <String, String>{}.obs;
+  final RxMap<String, String> childImages = <String, String>{}.obs;
   final RxMap<String, String> branchNames = <String, String>{}.obs;
   final RxBool isLoading = true.obs;
   final RxString selectedStatus = ''.obs;
@@ -27,10 +28,15 @@ class ChildAttendanceController extends GetxController {
     await _childService.getAll(
       callBack: (list) {
         final map = <String, String>{};
+        final images = <String, String>{};
         for (final c in list.whereType<ChildModel>()) {
-          if (c.key != null) map[c.key!] = c.fullName;
+          if (c.key != null) {
+            map[c.key!] = c.fullName;
+            if (c.hasImage) images[c.key!] = c.profileImage!;
+          }
         }
         childNames.value = map;
+        childImages.value = images;
       },
     );
     await _branchService.getAll(
@@ -69,6 +75,7 @@ class ChildAttendanceController extends GetxController {
       selectedStatus.value = (selectedStatus.value == s) ? '' : s;
 
   String childName(String id) => childNames[id] ?? id;
+  String? childImage(String id) => childImages[id];
   String branchName(String id) => branchNames[id] ?? id;
 
   void openAdd() => _openSheet(null);

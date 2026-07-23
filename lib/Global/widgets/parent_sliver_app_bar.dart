@@ -99,7 +99,7 @@ class _ParentCollapsingDelegate extends SliverPersistentHeaderDelegate {
   final double topPadding;
 
   static const double _expandedBody = 164.0; // content area when expanded
-  static const double _wavePad = 36.0;       // extra space eaten by wave clip
+  static const double _wavePad = 36.0; // extra space eaten by wave clip
   static const double _collapsedBody = 58.0; // compact bar content height
 
   @override
@@ -109,7 +109,11 @@ class _ParentCollapsingDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => topPadding + _expandedBody + _wavePad;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final t = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
 
     return Obx(() {
@@ -153,10 +157,7 @@ class _ParentCollapsingDelegate extends SliverPersistentHeaderDelegate {
                         opacity: (1.0 - t * 2.2).clamp(0.0, 1.0),
                         child: IgnorePointer(
                           ignoring: t > 0.3,
-                          child: _ExpandedContent(
-                            name: name,
-                            status: status,
-                          ),
+                          child: _ExpandedContent(name: name, status: status),
                         ),
                       ),
                     ),
@@ -391,67 +392,108 @@ class ParentTopBar extends StatelessWidget {
 
   static String get _greeting {
     final h = DateTime.now().hour;
-    return h < 12 ? 'صباح الخير' : 'مساء الخير';
+    return h < 12
+        ? 'globalserv8_greeting_morning'.tr
+        : 'globalserv8_greeting_evening'.tr;
   }
 
   @override
   Widget build(BuildContext context) {
     final svc = Get.find<ActiveChildService>();
     return Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _greeting,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _greeting,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: _kMuted,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Obx(
+                () => _SwitchableName(
+                  name: svc.childName.value,
+                  chevronColor: _kInk,
+                  chevronSize: 20,
                   style: const TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: _kMuted,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: _kInk,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Obx(
-                  () => _SwitchableName(
-                    name: svc.childName.value,
-                    chevronColor: _kInk,
-                    chevronSize: 20,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: _kInk,
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        _ParentTopIcon(
+          icon: Icons.forum_rounded,
+          iconColor: const Color(0xFF6366F1),
+          chatBadge: true,
+          onTap: openParentChat,
+        ),
+        const SizedBox(width: 10),
+        _ParentTopIcon(
+          icon: Icons.chat_rounded,
+          iconColor: const Color(0xFF25D366),
+          onTap: openNurseryWhatsApp,
+        ),
+        const SizedBox(width: 10),
+        _ParentTopIcon(
+          icon: Icons.notifications_none_rounded,
+          badge: true,
+          onTap: () => Get.toNamed(notificationsView),
+        ),
+        const SizedBox(width: 10),
+        _ParentTopIcon(
+          icon: Icons.settings_outlined,
+          onTap: () => Get.to(() => const ParentAccountView()),
+        ),
+      ],
+    );
+  }
+}
+
+/// Shared shell for parent tabs: a WHITE header band (covering the status-bar
+/// area) that holds the [ParentTopBar], with the scrollable [body] on a tinted
+/// background beneath it — mirroring the white app bar used on the account
+/// screen. The header stays fixed while [body] scrolls.
+class ParentTabScaffold extends StatelessWidget {
+  const ParentTabScaffold({
+    super.key,
+    required this.body,
+    this.backgroundColor = const Color(0xFFF6F5FB),
+  });
+
+  /// The scrollable content shown below the white header (without a top bar).
+  final Widget body;
+
+  /// The tinted background behind [body] (cards sit on top of it).
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.white, // fills the status-bar area behind the header
+      child: Column(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: const Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: ParentTopBar(),
             ),
           ),
-          _ParentTopIcon(
-            icon: Icons.forum_rounded,
-            iconColor: const Color(0xFF6366F1),
-            chatBadge: true,
-            onTap: openParentChat,
-          ),
-          const SizedBox(width: 10),
-          _ParentTopIcon(
-            icon: Icons.chat_rounded,
-            iconColor: const Color(0xFF25D366),
-            onTap: openNurseryWhatsApp,
-          ),
-          const SizedBox(width: 10),
-          _ParentTopIcon(
-            icon: Icons.notifications_none_rounded,
-            badge: true,
-            onTap: () => Get.toNamed(notificationsView),
-          ),
-          const SizedBox(width: 10),
-          _ParentTopIcon(
-            icon: Icons.settings_outlined,
-            onTap: () => Get.to(() => const ParentAccountView()),
+          Expanded(
+            child: ColoredBox(color: backgroundColor, child: body),
           ),
         ],
-      );
+      ),
+    );
   }
 }
 
@@ -558,8 +600,11 @@ class _SwitchableName extends StatelessWidget {
           children: [
             label,
             const SizedBox(width: 4),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                color: chevronColor, size: chevronSize),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: chevronColor,
+              size: chevronSize,
+            ),
           ],
         ),
       );
@@ -607,12 +652,16 @@ class _CollapsingWaveClipper extends CustomClipper<Path> {
     final path = Path();
     path.lineTo(0, size.height - amp);
     path.quadraticBezierTo(
-      size.width * 0.28, size.height + amp * 0.15,
-      size.width * 0.52, size.height - amp * 0.54,
+      size.width * 0.28,
+      size.height + amp * 0.15,
+      size.width * 0.52,
+      size.height - amp * 0.54,
     );
     path.quadraticBezierTo(
-      size.width * 0.76, size.height - amp * 1.15,
-      size.width, size.height - amp * 0.31,
+      size.width * 0.76,
+      size.height - amp * 1.15,
+      size.width,
+      size.height - amp * 0.31,
     );
     path.lineTo(size.width, 0);
     path.close();
@@ -632,21 +681,25 @@ class _StatusChip extends StatelessWidget {
 
   (String, Color, IconData) get _info => switch (status) {
     'checked_in' || 'having_meal' || 'sleeping' || 'pickup_requested' => (
-      'داخل الحضانة',
+      'globalserv8_status_inside'.tr,
       const Color(0xFF34D399),
       Icons.check_circle_rounded,
     ),
     'in_activity' => (
-      'نشاط',
+      'globalserv8_status_activity'.tr,
       const Color(0xFF60A5FA),
       Icons.directions_run_rounded,
     ),
     'on_bus' => (
-      'في الباص',
+      'globalserv8_status_on_bus'.tr,
       const Color(0xFFFBBF24),
       Icons.directions_bus_rounded,
     ),
-    _ => ('خارج', const Color(0xFF94A3B8), Icons.home_outlined),
+    _ => (
+      'globalserv8_status_outside'.tr,
+      const Color(0xFF94A3B8),
+      Icons.home_outlined,
+    ),
   };
 
   @override

@@ -79,8 +79,14 @@ class HomeworkSection extends StatelessWidget {
     showHomeworkSubmitSheet(
       context,
       homeworkTitle: hw.displayTitle ?? _hwTitles[hw.titleKey] ?? hw.titleKey,
-      onConfirm: (by, note) =>
-          controller.submitHomework(hw.titleKey, by: by, note: note),
+      onConfirm: (neededHelp, guidedHand, didEasily, note) =>
+          controller.submitHomework(
+        hw.titleKey,
+        neededHelp: neededHelp,
+        guidedHand: guidedHand,
+        didEasily: didEasily,
+        note: note,
+      ),
     );
   }
 
@@ -88,10 +94,10 @@ class HomeworkSection extends StatelessWidget {
     final undo = await showDialog<bool>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text(
-            'إلغاء تأكيد الحل؟',
+            'parenteduc24_hw_undo_title'.tr,
             style: context.typography.mdBold
                 .copyWith(color: AppColors.textDefault),
           ),
@@ -104,7 +110,7 @@ class HomeworkSection extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(
-                'تراجع',
+                'parenteduc24_cancel_back'.tr,
                 style: context.typography.smSemiBold
                     .copyWith(color: AppColors.textSecondaryParagraph),
               ),
@@ -112,7 +118,7 @@ class HomeworkSection extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               child: Text(
-                'إلغاء التأكيد',
+                'parenteduc24_hw_unconfirm'.tr,
                 style: context.typography.smSemiBold
                     .copyWith(color: AppColors.errorForeground),
               ),
@@ -158,13 +164,13 @@ class _EmptyHomework extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'لا توجد واجبات لهذا اليوم',
+                  'hw_empty_today_title'.tr,
                   style: context.typography.smSemiBold
                       .copyWith(color: const Color(0xFF047857)),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'استمتع بوقتك مع طفلك 🌿',
+                  'hw_empty_today_sub'.tr,
                   style: context.typography.xsRegular
                       .copyWith(color: AppColors.textSecondaryParagraph),
                 ),
@@ -292,14 +298,25 @@ class _AllDoneBannerState extends State<_AllDoneBanner>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'ممتاز! أنجزنا كل الواجبات 🎉',
-                    style: context.typography.smSemiBold.copyWith(
-                      color: const Color(0xFF059669),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'hw_all_done_title'.tr,
+                          style: context.typography.smSemiBold.copyWith(
+                            color: const Color(0xFF059669),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // Standalone emoji — see the note in _EmptyHomework: a
+                      // trailing emoji fused to RTL Arabic tofus on iOS.
+                      Text('🎉', style: context.typography.smSemiBold),
+                    ],
                   ),
                   Text(
-                    'استمر في التقدم الرائع!',
+                    'hw_all_done_sub'.tr,
                     style: context.typography.xsRegular.copyWith(
                       color: AppColors.textSecondaryParagraph,
                     ),

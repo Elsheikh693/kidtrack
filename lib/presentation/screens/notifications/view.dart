@@ -31,7 +31,7 @@ class _NotificationsViewState extends State<NotificationsView> {
         showFilterIcon: false,
         showNotificationDot: false,
       ),
-      floatingActionButton: widget.showSendButton
+      floatingActionButton: widget.showSendButton && controller.canSendBroadcast
           ? FloatingActionButton(
               onPressed: controller.openSendSheet,
               backgroundColor: AppColors.primary,

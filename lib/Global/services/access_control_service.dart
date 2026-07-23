@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:get/get.dart';
 import '../../Data/models/user/user_type.dart';
 import '../Utils/logger.dart';
+import 'activation_login_service.dart';
 import 'session_service.dart';
 
 /// What the gate decided the app should do for the current user.
@@ -35,7 +37,16 @@ class AccessControlService {
   /// [AccessWatcherService] once connectivity returns.
   Future<AccessOutcome> validateOnce() async {
     final session = SessionService();
-    final user = FirebaseAuth.instance.currentUser;
+    var user = FirebaseAuth.instance.currentUser;
+
+    // Self-heal: the local login state survived but the Firebase Auth session
+    // was lost (keychain wipe, token-refresh failure, cleared app data). Re-mint
+    // it silently from the durable activation code instead of dumping the user
+    // back on the code screen — the code never expires, so this should succeed.
+    if (user == null && session.isLoggedIn) {
+      await Get.find<ActivationLoginService>().silentReactivate();
+      user = FirebaseAuth.instance.currentUser;
+    }
 
     if (user == null || !session.isLoggedIn) {
       return const AccessOutcome(AccessAction.toLogin);

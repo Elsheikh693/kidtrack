@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import '../../../index/index_main.dart';
 
@@ -7,6 +9,24 @@ class ChildParentService {
 
   Future<void> getAll({required Function(List<ChildModel?>) callBack}) async {
     await _service.getData(data: {}, voidCallBack: callBack);
+  }
+
+  /// Uploads a child's profile photo to Firebase Storage and returns its public
+  /// download URL, or `null` on failure. The [file] is expected to already be
+  /// compressed (e.g. via [PickedImage]).
+  Future<String?> uploadProfileImage({
+    required String nurseryId,
+    required String childId,
+    required File file,
+  }) async {
+    try {
+      final ref = FirebaseStorage.instance
+          .ref('nurseries/$nurseryId/children/$childId/profile.jpg');
+      await ref.putFile(file);
+      return await ref.getDownloadURL();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> add({

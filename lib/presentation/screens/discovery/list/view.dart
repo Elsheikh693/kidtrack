@@ -26,7 +26,7 @@ class _DiscoveryViewState extends State<DiscoveryView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(

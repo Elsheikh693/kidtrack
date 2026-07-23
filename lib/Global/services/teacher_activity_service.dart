@@ -2,20 +2,22 @@ import 'dart:async';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:get/get.dart';
 import '../../Data/models/classroom_activity/classroom_activity_model.dart';
 import '../../Data/models/assessment/assessment_model.dart';
 import '../../Data/models/child/child_model.dart';
-import '../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../Data/models/classroom/classroom_model.dart';
 import '../../Data/models/classroom_post/classroom_post_model.dart';
 import '../../Data/models/homework/homework_model.dart';
 import '../../Data/models/homework_status/homework_status_model.dart';
+import '../../Data/models/homework_submission/homework_submission_model.dart';
 import '../../Data/models/note/note_model.dart';
 import '../../Data/models/schedule/schedule_model.dart';
 import '../../Data/models/session/session_model.dart';
 import '../../Data/models/subject/subject_model.dart';
 import '../../Global/Utils/logger.dart';
+import 'session_service.dart';
 
 // Firebase path: platform/{nurseryId}/classroomActivities/{classroomId}/{activityId}
 
@@ -108,6 +110,21 @@ class TeacherActivityService {
     return classrooms;
   }
 
+  /// Display name of a staff member (e.g. the classroom's assigned teacher).
+  /// Returns '' when the id is empty or the record/name is missing, so callers
+  /// can simply hide the line.
+  Future<String> resolveStaffName(String nurseryId, String staffId) async {
+    if (staffId.isEmpty) return '';
+    try {
+      final snap =
+          await _db.ref('platform/$nurseryId/staff/$staffId/name').get();
+      final v = snap.value;
+      return v == null ? '' : v.toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
   Future<List<ChildModel>> loadChildren(
     String nurseryId,
     String classroomId,
@@ -128,7 +145,9 @@ class TeacherActivityService {
               key: e.key.toString(),
             ),
           )
-          .where((c) => c.status == 'active')
+          // A classroom may be shared across branches — keep only children of
+          // the teacher's own branch (owners/unscoped users see all).
+          .where((c) => c.status == 'active' && SessionService().seesBranch(c.branchId))
           .toList()
         ..sort((a, b) => a.firstName.compareTo(b.firstName));
     } catch (_) {
@@ -136,33 +155,37 @@ class TeacherActivityService {
     }
   }
 
-  // A child counts as "present in the classroom" for evaluation when their
-  // live status is one of these — mirrors ClassroomStatesController.isCheckedIn.
-  static const _presentStatuses = {
-    ChildStatus.checkedIn,
-    ChildStatus.havingMeal,
-    ChildStatus.sleeping,
-  };
-
-  /// Of [childIds], the ones currently checked-in (present/eating/napping)
-  /// per their live childCurrentStatus. Returns null when none are present
-  /// (status tracking unused or nobody arrived yet) so callers can fall back
-  /// to showing every child instead of an empty list.
+  /// Of [childIds], the ones marked present today per the date-scoped
+  /// `childAttendance` record (status present/late) — the SAME source the
+  /// teacher home card, classroom-states sheet and reception dashboard use, so
+  /// the counts can never drift. Reading the dated record (not the
+  /// non-resetting childCurrentStatus cache) means a child checked in on a
+  /// previous day and never checked out is NOT counted as present today.
+  /// Returns null when nobody is present so callers can fall back to showing
+  /// every child instead of an empty list.
   Future<Set<String>?> loadPresentChildIds(
     String nurseryId,
     List<String> childIds,
   ) async {
     if (childIds.isEmpty) return null;
     try {
-      final snap =
-          await _db.ref('platform/$nurseryId/childCurrentStatus').get();
+      final date = _dateKey(DateTime.now().millisecondsSinceEpoch);
+      final snap = await _db
+          .ref('platform/$nurseryId/childAttendance')
+          .orderByChild('date')
+          .equalTo(date)
+          .get();
       if (!snap.exists || snap.value == null) return null;
       final data = snap.value as Map? ?? {};
+      final requested = childIds.toSet();
       final present = <String>{};
-      for (final id in childIds) {
-        final v = data[id];
-        if (v is Map && _presentStatuses.contains(v['status']?.toString())) {
-          present.add(id);
+      for (final v in data.values) {
+        if (v is! Map) continue;
+        final status = v['status']?.toString();
+        if (status != 'present' && status != 'late') continue;
+        final childId = v['childId']?.toString();
+        if (childId != null && requested.contains(childId)) {
+          present.add(childId);
         }
       }
       return present.isEmpty ? null : present;
@@ -193,27 +216,58 @@ class TeacherActivityService {
 
   // ── Photo upload / delete ─────────────────────────────────────────────────
 
-  Future<(String photoId, String url)?> uploadActivityPhoto({
+  /// Reads the nursery-wide photo-approval policy
+  /// (`platform/info/{nurseryId}/photosNeedApproval`). A missing value or any
+  /// read error defaults to `true` (review required) to preserve the flow.
+  Future<bool> _photosNeedApproval(String nurseryId) async {
+    if (nurseryId.isEmpty) return true;
+    try {
+      final snap =
+          await _db.ref('platform/info/$nurseryId/photosNeedApproval').get();
+      final v = snap.value;
+      return !(v == false || v == 0 || v == '0' || v == 'false');
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Uploads a photo for an activity. When the nursery requires review it is
+  /// stored as `isApproved = false` (hidden from guardians) until a reviewer
+  /// approves it; when review is turned off it is published immediately
+  /// (`isApproved = true`). Returns the created [ActivityPhoto] so the caller
+  /// can update local state.
+  Future<ActivityPhoto?> uploadActivityPhoto({
     required String nurseryId,
     required String classroomId,
     required String activityId,
     required File file,
+    String? uploadedBy,
   }) async {
     final photoId = DateTime.now().millisecondsSinceEpoch.toString();
     try {
+      final autoApprove = !await _photosNeedApproval(nurseryId);
       final ref = FirebaseStorage.instance.ref(
         'platform/$nurseryId/activity_photos/$classroomId/$activityId/$photoId.jpg',
       );
       await ref.putFile(file);
       final url = await ref.getDownloadURL();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final photo = ActivityPhoto(
+        id: photoId,
+        url: url,
+        isApproved: autoApprove,
+        approvedBy: autoApprove ? (uploadedBy ?? 'auto') : null,
+        approvedAt: autoApprove ? now : null,
+        uploadedBy: uploadedBy,
+        uploadedAt: now,
+      );
       await addPhoto(
         nurseryId: nurseryId,
         classroomId: classroomId,
         activityId: activityId,
-        photoId: photoId,
-        url: url,
+        photo: photo,
       );
-      return (photoId, url);
+      return photo;
     } catch (e) {
       AppLogger.error(_tag, 'uploadActivityPhoto: $e');
       return null;
@@ -284,6 +338,8 @@ class TeacherActivityService {
     required List<String> childIds,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
+    String mode = 'class',
   }) async {
     try {
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -295,14 +351,17 @@ class TeacherActivityService {
         key: activityId,
         nurseryId: nurseryId,
         classroomId: classroomId,
+        branchId: branchId,
         subjectId: subjectId,
         subjectName: subjectName,
+        scheduleSlotId: scheduleSlotId,
         title: title,
         teacherId: teacherId,
         status: 'active',
         startedAt: now,
         createdAt: now,
         childIds: childIds,
+        mode: mode,
       );
       await ref.set(activity.toJson());
 
@@ -317,6 +376,7 @@ class TeacherActivityService {
           key: sessionId,
           nurseryId: nurseryId,
           classroomId: classroomId,
+          branchId: branchId,
           subjectId: subjectId,
           subjectName: subjectName,
           teacherId: teacherId,
@@ -537,7 +597,7 @@ class TeacherActivityService {
               branchId: branchId,
               eventType: ChildEventType.homeworkAssigned,
               source: ChildEventSource.teacher,
-              title: 'واجب جديد: ${hw.title}',
+              title: '${'globalserv8_new_homework'.tr}: ${hw.title}',
               activityId: activityId,
               classroomId: classroomId,
               subjectName: hw.subjectName,
@@ -690,26 +750,38 @@ class TeacherActivityService {
 
   Stream<ClassroomActivityModel?> watchActiveActivity(
     String nurseryId,
-    String classroomId,
-  ) {
+    String classroomId, {
+    String? teacherId,
+  }) {
     return _activitiesRef(
       nurseryId,
       classroomId,
-    ).orderByChild('status').equalTo('active').limitToLast(1).onValue.map((
+    ).orderByChild('status').equalTo('active').onValue.map((
       event,
     ) {
       if (!event.snapshot.exists || event.snapshot.value == null) return null;
       final data = event.snapshot.value as Map? ?? {};
+      // The active activity is scoped to the teacher who started it: co-teachers
+      // sharing a classroom each see only their own running activity. When no
+      // teacherId is given (parent side) the latest active one is returned.
+      ClassroomActivityModel? latest;
       for (final entry in data.entries) {
         final raw = entry.value;
-        if (raw is Map) {
-          return ClassroomActivityModel.fromJson(
-            raw,
-            key: entry.key.toString(),
-          );
+        if (raw is! Map) continue;
+        final activity = ClassroomActivityModel.fromJson(
+          raw,
+          key: entry.key.toString(),
+        );
+        if (teacherId != null &&
+            teacherId.isNotEmpty &&
+            activity.teacherId != teacherId) {
+          continue;
+        }
+        if (latest == null || activity.startedAt > latest.startedAt) {
+          latest = activity;
         }
       }
-      return null;
+      return latest;
     });
   }
 
@@ -717,8 +789,9 @@ class TeacherActivityService {
 
   Future<List<ClassroomActivityModel>> getTodayCompleted(
     String nurseryId,
-    String classroomId,
-  ) async {
+    String classroomId, {
+    String? teacherId,
+  }) async {
     try {
       final todayStart = _todayStartMillis();
       final snap = await _activitiesRef(
@@ -736,6 +809,11 @@ class TeacherActivityService {
             ),
           )
           .where((a) => a.status == 'completed')
+          // Scope to the teacher's own completed activities when requested.
+          .where((a) =>
+              teacherId == null ||
+              teacherId.isEmpty ||
+              a.teacherId == teacherId)
           .toList()
         ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
     } catch (e) {
@@ -751,6 +829,7 @@ class TeacherActivityService {
     String classroomId, {
     required int startMs,
     required int endMs,
+    String? teacherId,
   }) async {
     try {
       final snap = await _activitiesRef(nurseryId, classroomId)
@@ -769,6 +848,11 @@ class TeacherActivityService {
             ),
           )
           .where((a) => a.status == 'completed')
+          // Scope to the teacher's own completed activities when requested.
+          .where((a) =>
+              teacherId == null ||
+              teacherId.isEmpty ||
+              a.teacherId == teacherId)
           .toList()
         ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
     } catch (e) {
@@ -799,24 +883,249 @@ class TeacherActivityService {
     return [for (final b in batches) ...b];
   }
 
+  // ── Live "what's being taught now" across many classrooms ────────────────
+  // Fans out one `status == active` read per classroom in parallel. Used by the
+  // manager home donut to show which classes are currently in session.
+
+  Future<List<ClassroomActivityModel>> getActiveForClassrooms(
+    String nurseryId,
+    List<String> classroomIds,
+  ) async {
+    if (classroomIds.isEmpty) return [];
+    final batches = await Future.wait(classroomIds.map((id) async {
+      try {
+        final snap = await _activitiesRef(nurseryId, id)
+            .orderByChild('status')
+            .equalTo('active')
+            .get();
+        if (!snap.exists || snap.value == null) {
+          return <ClassroomActivityModel>[];
+        }
+        final data = snap.value as Map? ?? {};
+        return data.entries
+            .where((e) => e.value is Map)
+            .map((e) => ClassroomActivityModel.fromJson(
+                  e.value as Map,
+                  key: e.key.toString(),
+                ))
+            .toList();
+      } catch (e) {
+        AppLogger.error(_tag, 'getActiveForClassrooms($id): $e');
+        return <ClassroomActivityModel>[];
+      }
+    }));
+    return [for (final b in batches) ...b];
+  }
+
+  /// Real-time version of [getActiveForClassrooms]: streams the set of
+  /// `status == active` activities across the given classrooms, re-emitting the
+  /// merged list whenever any teacher starts or ends one. Powers the manager
+  /// home "what's being taught now" card so it updates live — no hot reload.
+  Stream<List<ClassroomActivityModel>> watchActiveForClassrooms(
+    String nurseryId,
+    List<String> classroomIds,
+  ) {
+    if (nurseryId.isEmpty || classroomIds.isEmpty) {
+      return Stream.value(const []);
+    }
+    final controller =
+        StreamController<List<ClassroomActivityModel>>.broadcast();
+    final latest = <String, List<ClassroomActivityModel>>{};
+    final subs = <StreamSubscription>[];
+
+    void emit() {
+      final all = <ClassroomActivityModel>[
+        for (final list in latest.values) ...list,
+      ]..sort((a, b) => a.startedAt.compareTo(b.startedAt));
+      controller.add(all);
+    }
+
+    for (final cId in classroomIds) {
+      final sub = _activitiesRef(nurseryId, cId)
+          .orderByChild('status')
+          .equalTo('active')
+          .onValue
+          .listen((event) {
+        final data = event.snapshot.value as Map? ?? {};
+        final list = <ClassroomActivityModel>[];
+        for (final e in data.entries) {
+          if (e.value is! Map) continue;
+          list.add(ClassroomActivityModel.fromJson(
+            e.value as Map,
+            key: e.key.toString(),
+          ));
+        }
+        latest[cId] = list;
+        emit();
+      }, onError: (e) => AppLogger.error(_tag, 'watchActive($cId): $e'));
+      subs.add(sub);
+    }
+
+    controller.onCancel = () async {
+      for (final s in subs) {
+        await s.cancel();
+      }
+    };
+    return controller.stream;
+  }
+
+  // ── Today's activities (any status) across many classrooms ───────────────
+  // Powers the per-teacher day drill-down: everything started today, so both
+  // the running activity and already-completed ones show in one timeline.
+
+  Future<List<ClassroomActivityModel>> getTodayForClassrooms(
+    String nurseryId,
+    List<String> classroomIds,
+  ) async {
+    if (classroomIds.isEmpty) return [];
+    final todayStart = _todayStartMillis();
+    final batches = await Future.wait(classroomIds.map((id) async {
+      try {
+        final snap = await _activitiesRef(nurseryId, id)
+            .orderByChild('startedAt')
+            .startAt(todayStart)
+            .get();
+        if (!snap.exists || snap.value == null) {
+          return <ClassroomActivityModel>[];
+        }
+        final data = snap.value as Map? ?? {};
+        return data.entries
+            .where((e) => e.value is Map)
+            .map((e) => ClassroomActivityModel.fromJson(
+                  e.value as Map,
+                  key: e.key.toString(),
+                ))
+            .toList();
+      } catch (e) {
+        AppLogger.error(_tag, 'getTodayForClassrooms($id): $e');
+        return <ClassroomActivityModel>[];
+      }
+    }));
+    return [for (final b in batches) ...b];
+  }
+
   // ── Photo management ─────────────────────────────────────────────────────
 
   Future<void> addPhoto({
     required String nurseryId,
     required String classroomId,
     required String activityId,
-    required String photoId,
-    required String url,
+    required ActivityPhoto photo,
   }) async {
     try {
       await _activityRef(
         nurseryId,
         classroomId,
         activityId,
-      ).child('photos/$photoId').set(url);
+      ).child('photos/${photo.id}').set(photo.toJson());
     } catch (e) {
       AppLogger.error(_tag, 'addPhoto: $e');
     }
+  }
+
+  // ── Reviewer: approval & audience ────────────────────────────────────────
+
+  /// Approves the given pending photos of an activity in one batch — they flip
+  /// to `isApproved = true` and become visible to guardians together.
+  Future<void> approveActivityPhotos({
+    required String nurseryId,
+    required String classroomId,
+    required String activityId,
+    required List<String> photoIds,
+    required String approvedBy,
+  }) async {
+    if (photoIds.isEmpty) return;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final updates = <String, dynamic>{
+      // Clear the review-notification debounce flag so a later batch of photos
+      // on this activity notifies reviewers again (see photoReviewTriggers.js).
+      'reviewNotifiedAt': null,
+    };
+    for (final id in photoIds) {
+      updates['photos/$id/isApproved'] = true;
+      updates['photos/$id/approvedBy'] = approvedBy;
+      updates['photos/$id/approvedAt'] = now;
+    }
+    try {
+      await _activityRef(nurseryId, classroomId, activityId).update(updates);
+    } catch (e) {
+      AppLogger.error(_tag, 'approveActivityPhotos: $e');
+    }
+  }
+
+  /// Sets a single photo's audience (classroom-wide or a set of children).
+  /// Clears `targetChildren` when switching back to classroom-wide.
+  Future<void> updatePhotoAudience({
+    required String nurseryId,
+    required String classroomId,
+    required String activityId,
+    required String photoId,
+    required AudienceType audienceType,
+    List<String> targetChildren = const [],
+  }) async {
+    final ref = _activityRef(nurseryId, classroomId, activityId)
+        .child('photos/$photoId');
+    try {
+      await ref.update({
+        'audienceType': audienceType.key,
+        'targetChildren':
+            audienceType == AudienceType.children ? targetChildren : null,
+      });
+    } catch (e) {
+      AppLogger.error(_tag, 'updatePhotoAudience: $e');
+    }
+  }
+
+  /// Real-time stream of today's activities that still have pending photos,
+  /// merged across the reviewer's classrooms. Used by the media-approval screen.
+  Stream<List<ClassroomActivityModel>> watchPendingActivitiesForClassrooms(
+    String nurseryId,
+    List<String> classroomIds,
+  ) {
+    if (nurseryId.isEmpty || classroomIds.isEmpty) {
+      return Stream.value(const []);
+    }
+    final todayStart = _todayStartMillis();
+    final controller =
+        StreamController<List<ClassroomActivityModel>>.broadcast();
+    final latest = <String, List<ClassroomActivityModel>>{};
+    final subs = <StreamSubscription>[];
+
+    void emit() {
+      final all = <ClassroomActivityModel>[
+        for (final list in latest.values) ...list,
+      ]..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      controller.add(all);
+    }
+
+    for (final cId in classroomIds) {
+      final sub = _activitiesRef(nurseryId, cId)
+          .orderByChild('startedAt')
+          .startAt(todayStart.toDouble())
+          .onValue
+          .listen((event) {
+        final data = event.snapshot.value as Map? ?? {};
+        final list = <ClassroomActivityModel>[];
+        for (final e in data.entries) {
+          if (e.value is! Map) continue;
+          final act = ClassroomActivityModel.fromJson(
+            e.value as Map,
+            key: e.key.toString(),
+          );
+          if (act.hasPendingPhotos) list.add(act);
+        }
+        latest[cId] = list;
+        emit();
+      }, onError: (e) => AppLogger.error(_tag, 'watchPending($cId): $e'));
+      subs.add(sub);
+    }
+
+    controller.onCancel = () async {
+      for (final s in subs) {
+        await s.cancel();
+      }
+    };
+    return controller.stream;
   }
 
   Future<void> removePhoto({
@@ -933,8 +1242,8 @@ class TeacherActivityService {
     final eventsRoot = _db.ref('platform/$nurseryId/childDailyEvents/$dateKey');
 
     final label = eventType == ChildEventType.activityStarted
-        ? 'بدأ نشاط: $title'
-        : 'انتهى نشاط: $title';
+        ? '${'globalserv8_activity_started'.tr}: $title'
+        : '${'globalserv8_activity_ended'.tr}: $title';
 
     final batch = <Future>[];
     for (final childId in childIds) {
@@ -1102,8 +1411,10 @@ class TeacherActivityService {
     }
   }
 
-  /// childIds whose parent confirmed the homework was done at home.
-  Future<Set<String>> getHomeworkSubmissions({
+  /// Parent submissions for a homework, keyed by childId. Each carries the
+  /// parent's confirmation that it was done at home plus their optional
+  /// "how did it go" answers (needed help / guided hand / did it easily).
+  Future<Map<String, HomeworkSubmissionModel>> getHomeworkSubmissions({
     required String nurseryId,
     required String homeworkId,
   }) async {
@@ -1113,13 +1424,50 @@ class TeacherActivityService {
           .get();
       if (!snap.exists || snap.value == null) return {};
       final data = Map<dynamic, dynamic>.from(snap.value as Map);
-      return data.entries
-          .where((e) => e.value is Map)
-          .map((e) => e.key.toString())
-          .toSet();
+      return Map.fromEntries(data.entries.where((e) => e.value is Map).map(
+            (e) => MapEntry(
+              e.key.toString(),
+              HomeworkSubmissionModel.fromJson(
+                Map<dynamic, dynamic>.from(e.value as Map),
+                homeworkId: homeworkId,
+                childId: e.key.toString(),
+              ),
+            ),
+          ));
     } catch (e) {
       AppLogger.error(_tag, 'getHomeworkSubmissions: $e');
       return {};
+    }
+  }
+
+  /// Every parent homework submission across the nursery, flattened — for owner
+  /// analytics. One read of the whole `homeworkSubmissions/{homeworkId}/{childId}`
+  /// tree (no per-homework fan-out).
+  Future<List<HomeworkSubmissionModel>> getAllHomeworkSubmissions(
+    String nurseryId,
+  ) async {
+    try {
+      final snap =
+          await _db.ref('platform/$nurseryId/homeworkSubmissions').get();
+      if (!snap.exists || snap.value == null) return const [];
+      final root = Map<dynamic, dynamic>.from(snap.value as Map);
+      final out = <HomeworkSubmissionModel>[];
+      for (final hw in root.entries) {
+        if (hw.value is! Map) continue;
+        final byChild = Map<dynamic, dynamic>.from(hw.value as Map);
+        for (final ch in byChild.entries) {
+          if (ch.value is! Map) continue;
+          out.add(HomeworkSubmissionModel.fromJson(
+            Map<dynamic, dynamic>.from(ch.value as Map),
+            homeworkId: hw.key.toString(),
+            childId: ch.key.toString(),
+          ));
+        }
+      }
+      return out;
+    } catch (e) {
+      AppLogger.error(_tag, 'getAllHomeworkSubmissions: $e');
+      return const [];
     }
   }
 

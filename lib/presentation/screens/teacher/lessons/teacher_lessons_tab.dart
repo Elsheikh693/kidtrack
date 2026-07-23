@@ -21,8 +21,8 @@ class TeacherLessonsTab extends StatelessWidget {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                const KidTrackCollapsingHeader(
-                  title: 'الدروس',
+                KidTrackCollapsingHeader(
+                  title: 'teacherhom36_lessons'.tr,
                   icon: Icons.menu_book_rounded,
                   accentColor: _amber,
                 ),
@@ -77,7 +77,7 @@ class _FiltersSection extends StatelessWidget {
              Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                'الفصل',
+                'teacherhom36_classroom'.tr,
                 style: context.typography.xsMedium.copyWith(color: Color(0xFF6B7280)),
               ),
             ),
@@ -104,7 +104,7 @@ class _FiltersSection extends StatelessWidget {
            Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'المادة',
+              'teacherhom36_subject'.tr,
               style: context.typography.xsMedium.copyWith(color: Color(0xFF6B7280)),
             ),
           ),
@@ -205,7 +205,7 @@ class _ProgressHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'التقدم في ${c.selectedSubject.value?.name ?? ""}',
+                  '${'teacherhom36_progress_in'.tr} ${c.selectedSubject.value?.name ?? ""}',
                   style: context.typography.xsMedium.copyWith(color: Color(0xFF92400E)),
                 ),
                 Container(
@@ -234,7 +234,7 @@ class _ProgressHeader extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${(ratio * 100).toInt()}% من المواضيع تم تغطيتها',
+              '${(ratio * 100).toInt()}% ${'teacherhom36_topics_covered'.tr}',
               style: context.typography.xsRegular.copyWith(color: Colors.grey.shade600),
             ),
           ],
@@ -359,12 +359,12 @@ class _EmptyState extends StatelessWidget {
                 size: 56, color: Colors.grey.shade200),
             const SizedBox(height: 16),
             Text(
-              'لا توجد مواضيع لهذه المادة',
+              'teacherhom36_no_topics'.tr,
               style: context.typography.mdBold.copyWith(color: Color(0xFF9CA3AF)),
             ),
             const SizedBox(height: 8),
             Text(
-              'تواصلي مع المدير لإضافة مواضيع المنهج',
+              'teacherhom36_no_topics_hint'.tr,
               textAlign: TextAlign.center,
               style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
             ),

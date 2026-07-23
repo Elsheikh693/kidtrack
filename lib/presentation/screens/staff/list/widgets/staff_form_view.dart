@@ -28,147 +28,211 @@ class _StaffFormViewState extends State<StaffFormView> {
 
   @override
   Widget build(BuildContext context) {
+    // Half-screen sheet: header + submit stay pinned, the fields scroll between
+    // them, and the whole sheet rides above the keyboard (viewInsets padding).
+    final maxHeight = MediaQuery.of(context).size.height * 0.5;
+
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
-          title: Obx(
-            () => Text(
-              (controller.isEdit.value
-                      ? 'staff_form_edit_title'
-                      : 'staff_form_add_title')
-                  .tr,
-              style: context.typography.lgBold.copyWith(
-                color: const Color(0xFF1E293B),
-                fontSize: 18,
+      textDirection: appTextDirection,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Grab handle
+              Container(
+                width: 40.w,
+                height: 4.h,
+                margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
               ),
-            ),
-          ),
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 32.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name
-                _FieldLabel('staff_form_name_label'.tr),
-                SizedBox(height: 6.h),
-                _InputField(
-                  controller: controller.nameCtrl,
-                  hint: 'staff_form_name_hint'.tr,
-                  keyboardType: TextInputType.name,
-                  focusNode: _nameFocus,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) => _phoneFocus.requestFocus(),
-                ),
-                SizedBox(height: 16.h),
-
-                // Phone
-                _FieldLabel('staff_form_phone_label'.tr),
-                SizedBox(height: 6.h),
-                _InputField(
-                  controller: controller.phoneCtrl,
-                  hint: 'staff_form_phone_hint'.tr,
-                  keyboardType: TextInputType.phone,
-                  focusNode: _phoneFocus,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _phoneFocus.unfocus(),
-                ),
-                SizedBox(height: 16.h),
-
-                // Template
-                _FieldLabel('staff_form_template_label'.tr),
-                SizedBox(height: 6.h),
-                Obx(
-                  () => _Dropdown<StaffTemplate>(
-                    value: controller.selectedTemplate.value,
-                    items: StaffTemplate.values,
-                    itemLabel: (t) => t.labelKey.tr,
-                    onChanged: (t) {
-                      if (t != null) controller.selectedTemplate.value = t;
-                    },
+              // Title
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 12.h),
+                child: Obx(
+                  () => Text(
+                    (controller.isEdit.value
+                            ? 'staff_form_edit_title'
+                            : 'staff_form_add_title')
+                        .tr,
+                    style: context.typography.lgBold.copyWith(
+                      color: const Color(0xFF1E293B),
+                      fontSize: 18,
+                    ),
                   ),
                 ),
-                SizedBox(height: 16.h),
-
-                // Branch — hidden when there's only one branch (auto-selected)
-                Obx(() {
-                  if (controller.branches.length <= 1) {
-                    return const SizedBox.shrink();
-                  }
-                  return Column(
+              ),
+              // Scrollable fields
+              Flexible(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _FieldLabel('staff_form_branch_label'.tr),
+                      // Name
+                      _FieldLabel('staff_form_name_label'.tr),
                       SizedBox(height: 6.h),
-                      _Dropdown<BranchModel?>(
-                        value: controller.selectedBranch.value,
-                        items: [null, ...controller.branches],
-                        itemLabel: (b) =>
-                            b == null ? 'staff_form_no_branch'.tr : b.name,
-                        onChanged: (b) => controller.selectedBranch.value = b,
+                      _InputField(
+                        controller: controller.nameCtrl,
+                        hint: 'staff_form_name_hint'.tr,
+                        keyboardType: TextInputType.name,
+                        focusNode: _nameFocus,
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) => _phoneFocus.requestFocus(),
                       ),
                       SizedBox(height: 16.h),
-                    ],
-                  );
-                }),
 
-                // Shift
-                _FieldLabel('staff_form_shift_label'.tr),
-                SizedBox(height: 6.h),
-                Obx(
-                  () => _Dropdown<String>(
-                    value: controller.selectedShift.value,
-                    items: const ['morning', 'evening', 'both'],
-                    itemLabel: (s) => 'shift_$s'.tr,
-                    onChanged: (s) {
-                      if (s != null) controller.selectedShift.value = s;
-                    },
+                      // Phone (country picker + number)
+                      _FieldLabel('staff_form_phone_label'.tr),
+                      SizedBox(height: 6.h),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 122.w,
+                            child: Obx(
+                              () => CountryCodePicker(
+                                value: controller.selectedCountry.value,
+                                fillColor: Colors.white,
+                                onChanged: (c) =>
+                                    controller.selectedCountry.value = c,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: _InputField(
+                              controller: controller.phoneCtrl,
+                              hint: 'staff_form_phone_hint'.tr,
+                              keyboardType: TextInputType.phone,
+                              focusNode: _phoneFocus,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _phoneFocus.unfocus(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16.h),
+
+                      // Template
+                      _FieldLabel('staff_form_template_label'.tr),
+                      SizedBox(height: 6.h),
+                      Obx(
+                        () => _Dropdown<StaffTemplate>(
+                          value: controller.selectedTemplate.value,
+                          // Nanny is retired — never offered for a new staff
+                          // member. Kept only when editing a legacy nanny record
+                          // so the dropdown value stays valid.
+                          items: [
+                            for (final t in StaffTemplate.values)
+                              if (t != StaffTemplate.nanny ||
+                                  controller.selectedTemplate.value ==
+                                      StaffTemplate.nanny)
+                                t,
+                          ],
+                          itemLabel: (t) => t.labelKey.tr,
+                          onChanged: (t) {
+                            if (t != null) {
+                              controller.selectedTemplate.value = t;
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+
+                      // Branch — hidden when there's only one branch (auto-set)
+                      Obx(() {
+                        if (controller.branches.length <= 1) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _FieldLabel('staff_form_branch_label'.tr),
+                            SizedBox(height: 6.h),
+                            _Dropdown<BranchModel?>(
+                              value: controller.selectedBranch.value,
+                              items: [null, ...controller.branches],
+                              itemLabel: (b) => b == null
+                                  ? 'staff_form_no_branch'.tr
+                                  : b.name,
+                              onChanged: (b) =>
+                                  controller.selectedBranch.value = b,
+                            ),
+                            SizedBox(height: 16.h),
+                          ],
+                        );
+                      }),
+
+                      // Shifts — multi-select (a staff member may work several)
+                      _FieldLabel('staff_form_shift_label'.tr),
+                      SizedBox(height: 6.h),
+                      _ShiftChips(controller: controller),
+                    ],
                   ),
                 ),
-                SizedBox(height: 32.h),
-
-                // Submit
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: ElevatedButton(
-                    onPressed: controller.submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
+              ),
+              // Submit — pinned above the safe area
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
+                child: SafeArea(
+                  top: false,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52.h,
+                    child: ElevatedButton(
+                      onPressed: controller.submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
-                    ),
-                    child: Obx(
-                      () => Text(
-                        (controller.isEdit.value
-                                ? 'staff_form_submit_edit'
-                                : 'staff_form_submit_add')
-                            .tr,
-                        style: context.typography.smSemiBold.copyWith(
-                          fontSize: 16,
+                      child: Obx(
+                        () => Text(
+                          (controller.isEdit.value
+                                  ? 'staff_form_submit_edit'
+                                  : 'staff_form_submit_add')
+                              .tr,
+                          style: context.typography.smSemiBold.copyWith(
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+}
+
+/// Opens the staff add / edit form as a half-screen, keyboard-aware bottom
+/// sheet. Registers the form controller for the sheet's lifetime and disposes
+/// it on close. Pass [staff] to edit, or omit it to add a new member.
+Future<void> showStaffFormSheet({StaffModel? staff}) async {
+  Get.lazyPut(() => StaffFormController(initialStaff: staff));
+  await Get.bottomSheet(
+    const StaffFormView(),
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+    ),
+  );
+  await Get.delete<StaffFormController>();
 }
 
 // ── Private helpers — one class each, private to this file ───────────────────
@@ -240,6 +304,69 @@ class _InputField extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _ShiftChips extends StatelessWidget {
+  final StaffFormController controller;
+
+  const _ShiftChips({required this.controller});
+
+  @override
+  Widget build(BuildContext context) => Obx(() {
+    if (controller.shifts.isEmpty) {
+      return Text(
+        'staff_form_shifts_empty'.tr,
+        style: context.typography.smRegular.copyWith(
+          fontSize: 13,
+          color: const Color(0xFF94A3B8),
+        ),
+      );
+    }
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: controller.shifts.map((shift) {
+        final id = shift.key ?? '';
+        final selected = controller.isShiftSelected(id);
+        return GestureDetector(
+          onTap: () => controller.toggleShift(id),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: selected ? const Color(0xFF6366F1) : Colors.white,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: selected
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  selected
+                      ? Icons.check_circle_rounded
+                      : Icons.circle_outlined,
+                  size: 16.r,
+                  color: selected ? Colors.white : const Color(0xFFCBD5E1),
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  shift.name,
+                  style: context.typography.smMedium.copyWith(
+                    fontSize: 14,
+                    color: selected ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  });
 }
 
 class _Dropdown<T> extends StatelessWidget {

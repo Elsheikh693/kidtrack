@@ -46,14 +46,17 @@ class QuickTasksCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'إنجازات اليوم',
+                'teacherhom35_today_achievements'.tr,
                 style: context.typography.smSemiBold
                     .copyWith(color: AppColors.activitySlate),
               ),
               const Spacer(),
               if (activitiesTotal > 0)
                 Text(
-                  '$activitiesDone من $activitiesTotal أنشطة',
+                  'teacherhom35_activities_of_total'.trParams({
+                    'done': '$activitiesDone',
+                    'total': '$activitiesTotal',
+                  }),
                   style: context.typography.xsMedium
                       .copyWith(color: AppColors.activityGreen),
                 ),
@@ -83,13 +86,15 @@ class QuickTasksCard extends StatelessWidget {
                 if (studentsEvaluated > 0)
                   _Chip(
                     icon: Icons.star_rounded,
-                    label: '$studentsEvaluated تقييم',
+                    label: 'teacherhom35_evaluations_count'
+                        .trParams({'count': '$studentsEvaluated'}),
                     color: AppColors.activityAmberBrand,
                   ),
                 if (attentionCount > 0)
                   _Chip(
                     icon: Icons.warning_amber_rounded,
-                    label: '$attentionCount يحتاج انتباه',
+                    label: 'teacherhom35_needs_attention_count'
+                        .trParams({'count': '$attentionCount'}),
                     color: AppColors.activityRed,
                   ),
               ],

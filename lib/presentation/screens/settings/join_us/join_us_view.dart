@@ -19,7 +19,7 @@ class _JoinUsViewState extends State<JoinUsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Column(
@@ -53,7 +53,7 @@ class _JoinUsViewState extends State<JoinUsView> {
                     centerTitle: false,
                     title: AppText(
                       text: 'join_hero_title'.tr,
-                      textDirection: TextDirection.rtl,
+                      textDirection: appTextDirection,
                       textAlign: TextAlign.right,
                       textStyle: context.typography.mdBold.copyWith(
                         color: AppColors.white,

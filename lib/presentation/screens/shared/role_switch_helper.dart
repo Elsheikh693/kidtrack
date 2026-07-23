@@ -19,6 +19,42 @@ Future<void> backToOwnerMode() async {
   _rebuildShell();
 }
 
+/// In-app IDENTITY switch for a multi-hat person (teacher + mum, staff at two
+/// nurseries, …) — distinct from the owner "act as manager" view above, which
+/// only changes the rendered shell. This actually swaps which membership the
+/// session runs as. Reuses the login role picker; picking a role hands it to
+/// [AuthBootstrapService.finalizeMembership], which re-scopes + rebuilds the
+/// shell. No-op when the identity holds a single membership.
+Future<void> openRoleSwitcher() async {
+  final session = SessionService();
+  final uid = session.userId;
+  final user = session.currentUser;
+  if (uid == null || user == null) return;
+
+  Loader.show();
+  final memberships = await Get.find<IdentityService>().memberships(uid);
+  Loader.dismiss();
+
+  if (memberships.length < 2) {
+    Loader.showError('role_switch_none'.tr);
+    return;
+  }
+
+  Get.toNamed(
+    membershipPickerView,
+    arguments: {
+      'uid': uid,
+      'identity': {
+        'name': user.name,
+        'phone': user.phone,
+        'email': user.email,
+      },
+      'memberships': memberships.map((m) => m.toJson()).toList(),
+      'canCancel': true,
+    },
+  );
+}
+
 void _rebuildShell() {
   Get.delete<MainPageViewModel>(force: true);
   Get.offAllNamed(mainView);
@@ -62,7 +98,7 @@ class _BranchPickerSheetState extends State<_BranchPickerSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.75,

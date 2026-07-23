@@ -313,7 +313,7 @@ class _BranchDetailsSheetState extends State<_BranchDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
@@ -437,7 +437,7 @@ class _AddBranchSheetState extends State<_AddBranchSheet> {
   final _managerCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
-  static final _phoneRx = RegExp(r'^(010|011|012|015)\d{8}$');
+  PhoneCountry _country = PhoneUtils.egypt;
 
   @override
   void dispose() {
@@ -450,7 +450,7 @@ class _AddBranchSheetState extends State<_AddBranchSheet> {
   void _submit() {
     final branchName = _branchCtrl.text.trim();
     final managerName = _managerCtrl.text.trim();
-    final phone = _phoneCtrl.text.trim();
+    final rawPhone = _phoneCtrl.text.trim();
     if (branchName.isEmpty) {
       Loader.showError('setup_owner_branch_name_required'.tr);
       return;
@@ -459,18 +459,18 @@ class _AddBranchSheetState extends State<_AddBranchSheet> {
       Loader.showError('setup_manager_name_required'.tr);
       return;
     }
-    if (!_phoneRx.hasMatch(phone)) {
+    if (!PhoneUtils.isValid(_country, rawPhone)) {
       Loader.showError('nursery_error_phone_invalid'.tr);
       return;
     }
     Get.back();
-    widget.onSubmit(branchName, managerName, phone);
+    widget.onSubmit(branchName, managerName, PhoneUtils.normalize(_country, rawPhone));
   }
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
@@ -516,10 +516,26 @@ class _AddBranchSheetState extends State<_AddBranchSheet> {
                 labelText: 'setup_manager_name_label'.tr,
               ),
               SizedBox(height: 12.h),
-              AppTextField(
-                controller: _phoneCtrl,
-                labelText: 'setup_manager_phone_label'.tr,
-                keyboardType: TextInputType.phone,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 118.w,
+                    child: CountryCodePicker(
+                      value: _country,
+                      fillColor: AppColors.white,
+                      onChanged: (c) => setState(() => _country = c),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: AppTextField(
+                      controller: _phoneCtrl,
+                      labelText: 'setup_manager_phone_label'.tr,
+                      keyboardType: TextInputType.phone,
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 8.h),
               AppText(

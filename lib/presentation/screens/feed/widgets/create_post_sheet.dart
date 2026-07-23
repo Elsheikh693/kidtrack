@@ -29,7 +29,7 @@ class _CreatePostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
@@ -38,7 +38,7 @@ class _CreatePostScreen extends StatelessWidget {
           elevation: 0,
           scrolledUnderElevation: 0,
           title: Text(
-            controller.editPost == null ? 'بوست جديد' : 'تعديل البوست',
+            controller.editPost == null ? 'feed14_new_post'.tr : 'feed14_edit_post'.tr,
             style: context.typography.lgBold.copyWith(color: AppColors.textDefault),
           ),
           actions: [
@@ -56,7 +56,7 @@ class _CreatePostScreen extends StatelessWidget {
                 : TextButton(
                     onPressed: controller.submit,
                     child: Text(
-                      controller.editPost == null ? 'نشر' : 'تحديث',
+                      controller.editPost == null ? 'feed14_publish'.tr : 'feed14_update'.tr,
                       style: context.typography.smSemiBold
                           .copyWith(color: AppColors.primary),
                     ),
@@ -76,11 +76,11 @@ class _CreatePostScreen extends StatelessWidget {
                         controller: controller.textController,
                         maxLines: 5,
                         minLines: 3,
-                        textDirection: TextDirection.rtl,
+                        textDirection: appTextDirection,
                         style: context.typography.mdRegular
                             .copyWith(color: AppColors.textDefault),
                         decoration: InputDecoration(
-                          hintText: 'اكتب شيئاً...',
+                          hintText: 'feed14_text_hint'.tr,
                           hintTextDirection: TextDirection.rtl,
                           filled: true,
                           fillColor: const Color(0xFFF9FAFB),
@@ -102,11 +102,12 @@ class _CreatePostScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       // Category picker
-                      const _SectionLabel(label: 'التصنيف'),
+                      _SectionLabel(label: 'feed14_category'.tr),
                       SizedBox(height: 8.h),
                       Obx(() => Wrap(
                             spacing: 8,
                             children: PostCategory.values
+                                .where((c) => c != PostCategory.starOfWeek)
                                 .map((cat) => _CategoryToggle(
                                       cat: cat,
                                       selected: controller.category.value == cat,
@@ -138,7 +139,7 @@ class _CreatePostScreen extends StatelessWidget {
                       _AudienceSelector(controller: controller),
                       SizedBox(height: 16.h),
                       // Photos section
-                      const _SectionLabel(label: 'الصور'),
+                      _SectionLabel(label: 'feed14_photos'.tr),
                       SizedBox(height: 8.h),
                       Obx(() {
                         final existing = List<String>.from(controller.existingPhotos);
@@ -198,6 +199,8 @@ class _CategoryToggle extends StatelessWidget {
         return const Color(0xFFD97706);
       case PostCategory.reminder:
         return const Color(0xFF0891B2);
+      case PostCategory.gallery:
+        return const Color(0xFF6366F1);
       default:
         return const Color(0xFF7C3AED);
     }
@@ -254,7 +257,7 @@ class _PinRow extends StatelessWidget {
                   ? const Color(0xFFD97706)
                   : const Color(0xFF9CA3AF)),
           SizedBox(width: 8.w),
-          Text('تثبيت البوست',
+          Text('feed14_pin_post'.tr,
               style: context.typography.smMedium),
           const Spacer(),
           Switch.adaptive(
@@ -474,8 +477,8 @@ class _PhotosPicker extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text(
                     total == 0
-                        ? 'أضف صور (حتى 10)'
-                        : 'أضف المزيد ($total/10)',
+                        ? 'feed14_add_photos'.tr
+                        : 'feed14_add_more_photos'.trParams({'count': '$total'}),
                     style: context.typography.xsRegular.copyWith(
                         fontSize: 12, color: const Color(0xFF9CA3AF)),
                   ),

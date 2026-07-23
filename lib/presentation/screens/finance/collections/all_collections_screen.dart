@@ -11,7 +11,7 @@ class AllCollectionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<FinanceDashboardController>(tag: tag);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(

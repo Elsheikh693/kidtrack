@@ -22,6 +22,8 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
 
   String _nurseryId = '';
   String _classroomId = '';
+  String _childId = '';
+  String _branchId = '';
 
   String get _classroomName =>
       (Get.arguments as Map?)?['classroomName'] as String? ?? '';
@@ -42,7 +44,10 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
     final now = DateTime.now();
     _selectedDay = DateTime(now.year, now.month, now.day);
     _nurseryId = SessionService().nurseryId ?? '';
-    _classroomId = Get.find<ActiveChildService>().classroomId.value;
+    final activeChild = Get.find<ActiveChildService>();
+    _classroomId = activeChild.classroomId.value;
+    _childId = activeChild.childId.value;
+    _branchId = activeChild.branchId.value;
     _bindDay();
   }
 
@@ -66,7 +71,8 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
 
     setState(() => _loading = true);
     _sub = _edu
-        .watchPhotosForDay(_nurseryId, _classroomId, _selectedDay)
+        .watchPhotosForDay(_nurseryId, _classroomId, _selectedDay, _childId,
+            childBranchId: _branchId)
         .listen((photos) {
       if (!mounted) return;
       setState(() {
@@ -123,15 +129,16 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text(
-                      'إلغاء',
-                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    child: Text(
+                      'ownertabs20_cancel'.tr,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 14),
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    'اختر اليوم',
-                    style: TextStyle(
+                  Text(
+                    'ownertabs20_choose_day'.tr,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -144,9 +151,9 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
                       Navigator.of(context).pop();
                       _selectDay(temp);
                     },
-                    child: const Text(
-                      'تم',
-                      style: TextStyle(
+                    child: Text(
+                      'ownertabs20_done'.tr,
+                      style: const TextStyle(
                         color: Color(0xFF818CF8),
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -209,7 +216,7 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFF0B1020),
         body: CustomScrollView(
@@ -229,7 +236,8 @@ class _ParentClassPhotosViewState extends State<ParentClassPhotosView> {
                 ),
               ),
               title: Text(
-                'صور $_classroomName',
+                'ownertabs20_class_photos_title'
+                    .trParams({'name': _classroomName}),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -412,20 +420,20 @@ class _DaySelectorBar extends StatelessWidget implements PreferredSizeWidget {
         physics: const BouncingScrollPhysics(),
         children: [
           _QuickChip(
-            label: 'اليوم',
+            label: 'ownertabs20_today'.tr,
             active: _isSameDay(selected, today),
             accent: accent,
             onTap: () => onSelect(today),
           ),
           _QuickChip(
-            label: 'أمس',
+            label: 'ownertabs20_yesterday'.tr,
             active: _isSameDay(selected, yesterday),
             accent: accent,
             onTap: () => onSelect(yesterday),
           ),
           // Date picker pill — shows the custom-picked day when active.
           _PickerChip(
-            label: isQuick ? 'اختر يوم' : _dayLabel(selected),
+            label: isQuick ? 'ownertabs20_pick_day'.tr : _dayLabel(selected),
             active: !isQuick,
             accent: accent,
             onTap: onPick,
@@ -641,7 +649,8 @@ class _PhotosHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'صور $classroomName',
+                      'ownertabs20_class_photos_title'
+                          .trParams({'name': classroomName}),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 21,
@@ -655,7 +664,8 @@ class _PhotosHeader extends StatelessWidget {
                       children: [
                         _Chip(
                           icon: Icons.photo_library_rounded,
-                          label: '$count صورة',
+                          label: 'ownertabs20_photos_count'
+                              .trParams({'count': '$count'}),
                         ),
                         const SizedBox(width: 8),
                         _Chip(
@@ -775,7 +785,9 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          isToday ? 'لا توجد صور اليوم' : 'لا توجد صور في هذا اليوم',
+          isToday
+              ? 'ownertabs20_no_photos_today'.tr
+              : 'ownertabs20_no_photos_day'.tr,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -785,8 +797,8 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           isToday
-              ? 'هتلاقي هنا صور أنشطة طفلك أول ما المعلمة تضيفها'
-              : 'جرّب تختار يوم تاني من فوق',
+              ? 'ownertabs20_photos_hint_today'.tr
+              : 'ownertabs20_photos_hint_other'.tr,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.5),
@@ -800,16 +812,11 @@ class _EmptyState extends StatelessWidget {
 
 // ── Shared day-label helper ─────────────────────────────────────────────────
 
-const _kArMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
-
 String _dayLabel(DateTime day) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final diff = today.difference(DateTime(day.year, day.month, day.day)).inDays;
-  if (diff == 0) return 'اليوم';
-  if (diff == 1) return 'أمس';
-  return '${day.day} ${_kArMonths[day.month - 1]}';
+  if (diff == 0) return 'ownertabs20_today'.tr;
+  if (diff == 1) return 'ownertabs20_yesterday'.tr;
+  return localizeDigits('${day.day} ${monthName(day.month)}');
 }

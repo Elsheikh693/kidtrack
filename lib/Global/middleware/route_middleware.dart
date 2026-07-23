@@ -7,7 +7,7 @@ class AppMiddleware extends GetMiddleware {
   static const _open = {
     forceUpdateView,
     onBoardView,
-    loginView,
+    activationLandingView,
     nurseryDiscoveryView,
     nurseryProfileView,
   };
@@ -28,14 +28,9 @@ class AppMiddleware extends GetMiddleware {
 
     final session = SessionService();
 
-    // Not logged in → go to nursery discovery
+    // Not logged in → the activation landing (code / QR), not the nursery list.
     if (!session.isLoggedIn) {
-      return const RouteSettings(name: nurseryDiscoveryView);
-    }
-
-    // Logged in and trying to revisit login → go to main
-    if (route == loginView) {
-      return const RouteSettings(name: mainView);
+      return const RouteSettings(name: activationLandingView);
     }
 
     return null;

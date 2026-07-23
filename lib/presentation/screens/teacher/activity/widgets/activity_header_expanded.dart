@@ -48,14 +48,18 @@ class ActivityHeaderExpanded extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            activity.title,
-            style: context.typography.xlBold.copyWith(
-              color: AppColors.white,
-              height: 1.2,
+          // Flexible so the title clips to an ellipsis as the sliver header
+          // shrinks during scroll instead of overflowing the bounded box.
+          Flexible(
+            child: Text(
+              activity.title,
+              style: context.typography.lgBold.copyWith(
+                color: AppColors.white,
+                height: 1.2,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

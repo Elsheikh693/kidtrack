@@ -4,7 +4,7 @@ class Images {
   static const String previous = "assets/images/previous.png";
   static const String background = "assets/images/backgroundimage.png";
   static const String backgroundauth = "assets/images/Vector.png";
-  static const String splash = "assets/images/splash.png";
+  static const String splash = "assets/images/logo.png";
   static const String logo = "assets/images/splash.jpg";
   static const String placeholderImage = "assets/images/Editphoto.png";
   static const String farm = "assets/images/farm.jpg";

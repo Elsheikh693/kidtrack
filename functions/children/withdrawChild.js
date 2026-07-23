@@ -13,9 +13,12 @@ const admin = require("firebase-admin");
 // another nursery on the platform later.
 //
 // A compact record is written to `platform/{nid}/withdrawals/{id}` BEFORE the
-// delete so the manager's "left this month" movement stat survives the wipe.
+// delete so the manager's "left this month" movement stat survives the wipe —
+// UNLESS `skipLog` is set. `skipLog` is the "permanent delete" variant used to
+// erase a child registered by mistake: same full cleanup, but nothing is left
+// behind (no departure record), so it never counts as a nursery movement.
 //
-// Input : { nurseryId, childId, reason }
+// Input : { nurseryId, childId, reason, skipLog? }
 // Output: { ok, deletedChild, deletedParents:[uid], keptParents:[uid] }
 // ============================================================
 
@@ -47,6 +50,7 @@ exports.withdrawChild = onCall(async (request) => {
   const nurseryId = (request.data && request.data.nurseryId || "").toString().trim();
   const childId = (request.data && request.data.childId || "").toString().trim();
   const reason = (request.data && request.data.reason || "").toString().trim();
+  const skipLog = request.data && request.data.skipLog === true;
 
   if (!nurseryId || !childId) {
     throw new HttpsError("invalid-argument", "nurseryId and childId are required.");
@@ -82,19 +86,22 @@ exports.withdrawChild = onCall(async (request) => {
     }
   }
 
-  // 3) Write the withdrawal log BEFORE deleting anything.
-  const logRef = db.ref(`${base}/withdrawals`).push();
-  await logRef.set({
-    key: logRef.key,
-    childId,
-    childName: `${child.firstName || ""} ${child.lastName || ""}`.trim(),
-    branchId: child.branchId || "",
-    classroomId: child.classroomId || null,
-    reason: reason || null,
-    withdrawnBy: request.auth.uid,
-    withdrawnAt: Date.now(),
-    parentIds: Array.from(parentIds),
-  });
+  // 3) Write the withdrawal log BEFORE deleting anything — unless this is a
+  // permanent "delete a mistake" wipe (skipLog), which leaves no trace.
+  if (!skipLog) {
+    const logRef = db.ref(`${base}/withdrawals`).push();
+    await logRef.set({
+      key: logRef.key,
+      childId,
+      childName: `${child.firstName || ""} ${child.lastName || ""}`.trim(),
+      branchId: child.branchId || "",
+      classroomId: child.classroomId || null,
+      reason: reason || null,
+      withdrawnBy: request.auth.uid,
+      withdrawnAt: Date.now(),
+      parentIds: Array.from(parentIds),
+    });
+  }
 
   // 4) Decide which parents are orphaned (no children left after this removal).
   const orphanParents = [];
@@ -130,7 +137,11 @@ exports.withdrawChild = onCall(async (request) => {
     })
   );
 
-  // Orphan-parent DB records: guardian profile (scan by uid), user, progress.
+  // Orphan-parent records: the guardian profile + nursery-scoped data always go.
+  // The GLOBAL identity (users/{uid}) + auth account are removed only when this
+  // nursery's guardian membership was the person's LAST one — they may still be
+  // staff here, or a guardian at another nursery, and wiping the identity would
+  // break those logins (a teacher who is also this child's mum).
   const parentsSnap = await db.ref(`${base}/parents`).get();
   const parentRecordKeyByUid = {};
   if (parentsSnap.exists()) {
@@ -139,18 +150,35 @@ exports.withdrawChild = onCall(async (request) => {
       if (p && p.uid) parentRecordKeyByUid[p.uid.toString()] = key;
     }
   }
+
+  const identityToDelete = []; // uids whose users/{uid} + auth account to remove
   for (const uid of orphanParents) {
     const recKey = parentRecordKeyByUid[uid];
     if (recKey) updates[`${base}/parents/${recKey}`] = null;
     updates[`${base}/courseProgress/${uid}`] = null;
-    updates[`users/${uid}`] = null;
+
+    const memSnap = await db.ref(`users/${uid}/memberships`).get();
+    const mems = memSnap.exists() ? memSnap.val() || {} : {};
+    const thisKey = `${nurseryId}_parent`;
+    const remaining = Object.keys(mems).filter((k) => k !== thisKey);
+
+    if (remaining.length === 0) {
+      // Legacy pure-parent, or their only membership — wipe the whole identity.
+      // (Don't also null the membership child path: Firebase rejects overlapping
+      // ancestor/descendant paths in one multi-location update.)
+      updates[`users/${uid}`] = null;
+      identityToDelete.push(uid);
+    } else {
+      // Other hats remain — drop just this nursery's guardian membership.
+      updates[`users/${uid}/memberships/${thisKey}`] = null;
+    }
   }
 
   await db.ref().update(updates);
 
-  // 6) Delete orphan parents' Firebase Auth accounts (Admin SDK only).
+  // 6) Delete Firebase Auth accounts ONLY for fully-orphaned identities.
   const deletedParents = [];
-  for (const uid of orphanParents) {
+  for (const uid of identityToDelete) {
     try {
       await admin.auth().deleteUser(uid);
       deletedParents.push(uid);
@@ -165,7 +193,7 @@ exports.withdrawChild = onCall(async (request) => {
   }
 
   console.log(
-    `🚪 WITHDREW child=${childId} nursery=${nurseryId} ` +
+    `🚪 ${skipLog ? "DELETED" : "WITHDREW"} child=${childId} nursery=${nurseryId} ` +
       `deletedParents=${deletedParents.length} keptParents=${keptParents.length}`
   );
 

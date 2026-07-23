@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
+import '../../../../../Global/Localization/app_direction.dart';
 
 /// Full activity details for a parent — opens with a clean, smooth reveal:
 /// the sheet slides up (default modal transition) and its content fades and
@@ -34,6 +35,7 @@ Future<void> showActivityDetailSheet(
 
 class _ActivityDetailSheet extends StatefulWidget {
   const _ActivityDetailSheet({required this.item, required this.homework});
+
   final DayTimelineItem item;
   final List<EduHomework> homework;
 
@@ -118,20 +120,24 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
       sections.add(_EvalBlock(eval: eval, reasons: reasons));
     }
     if (childNote != null && childNote.isNotEmpty) {
-      sections.add(_NoteBlock(
-        icon: Icons.chat_bubble_rounded,
-        title: 'تعليق المعلمة',
-        text: childNote,
-        color: const Color(0xFF7C3AED),
-      ));
+      sections.add(
+        _NoteBlock(
+          icon: Icons.chat_bubble_rounded,
+          title: 'parenteduc23_teacher_comment'.tr,
+          text: childNote,
+          color: const Color(0xFF7C3AED),
+        ),
+      );
     }
     if (groupNote != null && groupNote.isNotEmpty) {
-      sections.add(_NoteBlock(
-        icon: Icons.campaign_rounded,
-        title: 'ملاحظة عامة على النشاط',
-        text: groupNote,
-        color: const Color(0xFFD97706),
-      ));
+      sections.add(
+        _NoteBlock(
+          icon: Icons.campaign_rounded,
+          title: 'parenteduc23_activity_general_note'.tr,
+          text: groupNote,
+          color: const Color(0xFFD97706),
+        ),
+      );
     }
     if (homework.isNotEmpty) {
       sections.add(_HomeworkBlock(items: homework));
@@ -158,7 +164,8 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
     final color = journalSubjectColor(item.subjectId ?? item.subjectName);
     final eventIcon = journalEventIcon(item.subjectName);
     final eval = item.evalLevel == null ? null : evalChipMeta(item.evalLevel!);
-    final showSubject = item.title.trim().toLowerCase() !=
+    final showSubject =
+        item.title.trim().toLowerCase() !=
         item.subjectName.trim().toLowerCase();
     final childNote = item.note?.trim();
     final groupNote = item.groupNote?.trim();
@@ -167,7 +174,7 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
     final homework = widget.homework;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.9,
@@ -329,8 +336,11 @@ class _Header extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.schedule_rounded,
-                      size: 14, color: Colors.white),
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     timeRange,
@@ -393,9 +403,9 @@ class _EvalBlock extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'تقييم المعلمة',
-                    style: TextStyle(
+                  Text(
+                    'parenteduc23_teacher_eval'.tr,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: kJMuted,
@@ -423,12 +433,15 @@ class _EvalBlock extends StatelessWidget {
                 for (final r in reasons)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 11, vertical: 7),
+                      horizontal: 11,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: eval.color.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: eval.color.withValues(alpha: 0.18)),
+                        color: eval.color.withValues(alpha: 0.18),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -459,6 +472,7 @@ class _EvalBlock extends StatelessWidget {
 
 class _HomeworkBlock extends StatelessWidget {
   const _HomeworkBlock({required this.items});
+
   final List<EduHomework> items;
 
   @override
@@ -491,13 +505,16 @@ class _HomeworkBlock extends StatelessWidget {
                   color: accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.assignment_rounded,
-                    size: 16, color: accent),
+                child: const Icon(
+                  Icons.assignment_rounded,
+                  size: 16,
+                  color: accent,
+                ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'الواجبات المرتبطة',
-                style: TextStyle(
+              Text(
+                'parenteduc23_related_homework'.tr,
+                style: const TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                   color: accent,
@@ -518,6 +535,7 @@ class _HomeworkBlock extends StatelessWidget {
 
 class _HomeworkRow extends StatelessWidget {
   const _HomeworkRow({required this.item});
+
   final EduHomework item;
 
   @override
@@ -558,7 +576,9 @@ class _HomeworkRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  done ? 'تم الإنجاز' : 'موعد التسليم: ${item.dueDate}',
+                  done
+                      ? 'parenteduc23_done_completed'.tr
+                      : '${'parenteduc23_due_date'.tr}: ${item.dueDate}',
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -650,6 +670,7 @@ class _NoteBlock extends StatelessWidget {
 
 class _PhotosBlock extends StatelessWidget {
   const _PhotosBlock({required this.urls, required this.color});
+
   final List<String> urls;
   final Color color;
 
@@ -662,9 +683,9 @@ class _PhotosBlock extends StatelessWidget {
           children: [
             Icon(Icons.photo_library_rounded, size: 18, color: color),
             const SizedBox(width: 8),
-            const Text(
-              'صور النشاط',
-              style: TextStyle(
+            Text(
+              'parenteduc23_activity_photos'.tr,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: kJInk,
@@ -717,7 +738,9 @@ class _PhotosBlock extends StatelessWidget {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                           );
@@ -783,13 +806,13 @@ class _EmptyDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: kJBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.spa_rounded, size: 30, color: kJMuted),
-          SizedBox(height: 10),
+          const Icon(Icons.spa_rounded, size: 30, color: kJMuted),
+          const SizedBox(height: 10),
           Text(
-            'لا توجد تفاصيل إضافية لهذا النشاط',
-            style: TextStyle(
+            'parenteduc23_no_extra_details'.tr,
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: kJMuted,

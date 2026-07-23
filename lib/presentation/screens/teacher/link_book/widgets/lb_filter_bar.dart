@@ -26,7 +26,7 @@ class LbFilterBar extends GetView<LinkBookController> {
             Expanded(
               child: _FilterChip(
                 icon: Icons.meeting_room_rounded,
-                label: controller.selectedClassroom?.name ?? 'الفصل',
+                label: controller.selectedClassroom?.name ?? 'teacherlin37_classroom'.tr,
                 color: const Color(0xFF059669),
                 onTap: () => _showClassroomPicker(context),
               ),
@@ -35,7 +35,7 @@ class LbFilterBar extends GetView<LinkBookController> {
             Expanded(
               child: _FilterChip(
                 icon: Icons.child_care_rounded,
-                label: controller.selectedChild?.firstName ?? 'الكل',
+                label: controller.selectedChild?.firstName ?? 'teacherlin37_all'.tr,
                 color: const Color(0xFFD97706),
                 onTap: () => _showChildPicker(context),
               ),
@@ -59,7 +59,7 @@ class LbFilterBar extends GetView<LinkBookController> {
   void _showClassroomPicker(BuildContext context) {
     Get.bottomSheet(
       _PickerSheet<ClassroomModel>(
-        title: 'اختر الفصل',
+        title: 'teacherlin37_pick_classroom'.tr,
         items: controller.classrooms,
         selectedId: controller.selectedClassroomId.value,
         labelOf: (c) => c.name,
@@ -254,11 +254,11 @@ class _ChildPickerSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text('اختر الطفل',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text('teacherlin37_pick_child'.tr,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           _OptionTile(
-            label: 'الكل — تقرير الفصل',
+            label: 'teacherlin37_all_class_report'.tr,
             selected: selectedId == null,
             color: const Color(0xFFD97706),
             onTap: () {

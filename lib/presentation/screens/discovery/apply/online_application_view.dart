@@ -26,7 +26,7 @@ class _OnlineApplicationViewState extends State<OnlineApplicationView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(

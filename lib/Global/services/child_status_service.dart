@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:get/get.dart';
 import '../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../Data/models/child_attendance/child_attendance_model.dart';
@@ -22,6 +23,9 @@ class ChildStatusService {
 
   DatabaseReference _eventsRef(String nurseryId, String date, String childId) =>
       _db.ref('platform/$nurseryId/childDailyEvents/$date/$childId');
+
+  DatabaseReference _attendanceRef(String nurseryId) =>
+      _db.ref('platform/$nurseryId/childAttendance');
 
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -83,6 +87,86 @@ class ChildStatusService {
     return controller.stream;
   }
 
+  /// The single source of truth for "present today" used across every screen
+  /// (teacher home card, classroom-states sheet, reception dashboard) so the
+  /// counts can never drift. Emits the live set of child IDs that have a dated
+  /// attendance record for [day] (defaults to today) with status present/late.
+  ///
+  /// Because this is date-scoped, a child checked in on a previous day and
+  /// never checked out is NOT reported today — the dated record acts as an
+  /// implicit daily reset, unlike the childCurrentStatus cache.
+  Stream<Set<String>> watchPresentIdsForDay(String nurseryId, [DateTime? day]) {
+    final date = _dateKey(day ?? DateTime.now());
+    final controller = StreamController<Set<String>>.broadcast();
+
+    final sub = _attendanceRef(nurseryId)
+        .orderByChild('date')
+        .equalTo(date)
+        .onValue
+        .listen(
+      (event) {
+        final ids = <String>{};
+        final data = event.snapshot.value;
+        if (data is Map) {
+          for (final v in data.values) {
+            if (v is! Map) continue;
+            final status = v['status']?.toString();
+            if (status != 'present' && status != 'late') continue;
+            final childId = v['childId']?.toString();
+            if (childId != null && childId.isNotEmpty) ids.add(childId);
+          }
+        }
+        controller.add(ids);
+      },
+      onError: (e) {
+        AppLogger.error(_tag, 'watchPresentIdsForDay: $e');
+        controller.add(<String>{});
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
+  /// Live, full attendance records for [day] (defaults to today). Unlike
+  /// [watchPresentIdsForDay] — which emits only the present *id set* — this
+  /// keeps every field (check-in/out times, status), so a caller can derive who
+  /// is still on-site vs. already picked up and build an activity feed. Powers
+  /// the reception & manager dashboards in real time off the exact same
+  /// `childAttendance` node the check-in / check-out path writes to.
+  Stream<List<ChildAttendanceModel>> watchAttendanceForDay(String nurseryId,
+      [DateTime? day]) {
+    final date = _dateKey(day ?? DateTime.now());
+    final controller =
+        StreamController<List<ChildAttendanceModel>>.broadcast();
+
+    final sub = _attendanceRef(nurseryId)
+        .orderByChild('date')
+        .equalTo(date)
+        .onValue
+        .listen(
+      (event) {
+        final records = <ChildAttendanceModel>[];
+        final data = event.snapshot.value;
+        if (data is Map) {
+          data.forEach((key, value) {
+            if (value is! Map) return;
+            records.add(ChildAttendanceModel.fromJson(
+              Map<String, dynamic>.from(value),
+              key: key.toString(),
+            ));
+          });
+        }
+        controller.add(records);
+      },
+      onError: (e) {
+        AppLogger.error(_tag, 'watchAttendanceForDay: $e');
+        controller.add(const []);
+      },
+    );
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
+
   // ── Internal write helper ──────────────────────────────────────────────────
 
   Future<bool> _write({
@@ -122,6 +206,10 @@ class ChildStatusService {
     required String childId,
     required String receptionistId,
     String? classroomId,
+    // Who is performing the check-in — reception by default, but a teacher can
+    // check a child in from the states/activity screen, and it must be recorded
+    // as the teacher's action (not reception) while writing the SAME attendance.
+    String byRole = ChildEventSource.reception,
   }) async {
     final now = DateTime.now();
     final date = _today();
@@ -131,7 +219,7 @@ class ChildStatusService {
       status: ChildStatus.checkedIn,
       updatedAt: now,
       updatedById: receptionistId,
-      updatedByRole: ChildEventSource.reception,
+      updatedByRole: byRole,
       checkInTime: now,
     );
 
@@ -141,10 +229,10 @@ class ChildStatusService {
       nurseryId: nurseryId,
       branchId: branchId,
       eventType: ChildEventType.checkIn,
-      source: ChildEventSource.reception,
-      title: 'وصل الحضانة',
+      source: byRole,
+      title: 'globalserv7_event_checked_in'.tr,
       createdBy: receptionistId,
-      createdByRole: ChildEventSource.reception,
+      createdByRole: byRole,
       createdAt: now.millisecondsSinceEpoch,
     );
 
@@ -202,7 +290,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.checkOut,
       source: ChildEventSource.reception,
-      title: 'غادر الحضانة',
+      title: 'globalserv7_event_checked_out'.tr,
       createdBy: receptionistId,
       createdByRole: ChildEventSource.reception,
       createdAt: now.millisecondsSinceEpoch,
@@ -355,7 +443,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.napStarted,
       source: ChildEventSource.nanny,
-      title: 'بدأ القيلولة',
+      title: 'globalserv7_event_nap_started'.tr,
       createdBy: nannyId,
       createdByRole: ChildEventSource.nanny,
       createdAt: now.millisecondsSinceEpoch,
@@ -390,7 +478,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.napCompleted,
       source: ChildEventSource.nanny,
-      title: 'استيقظ من القيلولة',
+      title: 'globalserv7_event_nap_ended'.tr,
       sessionId: sessionId,
       createdBy: nannyId,
       createdByRole: ChildEventSource.nanny,
@@ -428,7 +516,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.busBoarded,
       source: ChildEventSource.bus,
-      title: 'ركب الباص',
+      title: 'globalserv7_event_bus_boarded'.tr,
       createdBy: chaperoneId,
       createdByRole: ChildEventSource.bus,
       createdAt: now.millisecondsSinceEpoch,
@@ -462,7 +550,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.busArrived,
       source: ChildEventSource.bus,
-      title: 'وصل من الباص',
+      title: 'globalserv7_event_bus_arrived'.tr,
       createdBy: chaperoneId,
       createdByRole: ChildEventSource.bus,
       createdAt: now.millisecondsSinceEpoch,
@@ -500,7 +588,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.pickupRequested,
       source: ChildEventSource.parent,
-      title: 'ولي الأمر في الطريق',
+      title: 'globalserv7_event_pickup_requested'.tr,
       createdBy: parentId,
       createdByRole: ChildEventSource.parent,
       createdAt: now.millisecondsSinceEpoch,
@@ -517,18 +605,18 @@ class ChildStatusService {
 
   static String _mealLabel(String type) {
     switch (type) {
-      case 'breakfast': return 'وجبة الإفطار';
-      case 'lunch':     return 'وجبة الغداء';
-      case 'snack':     return 'وجبة الوجبة الخفيفة';
-      default:          return 'وجبة';
+      case 'breakfast': return 'globalserv7_meal_breakfast'.tr;
+      case 'lunch':     return 'globalserv7_meal_lunch'.tr;
+      case 'snack':     return 'globalserv7_meal_snack'.tr;
+      default:          return 'globalserv7_meal_generic'.tr;
     }
   }
 
   static String _mealStatusLabel(String s) {
     switch (s) {
-      case 'ate_all':  return 'أكل كل شيء';
-      case 'ate_half': return 'أكل النصف';
-      case 'refused':  return 'رفض الأكل';
+      case 'ate_all':  return 'globalserv7_meal_ate_all'.tr;
+      case 'ate_half': return 'globalserv7_meal_ate_half'.tr;
+      case 'refused':  return 'globalserv7_meal_refused'.tr;
       default:         return s;
     }
   }

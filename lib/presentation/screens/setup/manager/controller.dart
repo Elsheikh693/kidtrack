@@ -305,12 +305,16 @@ class ManagerSetupController extends GetxController {
     Loader.show();
     final nurseryId = _session.nurseryId ?? '';
     final branchId  = _session.branchId  ?? '';
-    final email = '$phone@gmail.com';
-    String uid;
+    final role = template.toUserType();
+    // Reuse the identity if this phone already exists (a guardian here, or staff
+    // at another nursery) instead of colliding on the email.
+    final String uid;
     try {
-      uid = await _createFirebaseAuth(email, password);
-    } catch (e) {
-      Loader.showError(e.toString());
+      final res = await Get.find<IdentityService>()
+          .resolveByPhone(phone: phone, name: name);
+      uid = res.uid;
+    } catch (_) {
+      Loader.showError('setup_staff_error'.tr);
       return;
     }
     await _staffService.add(
@@ -322,7 +326,7 @@ class ManagerSetupController extends GetxController {
         subjectIds: subjectIds,
         name: name,
         phone: phone.nullIfEmpty,
-        role: template.toUserType(),
+        role: role,
         template: template,
       ),
       callBack: (status) async {
@@ -330,15 +334,14 @@ class ManagerSetupController extends GetxController {
           Loader.showError('setup_staff_error'.tr);
           return;
         }
-        await FirebaseDatabase.instance.ref('users/$uid').set({
-          'uid': uid,
-          'name': name,
-          'phone': phone,
-          'nurseryId': nurseryId,
-          'branchId': branchId,
-          'userType': template.toUserType().name,
-          'createdAt': DateTime.now().millisecondsSinceEpoch,
-        });
+        await Get.find<IdentityService>().attachMembership(
+          uid: uid,
+          role: role.name,
+          nurseryId: nurseryId,
+          branchId: branchId,
+          name: name,
+          phone: phone,
+        );
         await _permService.add(
           item: PermissionSetModel(
             employeeId: uid,
@@ -351,23 +354,6 @@ class ManagerSetupController extends GetxController {
         );
       },
     );
-  }
-
-  Future<String> _createFirebaseAuth(String email, String password) async {
-    final appName = 'mgr_setup_${DateTime.now().millisecondsSinceEpoch}';
-    final secondaryApp = await Firebase.initializeApp(
-      name: appName,
-      options: Firebase.app().options,
-    );
-    try {
-      final auth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final cred = await auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      await auth.signOut();
-      return cred.user!.uid;
-    } finally {
-      await secondaryApp.delete();
-    }
   }
 
   // ── Fees ──────────────────────────────────────────────────────────────────

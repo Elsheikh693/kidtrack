@@ -79,18 +79,12 @@ class _ContactSheetState extends State<_ContactSheet> {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
-  Future<void> _whatsapp(String phone) async {
-    final cleaned = phone.replaceAll(RegExp(r'[^0-9+]'), '');
-    final uri = Uri.parse('https://wa.me/$cleaned');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
+  Future<void> _whatsapp(String phone) => MakeCall.openWhatsApp(phone);
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
         child: Column(

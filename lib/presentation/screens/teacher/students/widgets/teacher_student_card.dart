@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../Data/models/child/child_model.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 
@@ -79,7 +80,7 @@ class TeacherStudentCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   [
-                    child.gender == 'male' ? 'ذكر' : (child.gender == 'female' ? 'أنثى' : null),
+                    child.gender == 'male' ? 'teacherrep38_gender_male'.tr : (child.gender == 'female' ? 'teacherrep38_gender_female'.tr : null),
                     if (classroomName != null && classroomName!.isNotEmpty) classroomName,
                   ].whereType<String>().join(' • '),
                   style: TextStyle(
@@ -122,16 +123,16 @@ class TeacherStudentCard extends StatelessWidget {
     switch (status) {
       case 'present':
         return _StatusInfo(
-            Icons.check_circle_rounded, const Color(0xFF16A34A), 'حاضر');
+            Icons.check_circle_rounded, const Color(0xFF16A34A), 'teacherrep38_status_present'.tr);
       case 'late':
         return _StatusInfo(
-            Icons.access_time_rounded, const Color(0xFFD97706), 'متأخر');
+            Icons.access_time_rounded, const Color(0xFFD97706), 'teacherrep38_status_late'.tr);
       case 'absent':
         return _StatusInfo(
-            Icons.cancel_rounded, const Color(0xFFDC2626), 'غائب');
+            Icons.cancel_rounded, const Color(0xFFDC2626), 'teacherrep38_status_absent'.tr);
       default:
         return _StatusInfo(
-            Icons.help_outline_rounded, const Color(0xFF9CA3AF), 'غير محدد');
+            Icons.help_outline_rounded, const Color(0xFF9CA3AF), 'teacherrep38_status_unknown'.tr);
     }
   }
 }

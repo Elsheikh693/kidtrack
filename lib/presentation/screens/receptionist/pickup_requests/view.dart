@@ -21,7 +21,7 @@ class _PickupRequestsViewState extends State<PickupRequestsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'reception_pickup_requests_title'.tr),

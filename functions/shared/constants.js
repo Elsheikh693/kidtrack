@@ -22,6 +22,7 @@ const NotificationType = {
   course: "course",
   chat: "chat",
   engagement: "engagement",
+  activity: "activity",
 };
 
 // Recipient roles — decides which path tokenService reads the FCM token from.

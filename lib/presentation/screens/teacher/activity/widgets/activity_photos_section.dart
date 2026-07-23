@@ -1,17 +1,22 @@
 import '../../../../../index/index_main.dart';
+import 'activity_photo_thumb.dart';
 
 class ActivityPhotosSection extends StatelessWidget {
   const ActivityPhotosSection({
     super.key,
     required this.photos,
+    required this.children,
     required this.onAdd,
     required this.onDelete,
+    required this.onSetAudience,
     this.isUploading = false,
   });
 
-  final Map<String, String> photos;
+  final Map<String, ActivityPhoto> photos;
+  final List<ChildModel> children;
   final VoidCallback onAdd;
   final void Function(String photoId) onDelete;
+  final void Function(String photoId, List<String> childIds) onSetAudience;
   final bool isUploading;
 
   static const _cyanColor = Color(0xFF0891B2);
@@ -127,10 +132,11 @@ class ActivityPhotosSection extends StatelessWidget {
                       cell(_AddMoreThumb(onTap: onAdd)),
                       if (isUploading) cell(_UploadingThumb()),
                       ...photos.entries.map(
-                        (e) => cell(_PhotoThumb(
-                          photoId: e.key,
-                          url: e.value,
+                        (e) => cell(ActivityPhotoThumb(
+                          photo: e.value,
+                          children: children,
                           onDelete: onDelete,
+                          onSetAudience: onSetAudience,
                         )),
                       ),
                     ],
@@ -141,105 +147,6 @@ class ActivityPhotosSection extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _PhotoThumb extends StatelessWidget {
-  const _PhotoThumb({
-    required this.photoId,
-    required this.url,
-    required this.onDelete,
-  });
-
-  final String photoId;
-  final String url;
-  final void Function(String) onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () => _confirmDelete(context),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: Colors.grey.shade100,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image(
-              image: appCachedImageProvider(url),
-              fit: BoxFit.cover,
-              loadingBuilder: (_, child, progress) =>
-                  progress == null
-                      ? child
-                      : Container(color: Colors.grey.shade200),
-              errorBuilder: (_, __, ___) => const Center(
-                child: Icon(Icons.broken_image_rounded,
-                    color: Colors.grey, size: 28),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 28,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.35),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmDelete(BuildContext ctx) async {
-    final confirmed = await showDialog<bool>(
-      context: ctx,
-      builder: (c) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          title: Text(
-            'teacher_activity_delete_photo'.tr,
-            style: const TextStyle(fontWeight: FontWeight.w800),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(c, false),
-              child: Text(
-                'teacher_activity_delete_cancel'.tr,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade600,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-              onPressed: () => Navigator.pop(c, true),
-              child: Text('teacher_activity_delete_confirm'.tr),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (confirmed == true) onDelete(photoId);
   }
 }
 

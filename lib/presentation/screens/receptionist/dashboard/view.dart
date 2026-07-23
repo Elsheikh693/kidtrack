@@ -1,10 +1,11 @@
 import 'package:intl/intl.dart' as intl;
 import '../../../../index/index_main.dart';
-import 'controller.dart';
 import 'widgets/inside_now_banner.dart';
-import 'widgets/pending_pickups_section.dart';
+// TEMP: pickup feature paused — import kept commented for easy restore.
+// import 'widgets/pending_pickups_section.dart';
 import 'widgets/home_action_cards.dart';
 import 'widgets/active_events_section.dart';
+import '../../manager/media_approval/widgets/media_approval_banner.dart';
 
 const _accent = Color(0xFF0891B2);
 
@@ -53,9 +54,13 @@ class _ReceptionistDashboardViewState extends State<ReceptionistDashboardView> {
                         InsideNowBanner(controller: controller),
                         SizedBox(height: 16.h),
                         const HomeActionCards(),
-                        SizedBox(height: 22.h),
+                        SizedBox(height: 18.h),
+                        const MediaApprovalBanner(),
                         const UnpaidSubscriptionCard(),
-                        PendingPickupsSection(controller: controller),
+                        SizedBox(height: 22.h),
+                        const AbsentTodaySection(previewLimit: 3),
+                        // TEMP: pickup feature paused — pending-pickups section hidden.
+                        // PendingPickupsSection(controller: controller),
                         SizedBox(height: 24.h),
                         ActiveEventsSection(controller: controller),
                       ]),
@@ -90,21 +95,13 @@ class _HomeHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 18.w, 14.h),
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 18.w, 12.h),
           child: Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'reception_dashboard_greeting'.tr,
-                      style: context.typography.xsRegular.copyWith(
-                        color: const Color(0xFF8A93A4),
-                        fontSize: 12.5,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
                     Text(
                       name,
                       style: context.typography.lgBold.copyWith(
@@ -137,6 +134,26 @@ class _HomeHeader extends StatelessWidget {
                   ],
                 ),
               ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _CircleIconBtn(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    // index 6 in _receptionistPages: the shared parent chat inbox.
+                    onTap: () => Get.find<MainPageViewModel>().changePage(6),
+                  ),
+                  Positioned(
+                    top: -4.h,
+                    right: -4.w,
+                    child: Obx(() {
+                      final n = controller.chatUnread;
+                      if (n <= 0) return const SizedBox.shrink();
+                      return ChatUnreadBadge(count: n);
+                    }),
+                  ),
+                ],
+              ),
+              SizedBox(width: 10.w),
               _CircleIconBtn(
                 icon: Icons.notifications_none_rounded,
                 onTap: () => Get.toNamed(notificationsView),

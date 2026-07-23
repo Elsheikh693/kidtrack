@@ -41,7 +41,7 @@ class _QuickHomeworkSheetState extends State<QuickHomeworkSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,

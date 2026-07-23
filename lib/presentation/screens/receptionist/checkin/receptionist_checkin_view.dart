@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import 'widgets/pickup_persons_sheet.dart';
 
 class ReceptionistCheckInView extends StatefulWidget {
   const ReceptionistCheckInView({super.key});
@@ -27,14 +28,14 @@ class _ReceptionistCheckInViewState extends State<ReceptionistCheckInView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
           backgroundColor: const Color(0xFF0891B2),
           foregroundColor: Colors.white,
           title: Text(
-            'تسجيل الحضور',
+            'programssu27_checkin_title'.tr,
             style: context.typography.mdBold,
           ),
           centerTitle: true,
@@ -47,13 +48,41 @@ class _ReceptionistCheckInViewState extends State<ReceptionistCheckInView> {
             SizedBox(width: 6.w),
           ],
         ),
-        body: Column(
-          children: [
-            _SummaryBar(controller: controller),
-            _SearchAndFilter(controller: controller, search: _search),
-            Expanded(child: _ChildList(controller: controller)),
-          ],
-        ),
+        body: Obx(() {
+          final loading = controller.isLoading.value;
+          final items = controller.children;
+          return CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: _SummaryBar(controller: controller)),
+              SliverToBoxAdapter(
+                child: _SearchAndFilter(controller: controller, search: _search),
+              ),
+              if (loading)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (items.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyList(),
+                )
+              else
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 40.h),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) =>
+                          _CheckInCard(entry: items[i], controller: controller),
+                      childCount: items.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -77,21 +106,21 @@ class _SummaryBar extends StatelessWidget {
         child: Row(
           children: [
             _StatChip(
-              label: 'الكل',
+              label: 'programssu27_filter_all'.tr,
               count: controller.totalCount,
               color: Colors.white,
               bg: Colors.white.withValues(alpha: 0.2),
             ),
             SizedBox(width: 10.w),
             _StatChip(
-              label: 'حاضر',
+              label: 'programssu27_filter_present'.tr,
               count: controller.presentCount,
               color: const Color(0xFF34D399),
               bg: const Color(0xFF34D399).withValues(alpha: 0.15),
             ),
             SizedBox(width: 10.w),
             _StatChip(
-              label: 'غائب',
+              label: 'programssu27_filter_absent'.tr,
               count: controller.absentCount,
               color: const Color(0xFFFCA5A5),
               bg: const Color(0xFFFCA5A5).withValues(alpha: 0.15),
@@ -161,7 +190,7 @@ class _SearchAndFilter extends StatelessWidget {
             controller: search,
             onChanged: controller.setSearch,
             decoration: InputDecoration(
-              hintText: 'بحث عن طفل...',
+              hintText: 'programssu27_search_hint'.tr,
               hintStyle: context.typography.smRegular
                   .copyWith(fontSize: 14, color: const Color(0xFF94A3B8)),
               prefixIcon: Icon(Icons.search_rounded,
@@ -183,20 +212,20 @@ class _SearchAndFilter extends StatelessWidget {
             return Row(
               children: [
                 _FilterChip(
-                  label: 'الكل',
+                  label: 'programssu27_filter_all'.tr,
                   selected: f == 'all',
                   onTap: () => controller.setFilter('all'),
                 ),
                 SizedBox(width: 8.w),
                 _FilterChip(
-                  label: 'حاضر',
+                  label: 'programssu27_filter_present'.tr,
                   selected: f == 'present',
                   onTap: () => controller.setFilter('present'),
                   color: const Color(0xFF059669),
                 ),
                 SizedBox(width: 8.w),
                 _FilterChip(
-                  label: 'غائب',
+                  label: 'programssu27_filter_absent'.tr,
                   selected: f == 'absent',
                   onTap: () => controller.setFilter('absent'),
                   color: const Color(0xFFDC2626),
@@ -250,42 +279,26 @@ class _FilterChip extends StatelessWidget {
 
 // ── Child list ────────────────────────────────────────────────────────────────
 
-class _ChildList extends StatelessWidget {
-  const _ChildList({required this.controller});
-  final ReceptionistCheckInController controller;
+class _EmptyList extends StatelessWidget {
+  const _EmptyList();
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      final items = controller.children;
-      if (items.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.child_care_rounded,
-                  size: 64.sp, color: Colors.grey.shade300),
-              SizedBox(height: 12.h),
-              Text(
-                'لا يوجد أطفال',
-                style: context.typography.displaySmBold.copyWith(color: const Color(0xFF94A3B8)),
-              ),
-            ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.child_care_rounded,
+              size: 64.sp, color: Colors.grey.shade300),
+          SizedBox(height: 12.h),
+          Text(
+            'programssu27_empty_no_children'.tr,
+            style: context.typography.displaySmBold
+                .copyWith(color: const Color(0xFF94A3B8)),
           ),
-        );
-      }
-
-      return ListView.builder(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 40.h),
-        itemCount: items.length,
-        itemBuilder: (_, i) =>
-            _CheckInCard(entry: items[i], controller: controller),
-      );
-    });
+        ],
+      ),
+    );
   }
 }
 
@@ -299,7 +312,6 @@ class _CheckInCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = entry.child;
-    final initials = _initials(child.fullName);
     final isPresent = entry.isPresent;
     final isCheckedOutToday = entry.isCheckedOutToday;
 
@@ -325,19 +337,11 @@ class _CheckInCard extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: entry.statusColor.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: context.typography.mdBold.copyWith(color: entry.statusColor),
-                ),
-              ),
+            ChildAvatar(
+              name: child.fullName,
+              imageUrl: child.profileImage,
+              size: 48.w,
+              color: entry.statusColor,
             ),
             SizedBox(width: 12.w),
 
@@ -369,6 +373,7 @@ class _CheckInCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  _PickupChip(child: child, controller: controller),
                 ],
               ),
             ),
@@ -385,17 +390,50 @@ class _CheckInCard extends StatelessWidget {
     );
   }
 
-  static String _initials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}';
-    if (parts.isNotEmpty && parts[0].isNotEmpty) return parts[0][0];
-    return '?';
-  }
-
   static String _fmtTime(DateTime t) {
     final h = t.hour.toString().padLeft(2, '0');
     final m = t.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+}
+
+/// Tappable badge showing how many people are authorized to pick this child up.
+/// Hidden entirely when none are registered. Opens the read-only persons sheet.
+class _PickupChip extends StatelessWidget {
+  const _PickupChip({required this.child, required this.controller});
+  final ChildModel child;
+  final ReceptionistCheckInController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final persons = controller.pickupsFor(child.key);
+    if (persons.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 6.h),
+      child: GestureDetector(
+        onTap: () => showPickupPersonsSheet(child, persons),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.how_to_reg_rounded,
+                  size: 13.sp, color: const Color(0xFFD97706)),
+              SizedBox(width: 4.w),
+              Text(
+                '${'pickup_authorized_short'.tr} (${persons.length})',
+                style: context.typography.xsMedium
+                    .copyWith(fontSize: 12, color: const Color(0xFFD97706)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -419,7 +457,7 @@ class _InBtn extends StatelessWidget {
             Icon(Icons.login_rounded, size: 15.sp, color: Colors.white),
             SizedBox(width: 5.w),
             Text(
-              'حضر',
+              'programssu27_action_check_in'.tr,
               style: context.typography.xsMedium.copyWith(color: Colors.white),
             ),
           ],
@@ -451,7 +489,7 @@ class _OutBtn extends StatelessWidget {
             Icon(Icons.logout_rounded, size: 15.sp, color: const Color(0xFFDC2626)),
             SizedBox(width: 5.w),
             Text(
-              'خروج',
+              'programssu27_action_check_out'.tr,
               style: context.typography.xsMedium.copyWith(color: Color(0xFFDC2626)),
             ),
           ],

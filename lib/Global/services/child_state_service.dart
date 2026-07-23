@@ -5,6 +5,7 @@ import '../../Data/models/child/child_model.dart';
 import '../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../Utils/logger.dart';
+import 'session_service.dart';
 
 // Real-time service for the child current state feature.
 // Used by teacher to update individual child states (sleeping, eating, etc.)
@@ -63,6 +64,9 @@ class ChildStateService {
         if (e.value is! Map) continue;
         final d = Map<String, dynamic>.from(e.value as Map);
         if ((d['status'] ?? 'active') != 'active') continue;
+        // A classroom may be shared across branches — keep only children of the
+        // current user's own branch (owners/unscoped users see all).
+        if (!SessionService().seesBranch(d['branchId']?.toString())) continue;
         result.add(ChildModel.fromJson(d, key: e.key.toString()));
       }
       result.sort((a, b) => a.fullName.compareTo(b.fullName));
@@ -158,6 +162,73 @@ class ChildStateService {
     } catch (e) {
       AppLogger.error(_tag, 'updateChildState: $e');
       return false;
+    }
+  }
+
+  // ── Instant Event ─────────────────────────────────────────────────────────
+
+  /// Logs an INSTANT event (toilet, ate, water, medicine, photo…) to the child's
+  /// daily timeline WITHOUT touching their current status — the "record the
+  /// exception, don't stick a state" path, so nothing needs reverting.
+  /// [option]/[subOption] carry an optional evaluation pick (e.g. أكل → النص).
+  /// Returns the new event's key (for undo) or null on failure.
+  Future<String?> logInstantEvent({
+    required String nurseryId,
+    required String branchId,
+    required String childId,
+    required String teacherId,
+    required String title,
+    String? stateId,
+    String? option,
+    String? subOption,
+  }) async {
+    try {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final date = _today();
+      final detail = [option, subOption]
+          .where((e) => e != null && e.isNotEmpty)
+          .join(' · ');
+      final eventRef = _db
+          .ref('platform/$nurseryId/childDailyEvents/$date/$childId')
+          .push();
+
+      final event = {
+        'childId': childId,
+        'nurseryId': nurseryId,
+        'branchId': branchId,
+        'eventType': ChildEventType.childStateChanged,
+        'source': ChildEventSource.teacher,
+        'title': detail.isEmpty ? title : '$title · $detail',
+        'stateId': ?stateId,
+        'createdBy': teacherId,
+        'createdByRole': ChildEventSource.teacher,
+        'createdAt': now,
+      };
+
+      await eventRef.set(event);
+      return eventRef.key;
+    } catch (e) {
+      AppLogger.error(_tag, 'logInstantEvent: $e');
+      return null;
+    }
+  }
+
+  /// Removes a logged instant event — the undo for [logInstantEvent].
+  Future<void> deleteEvent({
+    required String nurseryId,
+    required String childId,
+    required String eventKey,
+    DateTime? day,
+  }) async {
+    try {
+      final d = day ?? DateTime.now();
+      final date =
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      await _db
+          .ref('platform/$nurseryId/childDailyEvents/$date/$childId/$eventKey')
+          .remove();
+    } catch (e) {
+      AppLogger.error(_tag, 'deleteEvent: $e');
     }
   }
 }

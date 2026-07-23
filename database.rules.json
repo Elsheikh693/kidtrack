@@ -9,6 +9,10 @@
       }
     },
 
+    "activationCodes": {
+      ".indexOn": ["targetId", "nurseryId", "role"]
+    },
+
     "busTracking": {
       "$branchId": {
         ".indexOn": ["status", "startedAt"]

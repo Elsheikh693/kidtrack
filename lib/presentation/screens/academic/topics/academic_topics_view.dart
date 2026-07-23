@@ -11,7 +11,7 @@ class AcademicTopicsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.put(AcademicTopicsController());
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -22,7 +22,7 @@ class AcademicTopicsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'مواضيع المنهج',
+                    'presentati10_curriculum_topics'.tr,
                     style: context.typography.mdBold.copyWith(color: Color(0xFF111827)),
                   ),
                   Text(
@@ -43,7 +43,7 @@ class AcademicTopicsView extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: c.showAddSheet,
                     icon: Icon(Icons.add_rounded, size: 16.sp),
-                    label: Text('إضافة',
+                    label: Text('presentati10_add'.tr,
                         style: context.typography.xsMedium),
                     style: FilledButton.styleFrom(
                       backgroundColor: _amber,
@@ -151,7 +151,7 @@ class _TopicCard extends StatelessWidget {
               child: Row(children: [
                 Icon(Icons.edit_rounded, size: 18.sp, color: Color(0xFF374151)),
                 SizedBox(width: 10.w),
-                Text('تعديل'),
+                Text('presentati10_edit'.tr),
               ]),
             ),
             PopupMenuItem(
@@ -159,7 +159,7 @@ class _TopicCard extends StatelessWidget {
               child: Row(children: [
                 Icon(Icons.delete_rounded, size: 18.sp, color: Color(0xFFDC2626)),
                 SizedBox(width: 10.w),
-                Text('حذف',
+                Text('presentati10_delete'.tr,
                     style: context.typography.smRegular
                         .copyWith(color: Color(0xFFDC2626))),
               ]),
@@ -189,19 +189,19 @@ class _EmptyState extends StatelessWidget {
                 size: 64.sp, color: Colors.grey.shade200),
             SizedBox(height: 16.h),
             Text(
-              'لا توجد مواضيع بعد',
+              'presentati10_no_topics_yet'.tr,
               style: context.typography.mdBold.copyWith(color: Color(0xFF9CA3AF)),
             ),
             SizedBox(height: 8.h),
             Text(
-              'أضف مواضيع المنهج لهذه المادة',
+              'presentati10_add_topics_hint'.tr,
               style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
             ),
             SizedBox(height: 24.h),
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('إضافة أول موضوع'),
+              label: Text('presentati10_add_first_topic'.tr),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFD97706),
                 shape: RoundedRectangleBorder(

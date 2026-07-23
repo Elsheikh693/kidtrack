@@ -143,14 +143,14 @@ class EnrolledCourseCard extends StatelessWidget {
                     color: const Color(0xFF059669).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.emoji_events_rounded, size: 16, color: Color(0xFF059669)),
-                      SizedBox(width: 8),
+                      const Icon(Icons.emoji_events_rounded, size: 16, color: Color(0xFF059669)),
+                      const SizedBox(width: 8),
                       Text(
-                        'أكملت هذا الكورس بنجاح 🎉',
-                        style: TextStyle(
+                        'parentcour21_course_completed'.tr,
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF059669),

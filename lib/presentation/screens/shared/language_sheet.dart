@@ -18,7 +18,7 @@ class _LanguageSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = Get.find<AppLanguage>();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
         child: Column(
