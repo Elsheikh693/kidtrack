@@ -95,21 +95,13 @@ class _HomeHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 12.h, 18.w, 14.h),
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 18.w, 12.h),
           child: Row(
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'reception_dashboard_greeting'.tr,
-                      style: context.typography.xsRegular.copyWith(
-                        color: const Color(0xFF8A93A4),
-                        fontSize: 12.5,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
                     Text(
                       name,
                       style: context.typography.lgBold.copyWith(

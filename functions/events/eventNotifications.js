@@ -17,16 +17,6 @@ const AR_MONTHS = [
   "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر",
 ];
 
-const CATEGORY_EMOJI = {
-  trip: "🚌",
-  fun: "🎉",
-  graduation: "🎓",
-  sports: "⚽",
-  meeting: "👥",
-  cultural: "🎨",
-  other: "📅",
-};
-
 function formatDate(ms) {
   if (!ms) return "";
   const d = new Date(Number(ms));
@@ -37,8 +27,7 @@ async function handleEventCreated({ event, nurseryId, eventId }) {
   try {
     if (event.isActive === false) return;
 
-    const emoji = CATEGORY_EMOJI[event.category] || CATEGORY_EMOJI.other;
-    const title = `فعالية جديدة ${emoji}`;
+    const title = "فعالية جديدة";
 
     const dateStr = formatDate(event.date);
     const bits = [event.title, dateStr, event.location].filter(Boolean);

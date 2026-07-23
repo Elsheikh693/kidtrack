@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import 'widgets/pickup_persons_sheet.dart';
 
 class ReceptionistCheckInView extends StatefulWidget {
   const ReceptionistCheckInView({super.key});
@@ -47,13 +48,41 @@ class _ReceptionistCheckInViewState extends State<ReceptionistCheckInView> {
             SizedBox(width: 6.w),
           ],
         ),
-        body: Column(
-          children: [
-            _SummaryBar(controller: controller),
-            _SearchAndFilter(controller: controller, search: _search),
-            Expanded(child: _ChildList(controller: controller)),
-          ],
-        ),
+        body: Obx(() {
+          final loading = controller.isLoading.value;
+          final items = controller.children;
+          return CustomScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: _SummaryBar(controller: controller)),
+              SliverToBoxAdapter(
+                child: _SearchAndFilter(controller: controller, search: _search),
+              ),
+              if (loading)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (items.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyList(),
+                )
+              else
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 40.h),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) =>
+                          _CheckInCard(entry: items[i], controller: controller),
+                      childCount: items.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -250,42 +279,26 @@ class _FilterChip extends StatelessWidget {
 
 // ── Child list ────────────────────────────────────────────────────────────────
 
-class _ChildList extends StatelessWidget {
-  const _ChildList({required this.controller});
-  final ReceptionistCheckInController controller;
+class _EmptyList extends StatelessWidget {
+  const _EmptyList();
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      final items = controller.children;
-      if (items.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.child_care_rounded,
-                  size: 64.sp, color: Colors.grey.shade300),
-              SizedBox(height: 12.h),
-              Text(
-                'لا يوجد أطفال',
-                style: context.typography.displaySmBold.copyWith(color: const Color(0xFF94A3B8)),
-              ),
-            ],
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.child_care_rounded,
+              size: 64.sp, color: Colors.grey.shade300),
+          SizedBox(height: 12.h),
+          Text(
+            'لا يوجد أطفال',
+            style: context.typography.displaySmBold
+                .copyWith(color: const Color(0xFF94A3B8)),
           ),
-        );
-      }
-
-      return ListView.builder(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 40.h),
-        itemCount: items.length,
-        itemBuilder: (_, i) =>
-            _CheckInCard(entry: items[i], controller: controller),
-      );
-    });
+        ],
+      ),
+    );
   }
 }
 
@@ -360,6 +373,7 @@ class _CheckInCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  _PickupChip(child: child, controller: controller),
                 ],
               ),
             ),
@@ -380,6 +394,46 @@ class _CheckInCard extends StatelessWidget {
     final h = t.hour.toString().padLeft(2, '0');
     final m = t.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+}
+
+/// Tappable badge showing how many people are authorized to pick this child up.
+/// Hidden entirely when none are registered. Opens the read-only persons sheet.
+class _PickupChip extends StatelessWidget {
+  const _PickupChip({required this.child, required this.controller});
+  final ChildModel child;
+  final ReceptionistCheckInController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final persons = controller.pickupsFor(child.key);
+    if (persons.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 6.h),
+      child: GestureDetector(
+        onTap: () => showPickupPersonsSheet(child, persons),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.how_to_reg_rounded,
+                  size: 13.sp, color: const Color(0xFFD97706)),
+              SizedBox(width: 4.w),
+              Text(
+                '${'pickup_authorized_short'.tr} (${persons.length})',
+                style: context.typography.xsMedium
+                    .copyWith(fontSize: 12, color: const Color(0xFFD97706)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -62,6 +62,19 @@ class ApiConstants {
 
   static String get assessments => '$_n/assessments';
 
+  // ─── Assessment Engine (Template → Run → ChildAssessment) ─────────────────
+  /// Nursery-wide reusable assessment plans (NOT branch-scoped): quiz /
+  /// observation / evaluation templates authored once, run anywhere.
+  static String get assessmentTemplates => '$_n/assessmentTemplates';
+
+  /// A concrete execution of a template on a branch + classes over a date
+  /// window (holds a full snapshot of the template). Branch-scoped.
+  static String get assessmentRuns => '$_n/assessmentRuns';
+
+  /// One child's participation in a run, keyed `{runId}_{childId}`. Carries the
+  /// per-child workflow + attempts. Branch-scoped.
+  static String get childAssessments => '$_n/childAssessments';
+
   static String get incidents => '$_n/incidents';
 
   static String get notes => '$_n/notes';
@@ -73,6 +86,9 @@ class ApiConstants {
   static String get lessonPlans => '$_n/lessonPlans';
 
   static String get classroomPosts => '$_n/classroomPosts';
+
+  /// Manager-picked "Star of the Week" records, keyed `{branchId}__{weekKey}`.
+  static String get starOfWeek => '$_n/starOfWeek';
 
   static String get announcements => '$_n/announcements';
 

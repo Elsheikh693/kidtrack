@@ -1,13 +1,14 @@
 import 'package:firebase_database/firebase_database.dart';
 import '../../../../index/index_main.dart';
 import 'nursery_feedback_admin_mixin.dart';
+import 'nursery_staff_admin_mixin.dart';
 
 /// SuperAdmin screen that drills into a single nursery: edit its info AND manage
 /// its owners (list / add / edit / delete). The nursery itself lives in the
 /// global registry ([ApiPaths.globalNurseries]); each owner is a `users/{uid}`
 /// record whose uid is referenced from the nursery's `ownerIds`.
 class NurseryDetailsController extends GetxController
-    with NurseryFeedbackAdminMixin {
+    with NurseryFeedbackAdminMixin, NurseryStaffAdminMixin {
   final NurseryParentService _service = Get.find<NurseryParentService>();
 
   @override
@@ -36,6 +37,7 @@ class NurseryDetailsController extends GetxController
       addressCtrl.text = arg.address ?? '';
       loadOwners();
       loadFeedback();
+      loadStaffAndChildren();
     }
   }
 
@@ -234,30 +236,23 @@ class NurseryDetailsController extends GetxController
   Future<bool> createOwner(String ownerName, String ownerPhone) async {
     Loader.show();
     final nurseryId = nursery.value.key ?? '';
-    final ownerEmail = '$ownerPhone@gmail.com';
 
-    final secondaryApp = await Firebase.initializeApp(
-      name: 'owner_${DateTime.now().millisecondsSinceEpoch}',
-      options: Firebase.app().options,
-    );
     try {
-      final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final credential = await secondaryAuth.createUserWithEmailAndPassword(
-        email: ownerEmail,
-        password: ownerPhone,
-      );
-      final ownerUid = credential.user!.uid;
+      // Reuse the identity if this phone already exists — one person can now own
+      // more than one nursery (an owner membership per nursery) instead of
+      // failing with "phone already registered".
+      final identity = Get.find<IdentityService>();
+      final resolved =
+          await identity.resolveByPhone(phone: ownerPhone, name: ownerName);
+      final ownerUid = resolved.uid;
 
-      await FirebaseDatabase.instance.ref('users/$ownerUid').set({
-        'uid': ownerUid,
-        'name': ownerName,
-        'phone': ownerPhone,
-        'email': ownerEmail,
-        'userType': 'owner',
-        'nurseryId': nurseryId,
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      await identity.attachMembership(
+        uid: ownerUid,
+        role: 'owner',
+        nurseryId: nurseryId,
+        name: ownerName,
+        phone: ownerPhone,
+      );
 
       final updated = nursery.value.copyWith(
         ownerIds: [...nursery.value.allOwnerIds, ownerUid],
@@ -270,8 +265,17 @@ class NurseryDetailsController extends GetxController
           if (status == ResponseStatus.success) {
             ok = true;
           } else {
-            await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
-            await secondaryAuth.currentUser?.delete();
+            // Roll back the owner membership; drop the identity too only if we
+            // created it fresh and it is now left with no memberships.
+            await identity.removeMembership(
+              uid: ownerUid,
+              nurseryId: nurseryId,
+              role: 'owner',
+            );
+            if (resolved.created &&
+                (await identity.memberships(ownerUid)).isEmpty) {
+              await FirebaseDatabase.instance.ref('users/$ownerUid').remove();
+            }
           }
         },
       );
@@ -297,18 +301,10 @@ class NurseryDetailsController extends GetxController
       }
       Loader.showError('nursery_error_failed'.tr);
       return false;
-    } on FirebaseAuthException catch (e) {
-      Loader.dismiss();
-      Loader.showError(e.code == 'email-already-in-use'
-          ? 'nursery_owner_exists'.tr
-          : 'nursery_error_auth_failed'.tr);
-      return false;
     } catch (_) {
       Loader.dismiss();
       Loader.showError('nursery_error_failed'.tr);
       return false;
-    } finally {
-      await secondaryApp.delete();
     }
   }
 
@@ -380,8 +376,14 @@ class NurseryDetailsController extends GetxController
         'updatedAt': DateTime.now().millisecondsSinceEpoch,
       });
 
-      await FirebaseDatabase.instance.ref('users/$uid').remove();
-      await _deleteOwnerAuth(owner);
+      // Drop this owner membership. Remove the global identity + auth account
+      // only if this was the person's last nursery (they may own another).
+      final identity = Get.find<IdentityService>();
+      await identity.removeMembership(uid: uid, nurseryId: key, role: 'owner');
+      if ((await identity.memberships(uid)).isEmpty) {
+        await FirebaseDatabase.instance.ref('users/$uid').remove();
+        await _deleteOwnerAuth(owner);
+      }
 
       await _reloadNursery();
       await loadOwners();

@@ -96,18 +96,42 @@ exports.deleteNursery = onCall(async (request) => {
   updates[`platform/info/${nurseryId}`] = null;  // global registry entry
   updates[`platformBilling/${nurseryId}`] = null;
   updates[`platformFeedback/${nurseryId}`] = null;
-  for (const uid of uids) {
-    updates[`users/${uid}`] = null;              // global profile record
-    updates[`notifications/${uid}`] = null;      // global per-user inbox
-  }
   for (const code of codeKeys) updates[`activationCodes/${code}`] = null;
   for (const bid of branchIds) updates[`busTracking/${bid}`] = null;
 
+  // A person can hold memberships in more than one nursery. The GLOBAL identity
+  // (users/{uid}) + auth account are removed only when this nursery held their
+  // LAST membership; otherwise we drop just this nursery's membership entries so
+  // their login at the other nursery survives. (Never mix an ancestor path and a
+  // descendant path in one update — Firebase rejects that.)
+  const identityToDelete = [];
+  for (const uid of uids) {
+    const memSnap = await db.ref(`users/${uid}/memberships`).get();
+    const mems = memSnap.exists() ? memSnap.val() || {} : {};
+    const keys = Object.keys(mems);
+    const hereKeys = keys.filter((k) =>
+      mems[k] && mems[k].nurseryId
+        ? mems[k].nurseryId.toString() === nurseryId
+        : k.startsWith(`${nurseryId}_`)
+    );
+
+    if (keys.length === 0 || keys.length - hereKeys.length === 0) {
+      // Legacy account (no memberships node) or nothing left elsewhere.
+      updates[`users/${uid}`] = null;         // global profile record
+      updates[`notifications/${uid}`] = null; // global per-user inbox
+      identityToDelete.push(uid);
+    } else {
+      for (const k of hereKeys) {
+        updates[`users/${uid}/memberships/${k}`] = null;
+      }
+    }
+  }
+
   await db.ref().update(updates);
 
-  // 7) Delete each account's Firebase Auth (Admin SDK only).
+  // 7) Delete Firebase Auth ONLY for fully-orphaned identities (Admin SDK only).
   const deletedAuth = [];
-  for (const uid of uids) {
+  for (const uid of identityToDelete) {
     try {
       await admin.auth().deleteUser(uid);
       deletedAuth.push(uid);

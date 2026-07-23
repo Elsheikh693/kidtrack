@@ -131,6 +131,11 @@ class ManagerTeacherReportsController extends GetxController {
     final startDay = DateTime.fromMillisecondsSinceEpoch(_spanStartMs);
     final byTeacher = <String, List<ClassroomActivityModel>>{};
     for (final a in activities) {
+      // Classrooms are shared across branches (empty branchIds) and activities
+      // don't reliably carry a branchId, so the only trustworthy branch signal
+      // is the author's own staff record. Only count activities from teachers
+      // that belong to the active branch, so other branches don't leak in.
+      if (!_teacherNames.containsKey(a.teacherId)) continue;
       byTeacher.putIfAbsent(a.teacherId, () => []).add(a);
     }
 

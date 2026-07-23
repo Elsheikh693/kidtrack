@@ -55,8 +55,16 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
   String? _bloodType;
   String? _nationality;
   final _addressCtrl = TextEditingController();
+  // Child identity fields — only editable in edit mode (hidden in the parent's
+  // mandatory first-login completion, where the name is already set).
+  final _nameCtrl = TextEditingController();
+  final _nameFocus = FocusNode();
+  String _gender = 'male';
   File? _pickedImage;
   bool _saving = false;
+
+  /// Whether the identity fields (name + gender) are shown & editable.
+  bool get _canEditIdentity => !widget.mandatory;
 
   late final HandleKeyboardService _keyboardService;
   late final List<String> _keys;
@@ -82,6 +90,8 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
     }
     _bloodType = _bloodTypes.contains(c.bloodType) ? c.bloodType : null;
     _addressCtrl.text = c.homeAddress ?? '';
+    _nameCtrl.text = '${c.firstName} ${c.lastName}'.trim();
+    _gender = (c.gender == 'female') ? 'female' : 'male';
     // Default new children to the most common nationality; keep any existing.
     _nationality = (c.nationality?.trim().isNotEmpty ?? false)
         ? c.nationality!.trim()
@@ -91,6 +101,8 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
   @override
   void dispose() {
     _addressCtrl.dispose();
+    _nameCtrl.dispose();
+    _nameFocus.dispose();
     super.dispose();
   }
 
@@ -103,7 +115,8 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
       _dob != null &&
       _bloodType != null &&
       _addressCtrl.text.trim().isNotEmpty &&
-      (_nationality?.trim().isNotEmpty ?? false);
+      (_nationality?.trim().isNotEmpty ?? false) &&
+      (!_canEditIdentity || _nameCtrl.text.trim().isNotEmpty);
 
   Future<void> _pickImage() async {
     FocusScope.of(context).unfocus();
@@ -150,7 +163,19 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
       }
     }
 
+    // Split the single name field back into first/last, mirroring registration.
+    String firstName = widget.child.firstName;
+    String lastName = widget.child.lastName;
+    if (_canEditIdentity) {
+      final parts = _nameCtrl.text.trim().split(RegExp(r'\s+'));
+      firstName = parts.first;
+      lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+    }
+
     final updated = widget.child.copyWith(
+      firstName: firstName,
+      lastName: lastName,
+      gender: _canEditIdentity ? _gender : widget.child.gender,
       profileImage: imageUrl,
       dateOfBirth: _dob!.millisecondsSinceEpoch,
       bloodType: _bloodType,
@@ -236,6 +261,45 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
                         ),
                       ),
                       SizedBox(height: 24.h),
+
+                      // ── Name + gender (edit mode only) ───────────────────
+                      if (_canEditIdentity) ...[
+                        _FieldLabel('child_name_label'.tr),
+                        SizedBox(height: 8.h),
+                        _TextInput(
+                          controller: _nameCtrl,
+                          hint: 'child_name_hint'.tr,
+                          icon: Icons.person_outline_rounded,
+                          focusNode: _nameFocus,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        SizedBox(height: 18.h),
+                        _FieldLabel('child_gender_label'.tr),
+                        SizedBox(height: 8.h),
+                        DropdownButtonFormField<String>(
+                          value: _gender,
+                          isExpanded: true,
+                          icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                          style: context.typography.smMedium
+                              .copyWith(color: AppColors.textDefault),
+                          decoration: _inputDecoration(
+                            context,
+                            prefixIcon: Icons.wc_outlined,
+                          ),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'male',
+                              child: Text('child_gender_male'.tr),
+                            ),
+                            DropdownMenuItem(
+                              value: 'female',
+                              child: Text('child_gender_female'.tr),
+                            ),
+                          ],
+                          onChanged: (v) => setState(() => _gender = v ?? _gender),
+                        ),
+                        SizedBox(height: 18.h),
+                      ],
 
                       // ── Date of birth ────────────────────────────────────
                       _FieldLabel('child_profile_dob'.tr),

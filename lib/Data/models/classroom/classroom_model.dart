@@ -1,4 +1,9 @@
-class ClassroomModel {
+import '../core/branch_scoped.dart';
+
+class ClassroomModel implements BranchScoped {
+  @override
+  List<String> get scopeBranches => branchIds;
+
   final String? key;
   final String nurseryId;
   // Empty list = available in all branches; otherwise restricted to these branch ids.

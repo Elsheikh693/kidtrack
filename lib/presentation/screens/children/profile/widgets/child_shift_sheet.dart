@@ -20,11 +20,23 @@ class ChildShiftSheet extends StatefulWidget {
 
 class _ChildShiftSheetState extends State<ChildShiftSheet> {
   String? _shift;
+  List<ShiftModel> _shifts = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _shift = widget.currentShift;
+    _loadShifts();
+  }
+
+  Future<void> _loadShifts() async {
+    final list = await Get.find<ShiftParentService>().getActive();
+    if (!mounted) return;
+    setState(() {
+      _shifts = list;
+      _loading = false;
+    });
   }
 
   @override
@@ -69,10 +81,19 @@ class _ChildShiftSheetState extends State<ChildShiftSheet> {
                 ),
               ),
               SizedBox(height: 24.h),
-              ShiftSelector(
-                value: _shift,
-                onChanged: (v) => setState(() => _shift = v),
-              ),
+              if (_loading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else
+                ShiftSelector(
+                  shifts: _shifts,
+                  value: _shift,
+                  onChanged: (v) => setState(() => _shift = v),
+                ),
               SizedBox(height: 28.h),
               SizedBox(
                 width: double.infinity,

@@ -41,6 +41,7 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
                       const _BackToOwnerCard(),
                       const SizedBox(height: 16),
                     ],
+                    const RoleSwitchCard(),
                     ManagerProfileCard(
                       controller: controller,
                       onTap: () => showEditProfileSheet(isStaff: true),
@@ -100,16 +101,34 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
         ),
         // "الأطفال" moved to the Children tab (ManagerChildrenTab).
         ManagerGridTile(
+          icon: Icons.emoji_events_rounded,
+          color: const Color(0xFFE0A100),
+          labelKey: 'sotw_menu_entry',
+          onTap: () => Get.toNamed(starOfWeekView),
+        ),
+        ManagerGridTile(
           icon: Icons.reviews_rounded,
           color: AppColors.ratingStar,
           labelKey: 'nursery_feedback_view_title',
           onTap: () => Get.toNamed(nurseryFeedbackListView),
         ),
         ManagerGridTile(
+          icon: Icons.rate_review_rounded,
+          color: const Color(0xFF0891B2),
+          labelKey: 'manager_item_photo_approval',
+          onTap: () => Get.toNamed(managerPhotoApprovalSettingsView),
+        ),
+        ManagerGridTile(
           icon: Icons.forum_rounded,
           color: AppColors.activityPurple,
           labelKey: 'parent_notes_tab',
           onTap: () => Get.to(() => const ParentNotesInboxView()),
+        ),
+        ManagerGridTile(
+          icon: Icons.assignment_rounded,
+          color: const Color(0xFF4F46E5),
+          labelKey: 'assessment_templates_menu_item',
+          onTap: () => Get.toNamed(assessmentRunsView),
         ),
       ],
     );
@@ -125,6 +144,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           color: AppColors.activityGreen,
           labelKey: 'billing_my_subscription',
           onTap: () => Get.toNamed(mySubscriptionView),
+        ),
+        ManagerGridTile(
+          icon: Icons.event_available_rounded,
+          color: const Color(0xFF16A34A),
+          labelKey: 'manager_profile_fee_window',
+          onTap: () => Get.toNamed(managerFeeWindowView),
         ),
         // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
         // "طلبات الالتحاق" and "ملف التقديم" tiles temporarily removed

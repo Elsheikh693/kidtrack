@@ -1,5 +1,6 @@
 import '../../../../index/index_main.dart';
 import 'widgets/post_card.dart';
+import 'widgets/star_of_week_highlight.dart';
 
 class ParentPostsView extends StatefulWidget {
   const ParentPostsView({super.key});
@@ -59,13 +60,16 @@ class _FeedBody extends StatelessWidget {
           // Breathing room between the top bar and the first post.
           const SizedBox(height: 12),
 
+          // ── Star of the Week highlight ────────────────────────────────────
+          StarOfWeekHighlight(controller: controller),
+
           // ── Pinned section ────────────────────────────────────────────────
+          // Standalone "المثبتة" header removed — each pinned card already
+          // carries its own pinned ribbon, so the section label was redundant.
+          // Keep a gap where the header used to sit so pinned cards don't butt
+          // up against the Star-of-the-Week card above.
           if (pinned.isNotEmpty) ...[
-            _SectionHeader(
-              icon: Icons.push_pin_rounded,
-              label: 'parent_posts_pinned_section'.tr,
-              color: AppColors.yellowForeground,
-            ),
+            const SizedBox(height: 16),
             ...pinned.map(
               (p) => ParentPostCard(key: ValueKey('pin_${p.id}'), post: p),
             ),
@@ -133,49 +137,6 @@ class _FeedBody extends StatelessWidget {
         ],
       );
     });
-  }
-}
-
-// ─── Section header ───────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, size: 15, color: color),
-          ),
-          const SizedBox(width: 9),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.1,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

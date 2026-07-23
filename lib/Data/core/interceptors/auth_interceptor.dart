@@ -14,8 +14,14 @@ class AuthInterceptor extends Interceptor {
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // Force refresh if token close to expiry
-        final token = await user.getIdToken();
+        // Force refresh if token close to expiry. `getIdToken()` has NO
+        // built-in timeout — on a flaky network its refresh call can hang
+        // forever, and because that happens *before* the Dio request is
+        // dispatched, Dio's own timeouts never engage. That leaves every
+        // in-flight loader spinning until the app is killed. Bound it so the
+        // request always proceeds (with a cached/absent token) within 10s.
+        final token =
+            await user.getIdToken().timeout(const Duration(seconds: 10));
         if (token != null && token.isNotEmpty) {
           options.queryParameters['auth'] = token;
         }

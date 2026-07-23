@@ -76,7 +76,10 @@ class ActivityEndController extends GetxController {
     hwDescCtrl.clear();
   }
 
-  List<ChildModel> get children => _mainCtrl.presentChildren;
+  // Scopes the whole end sheet (counts, bulk eval, per-child tiles) to the
+  // activity's participants — the picked subset for an activity, else the
+  // present class.
+  List<ChildModel> get children => _mainCtrl.participantChildren;
   List<SubjectModel> get subjects =>
       _mainCtrl.subjectsForClassroom(_mainCtrl.activeClassroomId);
 
@@ -188,6 +191,7 @@ class ActivityEndController extends GetxController {
     return HomeworkModel(
       nurseryId: activity?.nurseryId ?? '',
       classroomId: activity?.classroomId ?? '',
+      branchId: activity?.branchId,
       subjectId: selectedSubjectId.value,
       subjectName: selectedSubjectName.value,
       activityId: activity?.key,

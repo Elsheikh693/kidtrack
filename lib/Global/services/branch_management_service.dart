@@ -45,11 +45,14 @@ class BranchManagementService {
   }) async {
     final nurseryId = _session.nurseryId ?? '';
     final branchId = const Uuid().v4();
-    final email = '$phone@gmail.com';
 
-    String uid;
+    // Reuse the identity if this phone already exists (branch manager who is also
+    // a guardian, or staff at another nursery) instead of colliding on the email.
+    final String uid;
     try {
-      uid = await _createFirebaseAuth(email, phone);
+      final res = await Get.find<IdentityService>()
+          .resolveByPhone(phone: phone, name: managerName);
+      uid = res.uid;
     } catch (_) {
       return null;
     }
@@ -83,15 +86,14 @@ class BranchManagementService {
     );
     if (!staffOk) return null;
 
-    await FirebaseDatabase.instance.ref('users/$uid').set({
-      'uid': uid,
-      'name': managerName,
-      'phone': phone,
-      'nurseryId': nurseryId,
-      'branchId': branchId,
-      'userType': UserType.branchManager.name,
-      'createdAt': DateTime.now().millisecondsSinceEpoch,
-    });
+    await Get.find<IdentityService>().attachMembership(
+      uid: uid,
+      role: UserType.branchManager.name,
+      nurseryId: nurseryId,
+      branchId: branchId,
+      name: managerName,
+      phone: phone,
+    );
 
     await _permService.add(
       item: PermissionSetModel(
@@ -137,7 +139,18 @@ class BranchManagementService {
     if (manager != null) {
       await _staffService.delete(id: manager.uid, callBack: (_) {});
       await _permService.delete(id: manager.uid, callBack: (_) {});
-      await FirebaseDatabase.instance.ref('users/${manager.uid}').remove();
+      // Drop only this branch-manager hat; keep the identity if the person still
+      // holds another membership (guardian here, or staff at another nursery).
+      final identity = Get.find<IdentityService>();
+      await identity.removeMembership(
+        uid: manager.uid,
+        nurseryId: manager.nurseryId,
+        role: manager.role.name,
+      );
+      final remaining = await identity.memberships(manager.uid);
+      if (remaining.isEmpty) {
+        await FirebaseDatabase.instance.ref('users/${manager.uid}').remove();
+      }
     }
     return true;
   }
@@ -149,27 +162,6 @@ class BranchManagementService {
         item: b.copyWith(isMain: false),
         callBack: (_) {},
       );
-    }
-  }
-
-  /// Creates the manager's Firebase Auth account on a throwaway secondary app
-  /// so the current (owner/manager) session is never signed out.
-  Future<String> _createFirebaseAuth(String email, String password) async {
-    final appName = 'branchmgmt_temp_${DateTime.now().millisecondsSinceEpoch}';
-    final secondaryApp = await Firebase.initializeApp(
-      name: appName,
-      options: Firebase.app().options,
-    );
-    try {
-      final auth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final cred = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      await auth.signOut();
-      return cred.user!.uid;
-    } finally {
-      await secondaryApp.delete();
     }
   }
 }

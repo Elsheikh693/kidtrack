@@ -17,6 +17,7 @@ export '../presentation/design_systems/widgets/text_buttons/secondary_text_butto
 export '../presentation/design_systems/core/app_datepicker_theme.dart';
 export '../presentation/design_systems/theme/app_theme.dart';
 export '../presentation/design_systems/widgets/appbar.dart';
+export '../presentation/design_systems/widgets/app_title_bar.dart';
 export '../presentation/design_systems/theme/theme_extension.dart';
 export '../presentation/design_systems/theme/theme_scope.dart';
 export '../presentation/design_systems/theme/theme_scope_widget.dart';

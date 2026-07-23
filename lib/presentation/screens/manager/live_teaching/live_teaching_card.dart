@@ -1,11 +1,12 @@
 import '../../../../index/index_main.dart';
-import 'widgets/teaching_donut.dart';
 import 'widgets/teaching_empty.dart';
-import 'widgets/teaching_legend_tile.dart';
+import 'widgets/teaching_live_card.dart';
+import 'widgets/live_pulse_dot.dart';
 
-/// Manager-home card: a live donut of what every in-session class is being
-/// taught right now, with a tappable legend that drills into each teacher's
-/// day. Replaces the old teacher-activity summary card.
+/// Manager-home card: a live list of every session in progress right now — each
+/// whole-class حصة and subset نشاط as its own card with a ticking timer,
+/// updating the moment a teacher starts or ends one. Tapping drills into the
+/// teacher's day.
 class LiveTeachingCard extends StatefulWidget {
   const LiveTeachingCard({super.key, required this.dashboard});
 
@@ -46,20 +47,57 @@ class _LiveTeachingCardState extends State<LiveTeachingCard> {
         child: slices.isEmpty
             ? const TeachingEmpty()
             : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(child: TeachingDonut(slices: slices)),
-                  SizedBox(height: 16.h),
+                  _LiveNowBar(count: slices.length),
+                  SizedBox(height: 10.h),
                   for (final s in slices) ...[
-                    TeachingLegendTile(
+                    TeachingLiveCard(
                       slice: s,
                       onTap: () => controller.openTeacherDay(s),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 10.h),
                   ],
                 ],
               ),
       );
     });
+  }
+}
+
+/// "مباشر الآن · N شغّالة" strip above the running-session cards.
+class _LiveNowBar extends StatelessWidget {
+  const _LiveNowBar({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        LivePulseDot(color: AppColors.activityGreen, size: 7.w),
+        SizedBox(width: 6.w),
+        Text(
+          'live_teaching_live_now'.tr,
+          style: context.typography.smSemiBold.copyWith(
+            color: AppColors.activityGreen,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(width: 6.w),
+        Text(
+          '·',
+          style: context.typography.smSemiBold
+              .copyWith(color: AppColors.textSecondaryParagraph),
+        ),
+        SizedBox(width: 6.w),
+        Text(
+          'live_teaching_running_count'.trParams({'count': '$count'}),
+          style: context.typography.xsRegular
+              .copyWith(color: AppColors.textSecondaryParagraph),
+        ),
+      ],
+    );
   }
 }
 

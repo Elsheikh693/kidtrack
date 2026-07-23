@@ -19,8 +19,17 @@ class TeachingSlice {
   final String teacherName;
   final String? teacherPhoto;
 
-  /// When the running activity started — used to sort slices deterministically.
+  /// When the running activity started — used to sort slices deterministically
+  /// and to drive the live elapsed timer on the card.
   final int startedAt;
+
+  /// True when this is a subset "نشاط" (specific children) rather than a
+  /// whole-class "حصة" session. Drives the mode badge and accent color.
+  final bool isActivityMode;
+
+  /// How many children are in the running activity — shown for activity-mode
+  /// cards ("3 أطفال"). Ignored for whole-class sessions.
+  final int participantCount;
 
   /// Categorical color for this slice, assigned by the controller.
   final Color color;
@@ -34,6 +43,8 @@ class TeachingSlice {
     required this.teacherName,
     this.teacherPhoto,
     required this.startedAt,
+    this.isActivityMode = false,
+    this.participantCount = 0,
     required this.color,
   });
 }

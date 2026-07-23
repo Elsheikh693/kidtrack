@@ -1,5 +1,6 @@
 import '../../../../index/index_main.dart';
 import 'widgets/nursery_feedback_card.dart';
+import 'widgets/nursery_roster_section.dart';
 
 class NurseryDetailsView extends StatefulWidget {
   const NurseryDetailsView({super.key});
@@ -60,6 +61,8 @@ class _NurseryDetailsViewState extends State<NurseryDetailsView> {
             ),
             SizedBox(height: 10.h),
             _ownersList(),
+            SizedBox(height: 20.h),
+            NurseryRosterSection(controller: controller),
           ],
         ),
       ),

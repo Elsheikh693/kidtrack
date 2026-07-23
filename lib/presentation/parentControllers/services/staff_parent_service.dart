@@ -43,11 +43,14 @@ class StaffParentService {
     await _service.deleteData(id: id, voidCallBack: callBack);
   }
 
-  /// Hard-deletes a staff member and every record that hangs off their account:
-  /// the staff doc, their permission set, and the `users/{uid}` node. Mirrors the
-  /// branch-manager cleanup in [BranchManagementService]. Returns true only when
-  /// the staff doc itself was removed. (The Firebase Auth user can't be deleted
-  /// from the client SDK; revoking the activation code is the caller's job.)
+  /// Hard-deletes a staff member: the staff doc, their permission set, and this
+  /// staff hat's membership. The global `users/{uid}` identity is removed ONLY
+  /// when this was the person's last membership — the same person may still be a
+  /// guardian here or staff at another nursery, and wiping their identity would
+  /// break those logins. Returns true only when the staff doc itself was removed.
+  /// (The Firebase Auth user can't be deleted from the client SDK; when the
+  /// identity survives, keeping the auth account is in fact desirable so the same
+  /// phone still resolves. Revoking the activation code is the caller's job.)
   Future<bool> deleteCompletely({required StaffModel staff}) async {
     bool ok = false;
     await _service.deleteData(
@@ -58,7 +61,17 @@ class StaffParentService {
 
     await Get.find<PermissionParentService>()
         .delete(id: staff.uid, callBack: (_) {});
-    await FirebaseDatabase.instance.ref('users/${staff.uid}').remove();
+
+    final identity = Get.find<IdentityService>();
+    await identity.removeMembership(
+      uid: staff.uid,
+      nurseryId: staff.nurseryId,
+      role: staff.role.name,
+    );
+    final remaining = await identity.memberships(staff.uid);
+    if (remaining.isEmpty) {
+      await FirebaseDatabase.instance.ref('users/${staff.uid}').remove();
+    }
     return true;
   }
 }

@@ -18,21 +18,21 @@ class TeacherHomeActionCards extends StatelessWidget {
             children: [
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.play_arrow_rounded,
-                  title: 'teacher_action_start_activity'.tr,
-                  subtitle: 'teacher_action_start_activity_sub'.tr,
+                  icon: Icons.groups_rounded,
+                  title: 'teacher_action_start_class'.tr,
+                  subtitle: 'teacher_action_start_class_sub'.tr,
                   colors: const [Color(0xFFF59E0B), Color(0xFFEA580C)],
-                  onTap: () => _startActivity(context),
+                  onTap: () => _startActivity(context, mode: 'class'),
                 ),
               ),
               SizedBox(width: 10.w),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.emoji_emotions_rounded,
-                  title: 'teacher_action_child_states'.tr,
-                  subtitle: 'teacher_action_child_states_sub'.tr,
-                  colors: const [Color(0xFF0891B2), Color(0xFF0E7490)],
-                  onTap: () => Get.toNamed(childStatesView),
+                  icon: Icons.auto_awesome_rounded,
+                  title: 'teacher_action_start_activity'.tr,
+                  subtitle: 'teacher_action_start_activity_sub'.tr,
+                  colors: const [Color(0xFFF43F5E), Color(0xFFE11D48)],
+                  onTap: () => _startActivity(context, mode: 'activity'),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -75,11 +75,11 @@ class TeacherHomeActionCards extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.ondemand_video_rounded,
-                  title: 'teacher_action_tutorial'.tr,
-                  subtitle: 'teacher_action_tutorial_sub'.tr,
-                  colors: const [Color(0xFFDC2626), Color(0xFFB91C1C)],
-                  onTap: () => Get.toNamed(appTutorialView),
+                  icon: Icons.emoji_emotions_rounded,
+                  title: 'teacher_action_child_states'.tr,
+                  subtitle: 'teacher_action_child_states_sub'.tr,
+                  colors: const [Color(0xFF0891B2), Color(0xFF0E7490)],
+                  onTap: () => Get.toNamed(childStatesView),
                 ),
               ),
             ],
@@ -92,7 +92,10 @@ class TeacherHomeActionCards extends StatelessWidget {
   /// Opens the start-activity sheet directly on the home — ensures the activity
   /// controller has loaded its classrooms/subjects first (it may have just been
   /// created), so the pickers are never empty.
-  Future<void> _startActivity(BuildContext context) async {
+  Future<void> _startActivity(
+    BuildContext context, {
+    required String mode,
+  }) async {
     final ctrl = Get.find<TeacherActivityController>();
     Loader.show();
     await ctrl.ensureLoaded();
@@ -104,17 +107,20 @@ class TeacherHomeActionCards extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => StartActivitySheet(
         ctrl: ctrl,
+        mode: mode,
         subjects: ctrl.subjects,
         classrooms: ctrl.myClassrooms,
         defaultClassroomId: ctrl.activeClassroomId.isNotEmpty
             ? ctrl.activeClassroomId
             : null,
-        onStart: (title, subjectId, subjectName, classroomId) {
+        onStart: (title, subjectId, subjectName, classroomId, childIds) {
           ctrl.startActivity(
             title: title,
             subjectId: subjectId,
             subjectName: subjectName,
             classroomId: classroomId,
+            mode: mode,
+            childIds: childIds,
           );
           // Started from the home card — jump to the Activities tab so the
           // teacher lands on the running activity, not back on the home.

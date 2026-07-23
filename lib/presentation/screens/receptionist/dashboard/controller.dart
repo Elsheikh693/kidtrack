@@ -75,6 +75,9 @@ class ReceptionistDashboardController extends GetxController {
   // reflects on the dashboard instantly instead of only on pull-to-refresh.
   final _statusSvc = ChildStatusService();
   StreamSubscription<List<ChildAttendanceModel>>? _attendanceSub;
+  // Latest attendance snapshot, cached so presence can be recomputed once the
+  // in-shift roster (_childNames) finishes loading.
+  List<ChildAttendanceModel> _lastAttendance = const [];
 
   // Live nursery↔parent conversations, for the unread badge on the home chat
   // icon: sum of unreadManager across this branch's children.
@@ -183,8 +186,12 @@ class ReceptionistDashboardController extends GetxController {
   }
 
   void _applyAttendance(List<ChildAttendanceModel> list) {
+    _lastAttendance = list;
     final records = list
-        .where((a) => a.branchId == branchId && a.date == _today)
+        .where((a) =>
+            a.branchId == branchId &&
+            a.date == _today &&
+            _childNames.containsKey(a.childId))
         .toList();
 
     final present =
@@ -207,9 +214,15 @@ class ReceptionistDashboardController extends GetxController {
     late List<EnrollmentModel> enrolls;
 
     await _childSvc.getAll(callBack: (list) {
+      // Scope to the receptionist's shift so the home stats match the Children
+      // tab: a shift-bound reception (e.g. evening only) manages just their
+      // shift's children plus the shared 'between' kids, not the whole nursery.
       final branch = list
           .whereType<ChildModel>()
-          .where((c) => c.branchId == branchId && c.status == 'active')
+          .where((c) =>
+              c.branchId == branchId &&
+              c.status == 'active' &&
+              _session.seesShift(c.shift))
           .toList();
       _childNames
         ..clear()
@@ -221,6 +234,9 @@ class ReceptionistDashboardController extends GetxController {
       unassignedStudents.value =
           branch.where((c) => c.classroomId == null || c.classroomId!.isEmpty).length;
     });
+    // Children scope is now known — recompute presence over the in-shift roster
+    // (attendance may have streamed in before the roster was ready).
+    _applyAttendance(_lastAttendance);
 
     await _classroomSvc.getAll(callBack: (list) {
       rooms = list

@@ -50,6 +50,8 @@ Future<void> performLogout() async {
       preservePrefixes: const {
         SetupLocalCheck.keyPrefix,
         NurseryFeedbackGate.keyPrefix,
+        PickupPromptSeen.keyPrefix,
+        PrivacyPolicySeen.keyPrefix,
       },
     );
   } finally {

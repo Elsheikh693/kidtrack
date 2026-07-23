@@ -161,7 +161,7 @@ class StaffListController extends GetxController {
       Get.toNamed(staffPermissionsView, arguments: s);
 
   void _openSheet(StaffModel? staff) {
-    Get.toNamed(staffFormView, arguments: staff)?.then((_) => loadStaff());
+    showStaffFormSheet(staff: staff).then((_) => loadStaff());
   }
 
   /// Show (or lazily mint) the staff member's durable activation code — the

@@ -21,7 +21,7 @@ class _TeacherActivityTabState extends State<TeacherActivityTab> {
     _ctrl = Get.find<TeacherActivityController>();
   }
 
-  void _showStartSheet() {
+  void _showStartSheet(String mode) {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
@@ -29,17 +29,20 @@ class _TeacherActivityTabState extends State<TeacherActivityTab> {
       backgroundColor: Colors.transparent,
       builder: (_) => StartActivitySheet(
         ctrl: _ctrl,
+        mode: mode,
         subjects: _ctrl.subjects,
         classrooms: _ctrl.myClassrooms,
         defaultClassroomId: _ctrl.activeClassroomId.isNotEmpty
             ? _ctrl.activeClassroomId
             : null,
-        onStart: (title, subjectId, subjectName, classroomId) =>
+        onStart: (title, subjectId, subjectName, classroomId, childIds) =>
             _ctrl.startActivity(
               title: title,
               subjectId: subjectId,
               subjectName: subjectName,
               classroomId: classroomId,
+              mode: mode,
+              childIds: childIds,
             ),
       ),
     );

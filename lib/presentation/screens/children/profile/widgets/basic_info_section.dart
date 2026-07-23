@@ -87,8 +87,8 @@ class BasicInfoSection extends StatelessWidget {
   }
 
   String _shiftLabel(String? shift) {
-    final s = Shift.fromName(shift);
-    return s != null ? s.labelKey.tr : '--';
+    final name = controller.shiftName(shift);
+    return name.isNotEmpty ? name : '--';
   }
 
   String _formatDate(int? ts) {

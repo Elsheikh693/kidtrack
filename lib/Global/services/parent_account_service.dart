@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import '../../index/index_main.dart';
 
 class ParentAccountService {
@@ -8,6 +7,13 @@ class ParentAccountService {
       Get.find<ParentChildParentService>();
   final _session = SessionService();
 
+  /// Creates (or reuses) the guardian's identity by phone and links them to the
+  /// given children. If the phone already belongs to someone on the platform —
+  /// e.g. a teacher who is also this child's mum — we reuse the SAME uid and add
+  /// a guardian membership instead of failing on "phone already registered".
+  ///
+  /// [password] is retained only for call-site compatibility; the identity is now
+  /// resolved server-side (see [IdentityService.resolveByPhone]).
   Future<bool> createAccount({
     required String name,
     required String phone,
@@ -16,37 +22,32 @@ class ParentAccountService {
     String relationship = 'other',
     required Function(String) onError,
   }) async {
-    // Convert phone to Firebase-compatible email: 01xxxxxxxxx@gmail.com
     final email = '$phone@gmail.com';
-    FirebaseApp? tempApp;
+    final nurseryId = _session.nurseryId ?? '';
 
     try {
-      tempApp = await Firebase.initializeApp(
-        name: 'parentCreation_${DateTime.now().millisecondsSinceEpoch}',
-        options: Firebase.app().options,
-      );
-      final auth = FirebaseAuth.instanceFor(app: tempApp);
-      final credential = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final uid = credential.user!.uid;
-      final nurseryId = _session.nurseryId ?? '';
+      // 1. Resolve the single identity for this phone (created only if brand-new).
+      final String uid;
+      try {
+        final res = await Get.find<IdentityService>()
+            .resolveByPhone(phone: phone, name: name);
+        uid = res.uid;
+      } catch (_) {
+        onError('guardian_create_error_general'.tr);
+        return false;
+      }
 
-      // Write user record
-      await FirebaseDatabase.instance.ref('users/$uid').set({
-        'uid': uid,
-        'name': name,
-        'phone': phone,
-        'email': email,
-        'userType': 'parent',
-        'nurseryId': nurseryId,
-        'isActive': true,
-        'createdAt': DateTime.now().millisecondsSinceEpoch,
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      // 2. Attach a guardian membership + merge identity (backfills a prior staff
+      //    hat, so a teacher who becomes a mum keeps both logins).
+      await Get.find<IdentityService>().attachMembership(
+        uid: uid,
+        role: 'parent',
+        nurseryId: nurseryId,
+        name: name,
+        phone: phone,
+      );
 
-      // Write parent profile
+      // 3. Write parent profile
       final parentDone = Completer<ResponseStatus>();
       await _guardianService.add(
         item: ParentModel(
@@ -63,7 +64,7 @@ class ParentAccountService {
         return false;
       }
 
-      // Children that already have a primary guardian — a newly linked
+      // 4. Children that already have a primary guardian — a newly linked
       // guardian only becomes primary when the child has none yet.
       final hasPrimary = <String>{};
       await _linkService.getAll(callBack: (list) {
@@ -91,16 +92,9 @@ class ParentAccountService {
       }
 
       return true;
-    } on FirebaseAuthException catch (e) {
-      onError(_authError(e.code));
-      return false;
     } catch (_) {
       onError('guardian_create_error_general'.tr);
       return false;
-    } finally {
-      try {
-        await tempApp?.delete();
-      } catch (_) {}
     }
   }
 
@@ -150,19 +144,6 @@ class ParentAccountService {
     } catch (_) {
       onError('guardian_create_error_general'.tr);
       return false;
-    }
-  }
-
-  String _authError(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return 'guardian_create_error_phone_exists'.tr;
-      case 'invalid-email':
-        return 'guardian_create_error_phone'.tr;
-      case 'weak-password':
-        return 'guardian_create_error_weak_password'.tr;
-      default:
-        return 'guardian_create_error_auth'.tr;
     }
   }
 }

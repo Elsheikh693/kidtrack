@@ -1,11 +1,8 @@
 import '../../../../../index/index_main.dart';
 
+// Amber accents reused for the "no class" badge.
 const _morning = Color(0xFFF59E0B);
 const _morningBg = Color(0xFFFEF6E7);
-const _between = Color(0xFF14B8A6);
-const _betweenBg = Color(0xFFE6FAF7);
-const _evening = Color(0xFF6366F1);
-const _eveningBg = Color(0xFFEEF0FE);
 const _ink = Color(0xFF111827);
 const _ink2 = Color(0xFF374151);
 const _muted = Color(0xFF8A93A4);
@@ -21,6 +18,9 @@ class RcChildCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onChat;
   final int chatUnread;
+  // Start minutes of the child's (dynamic) shift, resolved by the controller.
+  // Null when the child has no shift — drives the avatar icon/color.
+  final int? shiftStartMinutes;
 
   const RcChildCard({
     super.key,
@@ -31,27 +31,10 @@ class RcChildCard extends StatelessWidget {
     required this.onTap,
     required this.onChat,
     this.chatUnread = 0,
+    this.shiftStartMinutes,
   });
 
-  bool get _hasShift =>
-      child.shift == 'morning' ||
-      child.shift == 'between' ||
-      child.shift == 'evening';
-  Color get _accent => switch (child.shift) {
-        'evening' => _evening,
-        'between' => _between,
-        _ => _morning,
-      };
-  Color get _accentBg => switch (child.shift) {
-        'evening' => _eveningBg,
-        'between' => _betweenBg,
-        _ => _morningBg,
-      };
-  IconData get _shiftIcon => switch (child.shift) {
-        'evening' => Icons.bedtime_rounded,
-        'between' => Icons.brightness_6_rounded,
-        _ => Icons.wb_sunny_rounded,
-      };
+  bool get _hasShift => shiftStartMinutes != null;
   bool get _active => child.status == 'active';
   bool get _hasClass =>
       child.classroomId != null && classroomName != 'child_classroom_none'.tr;
@@ -81,9 +64,9 @@ class RcChildCard extends StatelessWidget {
                   ? child.firstName.characters.first
                   : '؟',
               imageUrl: child.profileImage,
-              accent: _hasShift ? _accent : _faint,
-              accentBg: _hasShift ? _accentBg : _bg,
-              shiftIcon: _hasShift ? _shiftIcon : null,
+              accent: _hasShift ? shiftVisuals(shiftStartMinutes!).color : _faint,
+              accentBg: _hasShift ? shiftVisuals(shiftStartMinutes!).bg : _bg,
+              shiftIcon: _hasShift ? shiftVisuals(shiftStartMinutes!).icon : null,
             ),
             SizedBox(width: 13.w),
             Expanded(

@@ -1,6 +1,5 @@
 import '../../../../../index/index_main.dart';
 import 'activity_state_card.dart';
-import '../../home/widgets/class_bulk_actions_bar.dart';
 
 /// Inline section on the active activity screen listing every child in the
 /// classroom with their live state, so the teacher can update states (sleeping,
@@ -126,15 +125,10 @@ class ActivityStatesSection extends StatelessWidget {
                   ],
                 ),
               )),
-          // Class-level bulk actions (نوم للكل / الكل مع الفصل).
-          Obx(() {
-            if (ctrl.presentStateCount == 0) return const SizedBox.shrink();
-            return ClassBulkActionsBar(
-              statuses: ctrl.stateTemplates.where((t) => t.isStatus).toList(),
-              onApply: ctrl.applyStatusToAllStates,
-              onReturnAll: ctrl.returnAllStatesToClass,
-            );
-          }),
+          // Class-level bulk actions (نوم للكل / الكل مع الفصل) are intentionally
+          // NOT shown mid-session: while a teacher is running an activity, no
+          // class-wide status change should happen to the children. They remain
+          // available from the classroom-states sheet outside the session.
           Obx(() {
             if (ctrl.stateChildren.isEmpty) {
               return Padding(

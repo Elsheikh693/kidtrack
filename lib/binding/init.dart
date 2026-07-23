@@ -3,7 +3,6 @@ import 'package:kidtrack/Data/models/care_event/care_event_model.dart';
 import '../index/index_main.dart';
 import '../Global/services/pickup_realtime_service.dart';
 import '../presentation/screens/teacher/activity/activity_end_controller.dart';
-import '../presentation/screens/teacher/homework/homework_tab_controller.dart';
 import '../presentation/screens/teacher/reports/teacher_reports_controller.dart';
 import '../presentation/screens/manager/media_approval/media_approval_controller.dart';
 
@@ -72,6 +71,10 @@ class Binding implements Bindings {
       () => ActivationLoginService(),
       fenix: true,
     );
+    Get.lazyPut<IdentityService>(
+      () => IdentityService(),
+      fenix: true,
+    );
 
     // ─── Session ──────────────────────────────────────────────────────────
     Get.put<SessionService>(SessionService(), permanent: true);
@@ -94,6 +97,18 @@ class Binding implements Bindings {
     // ─── Owner cross-branch photo-review flag (settings-gated) ────────────
     Get.put<OwnerPhotoReviewService>(
       OwnerPhotoReviewService(),
+      permanent: true,
+    );
+
+    // ─── Nursery photo-approval policy (manager/owner toggle) ─────────────
+    Get.put<PhotoApprovalPolicyService>(
+      PhotoApprovalPolicyService(),
+      permanent: true,
+    );
+
+    // ─── Fee-collection window (manager/owner setting → auto reminder) ─────
+    Get.put<FeeCollectionWindowService>(
+      FeeCollectionWindowService(),
       permanent: true,
     );
 
@@ -287,6 +302,23 @@ class Binding implements Bindings {
       fromJson: (json) => AssessmentModel.fromJson(json),
     );
 
+    // 22b. Assessment Engine — Templates / Runs / ChildAssessments
+    BaseBinding.bindCrud<AssessmentTemplateModel>(
+      tag: "assessmentTemplates",
+      baseUrl: () => ApiConstants.assessmentTemplates,
+      fromJson: (json) => AssessmentTemplateModel.fromJson(json),
+    );
+    BaseBinding.bindCrud<AssessmentRunModel>(
+      tag: "assessmentRuns",
+      baseUrl: () => ApiConstants.assessmentRuns,
+      fromJson: (json) => AssessmentRunModel.fromJson(json),
+    );
+    BaseBinding.bindCrud<ChildAssessmentModel>(
+      tag: "childAssessments",
+      baseUrl: () => ApiConstants.childAssessments,
+      fromJson: (json) => ChildAssessmentModel.fromJson(json),
+    );
+
     // 23. Incidents
     BaseBinding.bindCrud<IncidentModel>(
       tag: "incidents",
@@ -306,6 +338,13 @@ class Binding implements Bindings {
       tag: "guardianNotes",
       baseUrl: () => ApiConstants.guardianNotes,
       fromJson: (json) => GuardianNoteModel.fromJson(json),
+    );
+
+    // 24c. Star of the Week (manager pick → feed post + record)
+    BaseBinding.bindCrud<StarOfWeekModel>(
+      tag: "starOfWeek",
+      baseUrl: () => ApiConstants.starOfWeek,
+      fromJson: (json) => StarOfWeekModel.fromJson(json),
     );
 
     // 25. Lesson Plans
@@ -659,6 +698,42 @@ class Binding implements Bindings {
       () => AssessmentParentService(),
       fenix: true,
     );
+    Get.lazyPut<AssessmentTemplateParentService>(
+      () => AssessmentTemplateParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<AssessmentRunParentService>(
+      () => AssessmentRunParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<ChildAssessmentParentService>(
+      () => ChildAssessmentParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<AssessmentTemplatesController>(
+      () => AssessmentTemplatesController(),
+      fenix: true,
+    );
+    Get.lazyPut<AssessmentRunsController>(
+      () => AssessmentRunsController(),
+      fenix: true,
+    );
+    Get.lazyPut<ManagerRunDetailController>(
+      () => ManagerRunDetailController(),
+      fenix: true,
+    );
+    Get.lazyPut<ParentAssessmentsController>(
+      () => ParentAssessmentsController(),
+      fenix: true,
+    );
+    Get.lazyPut<TeacherRunGradingController>(
+      () => TeacherRunGradingController(),
+      fenix: true,
+    );
+    Get.lazyPut<TeacherAssessmentsController>(
+      () => TeacherAssessmentsController(),
+      fenix: true,
+    );
     Get.lazyPut<IncidentParentService>(
       () => IncidentParentService(),
       fenix: true,
@@ -690,6 +765,10 @@ class Binding implements Bindings {
     );
     Get.lazyPut<InvoiceParentService>(
       () => InvoiceParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<ChildChargeParentService>(
+      () => ChildChargeParentService(),
       fenix: true,
     );
     Get.lazyPut<PaymentAccountParentService>(
@@ -837,6 +916,16 @@ class Binding implements Bindings {
       fenix: true,
     );
 
+    // ─── Star of the Week ─────────────────────────────────────────────────
+    Get.lazyPut<StarOfWeekParentService>(
+      () => StarOfWeekParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<StarOfWeekController>(
+      () => StarOfWeekController(),
+      fenix: true,
+    );
+
     // ─── Evaluation Reasons ───────────────────────────────────────────────
     Get.lazyPut<EvaluationReasonsService>(
       () => EvaluationReasonsService(),
@@ -917,6 +1006,12 @@ class Binding implements Bindings {
 
     // ─── Nursery Settings — Shifts ────────────────────────────────────────
     Get.lazyPut<ShiftsController>(() => ShiftsController(), fenix: true);
+
+    // ─── Reception — Daily Expenses (ad-hoc child charges) ────────────────
+    Get.lazyPut<ChildChargesController>(
+      () => ChildChargesController(),
+      fenix: true,
+    );
 
     // ─── Parent — Notification Preferences ────────────────────────────────
     Get.lazyPut<NotificationPrefsController>(

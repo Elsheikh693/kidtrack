@@ -35,34 +35,41 @@ class _ReceptionistEventsViewState extends State<ReceptionistEventsView> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: _bg,
-        appBar: HomeAppBar(
-          title: 'event_title'.tr,
-          onSettingsTap: () => Get.toNamed(settingsView),
-        ),
         // Lift the FAB clear of MainPage's floating bottom nav bar (this is a
         // nested Scaffold, so its FAB otherwise overlaps the parent nav).
         floatingActionButton: Padding(
           padding: EdgeInsets.only(bottom: 80.h),
           child: _GradientFab(onPressed: () => _showCreate(context)),
         ),
-        body: Obx(() {
-          if (controller.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(color: _indigo),
-            );
-          }
-          return Column(
-            children: [
-              _FilterSegment(controller: controller),
-              Expanded(
-                child: _EventsList(
-                  controller: controller,
-                  onCreate: () => _showCreate(context),
-                ),
-              ),
-            ],
-          );
-        }),
+        body: Column(
+          children: [
+            AppTitleBar(
+              title: 'event_title'.tr,
+              onNotificationTap: () => Get.toNamed(notificationsView),
+              onSettingsTap: () => Get.toNamed(settingsView),
+            ),
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: _indigo),
+                  );
+                }
+                return Column(
+                  children: [
+                    _FilterSegment(controller: controller),
+                    Expanded(
+                      child: _EventsList(
+                        controller: controller,
+                        onCreate: () => _showCreate(context),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -311,189 +318,151 @@ class _EventCard extends StatelessWidget {
   final NurseryEventModel event;
   final ReceptionistEventsController controller;
 
+  bool get _hasCover =>
+      event.coverImage != null && event.coverImage!.isNotEmpty;
+  bool get _past => !event.isUpcoming;
+
   @override
   Widget build(BuildContext context) {
-    final color = event.category.color;
-    final past = !event.isUpcoming;
-
     return Container(
-      margin: EdgeInsets.only(bottom: 14.h),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(24.r),
         border: Border.all(color: _line),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.05),
-            blurRadius: 14.r,
-            offset: Offset(0, 5.h),
+            color: _indigo.withValues(alpha: 0.08),
+            blurRadius: 24.r,
+            offset: Offset(0, 12.h),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _hasCover ? _coverHero(context) : _plainHero(context),
+            _body(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Hero (cover image or category-tinted banner) ──────────────────────────
+
+  Widget _coverHero(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(staffEventPhotosView, arguments: event),
+      child: _hero(
+        context,
+        background: AppNetworkImage(
+          url: event.coverImage!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      ),
+    );
+  }
+
+  Widget _plainHero(BuildContext context) {
+    final color = event.category.color;
+    return _hero(
+      context,
+      background: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [color, Color.lerp(color, Colors.black, 0.28)!],
+          ),
+        ),
+        child: Align(
+          alignment: AlignmentDirectional.bottomStart,
+          child: Padding(
+            padding: EdgeInsets.only(left: 4.w, bottom: 2.h),
+            child: Icon(
+              event.category.icon,
+              size: 120.sp,
+              color: Colors.white.withValues(alpha: 0.14),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _hero(BuildContext context, {required Widget background}) {
+    return SizedBox(
+      height: 190.h,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          // ── Cover ──
-          if (event.coverImage != null)
-            ClipRRect(
-              borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(20.r)),
-              child: Stack(
-                children: [
-                  AppNetworkImage(
-                    url: event.coverImage!,
-                    height: 150.h,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.35),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10.h,
-                    right: 10.w,
-                    child: _categoryBadge(color, onDark: true),
-                  ),
-                  if (past)
-                    Positioned(
-                      top: 10.h,
-                      left: 10.w,
-                      child: _pill('event_past'.tr, Colors.black54, Colors.white),
-                    ),
+          background,
+          // Legibility scrim — light at the top for the badges, heavy at the
+          // bottom for the title + meta.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x33000000),
+                  Color(0x00000000),
+                  Color(0x00000000),
+                  Color(0xCC000000),
                 ],
+                stops: [0.0, 0.28, 0.5, 1.0],
               ),
             ),
-
-          Padding(
-            padding: EdgeInsets.all(14.w),
+          ),
+          Positioned(
+            top: 12.h,
+            left: 12.w,
+            right: 12.w,
+            child: Row(
+              children: [
+                _categoryBadge(),
+                const Spacer(),
+                if (_past) ...[
+                  _statusPill('event_past'.tr),
+                  SizedBox(width: 8.w),
+                ],
+                _MenuButton(onSelected: (v) => _onMenu(context, v)),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 14.w,
+            right: 14.w,
+            bottom: 14.h,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (event.coverImage == null) ...[
-                      Container(
-                        width: 46.w,
-                        height: 46.h,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(13.r),
-                        ),
-                        child: Icon(event.category.icon, color: color, size: 22.sp),
-                      ),
-                      SizedBox(width: 12.w),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            event.title,
-                            style: context.typography.mdBold.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: _ink,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (event.coverImage == null) ...[
-                            SizedBox(height: 5.h),
-                            Row(
-                              children: [
-                                _categoryBadge(color),
-                                if (past) ...[
-                                  SizedBox(width: 6.w),
-                                  _pill('event_past'.tr,
-                                      const Color(0xFFF1F5F9), _faint),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    _MenuButton(onSelected: (v) => _onMenu(context, v)),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.h,
-                  children: [
-                    _infoChip(Icons.calendar_today_rounded,
-                        event.formattedDate, color),
-                    if (event.timeStr != null && event.timeStr!.isNotEmpty)
-                      _infoChip(
-                          Icons.access_time_rounded, event.timeStr!, color),
-                    if (event.location != null && event.location!.isNotEmpty)
-                      _infoChip(
-                          Icons.location_on_rounded, event.location!, color),
-                  ],
-                ),
-                if (event.description.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
-                  Text(
-                    event.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.typography.xsRegular.copyWith(
-                      fontSize: 12.5,
-                      color: _muted,
-                      height: 1.5,
-                    ),
+                if (event.photos.isNotEmpty) ...[
+                  _glassChip(
+                    Icons.photo_library_rounded,
+                    '${event.photos.length} ${'event_photos_count_suffix'.tr}',
                   ),
+                  SizedBox(height: 9.h),
                 ],
-                SizedBox(height: 12.h),
-                Container(height: 1, color: _line),
-                SizedBox(height: 10.h),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(6.w),
-                      decoration: BoxDecoration(
-                        color: _indigo.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Icon(Icons.people_alt_rounded,
-                          size: 15.sp, color: _indigo),
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      '${event.attendeesCount} ${'event_attendees_count'.tr}',
-                      style: context.typography.displaySmBold.copyWith(
-                        fontSize: 12.5,
-                        color: _indigo,
-                      ),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () => _openAttendees(context),
-                      child: Text(
-                        'event_view_attendees'.tr,
-                        style: context.typography.displaySmBold.copyWith(
-                          fontSize: 12.5,
-                          color: _muted,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(Icons.arrow_back_ios_new_rounded,
-                        size: 11.sp, color: _faint),
-                  ],
+                Text(
+                  event.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typography.mdBold.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    height: 1.25,
+                  ),
                 ),
+                SizedBox(height: 8.h),
+                _metaRow(),
               ],
             ),
           ),
@@ -502,22 +471,191 @@ class _EventCard extends StatelessWidget {
     );
   }
 
-  Widget _categoryBadge(Color color, {bool onDark = false}) {
+  Widget _metaRow() {
+    return Wrap(
+      spacing: 14.w,
+      runSpacing: 6.h,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        _metaItem(Icons.calendar_today_rounded, event.formattedDate),
+        if (event.timeStr != null && event.timeStr!.isNotEmpty)
+          _metaItem(Icons.access_time_rounded, event.timeStr!),
+        if (event.location != null && event.location!.isNotEmpty)
+          _metaItem(Icons.location_on_rounded, event.location!),
+      ],
+    );
+  }
+
+  Widget _metaItem(IconData icon, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13.sp, color: Colors.white.withValues(alpha: 0.9)),
+        SizedBox(width: 5.w),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withValues(alpha: 0.95),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Body (description + action footer) ────────────────────────────────────
+
+  Widget _body(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(14.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (event.description.isNotEmpty) ...[
+            Text(
+              event.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: context.typography.xsRegular.copyWith(
+                fontSize: 12.5,
+                color: _muted,
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 12.h),
+          ],
+          if (event.createdByName.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.person_rounded, size: 13.sp, color: _faint),
+                SizedBox(width: 5.w),
+                Text(
+                  event.createdByName,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: _faint,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+          ],
+          Container(height: 1, color: _line),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              _attendeesButton(context),
+              const Spacer(),
+              _photosButton(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _attendeesButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openAttendees(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+        decoration: BoxDecoration(
+          color: _indigo.withValues(alpha: 0.09),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.people_alt_rounded, size: 15.sp, color: _indigo),
+            SizedBox(width: 6.w),
+            Text(
+              '${event.attendeesCount}',
+              style: context.typography.displaySmBold.copyWith(
+                fontSize: 13,
+                color: _indigo,
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Text(
+              'event_interested_suffix'.tr,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: _indigo.withValues(alpha: 0.85),
+              ),
+            ),
+            SizedBox(width: 3.w),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 10.sp, color: _indigo.withValues(alpha: 0.6)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _photosButton() {
+    return GestureDetector(
+      onTap: () => Get.toNamed(staffEventPhotosView, arguments: event),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [_indigo, _violet]),
+          borderRadius: BorderRadius.circular(13.r),
+          boxShadow: [
+            BoxShadow(
+              color: _indigo.withValues(alpha: 0.3),
+              blurRadius: 12.r,
+              offset: Offset(0, 5.h),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.photo_library_rounded, size: 14.sp, color: Colors.white),
+            SizedBox(width: 6.w),
+            Text(
+              'event_photos_title'.tr,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Hero pills ────────────────────────────────────────────────────────────
+
+  Widget _categoryBadge() {
+    final color = event.category.color;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: onDark ? Colors.white.withValues(alpha: 0.92) : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8.r),
+        color: Colors.white.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(30.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(event.category.icon, size: 12.sp, color: color),
-          SizedBox(width: 4.w),
+          Icon(event.category.icon, size: 13.sp, color: color),
+          SizedBox(width: 5.w),
           Text(
             event.category.labelKey.tr,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: color,
             ),
@@ -527,38 +665,43 @@ class _EventCard extends StatelessWidget {
     );
   }
 
-  Widget _pill(String text, Color bg, Color fg) {
+  Widget _statusPill(String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 11.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(8.r),
+        color: Colors.black.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(30.r),
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: fg),
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
       ),
     );
   }
 
-  Widget _infoChip(IconData icon, String label, Color color) {
+  Widget _glassChip(IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Colors.white.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(30.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13.sp, color: color),
+          Icon(icon, size: 12.sp, color: Colors.white),
           SizedBox(width: 5.w),
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-              color: color,
+            text,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
           ),
         ],
@@ -578,6 +721,9 @@ class _EventCard extends StatelessWidget {
 
   void _onMenu(BuildContext context, String action) {
     switch (action) {
+      case 'photos':
+        Get.toNamed(staffEventPhotosView, arguments: event);
+        break;
       case 'edit':
         showModalBottomSheet(
           context: context,
@@ -627,14 +773,30 @@ class _MenuButton extends StatelessWidget {
       onSelected: onSelected,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
       icon: Container(
-        padding: EdgeInsets.all(4.w),
+        width: 30.w,
+        height: 30.w,
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(8.r),
+          color: Colors.white.withValues(alpha: 0.94),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 8.r,
+              offset: Offset(0, 2.h),
+            ),
+          ],
         ),
-        child: Icon(Icons.more_horiz_rounded, size: 20.sp, color: _muted),
+        child: Icon(Icons.more_horiz_rounded, size: 19.sp, color: _ink),
       ),
       itemBuilder: (_) => [
+        PopupMenuItem(
+          value: 'photos',
+          child: Row(children: [
+            Icon(Icons.photo_library_rounded, size: 18.sp, color: _muted),
+            SizedBox(width: 10.w),
+            Text('event_photos_title'.tr),
+          ]),
+        ),
         PopupMenuItem(
           value: 'edit',
           child: Row(children: [

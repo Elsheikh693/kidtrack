@@ -185,7 +185,7 @@ class _ReceptionistFinanceTabState extends State<ReceptionistFinanceTab> {
                 ),
               ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (_, i) {

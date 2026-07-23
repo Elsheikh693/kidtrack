@@ -161,6 +161,11 @@ class NotificationsController extends GetxController {
 
   int get unreadCount => notifications.where((n) => !n.isRead).length;
 
+  /// Broadcasting to all users is an owner / branch-manager (and super-admin)
+  /// action only. Guardians, teachers and reception never see the send button.
+  bool get canSendBroadcast =>
+      _session.isSuperAdmin || _session.isOwner || _session.isBranchManager;
+
   String formatDate(int? ms) {
     if (ms == null) return '';
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);

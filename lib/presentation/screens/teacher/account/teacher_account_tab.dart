@@ -28,6 +28,12 @@ class TeacherAccountTab extends StatelessWidget {
           ),
         ),
 
+        // Switch role (only for multi-hat identities)
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
+        ),
+
         // Classroom management section
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -35,6 +41,12 @@ class TeacherAccountTab extends StatelessWidget {
             child: _SectionCard(
               titleKey: 'teacher_account_classroom_section',
               tiles: [
+                _SettingsTile(
+                  icon: Icons.grading_rounded,
+                  color: const Color(0xFF4F46E5),
+                  labelKey: 'assessment_teacher_menu_item',
+                  onTap: () => Get.toNamed(teacherAssessmentsView),
+                ),
                 _SettingsTile(
                   icon: Icons.emoji_emotions_rounded,
                   color: const Color(0xFF0891B2),

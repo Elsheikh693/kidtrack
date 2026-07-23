@@ -25,12 +25,13 @@ class _ManagerChatTabState extends State<ManagerChatTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
-      appBar: OwnerAppBar(
-        title: 'chat_title'.tr,
-        onBack: () => Get.find<MainPageViewModel>().changePage(0),
-      ),
       body: Column(
         children: [
+          AppTitleBar(
+            title: 'chat_title'.tr,
+            onNotificationTap: () => Get.toNamed(notificationsView),
+            onSettingsTap: () => Get.toNamed(settingsView),
+          ),
           _SearchBar(controller: controller),
           Expanded(
             child: Obx(() {

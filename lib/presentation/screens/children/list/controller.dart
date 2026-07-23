@@ -52,12 +52,25 @@ class ChildListController extends GetxController {
     );
   }
 
-  int get morningCount =>
-      _all.where((c) => c.shift == 'morning').length;
-  int get betweenCount =>
-      _all.where((c) => c.shift == 'between').length;
-  int get eveningCount =>
-      _all.where((c) => c.shift == 'evening').length;
+  // Nursery's dynamic shifts (manager-defined), ordered for display.
+  final RxList<ShiftModel> shifts = <ShiftModel>[].obs;
+
+  int countForShift(String? key) =>
+      _all.where((c) => c.shift == key).length;
+
+  /// Display name for a child's shift key (dynamic or legacy). '' when unknown.
+  String shiftName(String? key) {
+    if (key == null || key.isEmpty) return '';
+    return shifts.firstWhereOrNull((s) => s.key == key)?.name ?? '';
+  }
+
+  /// Shift start minutes for a child's shift key — drives the card icon/color.
+  /// Null when the shift is unset or no longer exists.
+  int? shiftStart(String? key) {
+    if (key == null || key.isEmpty) return null;
+    return shifts.firstWhereOrNull((s) => s.key == key)?.startMinutes;
+  }
+
   int get activeCount => _all.where((c) => c.status == 'active').length;
   int get inactiveCount => _all.where((c) => c.status != 'active').length;
   int get totalCount => _all.length;
@@ -153,6 +166,7 @@ class ChildListController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
+    shifts.value = await Get.find<ShiftParentService>().getActive();
     await Future.wait([_loadLookups(), _loadParents()]);
     await _service.getAll(
       callBack: (list) {

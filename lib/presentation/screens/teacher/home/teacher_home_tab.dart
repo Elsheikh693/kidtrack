@@ -171,39 +171,95 @@ class _EmptyClasses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 40, 32, 40),
-      child: Column(
-        children: [
-          Container(
-            width: 88,
-            height: 88,
+    // Fill the space under the action cards so the card reads as intentional
+    // instead of floating small in a big void.
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: 0.4.sh),
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
             decoration: BoxDecoration(
-              color: AppColors.activityBlue.withValues(alpha: .08),
-              shape: BoxShape.circle,
+              color: AppColors.activityBlue.withValues(alpha: .05),
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(
+                color: AppColors.activityBlue.withValues(alpha: .18),
+              ),
             ),
-            child: const Icon(
-              Icons.meeting_room_outlined,
-              size: 40,
-              color: AppColors.activityBlue,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 84.w,
+                  height: 84.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.activityBlue.withValues(alpha: .15),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.meeting_room_outlined,
+                    size: 38.sp,
+                    color: AppColors.activityBlue,
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Text(
+                  'teacher_home_no_classes_title'.tr,
+                  textAlign: TextAlign.center,
+                  style: context.typography.mdBold.copyWith(
+                    color: AppColors.activitySlate,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'teacher_home_no_classes_hint'.tr,
+                  textAlign: TextAlign.center,
+                  style: context.typography.smRegular.copyWith(
+                    color: AppColors.activityMuted,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: AppColors.activityBlue.withValues(alpha: .2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.hourglass_empty_rounded,
+                        size: 16.sp,
+                        color: AppColors.activityBlue,
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        'teacher_home_no_classes_badge'.tr,
+                        style: context.typography.xsMedium.copyWith(
+                          color: AppColors.activityBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 18),
-          Text(
-            'لم يتم تعيين فصول لك بعد',
-            style: context.typography.mdBold.copyWith(
-              color: AppColors.activitySlate,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'تواصلي مع مدير الحضانة لتعيين فصولك',
-            textAlign: TextAlign.center,
-            style: context.typography.xsRegular.copyWith(
-              color: AppColors.activityMuted,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

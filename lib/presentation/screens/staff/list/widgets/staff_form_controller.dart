@@ -1,4 +1,3 @@
-import 'package:firebase_database/firebase_database.dart';
 import '../../../../../index/index_main.dart';
 
 class StaffFormController extends GetxController {
@@ -23,6 +22,9 @@ class StaffFormController extends GetxController {
 
   final Rx<StaffTemplate> selectedTemplate = StaffTemplate.teacher.obs;
   final Rx<BranchModel?> selectedBranch = Rx(null);
+  // Country for the login phone (identity key). See PhoneUtils for the storage
+  // rule that keeps existing Egyptian numbers backward compatible.
+  final Rx<PhoneCountry> selectedCountry = PhoneUtils.egypt.obs;
   final RxList<ShiftModel> shifts = <ShiftModel>[].obs;
   final RxList<String> selectedShiftIds = <String>[].obs;
   final RxList<BranchModel> branches = <BranchModel>[].obs;
@@ -69,7 +71,9 @@ class StaffFormController extends GetxController {
     if (initialStaff == null) return;
     isEdit.value = true;
     nameCtrl.text = initialStaff!.name;
-    phoneCtrl.text = initialStaff!.phone ?? '';
+    final detected = PhoneUtils.detect(initialStaff!.phone);
+    selectedCountry.value = detected.country;
+    phoneCtrl.text = detected.local;
     selectedTemplate.value = initialStaff!.template;
     selectedShiftIds.assignAll(initialStaff!.shiftIds);
     if (initialStaff!.salary != null) {
@@ -121,11 +125,12 @@ class StaffFormController extends GetxController {
   // ── Update (edit) ───────────────────────────────────────────────────────────
 
   Future<void> _update(String name) async {
+    final phone = PhoneUtils.normalize(selectedCountry.value, phoneCtrl.text.trim());
     Loader.show();
     await _staffService.update(
       item: initialStaff!.copyWith(
         name: name,
-        phone: phoneCtrl.text.trim().nullIfEmpty,
+        phone: phone.nullIfEmpty,
         template: selectedTemplate.value,
         role: selectedTemplate.value.toUserType(),
         branchId: _resolvedBranchId,
@@ -138,14 +143,26 @@ class StaffFormController extends GetxController {
       ),
       callBack: (status) async {
         if (status == ResponseStatus.success) {
-          // The staff record is updated, but login routing reads the role from
-          // the global users/$uid node — keep it in sync or a role change (e.g.
-          // teacher → branch manager) never takes effect at sign-in.
-          await _syncUsersNode(
+          final newRole = selectedTemplate.value.toUserType();
+          final nurseryId = initialStaff!.nurseryId;
+          final identity = Get.find<IdentityService>();
+          // A role change moves the membership key ({nid}_{role}) — drop the
+          // stale one before writing the new so we never leave two staff hats.
+          if (initialStaff!.role != newRole) {
+            await identity.removeMembership(
+              uid: initialStaff!.uid,
+              nurseryId: nurseryId,
+              role: initialStaff!.role.name,
+            );
+          }
+          // Syncs identity + membership so a role change reaches next sign-in.
+          await identity.attachMembership(
             uid: initialStaff!.uid,
+            role: newRole.name,
+            nurseryId: nurseryId,
+            branchId: _resolvedBranchId,
             name: name,
-            phone: phoneCtrl.text.trim(),
-            role: selectedTemplate.value.toUserType(),
+            phone: phone,
           );
         }
         Loader.dismiss();
@@ -157,32 +174,38 @@ class StaffFormController extends GetxController {
   // ── Create (new staff) ──────────────────────────────────────────────────────
 
   Future<void> _create(String name) async {
-    final phone = phoneCtrl.text.trim();
+    final rawPhone = phoneCtrl.text.trim();
 
-    if (phone.isEmpty) {
+    if (rawPhone.isEmpty) {
       Loader.showError('staff_form_phone_required'.tr);
       return;
     }
-    // The phone number doubles as the staff member's password. Firebase Auth
-    // requires a minimum of 6 characters.
-    if (phone.length < 6) {
-      Loader.showError('staff_form_phone_short'.tr);
+    if (!PhoneUtils.isValid(selectedCountry.value, rawPhone)) {
+      Loader.showError('staff_form_phone_invalid'.tr);
       return;
     }
+    // Canonical stored form for the picked country — also doubles as the account
+    // password (Firebase Auth requires ≥ 6 chars, which every valid number is).
+    final phone = PhoneUtils.normalize(selectedCountry.value, rawPhone);
 
     Loader.show();
 
-    // 1. Create Firebase Auth account without signing out the current owner
-    final email = '$phone@gmail.com';
-    String firebaseUid;
+    // 1. Resolve the identity for this phone. The account is created only if the
+    //    phone is brand-new; if this person already has an account (they're a
+    //    guardian here, or staff at another nursery) we reuse the SAME uid and
+    //    just attach a new membership below — no more "phone already registered".
+    final String firebaseUid;
     try {
-      firebaseUid = await _createFirebaseAuth(email, phone);
-    } catch (e) {
-      Loader.showError(e.toString());
+      final res = await Get.find<IdentityService>()
+          .resolveByPhone(phone: phone, name: name);
+      firebaseUid = res.uid;
+    } catch (_) {
+      Loader.showError('staff_form_create_error'.tr);
       return;
     }
 
     final nurseryId = _session.nurseryId ?? '';
+    final role = selectedTemplate.value.toUserType();
 
     // 2. Add staff record to platform/$nurseryId/staff/
     await _staffService.add(
@@ -194,7 +217,7 @@ class StaffFormController extends GetxController {
         name: name,
         phone: phone.nullIfEmpty,
         template: selectedTemplate.value,
-        role: selectedTemplate.value.toUserType(),
+        role: role,
         salary: double.tryParse(salaryCtrl.text.trim()),
         hireDate: selectedHireDate.value?.millisecondsSinceEpoch,
         nationalId: nationalIdCtrl.text.trim().nullIfEmpty,
@@ -203,18 +226,19 @@ class StaffFormController extends GetxController {
       ),
       callBack: (status) async {
         if (status != ResponseStatus.success) {
-          await _rollbackFirebaseAuth(firebaseUid);
           Loader.showError('staff_form_create_error'.tr);
           return;
         }
 
-        // 3. Write users/$uid so login can resolve nurseryId + userType
-        await _writeUsersNode(
+        // 3. Attach the staff membership for this nursery + role and merge the
+        //    identity (never clobbers other memberships this person may hold).
+        await Get.find<IdentityService>().attachMembership(
           uid: firebaseUid,
+          role: role.name,
+          nurseryId: nurseryId,
+          branchId: _resolvedBranchId,
           name: name,
           phone: phone,
-          nurseryId: nurseryId,
-          role: selectedTemplate.value.toUserType(),
         );
 
         // 4. Add permissions
@@ -232,69 +256,6 @@ class StaffFormController extends GetxController {
         );
       },
     );
-  }
-
-  // ── Firebase Auth (secondary app) ──────────────────────────────────────────
-
-  Future<String> _createFirebaseAuth(String email, String password) async {
-    // Use a secondary Firebase app so the owner's session is not affected
-    final appName = 'staff_temp_${DateTime.now().millisecondsSinceEpoch}';
-    final secondaryApp = await Firebase.initializeApp(
-      name: appName,
-      options: Firebase.app().options,
-    );
-    try {
-      final auth = FirebaseAuth.instanceFor(app: secondaryApp);
-      final cred = await auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      await auth.signOut();
-      return cred.user!.uid;
-    } finally {
-      await secondaryApp.delete();
-    }
-  }
-
-  Future<void> _rollbackFirebaseAuth(String uid) async {
-    // Client SDK cannot delete other users — best handled by Cloud Functions.
-    // Left as no-op; orphan auth accounts should be cleaned server-side.
-  }
-
-  // ── Realtime Database ──────────────────────────────────────────────────────
-
-  Future<void> _writeUsersNode({
-    required String uid,
-    required String name,
-    required String phone,
-    required String nurseryId,
-    required UserType role,
-  }) async {
-    await FirebaseDatabase.instance.ref('users/$uid').set({
-      'uid': uid,
-      'name': name,
-      'phone': phone,
-      'nurseryId': nurseryId,
-      'userType': role.name,
-      'createdAt': DateTime.now().millisecondsSinceEpoch,
-    });
-  }
-
-  /// Patches the editable fields on the existing users/$uid node after an edit.
-  /// Uses update (not set) so createdAt/nurseryId and any other keys survive.
-  /// The userType is the one login routing depends on, so this is what makes a
-  /// role change actually reach the user's next sign-in.
-  Future<void> _syncUsersNode({
-    required String uid,
-    required String name,
-    required String phone,
-    required UserType role,
-  }) async {
-    await FirebaseDatabase.instance.ref('users/$uid').update({
-      'name': name,
-      'phone': phone,
-      'userType': role.name,
-    });
   }
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────

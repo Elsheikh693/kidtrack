@@ -19,20 +19,17 @@ class LiveTeachingController extends GetxController {
   final _teacherNames = <String, String>{};
   final _teacherPhotos = <String, String?>{};
 
-  // Categorical rail — one color per class in session, cycled when they run out.
-  static const _palette = <Color>[
-    AppColors.activityBlue,
-    AppColors.activityAmberBrand,
-    AppColors.activityPurple,
-    AppColors.activityGreen,
-    AppColors.activityOrange,
-    AppColors.activityRed,
-  ];
+  // Accent by mode, so a whole-class حصة and a subset نشاط read differently at a
+  // glance regardless of how many are running.
+  static const _sessionColor = AppColors.activityBlue;
+  static const _activityColor = AppColors.activityPurple;
 
   String get nurseryId => _session.nurseryId ?? '';
   String get branchId => _session.branchId ?? '';
 
   int get activeCount => slices.length;
+
+  StreamSubscription<List<ClassroomActivityModel>>? _activeSub;
 
   @override
   void onInit() {
@@ -42,11 +39,24 @@ class LiveTeachingController extends GetxController {
     loadData();
   }
 
+  /// Loads the (stable) classroom + teacher lookups once, then subscribes to a
+  /// live stream of running activities so the card updates the moment a teacher
+  /// starts or ends a session — no manual refresh needed.
   Future<void> loadData() async {
     isLoading.value = true;
     await Future.wait([_loadClassrooms(), _loadTeachers()]);
-    await _buildSlices();
-    isLoading.value = false;
+    _subscribeActive();
+  }
+
+  void _subscribeActive() {
+    _activeSub?.cancel();
+    final classroomIds = _classroomNames.keys.toList();
+    _activeSub = _activitySvc
+        .watchActiveForClassrooms(nurseryId, classroomIds)
+        .listen((active) {
+      _rebuildSlices(active);
+      isLoading.value = false;
+    });
   }
 
   Future<void> _loadClassrooms() async {
@@ -75,27 +85,21 @@ class LiveTeachingController extends GetxController {
     });
   }
 
-  Future<void> _buildSlices() async {
-    final classroomIds = _classroomNames.keys.toList();
-    final active =
-        await _activitySvc.getActiveForClassrooms(nurseryId, classroomIds);
-
-    // One slice per class in session — if co-teachers each run something, the
-    // most recently started activity represents the class.
-    final latestByClass = <String, ClassroomActivityModel>{};
-    for (final a in active) {
-      final cur = latestByClass[a.classroomId];
-      if (cur == null || a.startedAt > cur.startedAt) {
-        latestByClass[a.classroomId] = a;
-      }
-    }
-
-    final entries = latestByClass.values.toList()
+  /// Reshapes the live set of running activities into display slices. Every
+  /// running session shows as its own card — a whole-class "حصة" and a subset
+  /// "نشاط" in the same room appear side by side rather than one hiding the
+  /// other.
+  void _rebuildSlices(List<ClassroomActivityModel> active) {
+    // Classrooms are shared across branches, so an active class run by another
+    // branch's teacher would otherwise leak in (as an "unknown teacher"). The
+    // uploader's branch is the reliable signal: keep only in-branch teachers.
+    final entries = active
+        .where((a) => _teacherNames.containsKey(a.teacherId))
+        .toList()
       ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
 
     final built = <TeachingSlice>[];
-    for (var i = 0; i < entries.length; i++) {
-      final a = entries[i];
+    for (final a in entries) {
       final subject = (a.subjectName ?? '').trim();
       final title = a.title.trim();
       built.add(TeachingSlice(
@@ -109,7 +113,9 @@ class LiveTeachingController extends GetxController {
         teacherName: _teacherNames[a.teacherId] ?? 'tr_unknown_teacher'.tr,
         teacherPhoto: _teacherPhotos[a.teacherId],
         startedAt: a.startedAt,
-        color: _palette[i % _palette.length],
+        isActivityMode: a.isActivityMode,
+        participantCount: a.childIds.length,
+        color: a.isActivityMode ? _activityColor : _sessionColor,
       ));
     }
     slices.assignAll(built);
@@ -128,5 +134,11 @@ class LiveTeachingController extends GetxController {
       () => const TeacherTodayView(),
       transition: Transition.cupertino,
     );
+  }
+
+  @override
+  void onClose() {
+    _activeSub?.cancel();
+    super.onClose();
   }
 }

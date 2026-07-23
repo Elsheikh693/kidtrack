@@ -13,6 +13,13 @@ class ChildProfileController extends GetxController
   final parents    = <ParentModel>[].obs;
   final enrollment = Rx<EnrollmentModel?>(null);
   final classroom  = Rx<ClassroomModel?>(null);
+  final shifts     = <ShiftModel>[].obs;
+
+  /// Display name for the child's (dynamic) shift key. '' when unknown.
+  String shiftName(String? key) {
+    if (key == null || key.isEmpty) return '';
+    return shifts.firstWhereOrNull((s) => s.key == key)?.name ?? '';
+  }
 
   // Activities + teacher notes, scoped to the active window (attendance +
   // the day/week/month window itself live in ProfileWindowMixin). Defaults to
@@ -120,9 +127,14 @@ class ChildProfileController extends GetxController
     await Future.wait([
       _loadParent(),
       _loadEnrollmentAndClass(),
+      _loadShifts(),
     ]);
     await _loadRange();
     isLoading.value = false;
+  }
+
+  Future<void> _loadShifts() async {
+    shifts.value = await Get.find<ShiftParentService>().getActive();
   }
 
   // ─── Filter actions ─────────────────────────────────────────────────────────

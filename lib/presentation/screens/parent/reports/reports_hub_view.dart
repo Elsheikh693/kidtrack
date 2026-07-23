@@ -57,12 +57,21 @@ class ReportsHubView extends StatelessWidget {
             color: AppColors.activityAmberBrand,
             onTap: () => Get.toNamed(weeklyEvaluationReportView),
           ),
+          SizedBox(height: 12.h),
+          ReportListRow(
+            index: 4,
+            labelKey: 'assessment_parent_title',
+            descKey: 'assessment_parent_report_desc',
+            icon: Icons.assignment_turned_in_rounded,
+            color: const Color(0xFF4F46E5),
+            onTap: () => Get.toNamed(parentAssessmentsView),
+          ),
           const ReportSectionHeader(
             titleKey: 'reports_section_finance',
             color: AppColors.activityGreen,
           ),
           ReportListRow(
-            index: 4,
+            index: 5,
             labelKey: 'report_financial_title',
             descKey: 'report_financial_desc',
             icon: Icons.receipt_long_rounded,

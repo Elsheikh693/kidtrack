@@ -190,7 +190,6 @@ class _AddStaffSheetState extends State<AddStaffSheet> {
   static const _staffTemplates = [
     StaffTemplate.receptionist,
     StaffTemplate.teacher,
-    StaffTemplate.nanny,
     StaffTemplate.busChaperone,
   ];
 

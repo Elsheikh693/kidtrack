@@ -1,9 +1,11 @@
 import '../../../../../index/index_main.dart';
 import '../../events/widgets/create_event_sheet.dart';
 
-/// Primary quick actions on the receptionist home, laid out three-per-row:
-/// row 1 — register a child, invite a guardian (send app code), check-in/out;
-/// row 2 — collect money and create an event.
+/// Primary quick actions on the receptionist home, laid out three-per-row.
+/// Columns pair related actions vertically: register-child sits above collect,
+/// check-in/out above daily-expenses.
+/// row 1 — register a child, check-in/out, invite a guardian (send app code);
+/// row 2 — collect money, daily expenses, create an event.
 class HomeActionCards extends StatelessWidget {
   const HomeActionCards({super.key});
 
@@ -27,21 +29,21 @@ class HomeActionCards extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.forward_to_inbox_rounded,
-                  title: 'reception_action_invite'.tr,
-                  subtitle: 'reception_invite_subtitle'.tr,
-                  colors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
-                  onTap: () => Get.toNamed(bulkInvitationsView),
-                ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: _ActionCard(
                   icon: Icons.login_rounded,
                   title: 'reception_action_checkinout'.tr,
                   subtitle: 'reception_checkin_subtitle'.tr,
                   colors: const [Color(0xFF0891B2), Color(0xFF0E7490)],
                   onTap: () => Get.toNamed(checkInView),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _ActionCard(
+                  icon: Icons.forward_to_inbox_rounded,
+                  title: 'reception_action_invite'.tr,
+                  subtitle: 'reception_invite_subtitle'.tr,
+                  colors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  onTap: () => Get.toNamed(bulkInvitationsView),
                 ),
               ),
             ],
@@ -64,21 +66,21 @@ class HomeActionCards extends StatelessWidget {
               SizedBox(width: 10.w),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.celebration_rounded,
-                  title: 'reception_action_event'.tr,
-                  subtitle: 'reception_event_subtitle'.tr,
-                  colors: const [Color(0xFF4F46E5), Color(0xFF4338CA)],
-                  onTap: () => _showCreateEvent(context),
+                  icon: Icons.receipt_long_rounded,
+                  title: 'reception_action_expenses'.tr,
+                  subtitle: 'reception_expenses_subtitle'.tr,
+                  colors: const [Color(0xFFDB2777), Color(0xFFBE185D)],
+                  onTap: () => Get.toNamed(childChargesView),
                 ),
               ),
               SizedBox(width: 10.w),
               Expanded(
                 child: _ActionCard(
-                  icon: Icons.school_rounded,
-                  title: 'reception_action_tutorial'.tr,
-                  subtitle: 'reception_tutorial_subtitle'.tr,
-                  colors: const [Color(0xFFDB2777), Color(0xFFBE185D)],
-                  onTap: () => Get.toNamed(appTutorialView),
+                  icon: Icons.celebration_rounded,
+                  title: 'reception_action_event'.tr,
+                  subtitle: 'reception_event_subtitle'.tr,
+                  colors: const [Color(0xFF4F46E5), Color(0xFF4338CA)],
+                  onTap: () => _showCreateEvent(context),
                 ),
               ),
             ],

@@ -1,7 +1,9 @@
 import '../../../../index/index_main.dart';
 import 'media_approval_controller.dart';
 import 'media_review_view.dart';
+import 'event_media_review_view.dart';
 import 'widgets/pending_activity_card.dart';
+import 'widgets/pending_event_card.dart';
 
 class MediaApprovalView extends StatefulWidget {
   const MediaApprovalView({super.key});
@@ -41,21 +43,57 @@ class _MediaApprovalViewState extends State<MediaApprovalView> {
             return Center(
                 child: CircularProgressIndicator(color: AppColors.primary));
           }
-          final items = controller.pendingActivities;
-          if (items.isEmpty) return const _MediaApprovalEmpty();
-          return ListView.builder(
+          final activities = controller.pendingActivities;
+          final events = controller.pendingEvents;
+          if (activities.isEmpty && events.isEmpty) {
+            return const _MediaApprovalEmpty();
+          }
+          final showLabels = activities.isNotEmpty && events.isNotEmpty;
+          return ListView(
             padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 40.h),
-            itemCount: items.length,
-            itemBuilder: (_, i) => PendingActivityCard(
-              activity: items[i],
-              classroomName: controller.classroomName(items[i].classroomId),
-              onReview: () => Get.to(
-                () => const MediaReviewView(),
-                arguments: items[i].key,
-              ),
-            ),
+            children: [
+              if (activities.isNotEmpty) ...[
+                if (showLabels) _SectionLabel('media_section_activities'.tr),
+                ...activities.map((a) => PendingActivityCard(
+                      activity: a,
+                      classroomName: controller.classroomName(a.classroomId),
+                      onReview: () => Get.to(
+                        () => const MediaReviewView(),
+                        arguments: a.key,
+                      ),
+                    )),
+              ],
+              if (events.isNotEmpty) ...[
+                if (showLabels) _SectionLabel('media_section_events'.tr),
+                ...events.map((e) => PendingEventCard(
+                      event: e,
+                      onReview: () => Get.to(
+                        () => const EventMediaReviewView(),
+                        arguments: e.id,
+                      ),
+                    )),
+              ],
+            ],
           );
         }),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(4.w, 4.h, 4.w, 10.h),
+      child: Text(
+        label,
+        style: context.typography.smSemiBold
+            .copyWith(color: AppColors.textSecondaryParagraph),
       ),
     );
   }

@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../Data/models/feed/nursery_post_model.dart';
+import '../../../../Data/models/star_of_week/star_of_week_model.dart';
 import '../../../../Global/services/active_child_service.dart';
 import '../../../../Global/services/feed_service.dart';
 import '../../../../Global/services/parent_engagement_service.dart';
 import '../../../../Global/services/session_service.dart';
+import '../../../parentControllers/services/star_of_week_parent_service.dart';
 
 class ParentFeedController extends GetxController {
   final _service = FeedService();
@@ -16,6 +18,9 @@ class ParentFeedController extends GetxController {
   final RxList<NurseryPostModel> _pinnedPosts = <NurseryPostModel>[].obs;
   final RxList<NurseryPostModel> _regularPosts = <NurseryPostModel>[].obs;
   final Rx<PostCategory?> selectedCategory = Rx<PostCategory?>(null);
+
+  // Current week's Star of the Week, shown as a highlight card atop the feed.
+  final Rxn<StarOfWeekModel> starOfWeek = Rxn<StarOfWeekModel>();
 
   // Load state
   final RxBool isLoading = true.obs;
@@ -77,6 +82,7 @@ class ParentFeedController extends GetxController {
     scrollController = ScrollController()..addListener(_onScroll);
     _watchPinned();
     _loadFirst();
+    _loadStarOfWeek();
     ParentEngagementService().markFeedView();
   }
 
@@ -141,6 +147,19 @@ class ParentFeedController extends GetxController {
   void _onScroll() {
     final pos = scrollController.position;
     if (pos.pixels >= pos.maxScrollExtent - 400) _fetchNext();
+  }
+
+  // Load this week's Star of the Week (branch-scoped by the base service) so it
+  // can headline the feed. Best-effort: a failure just hides the highlight.
+  void _loadStarOfWeek() {
+    try {
+      Get.find<StarOfWeekParentService>().getAll(callBack: (list) {
+        final week = StarOfWeekModel.currentWeekKey();
+        final current =
+            list.whereType<StarOfWeekModel>().where((s) => s.weekKey == week);
+        starOfWeek.value = current.isEmpty ? null : current.first;
+      });
+    } catch (_) {}
   }
 
   @override

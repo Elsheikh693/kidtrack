@@ -8,12 +8,14 @@ class HomeworkTabController extends GetxController {
   final classrooms = <ClassroomModel>[].obs;
   final selectedClassroomId = 'all'.obs;
   final selectedSubjectName = 'all'.obs;
-  final selectedDateFilter = 2.obs; // 0=week, 1=month, 2=all
+  // 0=week, 1=month, 2=all, 3=today (homework due to be delivered today).
+  // Defaults to "today" so the teacher lands on what's due now.
+  final selectedDateFilter = 3.obs;
 
   // homeworkId → statuses
   final _statusesMap = <String, Map<String, HomeworkStatus>>{};
-  // homeworkId → childIds whose parent confirmed at home
-  final _submissionsMap = <String, Set<String>>{};
+  // homeworkId → (childId → parent submission, incl. "how did it go" answers)
+  final _submissionsMap = <String, Map<String, HomeworkSubmissionModel>>{};
   // classroomId → children
   final _childrenMap = <String, List<ChildModel>>{};
   // flat list of all loaded homework
@@ -74,7 +76,8 @@ class HomeworkTabController extends GetxController {
       _service.getHomeworkSubmissions(nurseryId: nurseryId, homeworkId: hwId),
     ]);
     _statusesMap[hwId] = results[0] as Map<String, HomeworkStatus>;
-    _submissionsMap[hwId] = results[1] as Set<String>;
+    _submissionsMap[hwId] =
+        results[1] as Map<String, HomeworkSubmissionModel>;
   }
 
   // ── Filters ───────────────────────────────────────────────────────────────
@@ -113,8 +116,26 @@ class HomeworkTabController extends GetxController {
     final sName = selectedSubjectName.value;
     if (sName != 'all') list = list.where((hw) => hw.subjectName == sName).toList();
 
-    final from = _fromMs();
-    if (from != null) list = list.where((hw) => (hw.createdAt ?? 0) >= from).toList();
+    if (selectedDateFilter.value == 3) {
+      // "Due today": homework whose delivery date is today. When no due date
+      // was set, fall back to homework assigned today.
+      final now = DateTime.now();
+      final start =
+          DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
+      final end = DateTime(now.year, now.month, now.day)
+          .add(const Duration(days: 1))
+          .millisecondsSinceEpoch;
+      list = list.where((hw) {
+        final due = hw.dueDate;
+        if (due != null) return due >= start && due < end;
+        return (hw.createdAt ?? 0) >= start && (hw.createdAt ?? 0) < end;
+      }).toList();
+    } else {
+      final from = _fromMs();
+      if (from != null) {
+        list = list.where((hw) => (hw.createdAt ?? 0) >= from).toList();
+      }
+    }
 
     list.sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
     return list;
@@ -169,7 +190,12 @@ class HomeworkTabController extends GetxController {
   // Reviewed : children the teacher has marked an assessment for
 
   int submittedCount(HomeworkModel hw) =>
-      (_submissionsMap[hw.key ?? ''] ?? const <String>{}).length;
+      (_submissionsMap[hw.key ?? ''] ?? const {}).length;
+
+  /// Parent submissions (incl. "how did it go" answers) for a homework,
+  /// keyed by childId. Empty when no parent has confirmed yet.
+  Map<String, HomeworkSubmissionModel> submissionsFor(String hwId) =>
+      _submissionsMap[hwId] ?? const {};
 
   int awaitingCount(HomeworkModel hw) =>
       (totalChildren(hw) - submittedCount(hw)).clamp(0, 1 << 30);

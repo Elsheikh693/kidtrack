@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../classroom_activity/activity_photo_model.dart';
 
 enum EventCategory {
   fun,
@@ -62,6 +63,24 @@ class NurseryEventModel {
   final int attendeesCount;
   final bool isActive;
 
+  /// Event photos, keyed `photoId → ActivityPhoto`. Any staff member may upload
+  /// (stored `isApproved = false`); a reviewer approves them for guardians.
+  /// Reuses the generic [ActivityPhoto] model — `classroom` audience means
+  /// "everyone", `children` means specific children's guardians.
+  final Map<String, ActivityPhoto> photos;
+
+  /// How many days the event's photo carousel stays on the parents' home after
+  /// the photos are published. 0 = never show the home banner. Set by the
+  /// reviewer (manager/owner) when approving the photos.
+  final int photosBannerDays;
+
+  /// When the event's photos were approved/published (ms).
+  final int? photosPublishedAt;
+
+  /// Id of the social-feed gallery post created when the photos were published
+  /// — lets a re-approval update that same post instead of creating a new one.
+  final String? photosPostId;
+
   const NurseryEventModel({
     required this.id,
     required this.nurseryId,
@@ -79,9 +98,32 @@ class NurseryEventModel {
     required this.createdAt,
     this.attendeesCount = 0,
     this.isActive = true,
+    this.photos = const {},
+    this.photosBannerDays = 0,
+    this.photosPublishedAt,
+    this.photosPostId,
   });
 
   bool get isUpcoming => date > DateTime.now().millisecondsSinceEpoch;
+
+  // ── Photo helpers (mirror ClassroomActivityModel) ──────────────────────────
+
+  /// Every photo URL regardless of approval — staff-facing views.
+  List<String> get allPhotoUrls =>
+      photos.values.map((p) => p.url).where((u) => u.isNotEmpty).toList();
+
+  /// Approved photo URLs a specific child's guardian may see (everyone or
+  /// targeted to that child) — the guardian-facing filter.
+  List<String> approvedUrlsForChild(String childId) => photos.values
+      .where((p) => p.isApproved && p.visibleTo(childId))
+      .map((p) => p.url)
+      .where((u) => u.isNotEmpty)
+      .toList();
+
+  bool get hasPendingPhotos => photos.values.any((p) => !p.isApproved);
+
+  int get pendingPhotoCount =>
+      photos.values.where((p) => !p.isApproved).length;
 
   /// A real fee was set (parents should be shown the amount); otherwise free.
   bool get hasPrice => price != null && price! > 0;
@@ -115,7 +157,22 @@ class NurseryEventModel {
       createdAt: _parseInt(json['createdAt']) ?? DateTime.now().millisecondsSinceEpoch,
       attendeesCount: _parseInt(json['attendeesCount']) ?? 0,
       isActive: json['isActive'] != false,
+      photos: _parsePhotos(json['photos']),
+      photosBannerDays: _parseInt(json['photosBannerDays']) ?? 0,
+      photosPublishedAt: _parseInt(json['photosPublishedAt']),
+      photosPostId: json['photosPostId']?.toString(),
     );
+  }
+
+
+  static Map<String, ActivityPhoto> _parsePhotos(dynamic raw) {
+    if (raw == null || raw is! Map) return {};
+    final out = <String, ActivityPhoto>{};
+    for (final e in raw.entries) {
+      final id = e.key.toString();
+      out[id] = ActivityPhoto.fromValue(id, e.value);
+    }
+    return out;
   }
 
   Map<String, dynamic> toJson() {
@@ -156,6 +213,10 @@ class NurseryEventModel {
     int? createdAt,
     int? attendeesCount,
     bool? isActive,
+    Map<String, ActivityPhoto>? photos,
+    int? photosBannerDays,
+    int? photosPublishedAt,
+    String? photosPostId,
   }) =>
       NurseryEventModel(
         id: id ?? this.id,
@@ -174,6 +235,10 @@ class NurseryEventModel {
         createdAt: createdAt ?? this.createdAt,
         attendeesCount: attendeesCount ?? this.attendeesCount,
         isActive: isActive ?? this.isActive,
+        photos: photos ?? this.photos,
+        photosBannerDays: photosBannerDays ?? this.photosBannerDays,
+        photosPublishedAt: photosPublishedAt ?? this.photosPublishedAt,
+        photosPostId: photosPostId ?? this.photosPostId,
       );
 
   static int? _parseInt(dynamic v) {

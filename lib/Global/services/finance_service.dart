@@ -57,6 +57,7 @@ class FinanceService {
     if (!invoiceOk) return false;
 
     final payment = PaymentModel(
+      key: const Uuid().v4(),
       nurseryId: invoice.nurseryId,
       invoiceId: invoice.key ?? '',
       childId: invoice.childId,
@@ -71,7 +72,7 @@ class FinanceService {
     await _paymentService.addData(
       item: payment,
       toJson: (m) => m.toJson(),
-      id: '',
+      id: payment.key ?? '',
       voidCallBack: (status) => paymentOk = status == ResponseStatus.success,
     );
 
@@ -139,7 +140,7 @@ class FinanceService {
     await _txService.addData(
       item: tx,
       toJson: (m) => m.toJson(),
-      id: '',
+      id: tx.key ?? '',
       voidCallBack: (_) {},
     );
   }

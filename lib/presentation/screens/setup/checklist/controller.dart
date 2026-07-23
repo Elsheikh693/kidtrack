@@ -23,6 +23,7 @@ class SetupChecklistController extends GetxController {
   late final SubjectParentService _subjectService;
   late final PackageParentService _packageService;
   late final PaymentAccountParentService _paymentAccountService;
+  late final NurseryParentService _nurseryService;
   late final SessionService _session;
 
   @override
@@ -37,6 +38,7 @@ class SetupChecklistController extends GetxController {
     _subjectService = Get.find<SubjectParentService>();
     _packageService = Get.find<PackageParentService>();
     _paymentAccountService = Get.find<PaymentAccountParentService>();
+    _nurseryService = Get.find<NurseryParentService>();
     _session = Get.find<SessionService>();
     _buildGroups();
     recompute();
@@ -48,10 +50,11 @@ class SetupChecklistController extends GetxController {
 
   bool isDone(String id) => doneIds.contains(id);
 
-  int get totalCount => groups.fold(0, (n, g) => n + g.steps.length);
+  int get totalCount =>
+      groups.fold(0, (n, g) => n + g.steps.where((s) => !s.optional).length);
 
-  int get doneCount =>
-      groups.fold(0, (n, g) => n + g.steps.where((s) => isDone(s.id)).length);
+  int get doneCount => groups.fold(
+      0, (n, g) => n + g.steps.where((s) => !s.optional && isDone(s.id)).length);
 
   double get progress => totalCount == 0 ? 0 : doneCount / totalCount;
 
@@ -77,6 +80,10 @@ class SetupChecklistController extends GetxController {
       SetupGroup(
         titleKey: 'setup_hub_group_finance',
         steps: [_stepPackages, _stepPaymentAccounts],
+      ),
+      SetupGroup(
+        titleKey: 'setup_hub_group_policies',
+        steps: [_stepPrivacyPolicy],
       ),
     ];
   }
@@ -153,6 +160,15 @@ class SetupChecklistController extends GetxController {
         route: nurseryPaymentAccountsView,
       );
 
+  SetupStep get _stepPrivacyPolicy => const SetupStep(
+        id: 'privacy_policy',
+        titleKey: 'setup_hub_step_privacy_title',
+        subtitleKey: 'setup_hub_step_privacy_sub',
+        icon: Icons.privacy_tip_rounded,
+        route: managerPrivacyPolicyView,
+        optional: true,
+      );
+
   // ── Navigation ──────────────────────────────────────────────────────────────
 
   /// Opens a task's management screen, then re-probes completion on return so
@@ -221,6 +237,12 @@ class SetupChecklistController extends GetxController {
       _paymentAccountService.getAll(callBack: (list) {
         if (list.whereType<PaymentAccountModel>().isNotEmpty) {
           done.add('payment_accounts');
+        }
+      }),
+      // Optional step: done as soon as the nursery has ≥1 privacy-policy clause.
+      _nurseryService.getOne(_session.nurseryId ?? '').then((n) {
+        if ((n?.privacyPolicy ?? const <String>[]).isNotEmpty) {
+          done.add('privacy_policy');
         }
       }),
     ]);

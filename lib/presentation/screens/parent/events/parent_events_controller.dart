@@ -8,14 +8,23 @@ class ParentEventsController extends GetxController {
   late final SessionService _session;
 
   final upcomingEvents = <NurseryEventModel>[].obs;
+
+  /// Events (any date) that carry approved photos for the active child — the
+  /// parent's fun-day photo albums. Newest first.
+  final photoAlbums = <NurseryEventModel>[].obs;
   final isLoading = true.obs;
 
   final attendingMap = <String, bool>{}.obs;
+
+  List<NurseryEventModel> _allEvents = const [];
 
   String get _parentId => _session.userId ?? '';
   String get _parentName => _session.currentUser?.displayName ?? 'ولي الأمر';
   String _activeChildId = '';
   String _activeChildName = '';
+  String _activeChildBranchId = '';
+
+  String get activeChildId => _activeChildId;
 
   StreamSubscription<List<NurseryEventModel>>? _eventsSub;
   Worker? _childWorker;
@@ -31,6 +40,7 @@ class ParentEventsController extends GetxController {
       Get.find<ActiveChildService>().childId,
       (_) {
         _resolveActiveChild();
+        _recompute();
         _refreshAttendance();
       },
     );
@@ -47,15 +57,47 @@ class ParentEventsController extends GetxController {
     final svc = Get.find<ActiveChildService>();
     _activeChildId = svc.childId.value;
     _activeChildName = svc.childName.value;
+    _activeChildBranchId = svc.branchId.value;
   }
 
   void _subscribeEvents() {
     _eventsSub?.cancel();
-    _eventsSub = _service.watchUpcomingEvents().listen((list) async {
-      upcomingEvents.assignAll(list);
+    // Watch the full events list so we can surface photo albums for past events
+    // too (fun-day photos are usually approved on/after the event day). The
+    // upcoming (RSVP) list is derived locally, preserving prior behavior.
+    _eventsSub = _service.watchAllEvents().listen((list) async {
+      _allEvents = list;
+      _recompute();
       isLoading.value = false;
       await _refreshAttendance();
     });
+  }
+
+  void _recompute() {
+    final now = DateTime.now();
+    final startOfToday =
+        DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
+    // A parent only sees events for their active child's branch (plus
+    // all-branch events whose branchId is empty). Parents have no session
+    // branch, so scope by the CHILD's branch, mirroring how classroom-scoped
+    // content is filtered on the guardian side.
+    upcomingEvents.assignAll(
+      _allEvents
+          .where((e) =>
+              e.isActive &&
+              e.date >= startOfToday &&
+              SessionService.branchVisible(_activeChildBranchId, e.branchId))
+          .toList(),
+    );
+    final cid = _activeChildId;
+    photoAlbums.assignAll(
+      cid.isEmpty
+          ? const <NurseryEventModel>[]
+          : (_allEvents
+              .where((e) => e.approvedUrlsForChild(cid).isNotEmpty)
+              .toList()
+            ..sort((a, b) => b.date.compareTo(a.date))),
+    );
   }
 
   Future<void> _refreshAttendance() async {

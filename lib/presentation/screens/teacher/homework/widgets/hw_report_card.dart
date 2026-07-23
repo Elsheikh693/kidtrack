@@ -55,6 +55,7 @@ class HwReportCard extends StatelessWidget {
         homework: homework,
         children: children,
         initialStatuses: statuses,
+        submissions: ctrl.submissionsFor(hwId),
       ),
       transition: Transition.rightToLeft,
     );

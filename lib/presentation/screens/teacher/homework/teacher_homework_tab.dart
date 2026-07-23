@@ -101,7 +101,8 @@ class _TeacherHomeworkTabState extends State<TeacherHomeworkTab>
                                   _SummaryCard(ctrl: ctrl),
                                   SizedBox(height: 16.h),
                                   _SectionLabel(
-                                    label: 'واجبات الفصل  (${list.length})',
+                                    label:
+                                        '${ctrl.selectedDateFilter.value == 3 ? 'hw_today_section'.tr : 'hw_section_class'.tr}  (${list.length})',
                                   ),
                                   SizedBox(height: 10.h),
                                 ],
@@ -216,6 +217,7 @@ class _Header extends StatelessWidget {
 
   void _showDateSheet(BuildContext context) {
     final options = [
+      ('hw_filter_today'.tr, 3),
       ('hw_filter_week'.tr, 0),
       ('hw_filter_month'.tr, 1),
       ('hw_filter_all'.tr, 2),
@@ -361,11 +363,12 @@ class _Header extends StatelessWidget {
                 final subjects = ctrl.availableSubjectNames.toList();
                 ctrl.refreshToken;
 
-                final dateLabel = [
-                  'hw_filter_week'.tr,
-                  'hw_filter_month'.tr,
-                  'hw_filter_all'.tr,
-                ][dateIdx];
+                final dateLabel = switch (dateIdx) {
+                  0 => 'hw_filter_week'.tr,
+                  1 => 'hw_filter_month'.tr,
+                  3 => 'hw_filter_today'.tr,
+                  _ => 'hw_filter_all'.tr,
+                };
 
                 final cls = classrooms
                     .where((c) => c.key == classId)

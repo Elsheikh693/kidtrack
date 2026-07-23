@@ -51,6 +51,12 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                   iconColor: const Color(0xFFDC2626),
                   onTap: () => Get.toNamed(appTutorialView),
                 ),
+                _MenuItem(
+                  labelKey: 'events_menu_item',
+                  icon: Icons.celebration_rounded,
+                  iconColor: const Color(0xFF6366F1),
+                  onTap: () => Get.toNamed(staffEventsListView),
+                ),
               ],
             ),
             if (controller.isTeacher)

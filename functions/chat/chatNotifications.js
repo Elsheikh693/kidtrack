@@ -43,7 +43,7 @@ async function handleChatMessage({ message, nurseryId, childId }) {
       await notificationService.send({
         recipients: [{ uid: meta.parentId, role: Role.parent }],
         nurseryId,
-        title: `رسالة من الحضانة بخصوص ${childName} 💬`,
+        title: `رسالة من الحضانة بخصوص ${childName}`,
         body: text,
         type: NotificationType.chat,
         entityId: childId,
@@ -68,7 +68,7 @@ async function handleChatMessage({ message, nurseryId, childId }) {
     await notificationService.send({
       recipients,
       nurseryId,
-      title: `رسالة من ${meta.parentName || "ولي أمر"} (${childName}) 💬`,
+      title: `رسالة من ${meta.parentName || "ولي أمر"} (${childName})`,
       body: text,
       type: NotificationType.chat,
       entityId: childId,

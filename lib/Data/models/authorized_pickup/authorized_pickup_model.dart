@@ -6,6 +6,7 @@ class AuthorizedPickupModel {
   final String relationship; // father, mother, grandfather, grandmother, uncle, aunt, driver, other
   final String? phone;
   final String? idNumber;
+  final String? idImage; // photo of the person's ID card
   final String? profileImage;
   final bool isActive;
   // null = permanent, set = valid until end of that day (milliseconds)
@@ -22,6 +23,7 @@ class AuthorizedPickupModel {
     this.relationship = 'other',
     this.phone,
     this.idNumber,
+    this.idImage,
     this.profileImage,
     this.isActive = true,
     this.validUntil,
@@ -49,6 +51,7 @@ class AuthorizedPickupModel {
       relationship: json['relationship']?.toString() ?? 'other',
       phone: json['phone']?.toString(),
       idNumber: json['idNumber']?.toString(),
+      idImage: json['idImage']?.toString(),
       profileImage: json['profileImage']?.toString(),
       isActive: _parseBool(json['isActive']),
       validUntil: _parseInt(json['validUntil']),
@@ -68,6 +71,7 @@ class AuthorizedPickupModel {
     data['relationship'] = relationship;
     put('phone', phone);
     put('idNumber', idNumber);
+    put('idImage', idImage);
     put('profileImage', profileImage);
     data['isActive'] = isActive;
     put('validUntil', validUntil);
@@ -79,14 +83,15 @@ class AuthorizedPickupModel {
 
   AuthorizedPickupModel copyWith({
     String? key, String? nurseryId, String? childId, String? name,
-    String? relationship, String? phone, String? idNumber,
+    String? relationship, String? phone, String? idNumber, String? idImage,
     String? profileImage, bool? isActive, int? validUntil,
     String? addedBy, int? createdAt, int? updatedAt,
   }) => AuthorizedPickupModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
     childId: childId ?? this.childId, name: name ?? this.name,
     relationship: relationship ?? this.relationship, phone: phone ?? this.phone,
-    idNumber: idNumber ?? this.idNumber, profileImage: profileImage ?? this.profileImage,
+    idNumber: idNumber ?? this.idNumber, idImage: idImage ?? this.idImage,
+    profileImage: profileImage ?? this.profileImage,
     isActive: isActive ?? this.isActive,
     validUntil: validUntil ?? this.validUntil,
     addedBy: addedBy ?? this.addedBy,

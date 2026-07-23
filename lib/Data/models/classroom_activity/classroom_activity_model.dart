@@ -29,6 +29,11 @@ class ClassroomActivityModel {
   final String? key;
   final String nurseryId;
   final String classroomId;
+  // Branch that owns this activity — stamped from the teacher's branch at
+  // creation. Empty for legacy records (before branch-stamping / backfill).
+  // Used to keep classroom-scoped content from leaking across branches when a
+  // classroom is shared (isAllBranches). See SessionService.branchVisible.
+  final String? branchId;
   final String? subjectId;
   final String? subjectName;
   final String title;
@@ -49,11 +54,16 @@ class ClassroomActivityModel {
   final int? createdAt;
   // snapshot of child IDs present when activity started — used for timeline fan-out
   final List<String> childIds;
+  // 'class'  → whole-classroom session (default; also all legacy records)
+  // 'activity' → teacher picked a specific subset of children; childIds is the
+  // fixed participant set the live panels + reports scope to.
+  final String mode;
 
   const ClassroomActivityModel({
     this.key,
     required this.nurseryId,
     required this.classroomId,
+    this.branchId,
     this.subjectId,
     this.subjectName,
     required this.title,
@@ -68,9 +78,14 @@ class ClassroomActivityModel {
     this.groupNote,
     this.createdAt,
     this.childIds = const [],
+    this.mode = 'class',
   });
 
   bool get isActive => status == 'active';
+
+  /// True when the teacher started this as a subset "activity" (picked
+  /// specific children) rather than a whole-class session.
+  bool get isActivityMode => mode == 'activity';
 
   Duration get elapsed =>
       DateTime.fromMillisecondsSinceEpoch(
@@ -124,6 +139,7 @@ class ClassroomActivityModel {
       key: key ?? json['key']?.toString(),
       nurseryId: json['nurseryId']?.toString() ?? '',
       classroomId: json['classroomId']?.toString() ?? '',
+      branchId: json['branchId']?.toString(),
       subjectId: json['subjectId']?.toString(),
       subjectName: json['subjectName']?.toString(),
       title: json['title']?.toString() ?? '',
@@ -138,6 +154,7 @@ class ClassroomActivityModel {
       groupNote: json['groupNote']?.toString(),
       createdAt: _parseInt(json['createdAt']),
       childIds: _parseStringList(json['childIds']),
+      mode: json['mode']?.toString() ?? 'class',
     );
   }
 
@@ -150,6 +167,7 @@ class ClassroomActivityModel {
     put('key', key);
     data['nurseryId'] = nurseryId;
     data['classroomId'] = classroomId;
+    put('branchId', branchId);
     put('subjectId', subjectId);
     put('subjectName', subjectName);
     data['title'] = title;
@@ -173,6 +191,7 @@ class ClassroomActivityModel {
     put('groupNote', groupNote);
     put('createdAt', createdAt ?? _now());
     if (childIds.isNotEmpty) data['childIds'] = childIds;
+    data['mode'] = mode;
     return data;
   }
 
@@ -180,6 +199,7 @@ class ClassroomActivityModel {
     String? key,
     String? nurseryId,
     String? classroomId,
+    String? branchId,
     String? subjectId,
     String? subjectName,
     String? title,
@@ -194,11 +214,13 @@ class ClassroomActivityModel {
     String? groupNote,
     int? createdAt,
     List<String>? childIds,
+    String? mode,
   }) =>
       ClassroomActivityModel(
         key: key ?? this.key,
         nurseryId: nurseryId ?? this.nurseryId,
         classroomId: classroomId ?? this.classroomId,
+        branchId: branchId ?? this.branchId,
         subjectId: subjectId ?? this.subjectId,
         subjectName: subjectName ?? this.subjectName,
         title: title ?? this.title,
@@ -213,6 +235,7 @@ class ClassroomActivityModel {
         groupNote: groupNote ?? this.groupNote,
         createdAt: createdAt ?? this.createdAt,
         childIds: childIds ?? this.childIds,
+        mode: mode ?? this.mode,
       );
 
   static int _now() => DateTime.now().millisecondsSinceEpoch;

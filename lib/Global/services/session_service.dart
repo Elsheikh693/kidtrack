@@ -21,6 +21,7 @@ class SessionService {
   static const _viewModeKey = 'session_view_mode';
   static const _actingBranchKey = 'session_acting_branch';
   static const _reviewPhotosKey = 'session_review_photos';
+  static const _membershipCountKey = 'session_membership_count';
 
   // ─── In-memory state ──────────────────────────────────────────────────────
   UserModel? _currentUser;
@@ -31,6 +32,10 @@ class SessionService {
   // managers get it implicitly (see [canReviewPhotos]); other staff (e.g.
   // reception) only when the owner turns it on for them.
   bool _canReviewPhotos = false;
+
+  // How many memberships (role × nursery) the current identity holds. Set at
+  // login; drives whether the in-app "switch role" entry point is shown.
+  int _membershipCount = 0;
 
   // Temporary "act as" override. The real identity in [_currentUser] is never
   // touched — an owner stays `userType == owner` forever. [_viewMode] only
@@ -104,11 +109,35 @@ class SessionService {
   /// classroom from seeing children of a different branch: classroom rosters are
   /// queried by classroomId (which can span branches), so each child must also
   /// pass this branch check.
-  bool seesBranch(String? entityBranchId) {
+  bool seesBranch(String? entityBranchId) =>
+      branchVisible(branchId, entityBranchId);
+
+  /// Pure branch-scope check reused wherever a viewer's branch must be matched
+  /// against a piece of content — not only the logged-in user. Guardians filter
+  /// classroom-scoped content (activities/photos/homework/schedule) by their
+  /// CHILD's branch, so they call this with the child branch rather than
+  /// [seesBranch] (which uses the session branch). Semantics mirror [seesBranch]
+  /// and [seesShift]: an unbound viewer (empty [viewerBranchId]) sees every
+  /// branch, and empty [entityBranchId] (legacy / un-backfilled content) is
+  /// treated as visible so nothing is hidden before the branch backfill runs.
+  static bool branchVisible(String? viewerBranchId, String? entityBranchId) {
+    if (viewerBranchId == null || viewerBranchId.isEmpty) return true;
+    if (entityBranchId == null || entityBranchId.isEmpty) return true;
+    return entityBranchId == viewerBranchId;
+  }
+
+  /// List form of [seesBranch] for records tagged with several branches (or a
+  /// single one wrapped in a list) — this is what [BranchScoped.scopeBranches]
+  /// feeds. Mirrors [seesBranch]/[seesAnyShift]: an unbound viewer (empty
+  /// session branch) sees every branch, and an unscoped record (no non-empty
+  /// branch ids) stays visible to everyone so legacy / not-yet-backfilled data
+  /// is never hidden while the branch backfill is still running.
+  bool seesAnyBranch(List<String> entityBranchIds) {
     final mine = branchId;
     if (mine == null || mine.isEmpty) return true;
-    if (entityBranchId == null || entityBranchId.isEmpty) return true;
-    return entityBranchId == mine;
+    final scoped = entityBranchIds.where((b) => b.isNotEmpty);
+    if (scoped.isEmpty) return true;
+    return scoped.contains(mine);
   }
 
   bool get isLoggedIn => _currentUser != null && !(_currentUser!.isGuest);
@@ -120,6 +149,8 @@ class SessionService {
   bool get isSuperAdmin => userType == UserType.superAdmin;
 
   bool get isOwner => userType == UserType.owner;
+
+  bool get isBranchManager => userType == UserType.branchManager;
 
   bool get isTeacher => userType == UserType.teacher;
 
@@ -143,6 +174,10 @@ class SessionService {
   bool get canReviewPhotos =>
       isOwner || userType == UserType.branchManager || _canReviewPhotos;
 
+  /// Whether this identity wears more than one hat (teacher + mum, staff at two
+  /// nurseries, …) — the condition for showing the in-app role switcher.
+  bool get hasMultipleRoles => _membershipCount >= 2;
+
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   Future<void> init() async {
@@ -151,6 +186,7 @@ class SessionService {
     await _restoreBranchId();
     await _restoreShift();
     await _restoreReviewPhotos();
+    await _restoreMembershipCount();
     await _restoreViewMode();
     AppLogger.info(
       'SESSION',
@@ -227,6 +263,13 @@ class SessionService {
     }
   }
 
+  // ─── Membership count ───────────────────────────────────────────────────────
+
+  Future<void> saveMembershipCount(int count) async {
+    _membershipCount = count;
+    await StorageService().setData(_membershipCountKey, {'n': count});
+  }
+
   // ─── View Mode (Acting As) ──────────────────────────────────────────────────
 
   /// Owner enters "manager of [branchId]" view. No-op for non-owners. The real
@@ -285,6 +328,7 @@ class SessionService {
     _branchId = null;
     _shiftIds = [];
     _canReviewPhotos = false;
+    _membershipCount = 0;
     _viewMode = null;
     _actingBranchId = null;
     ApiConstants.setNurseryId('');
@@ -293,6 +337,7 @@ class SessionService {
     await StorageService().remove(_branchIdKey);
     await StorageService().remove(_shiftKey);
     await StorageService().remove(_reviewPhotosKey);
+    await StorageService().remove(_membershipCountKey);
     await StorageService().remove(_viewModeKey);
     await StorageService().remove(_actingBranchKey);
     AppLogger.info('SESSION', 'Session cleared — logged out');
@@ -355,6 +400,15 @@ class SessionService {
       _canReviewPhotos = data?['v'] == true;
     } catch (e) {
       AppLogger.warning('SESSION', 'Could not restore reviewPhotos: $e');
+    }
+  }
+
+  Future<void> _restoreMembershipCount() async {
+    try {
+      final n = StorageService().getData(_membershipCountKey)?['n'];
+      if (n is int) _membershipCount = n;
+    } catch (e) {
+      AppLogger.warning('SESSION', 'Could not restore membershipCount: $e');
     }
   }
 

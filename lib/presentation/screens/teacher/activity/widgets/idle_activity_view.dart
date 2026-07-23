@@ -14,7 +14,9 @@ class IdleActivityView extends StatelessWidget {
   });
 
   final TeacherActivityController ctrl;
-  final VoidCallback onStart;
+
+  /// Opens the start sheet in the given mode ('class' | 'activity').
+  final void Function(String mode) onStart;
 
   void _showQuickHomework(BuildContext context) {
     showModalBottomSheet(
@@ -78,10 +80,33 @@ class IdleActivityView extends StatelessWidget {
           );
         }),
 
-        // ── Start new activity CTA ───────────────────────────────────────────
+        // ── Start CTAs: whole-class session + focused subset activity ────────
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-          sliver: SliverToBoxAdapter(child: StartActivityCta(onStart: onStart)),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              children: [
+                StartActivityCta(
+                  title: 'teacher_activity_cta_class_title'.tr,
+                  subtitle: 'teacher_activity_cta_class_sub'.tr,
+                  icon: Icons.groups_rounded,
+                  colors: [AppColors.primary, AppColors.activityPurple],
+                  onStart: () => onStart('class'),
+                ),
+                const SizedBox(height: 12),
+                StartActivityCta(
+                  title: 'teacher_activity_cta_activity_title'.tr,
+                  subtitle: 'teacher_activity_cta_activity_sub'.tr,
+                  icon: Icons.auto_awesome_rounded,
+                  colors: const [
+                    AppColors.activityGreen,
+                    AppColors.activityGreenDark,
+                  ],
+                  onStart: () => onStart('activity'),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

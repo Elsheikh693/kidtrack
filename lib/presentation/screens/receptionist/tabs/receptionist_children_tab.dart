@@ -35,7 +35,11 @@ class _ReceptionistChildrenTabState extends State<ReceptionistChildrenTab> {
         disableScroll: true,
         child: Column(
           children: [
-            const _ChildrenTopBar(),
+            AppTitleBar(
+              title: 'child_list_title'.tr,
+              onNotificationTap: () => Get.toNamed(notificationsView),
+              onSettingsTap: () => Get.toNamed(settingsView),
+            ),
             // Everything below the title bar scrolls together — the stat
             // cards, search, and withdrawn card scroll away with the list.
             Expanded(
@@ -96,6 +100,8 @@ class _ReceptionistChildrenTabState extends State<ReceptionistChildrenTab> {
                                 onTap: () => controller.openProfile(child),
                                 onChat: () => controller.openChat(child),
                                 chatUnread: controller.chatUnread(child.key),
+                                shiftStartMinutes:
+                                    controller.shiftStart(child.shift),
                               );
                             }, childCount: items.length),
                           ),
@@ -110,58 +116,6 @@ class _ReceptionistChildrenTabState extends State<ReceptionistChildrenTab> {
       ),
     );
   }
-}
-
-class _ChildrenTopBar extends StatelessWidget {
-  const _ChildrenTopBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 14, 22, 14),
-          child: Row(
-            children: [
-              Text(
-                'child_list_title'.tr,
-                style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF111827),
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const Spacer(),
-              _IconBtn(
-                icon: Icons.notifications_none_rounded,
-                onTap: () => Get.toNamed(notificationsView),
-              ),
-              const SizedBox(width: 14),
-              _IconBtn(
-                icon: Icons.settings_outlined,
-                onTap: () => Get.toNamed(settingsView),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _IconBtn extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _IconBtn({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Icon(icon, size: 25, color: const Color(0xFF374151)),
-  );
 }
 
 class _SearchRow extends StatelessWidget {

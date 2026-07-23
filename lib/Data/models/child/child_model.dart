@@ -1,4 +1,9 @@
-class ChildModel {
+import '../core/branch_scoped.dart';
+
+class ChildModel implements BranchScoped {
+  @override
+  List<String> get scopeBranches => branchId.isEmpty ? const [] : [branchId];
+
   final String? key;
   final String nurseryId;
   final String branchId;

@@ -56,6 +56,10 @@ class OwnerAccountTab extends StatelessWidget {
             child: _OwnerProfileCard(session: session),
           ),
         ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
+        ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           sliver: SliverToBoxAdapter(

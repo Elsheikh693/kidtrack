@@ -140,6 +140,10 @@ class _CategoryFilterBar extends StatelessWidget {
         return const Color(0xFFD97706);
       case PostCategory.reminder:
         return const Color(0xFF0891B2);
+      case PostCategory.starOfWeek:
+        return const Color(0xFFE0A100);
+      case PostCategory.gallery:
+        return const Color(0xFF6366F1);
       default:
         return const Color(0xFF7C3AED);
     }

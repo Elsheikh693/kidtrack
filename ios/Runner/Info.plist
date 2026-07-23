@@ -50,13 +50,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>نحتاج الوصول للكاميرا لالتقاط الصور</string>
+	<string>يستخدم التطبيق الكاميرا لالتقاط صور أنشطة الأطفال وفعاليات الحضانة ومستندات التسجيل ورفعها لمشاركتها مع أولياء الأمور والإدارة. This app uses the camera to take photos of children's activities, nursery events, and registration documents to share with parents and staff.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>نحتاج الوصول لموقعك لتحديد موقع الحضانة على الخريطة</string>
+	<string>يستخدم التطبيق موقعك لعرض موقع الحضانة على الخريطة. This app uses your location to show the nursery's location on the map.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>نحتاج الوصول لمكتبة الصور لحفظ الصور</string>
+	<string>يستخدم التطبيق مكتبة الصور لحفظ صور أنشطة الأطفال والفعاليات على جهازك. This app saves photos of children's activities and events to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>نحتاج الوصول لمكتبة الصور لرفع الصور</string>
+	<string>يستخدم التطبيق مكتبة الصور لاختيار الصور ورفعها لأنشطة الأطفال والفعاليات والملفات الشخصية ومستندات التسجيل. This app accesses your photo library to select and upload photos for children's activities, events, profiles, and registration documents.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

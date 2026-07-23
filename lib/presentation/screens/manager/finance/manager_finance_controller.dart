@@ -117,12 +117,16 @@ class ManagerFinanceController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
-    // Phase 1: children + guardians are independent — fetch together.
-    await Future.wait([_loadChildren(), _loadGuardians()]);
-    // Phase 2: invoices needs children+guardians.
-    await _loadInvoices();
-    _rebuildMonth();
-    isLoading.value = false;
+    try {
+      // Phase 1: children + guardians are independent — fetch together.
+      await Future.wait([_loadChildren(), _loadGuardians()]);
+      // Phase 2: invoices needs children+guardians.
+      await _loadInvoices();
+      _rebuildMonth();
+    } finally {
+      // Never leave the loader stuck if any step throws.
+      isLoading.value = false;
+    }
   }
 
   Future<void> _loadChildren() async {

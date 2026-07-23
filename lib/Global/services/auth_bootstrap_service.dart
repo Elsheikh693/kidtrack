@@ -78,18 +78,83 @@ class AuthBootstrapService {
       final data = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
       data['uid'] = uid;
 
-      final user = UserModel.fromJson(data);
+      // One identity can wear several hats (teacher + mum, or staff at two
+      // nurseries). When it does, let the person choose which membership this
+      // session runs as; the picker calls [finalizeMembership] with the choice.
+      final memberships = await Get.find<IdentityService>().memberships(uid);
+      await _session.saveMembershipCount(memberships.length);
+      if (memberships.length >= 2) {
+        Get.offAllNamed(membershipPickerView, arguments: {
+          'uid': uid,
+          'identity': data,
+          'memberships': memberships.map((m) => m.toJson()).toList(),
+        });
+        return true;
+      }
 
-      // Restore nursery scope
-      final nurseryId = data['nurseryId']?.toString() ?? '';
+      // Single membership → that one. Legacy account (no memberships node yet) →
+      // fall back to the scalar userType/nurseryId written on the users node.
+      final String role;
+      final String nurseryId;
+      final String branchId;
+      if (memberships.length == 1) {
+        final m = memberships.first;
+        role = m.role;
+        nurseryId = m.nurseryId;
+        branchId = m.branchId ?? (data['branchId']?.toString() ?? '');
+      } else {
+        role = data['userType']?.toString() ?? '';
+        nurseryId = data['nurseryId']?.toString() ?? '';
+        branchId = data['branchId']?.toString() ?? '';
+      }
+
+      return finalizeMembership(
+        uid: uid,
+        identity: data,
+        role: role,
+        nurseryId: nurseryId,
+        branchId: branchId,
+      );
+    } catch (_) {
+      Loader.showError('login_error_general'.tr);
+      await FirebaseAuth.instance.signOut();
+      return false;
+    }
+  }
+
+  /// Applies a chosen membership (role × nursery × branch) to the session, runs
+  /// the staff active/branch/shift guards, seeds telemetry and routes to main.
+  /// Shared by the single/legacy path above AND the membership picker, so both
+  /// go through the exact same guards. Returns true when navigation happened.
+  Future<bool> finalizeMembership({
+    required String uid,
+    required Map<String, dynamic> identity,
+    required String role,
+    required String nurseryId,
+    required String branchId,
+  }) async {
+    try {
+      final user = UserModel(
+        uid: uid,
+        name: identity['name']?.toString(),
+        phone: identity['phone']?.toString(),
+        email: identity['email']?.toString(),
+        userType: UserTypeExtension.fromString(role),
+      );
+
+      // Restore nursery/branch scope; reset staff-only scope (re-derived below).
       if (nurseryId.isNotEmpty) {
         await _session.saveNurseryId(nurseryId);
+      } else {
+        await _session.clearNurseryScope();
       }
-
-      final branchId = data['branchId']?.toString() ?? '';
       if (branchId.isNotEmpty) {
         await _session.saveBranchId(branchId);
+      } else {
+        _session.clearBranchId();
       }
+      await _session.saveShifts(const []);
+      await _session.saveReviewPhotos(false);
 
       // Staff active check + save branchId/shift from staff record
       if (user.userType?.hasStaffRecord == true && nurseryId.isNotEmpty) {

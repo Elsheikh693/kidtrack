@@ -39,6 +39,10 @@ class _ParentAccountViewState extends State<ParentAccountView> {
           physics: const BouncingScrollPhysics(),
           children: [
             AccountChildCard(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: RoleSwitchCard(),
+            ),
             AccountMenuSection(
               titleKey: 'parent_account_support_section',
               items: [
@@ -89,6 +93,12 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   icon: Icons.person_outline_rounded,
                   iconColor: AppColors.primary,
                   onTap: controller.editProfile,
+                ),
+                AccountMenuItem(
+                  labelKey: 'parent_account_pickup_section',
+                  icon: Icons.how_to_reg_outlined,
+                  iconColor: const Color(0xFFF59E0B),
+                  onTap: controller.navigateToPickup,
                 ),
                 // "الإشعارات" removed — the notifications inbox is already
                 // reachable from the bell in the app bar. Only the notification

@@ -137,7 +137,11 @@ exports.withdrawChild = onCall(async (request) => {
     })
   );
 
-  // Orphan-parent DB records: guardian profile (scan by uid), user, progress.
+  // Orphan-parent records: the guardian profile + nursery-scoped data always go.
+  // The GLOBAL identity (users/{uid}) + auth account are removed only when this
+  // nursery's guardian membership was the person's LAST one — they may still be
+  // staff here, or a guardian at another nursery, and wiping the identity would
+  // break those logins (a teacher who is also this child's mum).
   const parentsSnap = await db.ref(`${base}/parents`).get();
   const parentRecordKeyByUid = {};
   if (parentsSnap.exists()) {
@@ -146,18 +150,35 @@ exports.withdrawChild = onCall(async (request) => {
       if (p && p.uid) parentRecordKeyByUid[p.uid.toString()] = key;
     }
   }
+
+  const identityToDelete = []; // uids whose users/{uid} + auth account to remove
   for (const uid of orphanParents) {
     const recKey = parentRecordKeyByUid[uid];
     if (recKey) updates[`${base}/parents/${recKey}`] = null;
     updates[`${base}/courseProgress/${uid}`] = null;
-    updates[`users/${uid}`] = null;
+
+    const memSnap = await db.ref(`users/${uid}/memberships`).get();
+    const mems = memSnap.exists() ? memSnap.val() || {} : {};
+    const thisKey = `${nurseryId}_parent`;
+    const remaining = Object.keys(mems).filter((k) => k !== thisKey);
+
+    if (remaining.length === 0) {
+      // Legacy pure-parent, or their only membership — wipe the whole identity.
+      // (Don't also null the membership child path: Firebase rejects overlapping
+      // ancestor/descendant paths in one multi-location update.)
+      updates[`users/${uid}`] = null;
+      identityToDelete.push(uid);
+    } else {
+      // Other hats remain — drop just this nursery's guardian membership.
+      updates[`users/${uid}/memberships/${thisKey}`] = null;
+    }
   }
 
   await db.ref().update(updates);
 
-  // 6) Delete orphan parents' Firebase Auth accounts (Admin SDK only).
+  // 6) Delete Firebase Auth accounts ONLY for fully-orphaned identities.
   const deletedParents = [];
-  for (const uid of orphanParents) {
+  for (const uid of identityToDelete) {
     try {
       await admin.auth().deleteUser(uid);
       deletedParents.push(uid);

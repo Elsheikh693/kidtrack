@@ -58,6 +58,12 @@ class OwnerMoreTab extends StatelessWidget {
         color: Color(0xFF0891B2),
         route: ownerPhotoReviewSettingsView,
       ),
+      DashboardItem(
+        labelKey: 'manager_item_photo_approval',
+        icon: Icons.fact_check_rounded,
+        color: Color(0xFF0E7490),
+        route: managerPhotoApprovalSettingsView,
+      ),
     ],
   );
 

@@ -214,23 +214,27 @@ class ManagerChildrenController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     _riskReasons.clear();
-    // Phase 1: children, classrooms, staff and parents are independent.
-    await Future.wait(
-        [_loadChildren(), _loadClassrooms(), _loadStaff(), _loadParents()]);
-    // Phase 2: these all depend on phase 1's data but not on each other.
-    await Future.wait([
-      _loadEnrollments(),
-      _loadAttendance(),
-      _loadRiskSources(),
-      _loadOverdueFamilies(),
-      _loadWithdrawals(),
-    ]);
-    _buildRiskChildren();
-    // The roster (_branchChildKeys / names / images) is now fresh — fold in
-    // whatever the live attendance stream has already delivered.
-    _recomputePresence();
-    _filter();
-    isLoading.value = false;
+    try {
+      // Phase 1: children, classrooms, staff and parents are independent.
+      await Future.wait(
+          [_loadChildren(), _loadClassrooms(), _loadStaff(), _loadParents()]);
+      // Phase 2: these all depend on phase 1's data but not on each other.
+      await Future.wait([
+        _loadEnrollments(),
+        _loadAttendance(),
+        _loadRiskSources(),
+        _loadOverdueFamilies(),
+        _loadWithdrawals(),
+      ]);
+      _buildRiskChildren();
+      // The roster (_branchChildKeys / names / images) is now fresh — fold in
+      // whatever the live attendance stream has already delivered.
+      _recomputePresence();
+      _filter();
+    } finally {
+      // Never leave the loader stuck if any step throws.
+      isLoading.value = false;
+    }
   }
 
   /// Maps each child to its primary guardian (name + id) so the chat entry

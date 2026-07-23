@@ -17,6 +17,16 @@ class LatestPostCard extends StatelessWidget {
       final post = controller.latestPost.value;
       if (post == null) return const SizedBox.shrink();
 
+      // Mark it seen once it's actually rendered on the (active) home tab, so it
+      // never returns to the home peek — it lives on in the "يومياتنا" feed.
+      // Fail-safe: if the nav model isn't resolvable, still mark (home is the
+      // default landing tab, so the card is on-screen when it builds).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final onHome = !Get.isRegistered<MainPageViewModel>() ||
+            Get.find<MainPageViewModel>().currentIndex.value == 0;
+        if (onHome) controller.markLatestSeen(post.id);
+      });
+
       return Container(
         margin: EdgeInsets.only(bottom: 18.h),
         decoration: BoxDecoration(

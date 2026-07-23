@@ -8,7 +8,6 @@ import '../../../../Data/models/holiday/holiday_model.dart';
 import '../../../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../../../Data/models/nursery_event/nursery_event_model.dart';
-import '../../../../Data/models/homework_submission/homework_submission_model.dart';
 import '../../../../Data/models/feed/nursery_post_model.dart';
 import '../../../../Global/services/feed_service.dart';
 import 'parent_daily_note.dart';
@@ -28,6 +27,9 @@ class ParentDashboardController extends GetxController {
   final _activeChildId = ''.obs;
   final _activeChildName = ''.obs;
   final _activeClassroomId = ''.obs;
+  // Active child's branch — filters classroom-scoped content (photos/activities)
+  // so a shared classroom never shows the other branch's items.
+  final _activeBranchId = ''.obs;
   final _classroomNameStr = 'الفصل'.obs;
   final selectedPeriod = 'weekly'.obs;
   final isLoading = true.obs;
@@ -97,7 +99,12 @@ class ParentDashboardController extends GetxController {
   late final ParentEducationService _eduSvc;
   late final ChildStatusService _childStatusSvc;
   late final TeacherActivityService _activitySvc;
+  late final ChildAssessmentParentService _assessmentSvc;
   Worker? _childWorker;
+
+  /// Count of published assessments for the active child that were published
+  /// after the parent last opened the assessments screen (the home badge).
+  final RxInt newAssessmentsCount = 0.obs;
 
   @override
   void onInit() {
@@ -107,15 +114,53 @@ class ParentDashboardController extends GetxController {
     _eduSvc = ParentEducationService();
     _childStatusSvc = ChildStatusService();
     _activitySvc = TeacherActivityService();
+    _assessmentSvc = Get.find<ChildAssessmentParentService>();
     // Register the active-child listener only after the initial load resolves,
     // so the first child assignment doesn't trigger a redundant reload.
     _loadActiveChild().then((_) {
       _childWorker =
           ever<String>(Get.find<ActiveChildService>().childId, _onActiveChildChanged);
+      refreshAssessmentsBadge();
     });
+    _loadSeenLatest();
     _subscribeNextEvent();
     _subscribeHolidays();
     _subscribeLatestPost();
+  }
+
+  // ── "Latest post" home peek: show each post only ONCE ───────────────────────
+  // Ids of posts this guardian has already been shown on the home card. Once a
+  // post is seen it never returns to the home peek (it stays in the feed tab).
+  final _seenLatestIds = <String>{};
+
+  // Device-global key (not per-uid): a post's id is globally unique, and keying
+  // by uid risked a load/write key mismatch if the session wasn't restored yet
+  // when the controller initialised — which made the card reappear.
+  static const _seenLatestKey = 'seen_latest_posts';
+
+  void _loadSeenLatest() {
+    final data = StorageService().getData(_seenLatestKey);
+    final ids = data?['ids'];
+    if (ids is List) {
+      _seenLatestIds
+        ..clear()
+        ..addAll(ids.map((e) => e.toString()));
+    }
+  }
+
+  /// Marks the current home "latest post" as seen so it won't show again. Called
+  /// by the card once it's actually on the home screen. Does not recompute, so
+  /// the card stays put for the rest of this session (no flicker).
+  void markLatestSeen(String postId) {
+    if (postId.isEmpty || !_seenLatestIds.add(postId)) return;
+    // Cap growth — only recent ids matter for a today-scoped peek.
+    if (_seenLatestIds.length > 80) {
+      final trimmed = _seenLatestIds.toList().sublist(_seenLatestIds.length - 80);
+      _seenLatestIds
+        ..clear()
+        ..addAll(trimmed);
+    }
+    StorageService().setData(_seenLatestKey, {'ids': _seenLatestIds.toList()});
   }
 
   // ── Latest social post subscription ─────────────────────────────────────────
@@ -127,20 +172,23 @@ class ParentDashboardController extends GetxController {
     });
   }
 
-  // Pick the newest post that this parent is allowed to see and that was
-  // created today. Re-run whenever the active child changes (its classroom
-  // affects audience).
+  // The home peek shows only the SINGLE newest post this parent may see that was
+  // created today — and only until they've seen it once. It never falls back to
+  // an older post: if the newest has already been seen, the peek stays empty
+  // until a newer post arrives. Re-runs when the active child changes.
   void _recomputeLatestPost() {
     final now = DateTime.now();
-    NurseryPostModel? pick;
+    NurseryPostModel? newest;
     for (final p in _latestPostsRaw) {
       final created = DateTime.fromMillisecondsSinceEpoch(p.createdAt);
       if (!_isSameDay(created, now)) continue;
       if (!_postMatchesAudience(p) || !_postMatchesBranch(p)) continue;
-      pick = p; // list is newest-first, so first match wins
+      newest = p; // newest-first list → first visible match is the latest post
       break;
     }
-    latestPost.value = pick;
+    // Only surface it if it hasn't been seen yet; otherwise show nothing.
+    latestPost.value =
+        (newest != null && _seenLatestIds.contains(newest.id)) ? null : newest;
   }
 
   bool _postMatchesAudience(NurseryPostModel p) {
@@ -236,6 +284,7 @@ class ParentDashboardController extends GetxController {
       _activeChildId.value     = svc.childId.value;
       _activeChildName.value   = svc.childName.value;
       _activeClassroomId.value = svc.classroomId.value;
+      _activeBranchId.value    = svc.branchId.value;
       _startStreams();
       isLoading.value = false;
     }
@@ -252,6 +301,7 @@ class ParentDashboardController extends GetxController {
     _activeChildId.value     = svc.childId.value;
     _activeChildName.value   = svc.childName.value;
     _activeClassroomId.value = svc.classroomId.value;
+    _activeBranchId.value    = svc.branchId.value;
 
     // Re-subscribe only if child/classroom changed (avoids duplicate streams).
     if (prevId != svc.childId.value || prevClassroom != svc.classroomId.value) {
@@ -265,8 +315,13 @@ class ParentDashboardController extends GetxController {
     // (DOB, address, blood type, nationality) before they can use the app, then
     // prompt once for notification preferences (chained so the two mandatory
     // sheets never stack).
+    await PrivacyPolicyPrompt.maybeShow();
     await ChildProfileCompletionPrompt.maybeShow();
     await NotificationPrefsPrompt.maybeShow();
+    // Finally, a one-time optional nudge to register who may pick the child up.
+    await AuthorizedPickupPrompt.maybeShow();
+    // And, once per pick, auto-play this week's Star of the Week celebration.
+    await StarOfWeekReveal.maybeShow();
   }
 
   // ── Sibling switching ─────────────────────────────────────────────────────────
@@ -304,6 +359,7 @@ class ParentDashboardController extends GetxController {
     _activeChildId.value     = childId;
     _activeChildName.value   = opt?.name ?? svc.childName.value;
     _activeClassroomId.value = opt?.classroomId ?? svc.classroomId.value;
+    _activeBranchId.value    = opt?.branchId ?? svc.branchId.value;
 
     // Reset transient state so we don't briefly show the previous child's data.
     childCurrentStatus.value = null;
@@ -322,11 +378,14 @@ class ParentDashboardController extends GetxController {
     _loadClassroomName().then((_) => isLoading.value = false);
     _refreshEventAttendance();
     _recomputeLatestPost();
+    refreshAssessmentsBadge();
 
     // A switched-to sibling may also have an incomplete profile; chain the
     // notification-prefs prompt after it (self-guards once configured).
-    ChildProfileCompletionPrompt.maybeShow()
-        .then((_) => NotificationPrefsPrompt.maybeShow());
+    PrivacyPolicyPrompt.maybeShow()
+        .then((_) => ChildProfileCompletionPrompt.maybeShow())
+        .then((_) => NotificationPrefsPrompt.maybeShow())
+        .then((_) => AuthorizedPickupPrompt.maybeShow());
   }
 
   void _startStreams() {
@@ -480,8 +539,9 @@ class ParentDashboardController extends GetxController {
     final classroomId = _activeClassroomId.value;
     if (nurseryId.isEmpty || classroomId.isEmpty) return;
     _activitySub?.cancel();
-    _activitySub = _activitySvc
-        .watchActiveActivity(nurseryId, classroomId)
+    _activitySub = _eduSvc
+        .watchActiveActivity(nurseryId, classroomId,
+            childBranchId: _activeBranchId.value)
         .listen((a) => runningClassroomActivity.value = a);
   }
 
@@ -543,11 +603,14 @@ class ParentDashboardController extends GetxController {
     final childId = _activeChildId.value;
     if (nurseryId.isEmpty || classroomId.isEmpty) return;
     _photosSub?.cancel();
+    final branchId = _activeBranchId.value;
     final stream = isToday
-        ? _eduSvc.watchTodayPhotos(nurseryId, classroomId, childId)
+        ? _eduSvc.watchTodayPhotos(nurseryId, classroomId, childId,
+            childBranchId: branchId)
         : _eduSvc
             .watchPhotosForDay(
-                nurseryId, classroomId, selectedDate.value, childId)
+                nurseryId, classroomId, selectedDate.value, childId,
+                childBranchId: branchId)
             .map((list) => list.map((p) => p.url).toList());
     _photosSub = stream.listen((urls) => todayPhotos.assignAll(urls));
   }
@@ -682,6 +745,49 @@ class ParentDashboardController extends GetxController {
 
   List<EduHomework> get pendingHomework =>
       homework.where((h) => !h.isCompleted).toList();
+
+  /// Total number of items needing the guardian's attention — drives the badge
+  /// on the home "محتاج انتباهك" quick-action card and the attention screen.
+  int get attentionCount =>
+      pendingInvoices.length + pendingHomework.length + dailyNotes.length;
+
+  static String _assessmentsSeenKey(String childId) =>
+      'assessments_seen_$childId';
+
+  /// Recompute the home badge: assessments visible to the parent that were
+  /// published/updated AFTER they last opened the assessments screen.
+  Future<void> refreshAssessmentsBadge() async {
+    final childId = _activeChildId.value;
+    if (childId.isEmpty) {
+      newAssessmentsCount.value = 0;
+      return;
+    }
+    final seen =
+        (StorageService().getData(_assessmentsSeenKey(childId))?['ts'] as int?) ??
+            0;
+    await _assessmentSvc.getAll(callBack: (list) {
+      newAssessmentsCount.value = list
+          .whereType<ChildAssessmentModel>()
+          .where((r) =>
+              r.childId == childId &&
+              r.isVisibleToParent &&
+              (r.updatedAt ?? 0) > seen)
+          .length;
+    });
+  }
+
+  /// Marks all currently-published assessments for [childId] as seen (clears the
+  /// badge). Called when the parent opens the assessments screen.
+  static Future<void> markAssessmentsSeen(String childId) async {
+    if (childId.isEmpty) return;
+    await StorageService().setData(
+      _assessmentsSeenKey(childId),
+      {'ts': DateTime.now().millisecondsSinceEpoch},
+    );
+    if (Get.isRegistered<ParentDashboardController>()) {
+      Get.find<ParentDashboardController>().newAssessmentsCount.value = 0;
+    }
+  }
 
   List<EduHomework> get completedHomework =>
       homework.where((h) => h.isCompleted).toList();
@@ -848,8 +954,8 @@ class ParentDashboardController extends GetxController {
     final nurseryId = _session.nurseryId ?? '';
     final classroomId = _activeClassroomId.value;
     if (nurseryId.isEmpty || classroomId.isEmpty) return null;
-    final completed =
-        await _activitySvc.getTodayCompleted(nurseryId, classroomId);
+    final completed = await _eduSvc.getTodayActivities(nurseryId, classroomId,
+        childBranchId: _activeBranchId.value);
     for (final a in completed) {
       if (a.key == activityId) return a;
     }
@@ -1175,7 +1281,9 @@ class ParentDashboardController extends GetxController {
 
   Future<void> submitHomework(
     String homeworkId, {
-    required SubmittedBy by,
+    bool? neededHelp,
+    bool? guidedHand,
+    bool? didEasily,
     String? note,
   }) async {
     final nurseryId = _session.nurseryId ?? '';
@@ -1198,8 +1306,10 @@ class ParentDashboardController extends GetxController {
       classroomId: classroomId,
       homeworkId: homeworkId,
       childId: childId,
-      submittedBy: by,
       submittedByUid: _session.currentUser?.uid ?? '',
+      neededHelp: neededHelp,
+      guidedHand: guidedHand,
+      didEasily: didEasily,
       note: note,
     );
   }

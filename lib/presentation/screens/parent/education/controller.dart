@@ -1,6 +1,5 @@
 import '../../../../index/index_main.dart';
 import '../../../../Global/services/parent_education_service.dart';
-import '../../../../Data/models/homework_submission/homework_submission_model.dart';
 
 // ── Local UI models ────────────────────────────────────────────────────────────
 
@@ -253,6 +252,9 @@ class ParentEducationController extends GetxController {
   // Child state
   final _childId = ''.obs;
   final _classroomId = ''.obs;
+  // Active child's branch — filters classroom-scoped content so a shared
+  // classroom never shows the other branch's activities/homework/photos.
+  final _branchId = ''.obs;
   final _childFullName = ''.obs;
 
   // Reactive UI state
@@ -410,8 +412,10 @@ class ParentEducationController extends GetxController {
     });
 
     if (classroomId.isNotEmpty) {
-      _activitySub =
-          _eduSvc.watchActiveActivity(nurseryId, classroomId).listen((act) {
+      _activitySub = _eduSvc
+          .watchActiveActivity(nurseryId, classroomId,
+              childBranchId: _branchId.value)
+          .listen((act) {
         final prevLesson = activeActivity.value?.lessonTitle;
         activeActivity.value = act == null ? null : _mapActivity(act);
         // The day's completed activities are fetched one-shot, but this tab is
@@ -432,7 +436,8 @@ class ParentEducationController extends GetxController {
 
     // Load subjects once + today's activities, then set up reactive assessments stream
     final todayFuture = classroomId.isNotEmpty
-        ? _eduSvc.getTodayActivities(nurseryId, classroomId)
+        ? _eduSvc.getTodayActivities(nurseryId, classroomId,
+            childBranchId: _branchId.value)
         : Future.value(<ClassroomActivityModel>[]);
     final subjectsFuture = _eduSvc.loadSubjects(nurseryId);
 
@@ -633,6 +638,7 @@ class ParentEducationController extends GetxController {
         classroomId,
         startMs: r.start,
         endMs: r.end,
+        childBranchId: _branchId.value,
       );
     } catch (_) {
       _rangeActivities = const [];
@@ -661,10 +667,11 @@ class ParentEducationController extends GetxController {
     final nurseryId = _session.nurseryId ?? '';
     final classroomId = _classroomId.value;
     if (classroomId.isNotEmpty && _isViewingToday()) {
-      todayActivities.value =
-          (await _eduSvc.getTodayActivities(nurseryId, classroomId))
-              .map(_mapTodayActivity)
-              .toList();
+      todayActivities.value = (await _eduSvc.getTodayActivities(
+              nurseryId, classroomId,
+              childBranchId: _branchId.value))
+          .map(_mapTodayActivity)
+          .toList();
     }
     await _fetchRangeActivities();
     _rebuildGroups(); // also rebuilds the day journal + summary
@@ -770,6 +777,7 @@ class ParentEducationController extends GetxController {
     final svc = Get.find<ActiveChildService>();
     _childId.value = svc.childId.value;
     _classroomId.value = svc.classroomId.value;
+    _branchId.value = svc.branchId.value;
     _childFullName.value = svc.childName.value;
   }
 
@@ -779,7 +787,8 @@ class ParentEducationController extends GetxController {
       String nurseryId, String classroomId, String childId) {
     _hwSub?.cancel();
     _hwSub = _eduSvc
-        .watchAllClassroomHomework(nurseryId, classroomId)
+        .watchAllClassroomHomework(nurseryId, classroomId,
+            childBranchId: _branchId.value)
         .asyncMap((hwList) async {
           final ids = hwList
               .map((hw) => hw.key)
@@ -834,8 +843,8 @@ class ParentEducationController extends GetxController {
 
   // ── Homework submission ───────────────────────────────────────────────────────
   // A submission records the parent's confirmation that the homework was done
-  // at home (who helped + an optional note). It carries no quality judgment —
-  // the teacher's review is a separate record.
+  // at home, plus a light "how did it go" self-report (needed help / guided
+  // hand / did it easily). The teacher's own review is a separate record.
 
   bool isSubmitted(String homeworkId) => _submittedIds.contains(homeworkId);
 
@@ -863,7 +872,9 @@ class ParentEducationController extends GetxController {
 
   Future<void> submitHomework(
     String homeworkId, {
-    required SubmittedBy by,
+    bool? neededHelp,
+    bool? guidedHand,
+    bool? didEasily,
     String? note,
   }) async {
     final nurseryId = _session.nurseryId ?? '';
@@ -876,8 +887,10 @@ class ParentEducationController extends GetxController {
       classroomId: classroomId,
       homeworkId: homeworkId,
       childId: childId,
-      submittedBy: by,
       submittedByUid: _session.currentUser?.uid ?? '',
+      neededHelp: neededHelp,
+      guidedHand: guidedHand,
+      didEasily: didEasily,
       note: note,
     );
   }

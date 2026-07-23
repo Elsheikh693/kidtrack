@@ -9,14 +9,23 @@ class PickedImage {
   XFile? pickedFile;
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> pickImage({required Future<void> Function(File?) callBack}) async {
-    pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> pickImage({
+    required Future<void> Function(File?) callBack,
+    ImageSource source = ImageSource.gallery,
+  }) async {
+    pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       final compressed = await _compress(pickedFile!.path);
       _image = compressed ?? File(pickedFile!.path);
       await callBack(_image);
     }
   }
+
+  /// Capture a single photo straight from the device camera.
+  Future<void> capturePhoto({
+    required Future<void> Function(File?) callBack,
+  }) =>
+      pickImage(callBack: callBack, source: ImageSource.camera);
 
   Future<void> pickMultiImages({
     required Future<void> Function(List<File>) callBack,

@@ -12,11 +12,14 @@ class HwDetailView extends StatefulWidget {
     required this.homework,
     required this.children,
     required this.initialStatuses,
+    this.submissions = const {},
   });
 
   final HomeworkModel homework;
   final List<ChildModel> children;
   final Map<String, HomeworkStatus> initialStatuses;
+  // childId → the parent's at-home submission (incl. "how did it go" answers).
+  final Map<String, HomeworkSubmissionModel> submissions;
 
   @override
   State<HwDetailView> createState() => _HwDetailViewState();
@@ -27,6 +30,24 @@ class _HwDetailViewState extends State<HwDetailView>
   late final Map<String, HomeworkStatus> _statuses;
   late final AnimationController _ctrl;
   bool _saving = false;
+  // Child-list filter by solve status: all / completed / partial / not / absent
+  // / unmarked. Lets the teacher see e.g. only "who didn't do it".
+  String _filter = 'all';
+
+  List<ChildModel> get _filteredChildren {
+    if (_filter == 'all') return widget.children;
+    return widget.children.where((c) {
+      final s = _statuses[c.key ?? ''];
+      return switch (_filter) {
+        'completed' => s == HomeworkStatus.completed,
+        'partial' => s == HomeworkStatus.partiallyCompleted,
+        'not' => s == HomeworkStatus.notCompleted,
+        'absent' => s == HomeworkStatus.absent,
+        'unmarked' => s == null,
+        _ => true,
+      };
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -156,16 +177,44 @@ class _HwDetailViewState extends State<HwDetailView>
                         ],
                       ),
                       SizedBox(height: 10.h),
-                      ...widget.children.map((child) {
-                        final childId = child.key ?? '';
-                        final status = _statuses[childId];
-                        return _ChildRow(
-                          name: child.fullName,
-                          status: status,
-                          onTap: _setStatus,
-                          childId: childId,
-                        );
-                      }),
+                      _FilterBar(
+                        selected: _filter,
+                        counts: {
+                          'all': widget.children.length,
+                          'completed': _completedCount,
+                          'partial': _partialCount,
+                          'not': _notCompletedCount,
+                          'absent': _absentCount,
+                          'unmarked': _unmarkedCount,
+                        },
+                        onSelect: (f) => setState(() => _filter = f),
+                      ),
+                      SizedBox(height: 10.h),
+                      if (_filteredChildren.isEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24.h),
+                          child: Center(
+                            child: Text(
+                              'hw_filter_empty'.tr,
+                              style: context.typography.smMedium.copyWith(
+                                fontSize: 13,
+                                color: const Color(0xFF94A3B8),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ..._filteredChildren.map((child) {
+                          final childId = child.key ?? '';
+                          final status = _statuses[childId];
+                          return _ChildRow(
+                            name: child.fullName,
+                            status: status,
+                            onTap: _setStatus,
+                            childId: childId,
+                            submission: widget.submissions[childId],
+                          );
+                        }),
                     ],
                   ),
                 ),
@@ -621,11 +670,46 @@ class _ChildRow extends StatelessWidget {
     required this.status,
     required this.onTap,
     required this.childId,
+    this.submission,
   });
   final String name;
   final HomeworkStatus? status;
   final void Function(String, HomeworkStatus) onTap;
   final String childId;
+  final HomeworkSubmissionModel? submission;
+
+  // Parent "how did it go" answers rendered as compact chips. Green = good
+  // outcome (didn't need help / hand not guided / did it easily), amber = the
+  // opposite. Empty when the parent hasn't confirmed or answered.
+  List<Widget> _answerChips() {
+    final sub = submission;
+    if (sub == null) return const [];
+    final chips = <Widget>[
+      _AnswerChip(text: 'hw_done_at_home'.tr, good: true, icon: Icons.home_rounded),
+    ];
+    if (sub.neededHelp != null) {
+      chips.add(_AnswerChip(
+        text: '${'hw_q_needed_help_short'.tr}: '
+            '${sub.neededHelp! ? 'hw_answer_yes'.tr : 'hw_answer_no'.tr}',
+        good: sub.neededHelp == false,
+      ));
+    }
+    if (sub.guidedHand != null) {
+      chips.add(_AnswerChip(
+        text: '${'hw_q_guided_hand_short'.tr}: '
+            '${sub.guidedHand! ? 'hw_answer_yes'.tr : 'hw_answer_no'.tr}',
+        good: sub.guidedHand == false,
+      ));
+    }
+    if (sub.didEasily != null) {
+      chips.add(_AnswerChip(
+        text: '${'hw_q_did_easily_short'.tr}: '
+            '${sub.didEasily! ? 'hw_answer_yes'.tr : 'hw_answer_no'.tr}',
+        good: sub.didEasily == true,
+      ));
+    }
+    return chips;
+  }
 
   static const _statuses = [
     HomeworkStatus.completed,
@@ -709,14 +793,29 @@ class _ChildRow extends StatelessWidget {
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
-                        child: Text(
-                          name,
-                          style: context.typography.smSemiBold.copyWith(
-                            fontSize: 13,
-                            color: const Color(0xFF1F2937),
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              name,
+                              style: context.typography.smSemiBold.copyWith(
+                                fontSize: 13,
+                                color: const Color(0xFF1F2937),
+                              ),
+                            ),
+                            if (submission != null) ...[
+                              SizedBox(height: 5.h),
+                              Wrap(
+                                spacing: 4.w,
+                                runSpacing: 4.h,
+                                children: _answerChips(),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
+                      SizedBox(width: 6.w),
                       Row(
                         children: _statuses
                             .map(
@@ -783,6 +882,148 @@ class _StatusBtn extends StatelessWidget {
           color: isActive ? Colors.white : color.withValues(alpha: 0.55),
           size: 16.sp,
         ),
+      ),
+    );
+  }
+}
+
+// ── Child-list filter bar ───────────────────────────────────────────────────────
+
+class _FilterBar extends StatelessWidget {
+  const _FilterBar({
+    required this.selected,
+    required this.counts,
+    required this.onSelect,
+  });
+
+  final String selected;
+  final Map<String, int> counts;
+  final void Function(String) onSelect;
+
+  static const _options = <(String, String, Color)>[
+    ('all', 'الكل', _kBlue),
+    ('completed', 'أكمل', _kGreen),
+    ('partial', 'جزئي', _kAmber),
+    ('not', 'لم يكمل', _kRed),
+    ('absent', 'غائب', _kGray),
+    ('unmarked', 'بدون', Color(0xFF94A3B8)),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // Always offer "all"; only offer a status once at least one child has it.
+    final visible = _options
+        .where((o) => o.$1 == 'all' || (counts[o.$1] ?? 0) > 0)
+        .toList();
+    return SizedBox(
+      height: 34.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: visible.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (_, i) {
+          final o = visible[i];
+          return _FilterChip(
+            label: o.$2,
+            count: counts[o.$1] ?? 0,
+            color: o.$3,
+            isActive: selected == o.$1,
+            onTap: () => onSelect(o.$1),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.isActive,
+    required this.onTap,
+  });
+  final String label;
+  final int count;
+  final Color color;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: isActive ? color : color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: isActive ? color : color.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: context.typography.smSemiBold.copyWith(
+                  fontSize: 12,
+                  color: isActive ? Colors.white : color,
+                ),
+              ),
+              SizedBox(width: 5.w),
+              Text(
+                '$count',
+                style: context.typography.smSemiBold.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: isActive
+                      ? Colors.white
+                      : color.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+// ── Parent answer chip ──────────────────────────────────────────────────────────
+
+class _AnswerChip extends StatelessWidget {
+  const _AnswerChip({required this.text, required this.good, this.icon});
+  final String text;
+  final bool good;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = good ? _kGreen : _kAmber;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(7.r),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 10.sp, color: color),
+            SizedBox(width: 3.w),
+          ],
+          Text(
+            text,
+            style: context.typography.xsMedium.copyWith(
+              fontSize: 10,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

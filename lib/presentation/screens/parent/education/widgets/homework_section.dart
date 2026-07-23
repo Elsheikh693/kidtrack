@@ -79,8 +79,14 @@ class HomeworkSection extends StatelessWidget {
     showHomeworkSubmitSheet(
       context,
       homeworkTitle: hw.displayTitle ?? _hwTitles[hw.titleKey] ?? hw.titleKey,
-      onConfirm: (by, note) =>
-          controller.submitHomework(hw.titleKey, by: by, note: note),
+      onConfirm: (neededHelp, guidedHand, didEasily, note) =>
+          controller.submitHomework(
+        hw.titleKey,
+        neededHelp: neededHelp,
+        guidedHand: guidedHand,
+        didEasily: didEasily,
+        note: note,
+      ),
     );
   }
 

@@ -38,6 +38,7 @@ class _PostDetailSheetState extends State<PostDetailSheet> {
     PostCategory.event => AppColors.blueForeground,
     PostCategory.achievement => AppColors.yellowForeground,
     PostCategory.reminder => AppColors.teal,
+    PostCategory.gallery => const Color(0xFF6366F1),
     _ => AppColors.primary,
   };
 

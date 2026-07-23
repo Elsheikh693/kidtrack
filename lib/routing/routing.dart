@@ -7,6 +7,7 @@ const String forceUpdateView = "/ForceUpdateView";
 const String onBoardView = "/OnBoardView";
 const String activationLandingView = "/ActivationLandingView";
 const String activationCodeView = "/ActivationCodeView";
+const String membershipPickerView = "/MembershipPickerView";
 // Nursery Discovery (pre-login)
 const String nurseryDiscoveryView = "/NurseryDiscoveryView";
 const String nurseryProfileView = "/NurseryProfileView";
@@ -28,6 +29,9 @@ const String platformBillingView = "/PlatformBillingView";
 const String platformBillingDetailView = "/PlatformBillingDetailView";
 const String mySubscriptionView = "/MySubscriptionView";
 const String ownerPhotoReviewSettingsView = "/OwnerPhotoReviewSettingsView";
+const String managerPhotoApprovalSettingsView =
+    "/ManagerPhotoApprovalSettingsView";
+const String managerFeeWindowView = "/ManagerFeeWindowView";
 
 // Branches
 const String branchesView = "/BranchesView";
@@ -35,7 +39,6 @@ const String branchesView = "/BranchesView";
 // Staff
 const String staffView = "/StaffView";
 const String staffPermissionsView = "/StaffPermissionsView";
-const String staffFormView = "/StaffFormView";
 
 // Children
 const String childLeaveRequestsView = "/ChildLeaveRequestsView";
@@ -107,9 +110,11 @@ const String parentHomeLocationView = "/ParentHomeLocationView";
 const String invoicesView = "/InvoicesView";
 const String paymentsView = "/PaymentsView";
 const String paymentCategoriesView = "/PaymentCategoriesView";
+const String childChargesView = "/ChildChargesView";
 const String shiftsView = "/ShiftsView";
 const String nurseryContactsView = "/NurseryContactsView";
 const String nurseryFeedbackListView = "/NurseryFeedbackListView";
+const String starOfWeekView = "/StarOfWeekView";
 const String parentInvoicesView = "/ParentInvoicesView";
 const String overdueView = "/OverdueView";
 
@@ -117,6 +122,8 @@ const String overdueView = "/OverdueView";
 const String pickupRequestsView = "/PickupRequestsView";
 const String pickupVerificationView = "/PickupVerificationView";
 const String receptionistEventsView = "/ReceptionistEventsView";
+const String staffEventsListView = "/StaffEventsListView";
+const String staffEventPhotosView = "/StaffEventPhotosView";
 const String latePayersView = "/LatePayersView";
 const String holidaysView = "/HolidaysView";
 
@@ -172,6 +179,7 @@ const String tutorialPlayerView = "/TutorialPlayerView";
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
 const String nurseryPaymentAccountsView = "/NurseryPaymentAccountsView";
 const String managerApplicationFileView = "/ManagerApplicationFileView";
+const String managerPrivacyPolicyView = "/ManagerPrivacyPolicyView";
 const String managerTeacherReportsView = "/ManagerTeacherReportsView";
 const String managerApplicationsView = "/ManagerApplicationsView";
 const String managerPresenceView = "/ManagerPresenceView";
@@ -194,6 +202,12 @@ const String childStatesView = "/ChildStatesView";
 
 // Activity Eval Levels (Settings)
 const String evalLevelsView = "/EvalLevelsView";
+
+// Assessment Engine — Templates (manager/supervisor)
+const String assessmentTemplatesView = "/AssessmentTemplatesView";
+const String assessmentRunsView = "/AssessmentRunsView";
+const String teacherAssessmentsView = "/TeacherAssessmentsView";
+const String parentAssessmentsView = "/ParentAssessmentsView";
 
 // Teacher Weekly Schedule
 const String teacherWeeklyScheduleView = "/TeacherWeeklyScheduleView";
@@ -230,6 +244,17 @@ class Routes {
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 400),
+      ),
+      // Post-login role picker (no guard — reached mid-auth, before the session
+      // is saved, so the access gate must not bounce it).
+      GetPage(
+        name: membershipPickerView,
+        page: () => const MembershipPickerView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => MembershipPickerController()),
+        ),
+        transition: Transition.fadeIn,
+        transitionDuration: const Duration(milliseconds: 300),
       ),
 
       // ── Nursery Discovery (no guard — pre-login) ───────────────────────────
@@ -341,19 +366,6 @@ class Routes {
         page: () => const StaffPermissionsView(),
         binding: BindingsBuilder(
           () => Get.lazyPut(() => StaffPermissionsController()),
-        ),
-        transition: Transition.cupertino,
-        transitionDuration: const Duration(milliseconds: 300),
-        middlewares: guard,
-      ),
-      GetPage(
-        name: staffFormView,
-        page: () => const StaffFormView(),
-        binding: BindingsBuilder(
-          () => Get.lazyPut(
-            () =>
-                StaffFormController(initialStaff: Get.arguments as StaffModel?),
-          ),
         ),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -580,6 +592,16 @@ class Routes {
       GetPage(
         name: paymentCategoriesView,
         page: () => const PaymentCategoriesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Reception — Daily Expenses (ad-hoc child charges) ─────────────────
+      GetPage(
+        name: childChargesView,
+        page: () => const ChildChargesView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -904,6 +926,22 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      GetPage(
+        name: managerPhotoApprovalSettingsView,
+        page: () => const ManagerPhotoApprovalSettingsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: managerFeeWindowView,
+        page: () => const ManagerFeeWindowView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Platform Content Management (Super Admin) ──────────────────────────
       GetPage(
@@ -986,6 +1024,13 @@ class Routes {
         binding: BindingsBuilder(
           () => Get.lazyPut(() => SaShowcaseAlbumsController(), fenix: true),
         ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: starOfWeekView,
+        page: () => const StarOfWeekView(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
@@ -1122,6 +1167,16 @@ class Routes {
       GetPage(
         name: managerApplicationFileView,
         page: () => const ManagerApplicationFileView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Manager Privacy Policy (numbered clauses, shown to guardians) ───────
+      GetPage(
+        name: managerPrivacyPolicyView,
+        page: () => const ManagerPrivacyPolicyView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
@@ -1266,6 +1321,30 @@ class Routes {
         middlewares: guard,
       ),
 
+      // ── Staff Events list (all staff) ──────────────────────────────────────
+      GetPage(
+        name: staffEventsListView,
+        page: () => const StaffEventsView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => StaffEventsController()),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Staff Event Photos (all staff) ─────────────────────────────────────
+      GetPage(
+        name: staffEventPhotosView,
+        page: () => const EventPhotosView(),
+        binding: BindingsBuilder(
+          () => Get.lazyPut(() => EventPhotosController()),
+        ),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
       // ── Holidays (manager + receptionist) ──────────────────────────────────
       GetPage(
         name: holidaysView,
@@ -1349,6 +1428,46 @@ class Routes {
       GetPage(
         name: evalLevelsView,
         page: () => const EvalLevelsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Assessment Templates ──────────────────────────────────────────────
+      GetPage(
+        name: assessmentTemplatesView,
+        page: () => const AssessmentTemplatesView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Assessment Runs (hub) ─────────────────────────────────────────────
+      GetPage(
+        name: assessmentRunsView,
+        page: () => const AssessmentRunsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Teacher Assessments (grading) ─────────────────────────────────────
+      GetPage(
+        name: teacherAssessmentsView,
+        page: () => const TeacherAssessmentsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Parent Assessments (results) ──────────────────────────────────────
+      GetPage(
+        name: parentAssessmentsView,
+        page: () => const ParentAssessmentsView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

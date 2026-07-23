@@ -8,6 +8,7 @@ import '../../Data/models/lesson_plan/lesson_plan_model.dart';
 import '../../Data/models/subject/subject_model.dart';
 import '../../Data/models/classroom_activity/classroom_activity_model.dart';
 import 'teacher_activity_service.dart';
+import 'session_service.dart';
 import '../Utils/logger.dart';
 
 class ParentEducationService {
@@ -18,7 +19,8 @@ class ParentEducationService {
   // Today's activity photos for a classroom (real-time aggregation).
   // Only approved photos the given child may see (classroom-wide or targeted).
   Stream<List<String>> watchTodayPhotos(
-      String nurseryId, String classroomId, String childId) {
+      String nurseryId, String classroomId, String childId,
+      {String childBranchId = ''}) {
     if (nurseryId.isEmpty || classroomId.isEmpty) return Stream.value([]);
     final todayStart = _todayStartMillis();
     return _db
@@ -38,6 +40,8 @@ class ParentEducationService {
           e.value as Map,
           key: e.key.toString(),
         );
+        // Skip other branches' activities in a shared classroom.
+        if (!SessionService.branchVisible(childBranchId, act.branchId)) continue;
         photos.addAll(act.approvedUrlsForChild(childId));
       }
       return photos;
@@ -48,7 +52,8 @@ class ParentEducationService {
   // time (never the whole history at once). Each photo carries the activity's
   // title + timestamp.
   Stream<List<ClassPhoto>> watchPhotosForDay(
-      String nurseryId, String classroomId, DateTime day, String childId) {
+      String nurseryId, String classroomId, DateTime day, String childId,
+      {String childBranchId = ''}) {
     if (nurseryId.isEmpty || classroomId.isEmpty) {
       return Stream.value(const []);
     }
@@ -74,6 +79,8 @@ class ParentEducationService {
           e.value as Map,
           key: e.key.toString(),
         );
+        // Skip other branches' activities in a shared classroom.
+        if (!SessionService.branchVisible(childBranchId, act.branchId)) continue;
         final label = (act.subjectName?.isNotEmpty == true)
             ? act.subjectName!
             : act.title;
@@ -199,16 +206,27 @@ class ParentEducationService {
     }
   }
 
-  // Active classroom activity (real-time)
+  // Active classroom activity (real-time). In a shared classroom the active
+  // activity may belong to the other branch — hide it from this child's parent.
   Stream<ClassroomActivityModel?> watchActiveActivity(
-      String nurseryId, String classroomId) {
-    return _activitySvc.watchActiveActivity(nurseryId, classroomId);
+      String nurseryId, String classroomId,
+      {String childBranchId = ''}) {
+    return _activitySvc.watchActiveActivity(nurseryId, classroomId).map((act) {
+      if (act == null) return null;
+      return SessionService.branchVisible(childBranchId, act.branchId)
+          ? act
+          : null;
+    });
   }
 
   // Today's completed activities for classroom
   Future<List<ClassroomActivityModel>> getTodayActivities(
-      String nurseryId, String classroomId) {
-    return _activitySvc.getTodayCompleted(nurseryId, classroomId);
+      String nurseryId, String classroomId,
+      {String childBranchId = ''}) async {
+    final list = await _activitySvc.getTodayCompleted(nurseryId, classroomId);
+    return list
+        .where((a) => SessionService.branchVisible(childBranchId, a.branchId))
+        .toList();
   }
 
   // Completed activities within a date range (for subject-grouped education view)
@@ -217,13 +235,17 @@ class ParentEducationService {
     String classroomId, {
     required int startMs,
     required int endMs,
-  }) {
-    return _activitySvc.getCompletedForDateRange(
+    String childBranchId = '',
+  }) async {
+    final list = await _activitySvc.getCompletedForDateRange(
       nurseryId,
       classroomId,
       startMs: startMs,
       endMs: endMs,
     );
+    return list
+        .where((a) => SessionService.branchVisible(childBranchId, a.branchId))
+        .toList();
   }
 
   /// The `startedAt` of the classroom's OLDEST activity — a single-record read
@@ -374,7 +396,8 @@ class ParentEducationService {
   /// Real-time stream of active (non-expired) homework for a classroom.
   /// Shows homework where dueDate >= today, or (no dueDate AND created today).
   Stream<List<HomeworkModel>> watchClassroomHomework(
-      String nurseryId, String classroomId) {
+      String nurseryId, String classroomId,
+      {String childBranchId = ''}) {
     if (nurseryId.isEmpty || classroomId.isEmpty) return Stream.value([]);
     final todayStart = _todayStartMillis();
 
@@ -394,6 +417,8 @@ class ParentEducationService {
                 e.value as Map,
                 key: e.key.toString(),
               ))
+          .where((hw) =>
+              SessionService.branchVisible(childBranchId, hw.branchId))
           .where((hw) {
             // has a due date → show until that day passes
             if (hw.dueDate != null) return hw.dueDate! >= todayStart;
@@ -414,7 +439,8 @@ class ParentEducationService {
   /// Used by the per-day journal, which scopes homework to the viewed day itself
   /// rather than to "now" — so past days can show homework that is already due.
   Stream<List<HomeworkModel>> watchAllClassroomHomework(
-      String nurseryId, String classroomId) {
+      String nurseryId, String classroomId,
+      {String childBranchId = ''}) {
     if (nurseryId.isEmpty || classroomId.isEmpty) return Stream.value([]);
     return _db
         .ref('platform/$nurseryId/homework')
@@ -432,6 +458,8 @@ class ParentEducationService {
                 e.value as Map,
                 key: e.key.toString(),
               ))
+          .where((hw) =>
+              SessionService.branchVisible(childBranchId, hw.branchId))
           .toList()
         ..sort((a, b) {
           final aMs = a.dueDate ?? a.createdAt ?? 0;
@@ -472,8 +500,10 @@ class ParentEducationService {
     required String classroomId,
     required String homeworkId,
     required String childId,
-    required SubmittedBy submittedBy,
     required String submittedByUid,
+    bool? neededHelp,
+    bool? guidedHand,
+    bool? didEasily,
     String? note,
   }) async {
     final model = HomeworkSubmissionModel(
@@ -482,8 +512,10 @@ class ParentEducationService {
       nurseryId: nurseryId,
       classroomId: classroomId,
       submittedAt: DateTime.now().millisecondsSinceEpoch,
-      submittedBy: submittedBy,
       submittedByUid: submittedByUid,
+      neededHelp: neededHelp,
+      guidedHand: guidedHand,
+      didEasily: didEasily,
       note: note,
     );
     await _db

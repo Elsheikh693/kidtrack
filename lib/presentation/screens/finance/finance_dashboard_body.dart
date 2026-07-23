@@ -29,20 +29,26 @@ class FinanceDashboardBody extends StatelessWidget {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator(color: _accent));
         }
-        return ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
-          children: [
-            _MonthBar(controller: controller),
-            SizedBox(height: 16.h),
-            _KpiTrio(summary: controller.summary.value),
-            SizedBox(height: 22.h),
-            _RevenueSplit(categories: controller.categories),
-            SizedBox(height: 22.h),
-            _RecentCollections(controller: controller, tag: tag),
-            SizedBox(height: 22.h),
-            _RecentExpenses(controller: controller, tag: tag),
-          ],
+        return RefreshIndicator(
+          color: _accent,
+          onRefresh: controller.reload,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
+            children: [
+              _MonthBar(controller: controller),
+              SizedBox(height: 16.h),
+              _KpiTrio(summary: controller.summary.value),
+              SizedBox(height: 22.h),
+              _RevenueSplit(categories: controller.categories),
+              SizedBox(height: 22.h),
+              _RecentCollections(controller: controller, tag: tag),
+              SizedBox(height: 22.h),
+              _RecentExpenses(controller: controller, tag: tag),
+            ],
+          ),
         );
       }),
     );

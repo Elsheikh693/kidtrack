@@ -26,7 +26,7 @@ const { NotificationType, Role } = require("../shared/constants");
 // ============================================================
 
 function greeting(parentName) {
-  return parentName ? `${parentName} 👋` : "تحديث من الحضانة 👋";
+  return parentName ? parentName : "تحديث من الحضانة";
 }
 
 // eventType → preference category. Null means "not notifiable".
@@ -51,7 +51,7 @@ function buildMessage(eventType, childName, parentName) {
     case "check_in":
       return {
         title: greeting(parentName),
-        body: `${childName} وصل الحضانة بأمان 🎉 نتمنى له يوماً سعيداً!`,
+        body: `${childName} وصل الحضانة بأمان. نتمنى له يوماً سعيداً!`,
       };
     case "check_out":
       return {
@@ -61,17 +61,17 @@ function buildMessage(eventType, childName, parentName) {
     case "activity_started":
       return {
         title: greeting(parentName),
-        body: `${childName} بدأ نشاطاً جديداً في الحضانة 🎨`,
+        body: `${childName} بدأ نشاطاً جديداً في الحضانة`,
       };
     case "activity_completed":
       return {
         title: greeting(parentName),
-        body: `${childName} أنهى نشاطه في الحضانة ✨`,
+        body: `${childName} أنهى نشاطه في الحضانة`,
       };
     case "homework_assigned":
       return {
         title: greeting(parentName),
-        body: `واجب جديد لـ ${childName} 📚 اطّلع عليه من التطبيق.`,
+        body: `واجب جديد لـ ${childName}. اطّلع عليه من التطبيق.`,
       };
     default:
       return null; // not wired for notifications yet

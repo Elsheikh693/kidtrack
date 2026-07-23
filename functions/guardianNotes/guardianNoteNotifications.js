@@ -57,7 +57,7 @@ async function handleGuardianNote({ note, nurseryId }) {
     const guardianName = (note.guardianName || "").toString() || "ولي الأمر";
     const subject = (note.subjectName || note.activityTitle || "").toString();
 
-    const title = "ملاحظة جديدة من ولي الأمر 📝";
+    const title = "ملاحظة جديدة من ولي الأمر";
     const body = subject
       ? `${guardianName} كتب ملاحظة عن ${childName} في ${subject}`
       : `${guardianName} كتب ملاحظة عن ${childName}`;

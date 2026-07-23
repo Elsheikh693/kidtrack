@@ -40,7 +40,7 @@ async function handleCourseCreated({ course, nurseryId, courseId }) {
     await notificationService.send({
       recipients,
       nurseryId,
-      title: "كورس جديد متاح 📚",
+      title: "كورس جديد متاح",
       body: `${course.title} — سجّلي طفلك الآن`,
       type: NotificationType.course,
       entityId: courseId,

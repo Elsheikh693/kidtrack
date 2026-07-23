@@ -109,6 +109,35 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
     return ok;
   }
 
+  Future<void> _editGuardianName(ParentModel parent) async {
+    await Get.bottomSheet(
+      _EditNameSheet(
+        parent: parent,
+        onSave: (name) async {
+          Loader.show();
+          final done = Completer<ResponseStatus>();
+          await Get.find<GuardianParentService>().update(
+            item: parent.copyWith(name: name),
+            callBack: done.complete,
+          );
+          Loader.dismiss();
+          if (await done.future == ResponseStatus.success) {
+            Loader.showSuccess('guardian_success_updated'.tr);
+            await _loadData();
+            return true;
+          }
+          Loader.showError('guardian_error_failed'.tr);
+          return false;
+        },
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+    );
+  }
+
   Future<void> _removeGuardian(ParentModel parent) async {
     final confirm = await Get.dialog<bool>(
       _ConfirmRemoveDialog(name: parent.name),
@@ -210,6 +239,7 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
                               'father',
                               'guardian_create_relationship_father'.tr,
                             ),
+                            onEdit: _editGuardianName,
                             onRemove: _removeGuardian,
                           ),
                           SizedBox(height: 12.h),
@@ -222,6 +252,7 @@ class _ParentAccountViewState extends State<RcParentAccountView> {
                               'mother',
                               'guardian_create_relationship_mother'.tr,
                             ),
+                            onEdit: _editGuardianName,
                             onRemove: _removeGuardian,
                           ),
                         ],
@@ -283,6 +314,7 @@ class _GuardianSlot extends StatelessWidget {
   final Color color;
   final ParentModel? parent;
   final VoidCallback onAdd;
+  final Future<void> Function(ParentModel) onEdit;
   final Future<void> Function(ParentModel) onRemove;
 
   const _GuardianSlot({
@@ -291,6 +323,7 @@ class _GuardianSlot extends StatelessWidget {
     required this.color,
     required this.parent,
     required this.onAdd,
+    required this.onEdit,
     required this.onRemove,
   });
 
@@ -420,6 +453,14 @@ class _GuardianSlot extends StatelessWidget {
               SizedBox(height: 8.h),
               ParentStatusChip(status: p.onboardingStatus),
             ],
+          ),
+        ),
+        IconButton(
+          onPressed: () => onEdit(p),
+          icon: Icon(
+            Icons.edit_rounded,
+            size: 19.sp,
+            color: color,
           ),
         ),
         IconButton(
@@ -930,6 +971,168 @@ class _LinkingBanner extends StatelessWidget {
       ],
     ),
   );
+}
+
+// ─── Edit guardian name sheet (phone stays locked) ───────────────────────────
+
+class _EditNameSheet extends StatefulWidget {
+  final ParentModel parent;
+  final Future<bool> Function(String name) onSave;
+
+  const _EditNameSheet({required this.parent, required this.onSave});
+
+  @override
+  State<_EditNameSheet> createState() => _EditNameSheetState();
+}
+
+class _EditNameSheetState extends State<_EditNameSheet> {
+  late final TextEditingController _nameCtrl;
+  final _busy = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: widget.parent.name);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
+      Loader.showError('guardian_error_name'.tr);
+      return;
+    }
+    _busy.value = true;
+    final ok = await widget.onSave(name);
+    _busy.value = false;
+    if (ok) Get.back();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20.w,
+          14.h,
+          20.w,
+          MediaQuery.of(context).viewInsets.bottom + 24.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              'guardian_edit_name_title'.tr,
+              style: context.typography.mdBold.copyWith(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            SizedBox(height: 22.h),
+            FieldLabel('guardian_name_label'.tr),
+            SizedBox(height: 8.h),
+            _Input(
+              controller: _nameCtrl,
+              hint: 'guardian_name_hint'.tr,
+              keyboardType: TextInputType.name,
+            ),
+            SizedBox(height: 16.h),
+            FieldLabel('guardian_phone_label'.tr),
+            SizedBox(height: 8.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 15.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 17.sp,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      widget.parent.phone ?? '',
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.right,
+                      style: context.typography.smRegular.copyWith(
+                        fontSize: 15,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'guardian_phone_locked_note'.tr,
+              style: context.typography.xsRegular.copyWith(
+                fontSize: 12,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Obx(
+              () => SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: _busy.value ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _busy.value
+                      ? SizedBox(
+                          width: 22.w,
+                          height: 22.h,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'guardian_save'.tr,
+                          style:
+                              context.typography.mdBold.copyWith(fontSize: 15.5),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Input extends StatelessWidget {

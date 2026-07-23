@@ -421,6 +421,8 @@ class TeacherHomeController extends GetxController {
           final raw = Map<String, dynamic>.from(entry.value as Map);
           final activity = ClassroomActivityModel.fromJson(raw,
               key: entry.key.toString());
+          // Shared classrooms span branches — only summarise this branch's work.
+          if (!_session.seesBranch(activity.branchId)) continue;
           activities.add(activity);
           if (activity.status == 'completed') {
             cDone++;

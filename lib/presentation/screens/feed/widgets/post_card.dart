@@ -6,6 +6,7 @@ import '../../../../Data/models/feed/nursery_post_model.dart';
 import '../../../../index/index_main.dart';
 import '../feed_controller.dart';
 import 'create_post_sheet.dart';
+import 'post_photo_carousel.dart';
 
 class FeedPostCard extends StatelessWidget {
   const FeedPostCard({
@@ -27,6 +28,10 @@ class FeedPostCard extends StatelessWidget {
         return AppColors.yellowForeground;
       case PostCategory.reminder:
         return AppColors.teal;
+      case PostCategory.starOfWeek:
+        return AppColors.ratingStar;
+      case PostCategory.gallery:
+        return const Color(0xFF6366F1);
       default:
         return AppColors.primary;
     }
@@ -62,7 +67,16 @@ class FeedPostCard extends StatelessWidget {
                 ),
               ),
             ),
-          if (post.photos.isNotEmpty) _PhotosGrid(urls: post.photos),
+          if (post.photos.isNotEmpty)
+            post.isGallery
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: PostPhotoCarousel(urls: post.photos),
+                    ),
+                  )
+                : _PhotosGrid(urls: post.photos),
           _SeenRow(count: post.seenCount),
           SizedBox(height: 4.h),
         ],

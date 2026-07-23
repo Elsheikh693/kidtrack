@@ -37,6 +37,10 @@ class ReceptionistAccountTab extends StatelessWidget {
             child: _StaffProfileCard(session: session),
           ),
         ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
+        ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           sliver: SliverToBoxAdapter(
@@ -74,6 +78,10 @@ class NannyAccountTab extends StatelessWidget {
           sliver: SliverToBoxAdapter(
             child: _StaffProfileCard(session: session),
           ),
+        ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+          sliver: SliverToBoxAdapter(child: RoleSwitchCard()),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),

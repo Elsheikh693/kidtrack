@@ -12,11 +12,16 @@ class SetupStep {
   final IconData icon;
   final String route;
 
+  /// Optional steps still show their own done state, but never count toward the
+  /// progress total or gate the "finish setup" button.
+  final bool optional;
+
   const SetupStep({
     required this.id,
     required this.titleKey,
     required this.subtitleKey,
     required this.icon,
     required this.route,
+    this.optional = false,
   });
 }

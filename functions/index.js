@@ -18,6 +18,11 @@ const { onNurseryEventCreated } = require("./events/eventTriggers");
 
 exports.onNurseryEventCreated = onNurseryEventCreated;
 
+// 📸 Event photo review — nudge reviewers when event photos await approval
+const { onEventPhotoPending } = require("./events/eventPhotoTriggers");
+
+exports.onEventPhotoPending = onEventPhotoPending;
+
 // ------------------------------------------------------------
 // 🧹 EVENT CLEANUP (scheduled — hard-delete events past retention)
 // ------------------------------------------------------------
@@ -59,6 +64,15 @@ const { absentShiftEndScan } = require("./engagement/absentShiftEnd");
 exports.absentShiftEndScan = absentShiftEndScan;
 
 // ============================================================
+// 💰 FEE REMINDER (scheduled — auto-message parents who owe fees after the
+//    nursery's collection window closes)
+// ============================================================
+
+const { feeReminderScan } = require("./engagement/feeReminder");
+
+exports.feeReminderScan = feeReminderScan;
+
+// ============================================================
 // 🚪 WITHDRAW CHILD (callable — hard delete + parent/auth cleanup)
 // ============================================================
 
@@ -73,6 +87,14 @@ exports.withdrawChild = withdrawChild;
 const { activate } = require("./auth/activate");
 
 exports.activate = activate;
+
+// ============================================================
+// 👤 RESOLVE ACCOUNT (callable) — phone → uid (get-or-create identity)
+// ============================================================
+
+const { resolveAccount } = require("./auth/resolveAccount");
+
+exports.resolveAccount = resolveAccount;
 
 // ============================================================
 // 🏚️ DELETE NURSERY (callable — full cascade + owner/staff/parent auth cleanup)
@@ -97,3 +119,11 @@ exports.onActivityPhotoPending = onActivityPhotoPending;
 const { onGuardianNoteCreated } = require("./guardianNotes/guardianNoteTriggers");
 
 exports.onGuardianNoteCreated = onGuardianNoteCreated;
+
+// ============================================================
+// 🧾 DAILY EXPENSES (notify the guardian when reception charges a child)
+// ============================================================
+
+const { onDailyExpenseCreated } = require("./expenses/dailyExpenseTriggers");
+
+exports.onDailyExpenseCreated = onDailyExpenseCreated;

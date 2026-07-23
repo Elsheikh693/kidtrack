@@ -32,6 +32,12 @@ class InvoiceModel {
   /// When the guardian submitted [proofUrl].
   final int? proofSubmittedAt;
 
+  /// How this due was created, kept for filtering/analytics without a schema
+  /// migration. Known values: 'monthly' (auto subscription invoice),
+  /// 'daily_expense' (reception ad-hoc charge — pampers, books, medicine…),
+  /// 'manual'. Null for legacy invoices predating this field.
+  final String? source;
+
   final int? createdAt;
   final int? updatedAt;
 
@@ -57,6 +63,7 @@ class InvoiceModel {
     this.notes,
     this.proofUrl,
     this.proofSubmittedAt,
+    this.source,
     this.createdAt,
     this.updatedAt,
   });
@@ -84,6 +91,7 @@ class InvoiceModel {
       notes: json['notes']?.toString(),
       proofUrl: json['proofUrl']?.toString(),
       proofSubmittedAt: _parseInt(json['proofSubmittedAt']),
+      source: json['source']?.toString(),
       createdAt: _parseInt(json['createdAt']),
       updatedAt: _parseInt(json['updatedAt']),
     );
@@ -113,6 +121,7 @@ class InvoiceModel {
     put('notes', notes);
     put('proofUrl', proofUrl);
     put('proofSubmittedAt', proofSubmittedAt);
+    put('source', source);
     put('createdAt', createdAt ?? _now());
     put('updatedAt', _now());
     return data;
@@ -126,6 +135,7 @@ class InvoiceModel {
     double? totalAmount, double? paidAmount, String? status, int? dueDate, int? paidAt,
     String? paidBy, String? paymentMethod,
     String? notes, String? proofUrl, int? proofSubmittedAt,
+    String? source,
     int? createdAt, int? updatedAt,
   }) => InvoiceModel(
     key: key ?? this.key, nurseryId: nurseryId ?? this.nurseryId,
@@ -142,6 +152,7 @@ class InvoiceModel {
     notes: notes ?? this.notes,
     proofUrl: proofUrl ?? this.proofUrl,
     proofSubmittedAt: proofSubmittedAt ?? this.proofSubmittedAt,
+    source: source ?? this.source,
     createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
   );
 
@@ -149,6 +160,12 @@ class InvoiceModel {
   /// turned into a recorded collection yet.
   bool get hasPendingProof =>
       (proofUrl != null && proofUrl!.isNotEmpty) && !isFullyPaid;
+
+  /// A reception-created ad-hoc charge (pampers, a book, medicine…) rather than
+  /// a monthly subscription due. Falls back to the key prefix for invoices
+  /// written before [source] existed.
+  bool get isDailyExpense =>
+      source == 'daily_expense' || (key?.startsWith('extra_') ?? false);
 
   // ── Partial-payment helpers ────────────────────────────────────────────────
 
