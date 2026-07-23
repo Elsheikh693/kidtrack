@@ -8,6 +8,7 @@ class ManagerDashboardController extends GetxController {
   late final ManagerChildrenController _children;
   late final ManagerStaffController _staff;
   late final ManagerFinanceController _finance;
+  late final LateSessionMonitorService _lateMonitor;
 
   final _chatService = ChatService();
   final _convos = <String, ChatConversationModel>{}.obs;
@@ -24,7 +25,15 @@ class ManagerDashboardController extends GetxController {
     _convoSub = _chatService.watchConversations().listen((list) {
       _convos.value = {for (final c in list) c.childId: c};
     });
+    _lateMonitor = Get.find<LateSessionMonitorService>();
+    _lateMonitor.start();
   }
+
+  /// Scheduled sessions the assigned (present) teacher hasn't started yet.
+  RxList<LateSessionEntry> get lateSessions => _lateMonitor.lateSessions;
+
+  Future<bool> nudgeTeacher(LateSessionEntry entry) =>
+      _lateMonitor.nudgeTeacher(entry);
 
   @override
   void onClose() {

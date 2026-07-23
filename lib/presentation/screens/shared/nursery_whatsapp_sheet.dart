@@ -70,7 +70,7 @@ class _NurseryWhatsAppSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
         child: Column(

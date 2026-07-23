@@ -22,70 +22,70 @@ class _Module {
 const _modules = <_Module>[
   _Module(
     permKey: PermissionKeys.childrenView,
-    label:   'الأطفال',
+    label:   'shared30_module_children',
     icon:    Icons.child_care_rounded,
     color:   Color(0xFF10B981),
     route:   childrenView,
   ),
   _Module(
     permKey: PermissionKeys.attendanceView,
-    label:   'الحضور',
+    label:   'shared30_module_attendance',
     icon:    Icons.how_to_reg_rounded,
     color:   Color(0xFF06B6D4),
     route:   checkInView,
   ),
   _Module(
     permKey: PermissionKeys.attendanceCheckIn,
-    label:   'تسجيل دخول',
+    label:   'shared30_module_check_in',
     icon:    Icons.login_rounded,
     color:   Color(0xFF0EA5E9),
     route:   checkInView,
   ),
   _Module(
     permKey: PermissionKeys.classroomView,
-    label:   'الفصول',
+    label:   'shared30_module_classrooms',
     icon:    Icons.school_rounded,
     color:   Color(0xFF8B5CF6),
     route:   classroomsView,
   ),
   _Module(
     permKey: PermissionKeys.dailyCareView,
-    label:   'الرعاية اليومية',
+    label:   'shared30_module_daily_care',
     icon:    Icons.baby_changing_station_rounded,
     color:   Color(0xFFF59E0B),
     route:   attendanceDailyView,
   ),
   _Module(
     permKey: PermissionKeys.staffView,
-    label:   'الموظفون',
+    label:   'shared30_module_staff',
     icon:    Icons.badge_rounded,
     color:   Color(0xFF6366F1),
     route:   staffView,
   ),
   _Module(
     permKey: PermissionKeys.waitingListView,
-    label:   'قائمة الانتظار',
+    label:   'shared30_module_waiting_list',
     icon:    Icons.queue_rounded,
     color:   Color(0xFF64748B),
     route:   waitingListView,
   ),
   _Module(
     permKey: PermissionKeys.pickupView,
-    label:   'التسليم',
+    label:   'shared30_module_pickup',
     icon:    Icons.directions_car_rounded,
     color:   Color(0xFF0891B2),
     route:   authorizedPickupView,
   ),
   _Module(
     permKey: PermissionKeys.financeView,
-    label:   'المالية',
+    label:   'shared30_module_finance',
     icon:    Icons.account_balance_wallet_rounded,
     color:   Color(0xFFD97706),
     route:   invoicesView,
   ),
   _Module(
     permKey: PermissionKeys.parentsView,
-    label:   'أولياء الأمور',
+    label:   'shared30_module_parents',
     icon:    Icons.family_restroom_rounded,
     color:   Color(0xFF059669),
     route:   guardianListView,
@@ -94,7 +94,7 @@ const _modules = <_Module>[
 
 const _accountModule = _Module(
   permKey: '',
-  label: 'حسابي',
+  label: 'shared30_module_account',
   icon: Icons.manage_accounts_rounded,
   color: Color(0xFF7C3AED),
   route: staffAccountView,
@@ -121,7 +121,7 @@ class _StaffDashboardViewState extends State<StaffDashboardView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         body: CustomScrollView(
@@ -157,7 +157,7 @@ class _StaffDashboardViewState extends State<StaffDashboardView> {
                               size: 52.sp, color: AppColors.grayMedium),
                           SizedBox(height: 12.h),
                           Text(
-                            'لا توجد صلاحيات مخصصة لك',
+                            'shared30_no_permissions'.tr,
                             style: context.typography.smRegular.copyWith(
                               color: AppColors.textSecondaryParagraph,
                               fontSize: 15,
@@ -244,7 +244,7 @@ class _ModuleTile extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5.w),
                 child: Text(
-                  module.label,
+                  module.label.tr,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

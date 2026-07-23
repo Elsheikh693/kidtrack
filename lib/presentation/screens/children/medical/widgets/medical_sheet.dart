@@ -138,7 +138,7 @@ class _MedicalSheetState extends State<MedicalSheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

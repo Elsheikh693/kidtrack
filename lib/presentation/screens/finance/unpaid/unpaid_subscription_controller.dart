@@ -281,7 +281,7 @@ class UnpaidSubscriptionController extends GetxController {
         }
       }
       _recipientsByChild[cid] = uids;
-      parentNamesByChild[cid] = names.join('، ');
+      parentNamesByChild[cid] = names.join('finance15_name_separator'.tr);
     }
   }
 

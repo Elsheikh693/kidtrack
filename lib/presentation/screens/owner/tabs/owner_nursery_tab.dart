@@ -96,10 +96,10 @@ class OwnerNurseryTab extends StatelessWidget {
     return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            const KidTrackCollapsingHeader(
-              title: 'الحضانة',
+            KidTrackCollapsingHeader(
+              title: 'ownertabs20_nursery'.tr,
               icon: Icons.business_rounded,
-              accentColor: Color(0xFF2563EB),
+              accentColor: const Color(0xFF2563EB),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),

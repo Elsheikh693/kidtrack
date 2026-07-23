@@ -12,10 +12,10 @@ class StaffAccountController extends GetxController {
 
   String get roleLabel {
     switch (_session.userType) {
-      case UserType.teacher:      return 'معلم';
-      case UserType.nanny:        return 'مربية';
-      case UserType.receptionist: return 'موظف استقبال';
-      case UserType.busChaperone: return 'مرافق حافلة';
+      case UserType.teacher:      return 'shared30_role_teacher'.tr;
+      case UserType.nanny:        return 'shared30_role_nanny'.tr;
+      case UserType.receptionist: return 'shared30_role_receptionist'.tr;
+      case UserType.busChaperone: return 'shared30_role_bus_chaperone'.tr;
       default:                    return staffRole;
     }
   }

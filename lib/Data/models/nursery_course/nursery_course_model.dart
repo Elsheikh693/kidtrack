@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 // ─── Content Type ─────────────────────────────────────────────────────────────
 
@@ -6,10 +7,10 @@ enum LessonContentType { text, video, pdf, image }
 
 extension LessonContentTypeX on LessonContentType {
   String get label => switch (this) {
-    LessonContentType.text  => 'نص',
-    LessonContentType.video => 'فيديو',
-    LessonContentType.pdf   => 'PDF',
-    LessonContentType.image => 'صورة',
+    LessonContentType.text  => 'datamodels4_lesson_type_text'.tr,
+    LessonContentType.video => 'datamodels4_lesson_type_video'.tr,
+    LessonContentType.pdf   => 'datamodels4_lesson_type_pdf'.tr,
+    LessonContentType.image => 'datamodels4_lesson_type_image'.tr,
   };
 
   IconData get icon => switch (this) {
@@ -39,13 +40,13 @@ enum CourseCategory { language, math, art, quran, music, science, social }
 
 extension CourseCategoryX on CourseCategory {
   String get label => switch (this) {
-    CourseCategory.language => 'لغات',
-    CourseCategory.math     => 'رياضيات',
-    CourseCategory.art      => 'فنون',
-    CourseCategory.quran    => 'قرآن كريم',
-    CourseCategory.music    => 'موسيقى',
-    CourseCategory.science  => 'علوم',
-    CourseCategory.social   => 'مهارات اجتماعية',
+    CourseCategory.language => 'datamodels4_course_cat_language'.tr,
+    CourseCategory.math     => 'datamodels4_course_cat_math'.tr,
+    CourseCategory.art      => 'datamodels4_course_cat_art'.tr,
+    CourseCategory.quran    => 'datamodels4_course_cat_quran'.tr,
+    CourseCategory.music    => 'datamodels4_course_cat_music'.tr,
+    CourseCategory.science  => 'datamodels4_course_cat_science'.tr,
+    CourseCategory.social   => 'datamodels4_course_cat_social'.tr,
   };
 
   Color get color => switch (this) {
@@ -329,13 +330,14 @@ class NurseryCourse {
     final h = totalMinutes ~/ 60;
     final m = totalMinutes % 60;
     if (totalMinutes == 0) return '—';
-    if (h == 0) return '$m د';
-    if (m == 0) return '$h س';
-    return '$h س $m د';
+    if (h == 0) return '$m ${'datamodels4_unit_minute'.tr}';
+    if (m == 0) return '$h ${'datamodels4_unit_hour'.tr}';
+    return '$h ${'datamodels4_unit_hour'.tr} $m ${'datamodels4_unit_minute'.tr}';
   }
 
   bool get isFree => price == 0;
-  String get priceLabel => isFree ? 'مجاني' : '${price.toInt()} جنيه';
+  String get priceLabel =>
+      isFree ? 'datamodels4_free'.tr : '${price.toInt()} ${'datamodels4_currency_egp'.tr}';
 
   bool get hasStartDate => startDate != null;
   DateTime? get startDateTime =>

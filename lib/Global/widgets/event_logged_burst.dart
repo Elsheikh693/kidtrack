@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../Localization/app_direction.dart';
 
 /// A quick, delightful center "logged ✓" confirmation that pops in (elastic
 /// scale + fade) over everything and removes itself — the satisfying feedback
@@ -116,7 +117,7 @@ class _EventLoggedBurstState extends State<_EventLoggedBurst>
                         ),
                         child: Text(
                           widget.label,
-                          textDirection: TextDirection.rtl,
+                          textDirection: appTextDirection,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,

@@ -126,9 +126,11 @@ class LiveAndPickupSection extends StatelessWidget {
 
   static String _ago(int ms) {
     final d = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ms));
-    if (d.inMinutes < 1) return 'منذ لحظات';
-    if (d.inHours < 1) return 'منذ ${d.inMinutes} دقيقة';
-    return 'منذ ${d.inHours} ساعة';
+    if (d.inMinutes < 1) return 'parentdash22_moments_ago'.tr;
+    if (d.inHours < 1) {
+      return 'parentdash22_minutes_ago'.trParams({'n': '${d.inMinutes}'});
+    }
+    return 'parentdash22_hours_ago'.trParams({'n': '${d.inHours}'});
   }
 }
 
@@ -199,7 +201,7 @@ class _LiveStatusRow extends StatelessWidget {
                           size: 12.sp, color: const Color(0xFF059669)),
                       SizedBox(width: 4.w),
                       Text(
-                        'دخل $checkInTime',
+                        'parentdash22_checked_in_at'.trParams({'time': checkInTime}),
                         style: context.typography.smSemiBold.copyWith(color: Color(0xFF059669), fontSize: 11),
                       ),
                       SizedBox(width: 10.w),
@@ -208,7 +210,9 @@ class _LiveStatusRow extends StatelessWidget {
                         size: 12.sp, color: AppColors.textSecondaryParagraph),
                     SizedBox(width: 4.w),
                     Text(
-                      isActive ? 'آخر تحديث: منذ لحظات' : 'خارج الحضانة',
+                      isActive
+                          ? 'parentdash22_last_update_moments'.tr
+                          : 'parentdash22_outside_nursery'.tr,
                       style: context.typography.xsRegular.copyWith(color: AppColors.textSecondaryParagraph, fontSize: 11),
                     ),
                   ],
@@ -346,7 +350,7 @@ class _PickupDivider extends StatelessWidget {
                     size: 13.sp, color: AppColors.textSecondaryParagraph),
                 SizedBox(width: 5.w),
                 Text(
-                  'الاستلام',
+                  'parentdash22_pickup'.tr,
                   style: context.typography.smSemiBold.copyWith(color: AppColors.textSecondaryParagraph, fontSize: 11),
                 ),
               ],
@@ -367,7 +371,7 @@ class _PickupDivider extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'السجل',
+                    'parentdash22_history'.tr,
                     style: context.typography.xsMedium
                         .copyWith(color: AppColors.primary),
                   ),
@@ -416,7 +420,7 @@ class _IdlePickup extends StatelessWidget {
           onPressed: () => showPickupRequestSheet(context, controller),
           icon: Icon(Icons.directions_car_rounded, size: 18.sp),
           label: Text(
-            'طلب استلام $childName',
+            'parentdash22_request_pickup_name'.trParams({'name': childName}),
             style: context.typography.displaySmBold.copyWith(fontSize: 14),
           ),
           style: ElevatedButton.styleFrom(
@@ -461,7 +465,7 @@ class _ActivePickup extends StatelessWidget {
           GestureDetector(
             onTap: onCancel,
             child: Text(
-              'إلغاء طلب الاستلام',
+              'parentdash22_cancel_pickup_request'.tr,
               style: context.typography.smSemiBold.copyWith(color: Color(0xFFDC2626), fontSize: 13),
             ),
           ),
@@ -491,15 +495,16 @@ class _PickupStatusBanner extends StatelessWidget {
           gradient: const [Color(0xFFF97316), Color(0xFFFB923C)],
           shadowColor: const Color(0xFFF97316),
           icon: Icons.backpack_rounded,
-          title: 'جاري تحضير $childName',
-          subtitle: 'سيكون جاهزاً في أقرب وقت',
+          title: 'parentdash22_preparing_child'.trParams({'name': childName}),
+          subtitle: 'parentdash22_ready_soon'.tr,
         ),
       _ => _banner(
           gradient: const [Color(0xFF059669), Color(0xFF10B981)],
           shadowColor: const Color(0xFF059669),
           icon: Icons.directions_car_rounded,
-          title: 'في الطريق',
-          subtitle: 'سأصل لاستلام $childName خلال $eta',
+          title: 'parentdash22_on_the_way'.tr,
+          subtitle: 'parentdash22_arriving_for_child'
+              .trParams({'name': childName, 'eta': eta}),
           trailing: _etaBadge(eta),
         ),
     };
@@ -753,7 +758,7 @@ class _LiveBadgeState extends State<_LiveBadge>
               )),
             SizedBox(width: 5.w),
             Text(
-              'مباشر',
+              'parentdash22_live'.tr,
               style: context.typography.displaySmBold.copyWith(color: widget.color, fontSize: 11),
             ),
           ],

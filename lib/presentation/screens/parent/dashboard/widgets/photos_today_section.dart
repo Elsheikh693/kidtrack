@@ -105,11 +105,13 @@ class _PhotosTodaySectionState extends State<PhotosTodaySection> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'صور ${widget.controller.classroomName} اليوم',
+                        'parentdash22_photos_today_title'
+                            .trParams({'name': widget.controller.classroomName}),
                         style: context.typography.displaySmBold.copyWith(color: Color(0xFF1E293B), fontSize: 13),
                       ),
                       Text(
-                        '${_photos.length} صورة',
+                        'parentdash22_photos_count'
+                            .trParams({'count': '${_photos.length}'}),
                         style: context.typography.xsRegular.copyWith(color: AppColors.textSecondaryParagraph, fontSize: 11),
                       ),
                     ],
@@ -124,7 +126,7 @@ class _PhotosTodaySectionState extends State<PhotosTodaySection> {
                     },
                   ),
                   child: Text(
-                    'عرض الكل',
+                    'parentdash22_view_all'.tr,
                     style: context.typography.smSemiBold.copyWith(color: AppColors.primary, fontSize: 12),
                   ),
                 ),

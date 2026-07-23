@@ -124,7 +124,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Obx(() {
         // Hold a blank surface under the native splash until the access gate
         // resolves the restored session.
@@ -358,6 +358,8 @@ const _managerItems = [
     color: Color(0xFF0891B2),
     pageIndex: 2,
   ),
+  // Schedule is reached from the home quick-links (page index 7 stays in the
+  // stack), not the bottom bar — keeps the bar at four items.
   _NavItemData(
     activeIcon: Icons.grid_view_rounded,
     inactiveIcon: Icons.grid_view_outlined,

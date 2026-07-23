@@ -98,7 +98,7 @@ class InvoiceController extends GetxController {
     String? method;
     await Get.dialog(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text('invoice_mark_paid_title'.tr),
           content: Column(

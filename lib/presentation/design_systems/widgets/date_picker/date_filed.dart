@@ -36,7 +36,7 @@ class DateField extends StatelessWidget {
             controller: controller,
             prefixIcon:
                 icon != null ? const Icon(Icons.calendar_today_outlined) : null,
-            hintText: hint ?? "اختر التاريخ",
+            hintText: hint ?? 'binding9_choose_date'.tr,
             ontap: () async {
               Get.bottomSheet(
                 Container(

@@ -123,6 +123,8 @@ class MainPageViewModel extends GetxController {
     const ManagerFinanceTab(),
     const ManagerSocialTab(),
     const ManagerMoreTab(),
+    // index 7: manager-owned weekly timetable editor (schedule tab).
+    const ManagerScheduleView(),
   ];
   static final _receptionistPages = <Widget>[
     const ReceptionistDashboardTab(),

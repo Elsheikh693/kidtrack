@@ -21,7 +21,7 @@ class _ParentHomeLocationViewState extends State<ParentHomeLocationView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'home_loc_title'.tr),

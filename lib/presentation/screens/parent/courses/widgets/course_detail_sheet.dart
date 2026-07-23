@@ -5,12 +5,7 @@ import '../../../../../Data/models/course_enrollment/course_enrollment_model.dar
 import '../../../../../Global/services/course_service.dart';
 import '../../../courses/parent/lesson_viewer_view.dart';
 
-const _months = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
-
-String _formatDate(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
+String _formatDate(DateTime d) => '${d.day} ${monthName(d.month)} ${d.year}';
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
@@ -151,7 +146,7 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
       maxChildSize: 0.95,
       expand: false,
       builder: (ctx, scrollController) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AnimatedBuilder(
           animation: _entrance,
           builder: (context, child) => Opacity(
@@ -244,7 +239,9 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
                               icon: _enrolled
                                   ? Icons.timeline_rounded
                                   : Icons.menu_book_rounded,
-                              title: _enrolled ? 'مسار الحصص' : 'محتوى الكورس',
+                              title: _enrolled
+                                  ? 'parentcour21_sessions_track'.tr
+                                  : 'parentcour21_course_content'.tr,
                               color: catColor,
                             ),
                             const SizedBox(height: 14),
@@ -262,7 +259,7 @@ class _CourseDetailSheetState extends State<CourseDetailSheet>
                           padding: const EdgeInsets.all(32),
                           child: Center(
                             child: Text(
-                              'لم تُضف دروس بعد',
+                              'parentcour21_no_lessons_yet'.tr,
                               style: TextStyle(color: AppColors.grayMedium, fontSize: 14),
                             ),
                           ),
@@ -491,7 +488,7 @@ class _StartDateBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasDate = course.hasStartDate;
     final dateLabel =
-        hasDate ? _formatDate(course.startDateTime!) : 'لم يُحدد بعد';
+        hasDate ? _formatDate(course.startDateTime!) : 'parentcour21_not_set_yet'.tr;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -531,7 +528,7 @@ class _StartDateBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'موعد بداية الكورس',
+                      'parentcour21_course_start_date'.tr,
                       style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w600,
                         color: AppColors.grayMedium,
@@ -539,7 +536,9 @@ class _StartDateBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      hasDate ? 'يبدأ في $dateLabel' : 'موعد البدء لم يُحدد بعد',
+                      hasDate
+                          ? 'parentcour21_starts_on'.trParams({'date': dateLabel})
+                          : 'parentcour21_start_not_set'.tr,
                       style: TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w800,
                         color: AppColors.textDefault,
@@ -563,7 +562,7 @@ class _StartDateBanner extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'طفلك غير مُسجَّل في هذا الكورس بعد. تواصل مع الاستقبال للتسجيل ومتابعة الحصص.',
+                    'parentcour21_not_enrolled_hint'.tr,
                     style: TextStyle(
                       fontSize: 12, height: 1.5,
                       color: AppColors.textPrimaryParagraph,
@@ -669,7 +668,7 @@ class _TrackStandingCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'من $totalSessions',
+                          'parentcour21_of_count'.trParams({'count': '$totalSessions'}),
                           style: TextStyle(
                             fontSize: 10, fontWeight: FontWeight.w600,
                             color: AppColors.grayMedium,
@@ -686,7 +685,9 @@ class _TrackStandingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      done ? 'انتهت حصص الكورس' : 'حصص حضرها طفلك',
+                      done
+                          ? 'parentcour21_course_sessions_ended'.tr
+                          : 'parentcour21_sessions_attended'.tr,
                       style: TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w800,
                         color: AppColors.textDefault,
@@ -695,8 +696,15 @@ class _TrackStandingCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       done
-                          ? 'حضر طفلك $attended من $totalSessions حصة.'
-                          : 'حضر طفلك $attended من $totalSessions حصة — التالية الحصة رقم $nextSession',
+                          ? 'parentcour21_child_attended_done'.trParams({
+                              'attended': '$attended',
+                              'total': '$totalSessions',
+                            })
+                          : 'parentcour21_child_attended_next'.trParams({
+                              'attended': '$attended',
+                              'total': '$totalSessions',
+                              'next': '$nextSession',
+                            }),
                       style: TextStyle(
                         fontSize: 12, height: 1.5,
                         color: AppColors.textPrimaryParagraph,
@@ -710,7 +718,7 @@ class _TrackStandingCard extends StatelessWidget {
                               size: 13, color: Color(0xFFDC2626)),
                           const SizedBox(width: 4),
                           Text(
-                            'تغيّب عن $absent ${absent == 1 ? 'حصة' : 'حصص'}',
+                            '${'parentcour21_absent_from'.tr} $absent ${absent == 1 ? 'parentcour21_session_unit'.tr : 'parentcour21_sessions_unit'.tr}',
                             style: const TextStyle(
                               fontSize: 11.5, fontWeight: FontWeight.w700,
                               color: Color(0xFFDC2626),
@@ -741,7 +749,7 @@ class _TrackStandingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'الحصة القادمة',
+                          'parentcour21_next_session'.tr,
                           style: TextStyle(
                             fontSize: 10, fontWeight: FontWeight.w700,
                             color: catColor,
@@ -1094,7 +1102,7 @@ class _LessonTile extends StatelessWidget {
                           Icon(Icons.schedule_rounded, size: 10, color: AppColors.grayMedium),
                           const SizedBox(width: 3),
                           Text(
-                            '${lesson.durationMinutes} د',
+                            '${lesson.durationMinutes} ${'parentcour21_min_unit'.tr}',
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.grayMedium),
                           ),
                         ],
@@ -1130,19 +1138,19 @@ class _LessonTile extends StatelessWidget {
               if (isPresent)
                 _FooterTag(
                   icon: Icons.check_circle_rounded,
-                  label: 'تم الحضور',
+                  label: 'parentcour21_attended_tag'.tr,
                   color: catColor,
                 )
               else if (isAbsent)
-                const _FooterTag(
+                _FooterTag(
                   icon: Icons.cancel_rounded,
-                  label: 'غاب',
+                  label: 'parentcour21_absent_tag'.tr,
                   color: _absentColor,
                 )
               else if (isCurrent)
                 _FooterTag(
                   icon: Icons.schedule_rounded,
-                  label: 'الحصة القادمة',
+                  label: 'parentcour21_next_session'.tr,
                   color: catColor,
                 ),
             ],

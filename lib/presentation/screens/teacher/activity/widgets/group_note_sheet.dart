@@ -40,7 +40,7 @@ class _GroupNoteSheetState extends State<GroupNoteSheet> with KeyboardSheetMixin
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: Container(
@@ -62,9 +62,9 @@ class _GroupNoteSheetState extends State<GroupNoteSheet> with KeyboardSheetMixin
                         color: Color(0xFF7C3AED), size: 20),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
-                    'ملاحظة عامة للفصل',
-                    style: TextStyle(
+                  Text(
+                    'teacheract33_group_note_title'.tr,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1F2937),
@@ -74,7 +74,7 @@ class _GroupNoteSheetState extends State<GroupNoteSheet> with KeyboardSheetMixin
               ),
               const SizedBox(height: 6),
               Text(
-                'ستظهر هذه الملاحظة لجميع أولياء الأمور',
+                'teacheract33_group_note_subtitle'.tr,
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
               const SizedBox(height: 16),
@@ -82,9 +82,9 @@ class _GroupNoteSheetState extends State<GroupNoteSheet> with KeyboardSheetMixin
                 controller: _ctrl,
                 maxLines: 4,
                 autofocus: true,
-                textDirection: TextDirection.rtl,
+                textDirection: appTextDirection,
                 decoration: InputDecoration(
-                  hintText: 'اكتب ملاحظتك هنا...',
+                  hintText: 'teacheract33_group_note_hint'.tr,
                   hintStyle: TextStyle(color: Colors.grey.shade400),
                   filled: true,
                   fillColor: Colors.grey.shade50,
@@ -127,9 +127,9 @@ class _GroupNoteSheetState extends State<GroupNoteSheet> with KeyboardSheetMixin
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'حفظ الملاحظة',
-                          style: TextStyle(
+                      : Text(
+                          'teacheract33_group_note_save'.tr,
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),

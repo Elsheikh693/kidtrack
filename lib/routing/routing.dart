@@ -101,6 +101,16 @@ const String ownerRevenueMethodReportView = "/OwnerRevenueMethodReportView";
 const String ownerRevenueCategoryReportView = "/OwnerRevenueCategoryReportView";
 const String ownerPaymentBehaviorReportView = "/OwnerPaymentBehaviorReportView";
 const String ownerRevenueForecastReportView = "/OwnerRevenueForecastReportView";
+const String ownerAcademicReportView = "/OwnerAcademicReportView";
+const String ownerSatisfactionReportView = "/OwnerSatisfactionReportView";
+const String ownerSafetyReportView = "/OwnerSafetyReportView";
+const String ownerStaffCostReportView = "/OwnerStaffCostReportView";
+const String ownerFunnelReportView = "/OwnerFunnelReportView";
+const String ownerCurriculumReportView = "/OwnerCurriculumReportView";
+const String ownerPunctualityReportView = "/OwnerPunctualityReportView";
+const String ownerCareReportView = "/OwnerCareReportView";
+const String ownerEventsReportView = "/OwnerEventsReportView";
+const String ownerHomeworkReportView = "/OwnerHomeworkReportView";
 const String parentHomeworkView = "/ParentHomeworkView";
 const String parentSubjectsAllView = "/ParentSubjectsAllView";
 const String parentClassPhotosView = "/ParentClassPhotosView";
@@ -177,6 +187,7 @@ const String tutorialPlayerView = "/TutorialPlayerView";
 
 // Manager
 const String managerNurseryProfileView = "/ManagerNurseryProfileView";
+const String managerNurseryLogoView = "/ManagerNurseryLogoView";
 const String nurseryPaymentAccountsView = "/NurseryPaymentAccountsView";
 const String managerApplicationFileView = "/ManagerApplicationFileView";
 const String managerPrivacyPolicyView = "/ManagerPrivacyPolicyView";
@@ -812,6 +823,86 @@ class Routes {
         transitionDuration: const Duration(milliseconds: 300),
         middlewares: guard,
       ),
+      GetPage(
+        name: ownerAcademicReportView,
+        page: () => const OwnerAcademicView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerSatisfactionReportView,
+        page: () => const OwnerSatisfactionView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerSafetyReportView,
+        page: () => const OwnerSafetyView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerStaffCostReportView,
+        page: () => const OwnerStaffCostView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerFunnelReportView,
+        page: () => const OwnerFunnelView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCurriculumReportView,
+        page: () => const OwnerCurriculumView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerPunctualityReportView,
+        page: () => const OwnerPunctualityView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerCareReportView,
+        page: () => const OwnerCareView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerEventsReportView,
+        page: () => const OwnerEventsView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+      GetPage(
+        name: ownerHomeworkReportView,
+        page: () => const OwnerHomeworkView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
 
       // ── Nursery Contact Numbers ───────────────────────────────────────────
       GetPage(
@@ -1157,6 +1248,16 @@ class Routes {
       GetPage(
         name: managerNurseryProfileView,
         page: () => const ManagerNurseryProfileView(),
+        binding: Binding(),
+        transition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+        middlewares: guard,
+      ),
+
+      // ── Manager Nursery Logo (setup step — logo only) ──────────────────────
+      GetPage(
+        name: managerNurseryLogoView,
+        page: () => const NurseryLogoView(),
         binding: Binding(),
         transition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),

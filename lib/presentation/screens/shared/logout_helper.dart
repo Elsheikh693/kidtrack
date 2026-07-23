@@ -52,6 +52,10 @@ Future<void> performLogout() async {
         NurseryFeedbackGate.keyPrefix,
         PickupPromptSeen.keyPrefix,
         PrivacyPolicySeen.keyPrefix,
+        // First-open markers that must also survive logout so a returning user
+        // on the same device isn't shown these one-time moments again.
+        StarOfWeekSeen.keyPrefix,
+        KidtrackFeedbackGate.keyPrefix,
       },
     );
   } finally {
@@ -66,7 +70,7 @@ class _LogoutConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Dialog(
         backgroundColor: AppColors.white,
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),

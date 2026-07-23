@@ -17,7 +17,7 @@ class AcademicTopicsController extends GetxController {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>? ?? {};
     subjectId = args['subjectId']?.toString() ?? '';
-    subjectName = args['subjectName']?.toString() ?? 'المادة';
+    subjectName = args['subjectName']?.toString() ?? 'presentati10_subject'.tr;
     _load();
   }
 
@@ -60,14 +60,15 @@ class AcademicTopicsController extends GetxController {
   void confirmDelete(AcademicTopicModel topic) {
     Get.dialog(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
-          title: const Text('حذف الموضوع'),
-          content: Text('هل تريد حذف "${topic.title}"؟'),
+          title: Text('presentati10_delete_topic_title'.tr),
+          content: Text(
+              '${'presentati10_delete_topic_confirm'.tr} "${topic.title}"؟'),
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: const Text('إلغاء'),
+              child: Text('presentati10_cancel'.tr),
             ),
             TextButton(
               onPressed: () async {
@@ -75,8 +76,8 @@ class AcademicTopicsController extends GetxController {
                 await _service.deleteTopic(topic.key ?? '');
                 await _load();
               },
-              child: const Text('حذف',
-                  style: TextStyle(color: Color(0xFFDC2626))),
+              child: Text('presentati10_delete'.tr,
+                  style: const TextStyle(color: Color(0xFFDC2626))),
             ),
           ],
         ),
@@ -129,7 +130,7 @@ class _TopicSheetState extends State<_TopicSheet> {
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) {
-      Get.snackbar('تنبيه', 'اكتب اسم الموضوع');
+      Get.snackbar('presentati10_alert'.tr, 'presentati10_enter_topic_name'.tr);
       return;
     }
     setState(() => _saving = true);
@@ -153,7 +154,7 @@ class _TopicSheetState extends State<_TopicSheet> {
   Widget build(BuildContext context) {
     final isEdit = widget.topic != null;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         margin: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -179,7 +180,9 @@ class _TopicSheetState extends State<_TopicSheet> {
                 ),
                 SizedBox(width: 10.w),
                 Text(
-                  isEdit ? 'تعديل الموضوع' : 'إضافة موضوع جديد',
+                  isEdit
+                      ? 'presentati10_edit_topic'.tr
+                      : 'presentati10_add_topic'.tr,
                   style: context.typography.mdBold.copyWith(
                       fontSize: 17, fontWeight: FontWeight.w800),
                 ),
@@ -189,7 +192,7 @@ class _TopicSheetState extends State<_TopicSheet> {
             TextField(
               controller: _titleCtrl,
               decoration: InputDecoration(
-                labelText: 'اسم الموضوع *',
+                labelText: 'presentati10_topic_name_label'.tr,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r)),
                 prefixIcon: const Icon(Icons.title_rounded),
@@ -201,7 +204,7 @@ class _TopicSheetState extends State<_TopicSheet> {
               controller: _descCtrl,
               maxLines: 2,
               decoration: InputDecoration(
-                labelText: 'وصف (اختياري)',
+                labelText: 'presentati10_description_optional'.tr,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r)),
                 prefixIcon: const Icon(Icons.description_rounded),
@@ -226,7 +229,9 @@ class _TopicSheetState extends State<_TopicSheet> {
                             strokeWidth: 2, color: Colors.white),
                       )
                     : Text(
-                        isEdit ? 'حفظ التعديلات' : 'إضافة الموضوع',
+                        isEdit
+                            ? 'presentati10_save_changes'.tr
+                            : 'presentati10_add_topic_btn'.tr,
                         style: context.typography.displaySmBold.copyWith(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../link_book_controller.dart';
+import 'package:get/get.dart';
 
 /// A single "page" of the Link Book — one day, summarised at a glance.
 class LinkBookDayCard extends StatelessWidget {
@@ -143,7 +144,7 @@ class LinkBookDayCard extends StatelessWidget {
                   ] else ...[
                     const SizedBox(height: 11),
                     Text(
-                      'ملاحظات المعلمة',
+                      'parentlink25_teacher_notes'.tr,
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,

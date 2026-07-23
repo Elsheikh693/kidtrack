@@ -101,7 +101,7 @@ class _ActivationSheetState extends State<_ActivationSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 28.h),
         child: Column(

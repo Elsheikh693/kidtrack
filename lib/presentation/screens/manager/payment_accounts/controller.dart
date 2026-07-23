@@ -45,7 +45,7 @@ class NurseryPaymentAccountsController extends GetxController {
   Future<void> confirmDelete(PaymentAccountModel item) async {
     final ok = await Get.dialog<bool>(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text('nursery_pay_account_delete'.tr),
           content: Text('nursery_pay_account_delete_confirm'.tr),

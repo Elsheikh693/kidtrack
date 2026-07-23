@@ -128,7 +128,7 @@ class _StartActivitySheetState extends State<StartActivitySheet>
     final media = MediaQuery.of(context);
     final maxH = media.size.height * 0.85 - media.viewInsets.bottom;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
         child: ConstrainedBox(
@@ -258,7 +258,7 @@ class _StartActivitySheetState extends State<StartActivitySheet>
 
   Widget _titleField(BuildContext context) => TextFormField(
         controller: _titleCtrl,
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         autofocus: !_isActivity,
         decoration: InputDecoration(
           hintText: 'teacher_activity_title_hint'.tr,

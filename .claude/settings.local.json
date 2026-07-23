@@ -246,7 +246,22 @@
       "Bash(firebase database:get /platform/__TRACKED_VAR__/financialTransactions -P kidtrack-bed28)",
       "Bash(firebase database:get /platform/__TRACKED_VAR__/payments -P kidtrack-bed28)",
       "Bash(awk '/Future<void> addData|addData\\\\\\(/{p=1} p{print NR\": \"$0} /^  }/{if\\(p\\)c++; if\\(c>=1 && p\\) {p=0}}' lib/presentation/parentControllers/base_service.dart)",
-      "Bash(node --check scripts/cleanup_broken_notifications.js)"
+      "Bash(node --check scripts/cleanup_broken_notifications.js)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(node --check engagement/absentShiftEnd.js)",
+      "Bash(node -c children/removeGuardian.js)",
+      "Bash(git -C /Users/apple/kidtrack diff --stat -- lib/Global/Localization/ar.dart lib/Global/Localization/en.dart)",
+      "Bash(head-20)",
+      "Bash(echo \"=== fee_window controller ===\"; ls lib/presentation/screens/manager/fee_window/; sed -n '1,90p' lib/presentation/screens/manager/fee_window/*controller*.dart 2>/dev/null)",
+      "Bash(node -c engagement/lateSessionStart.js)",
+      "Bash(xargs -n1 basename)",
+      "Bash(awk -F/ '{print $1\"/\"$2\"/\"$3}')",
+      "Bash(cp lib/Global/Localization/ar.dart __TRACKED_VAR__/ar.dart.bak)",
+      "Bash(cp lib/Global/Localization/en.dart __TRACKED_VAR__/en.dart.bak)",
+      "Bash(python3 __TRACKED_VAR__/merge_keys.py __TRACKED_VAR__/keys.json)",
+      "Bash(tee /tmp/date_files.txt)",
+      "Bash(grep -rnP \"،\\\\s*\\(\\\\\\\\\\\\$\\\\{|'\\)?.*\\(weekdayName|monthName|arabicClockTime\\)|weekdayName\\\\\\([^\\)]*\\\\\\)\\\\}?،|\\\\}،\\\\s*\\\\\\\\\\\\$\\\\{d\" --include='*.dart' lib)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

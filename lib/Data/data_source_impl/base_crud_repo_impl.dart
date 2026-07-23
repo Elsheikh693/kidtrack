@@ -43,7 +43,7 @@ class BaseCrudRepoImpl<T> extends BaseCrudRepo<T> {
       );
       return SuccessModel.fromJson(response ?? {});
     } catch (_) {
-      return const SuccessModel(message: 'Add failed');
+      return SuccessModel(message: 'datacore1_add_failed'.tr);
     }
   }
 
@@ -59,7 +59,7 @@ class BaseCrudRepoImpl<T> extends BaseCrudRepo<T> {
       );
       return SuccessModel.fromJson(response ?? {});
     } catch (_) {
-      return const SuccessModel(message: 'Update failed');
+      return SuccessModel(message: 'datacore1_update_failed'.tr);
     }
   }
 
@@ -73,10 +73,10 @@ class BaseCrudRepoImpl<T> extends BaseCrudRepo<T> {
         '$endpoint/$id.json',
       );
       return response == null
-          ? const SuccessModel(message: 'تمت العملية بنجاح')
+          ? SuccessModel(message: 'datacore1_operation_success'.tr)
           : SuccessModel.fromJson(response);
     } catch (_) {
-      return const SuccessModel(message: 'Delete failed');
+      return SuccessModel(message: 'datacore1_delete_failed'.tr);
     }
   }
 

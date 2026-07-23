@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
@@ -39,9 +40,9 @@ class JournalTimelineSection extends StatelessWidget {
                     size: 15, color: Color(0xFF2563EB)),
               ),
               const SizedBox(width: 9),
-              const Text(
-                'أنشطة اليوم',
-                style: TextStyle(
+              Text(
+                'parenteduc24_day_activities_title'.tr,
+                style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.w800, color: kJInk),
               ),
               const SizedBox(width: 8),
@@ -94,13 +95,13 @@ class _EmptyTimeline extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: kJBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.event_busy_rounded, size: 30, color: kJMuted),
-          SizedBox(height: 10),
+          const Icon(Icons.event_busy_rounded, size: 30, color: kJMuted),
+          const SizedBox(height: 10),
           Text(
-            'لم يتم تسجيل أنشطة لهذا اليوم',
-            style: TextStyle(
+            'parenteduc24_timeline_empty'.tr,
+            style: const TextStyle(
                 fontSize: 13, fontWeight: FontWeight.w600, color: kJMuted),
           ),
         ],
@@ -378,13 +379,13 @@ class _CommentBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.chat_bubble_outline_rounded,
+            children: [
+              const Icon(Icons.chat_bubble_outline_rounded,
                   size: 13, color: Color(0xFF7C3AED)),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
-                'تعليق المعلمة',
-                style: TextStyle(
+                'parenteduc24_teacher_comment'.tr,
+                style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF7C3AED)),

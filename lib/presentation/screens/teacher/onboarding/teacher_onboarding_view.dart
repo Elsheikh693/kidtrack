@@ -16,7 +16,7 @@ class TeacherOnboardingView extends StatelessWidget {
         statusBarBrightness: Brightness.dark,
       ),
       child: Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: Scaffold(
           backgroundColor: const Color(0xFFF9FAFB),
           body: Obx(() {
@@ -56,10 +56,13 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final step = controller.currentStep.value;
-      final titles = ['اختاري الفصول التي تدرسينها', 'حددي مواد كل فصل'];
+      final titles = [
+        'teacherlin37_step1_title'.tr,
+        'teacherlin37_step2_title'.tr,
+      ];
       final subtitles = [
-        'ضعي علامة على كل فصل تتولين تدريسه',
-        'اختاري المواد لكل فصل من الجدول أدناه',
+        'teacherlin37_step1_subtitle'.tr,
+        'teacherlin37_step2_subtitle'.tr,
       ];
       return Column(
         children: [
@@ -112,13 +115,14 @@ class _Header extends StatelessWidget {
                         children: [
                           Text(
                             controller.editMode
-                                ? 'تعديل الملف الأكاديمي'
-                                : 'إعداد الملف الأكاديمي',
+                                ? 'teacherlin37_edit_academic_profile'.tr
+                                : 'teacherlin37_setup_academic_profile'.tr,
                             style: context.typography.smSemiBold
                                 .copyWith(color: Colors.white),
                           ),
                           Text(
-                            'خطوة ${step + 1} من 2',
+                            'teacherlin37_step_of'
+                                .trParams({'step': '${step + 1}'}),
                             style: context.typography.xsRegular.copyWith(
                                 color: Colors.white.withValues(alpha: 0.8)),
                           ),
@@ -134,7 +138,7 @@ class _Header extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${controller.totalAssignments} تكليف',
+                          '${controller.totalAssignments} ${'teacherlin37_assignment_unit'.tr}',
                           style: context.typography.xsMedium
                               .copyWith(color: Colors.white),
                         ),
@@ -221,12 +225,12 @@ class _Step1Classrooms extends StatelessWidget {
                     size: 52, color: Colors.grey.shade300),
                 const SizedBox(height: 12),
                 Text(
-                  'لا توجد فصول في هذا الفرع',
+                  'teacherlin37_no_branch_classrooms'.tr,
                   style: context.typography.smRegular.copyWith(color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'تواصلي مع مدير الحضانة',
+                  'teacherlin37_contact_manager'.tr,
                   style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
                 ),
               ],
@@ -244,7 +248,7 @@ class _Step1Classrooms extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'الفصول الدراسية المتاحة',
+                  'teacherlin37_available_classrooms'.tr,
                   style: context.typography.displaySmBold.copyWith(color: Color(0xFF374151)),
                 ),
                 const SizedBox(width: 8),
@@ -257,7 +261,7 @@ class _Step1Classrooms extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '$selectedCount محدد',
+                    '$selectedCount ${'teacherlin37_selected_unit'.tr}',
                     style: context.typography.xsMedium.copyWith(color: Color(0xFF16A34A)),
                   ),
                 ),
@@ -354,7 +358,7 @@ class _ClassroomTile extends StatelessWidget {
                       if (capacity != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          'السعة: $capacity طالب',
+                          'teacherlin37_capacity'.trParams({'count': '$capacity'}),
                           style: context.typography.xsRegular.copyWith(color: Colors.grey.shade500),
                         ),
                       ],
@@ -414,12 +418,12 @@ class _Step2Matrix extends StatelessWidget {
                     size: 52, color: Colors.grey.shade300),
                 const SizedBox(height: 12),
                 Text(
-                  'لا توجد مواد دراسية',
+                  'teacherlin37_no_subjects'.tr,
                   style: context.typography.smRegular.copyWith(color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'تواصلي مع مدير الحضانة لإضافة المواد',
+                  'teacherlin37_contact_manager_subjects'.tr,
                   style: context.typography.xsRegular.copyWith(color: Colors.grey.shade400),
                 ),
               ],
@@ -448,7 +452,7 @@ class _Step2Matrix extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'اضغطي على عنوان العمود لتحديد المادة لجميع الفصول، أو على اسم الفصل لتحديد جميع مواده',
+                    'teacherlin37_matrix_hint'.tr,
                     style: context.typography.xsRegular.copyWith(color: const Color(0xFF166534).withValues(alpha: 0.85)),
                   ),
                 ),
@@ -484,7 +488,7 @@ class _Step2Matrix extends StatelessWidget {
                               ),
                               child: Center(
                                 child: Text(
-                                  'الفصل \\ المادة',
+                                  'teacherlin37_class_subject_header'.tr,
                                   style: context.typography.xsMedium.copyWith(color: Color(0xFF6B7280)),
                                   textAlign: TextAlign.center,
                                 ),
@@ -851,8 +855,10 @@ class _BottomBar extends StatelessWidget {
                         children: [
                           Text(
                             isLast
-                                ? (c.editMode ? 'حفظ التعديلات' : 'حفظ وابدأي')
-                                : 'التالي',
+                                ? (c.editMode
+                                    ? 'teacherlin37_save_changes'.tr
+                                    : 'teacherlin37_save_and_start'.tr)
+                                : 'teacherlin37_next'.tr,
                             style: context.typography.mdBold.copyWith(color: Colors.white),
                           ),
                           const SizedBox(width: 8),

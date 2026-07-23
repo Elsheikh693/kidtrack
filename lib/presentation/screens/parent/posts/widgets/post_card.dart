@@ -190,7 +190,9 @@ class _Header extends StatelessWidget {
                     Flexible(
                       child: Text(
                         ParentFeedController.timeAgo(post.createdAt) +
-                            (post.updatedAt != null ? ' · معدّل' : ''),
+                            (post.updatedAt != null
+                                ? ' · ${'parentpick26_edited'.tr}'
+                                : ''),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(

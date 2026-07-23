@@ -72,7 +72,7 @@ class PickupPromptSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),

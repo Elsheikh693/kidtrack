@@ -242,17 +242,20 @@ class TeacherActivityController extends GetxController
   }
 
   String scheduleTitle(ScheduleModel s) {
+    // The manager-set lesson topic wins when present ("حرف الكاف"); otherwise
+    // fall back to the subject name, then the activity-type label.
+    if (s.topic != null && s.topic!.trim().isNotEmpty) return s.topic!.trim();
     if (s.subjectId != null) {
       final sub = _subjectById(s.subjectId);
       if (sub != null) return sub.name;
     }
-    const labels = {
-      'lesson': 'حصة دراسية',
-      'break': 'استراحة',
-      'outdoor': 'وقت خارجي',
-      'lunch': 'وجبة الغداء',
-      'nap': 'قيلولة',
-      'other': 'نشاط',
+    final labels = {
+      'lesson': 'teacheract32_label_lesson'.tr,
+      'break': 'teacheract32_label_break'.tr,
+      'outdoor': 'teacheract32_label_outdoor'.tr,
+      'lunch': 'teacheract32_label_lunch'.tr,
+      'nap': 'teacheract32_label_nap'.tr,
+      'other': 'teacheract32_label_other'.tr,
     };
     return s.note ?? labels[s.activityType] ?? s.activityType;
   }
@@ -271,6 +274,7 @@ class TeacherActivityController extends GetxController
     required String title,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
     String? classroomId,
     String mode = 'class',
     // Explicit participant subset — only honoured in 'activity' mode. When null
@@ -307,6 +311,7 @@ class TeacherActivityController extends GetxController
       childIds: ids,
       subjectId: subjectId,
       subjectName: subjectName,
+      scheduleSlotId: scheduleSlotId,
       mode: mode,
     );
     currentSessionId.value = result.sessionId;
@@ -356,11 +361,23 @@ class TeacherActivityController extends GetxController
     isSaving.value = false;
   }
 
-  Future<void> startFromSchedule(ScheduleModel s) async {
-    final title = scheduleTitle(s);
+  /// True when the manager already wrote a lesson topic for this slot, so the
+  /// teacher can start straight away. When false, the view asks her to type one.
+  bool slotHasTopic(ScheduleModel s) =>
+      s.topic != null && s.topic!.trim().isNotEmpty;
+
+  /// Starts the session bound to a timetable slot. [titleOverride] carries the
+  /// title the teacher typed when the manager left the topic blank.
+  Future<void> startFromSchedule(ScheduleModel s, {String? titleOverride}) async {
+    final typed = titleOverride?.trim();
+    final title = (typed != null && typed.isNotEmpty) ? typed : scheduleTitle(s);
     final subName = _subjectById(s.subjectId)?.name;
     await startActivity(
-        title: title, subjectId: s.subjectId, subjectName: subName);
+      title: title,
+      subjectId: s.subjectId,
+      subjectName: subName,
+      scheduleSlotId: s.key,
+    );
     todayScheduleSlots.removeWhere((slot) => slot.key == s.key);
   }
 

@@ -33,21 +33,21 @@ class IdleStatsRow extends StatelessWidget {
           children: [
             _StatItem(
               value: '$activitiesCount',
-              label: 'نشاط اليوم',
+              label: 'teacheract33_stat_activities_today'.tr,
               icon: Icons.play_circle_outline_rounded,
               color: const Color(0xFF16A34A),
             ),
             _VertDivider(),
             _StatItem(
               value: '$evaluationsCount',
-              label: 'تقييم',
+              label: 'teacheract33_stat_evaluations'.tr,
               icon: Icons.star_outline_rounded,
               color: const Color(0xFFD97706),
             ),
             _VertDivider(),
             _StatItem(
               value: '$studentsCount',
-              label: 'طالب',
+              label: 'teacheract33_stat_students'.tr,
               icon: Icons.group_rounded,
               color: const Color(0xFF0891B2),
             ),

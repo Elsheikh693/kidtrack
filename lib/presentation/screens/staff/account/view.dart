@@ -21,7 +21,7 @@ class _StaffAccountViewState extends State<StaffAccountView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -56,6 +56,12 @@ class _StaffAccountViewState extends State<StaffAccountView> {
                   icon: Icons.celebration_rounded,
                   iconColor: const Color(0xFF6366F1),
                   onTap: () => Get.toNamed(staffEventsListView),
+                ),
+                _MenuItem(
+                  labelKey: 'settings_language',
+                  icon: Icons.language_rounded,
+                  iconColor: AppColors.primary,
+                  onTap: showLanguageSheet,
                 ),
               ],
             ),

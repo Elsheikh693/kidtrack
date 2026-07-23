@@ -84,9 +84,11 @@ class LiveAndActivitySection extends StatelessWidget {
   static String _timeAgo(int ms) {
     final diff =
         DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ms));
-    if (diff.inMinutes < 1) return 'منذ لحظات';
-    if (diff.inHours < 1) return 'منذ ${diff.inMinutes} دقيقة';
-    return 'منذ ${diff.inHours} ساعة';
+    if (diff.inMinutes < 1) return 'parentdash22_moments_ago'.tr;
+    if (diff.inHours < 1) {
+      return 'parentdash22_minutes_ago'.trParams({'n': '${diff.inMinutes}'});
+    }
+    return 'parentdash22_hours_ago'.trParams({'n': '${diff.inHours}'});
   }
 }
 
@@ -135,7 +137,9 @@ class _LiveRow extends StatelessWidget {
                         size: 12.sp, color: AppColors.textSecondaryParagraph),
                     SizedBox(width: 4.w),
                     Text(
-                      isActive ? 'آخر تحديث: منذ لحظات' : 'خارج الحضانة',
+                      isActive
+                          ? 'parentdash22_last_update_moments'.tr
+                          : 'parentdash22_outside_nursery'.tr,
                       style: context.typography.xsRegular.copyWith(color: AppColors.textSecondaryParagraph, fontSize: 11),
                     ),
                   ],
@@ -460,7 +464,7 @@ class _LiveBadgeState extends State<_LiveBadge>
               )),
             SizedBox(width: 5.w),
             Text(
-              'مباشر',
+              'parentdash22_live'.tr,
               style: context.typography.displaySmBold.copyWith(color: widget.color, fontSize: 11),
             ),
           ],

@@ -6,12 +6,17 @@ import '../../../../index/index_main.dart';
 class ParentAssessmentsController extends GetxController {
   late final ChildAssessmentParentService _childAssessments;
   late final AssessmentRunParentService _runs;
+  late final NurseryParentService _nurserySvc;
   late final ActiveChildService _active;
 
   final RxList<ChildAssessmentModel> rows = <ChildAssessmentModel>[].obs;
   final RxMap<String, AssessmentRunModel> runsById =
       <String, AssessmentRunModel>{}.obs;
   final RxBool isLoading = true.obs;
+
+  // Nursery branding, for the shareable report image.
+  String nurseryName = '';
+  String? nurseryLogo;
 
   Worker? _childWorker;
 
@@ -20,10 +25,13 @@ class ParentAssessmentsController extends GetxController {
     super.onInit();
     _childAssessments = Get.find<ChildAssessmentParentService>();
     _runs = Get.find<AssessmentRunParentService>();
+    _nurserySvc = Get.find<NurseryParentService>();
     _active = Get.find<ActiveChildService>();
     loadData();
     _childWorker = ever(_active.childId, (_) => loadData());
   }
+
+  String get childName => _active.childName.value;
 
   @override
   void onClose() {
@@ -43,6 +51,8 @@ class ParentAssessmentsController extends GetxController {
       }
       runsById.value = map;
     });
+
+    await _loadNursery();
 
     await _childAssessments.getAll(callBack: (list) {
       final id = _childId;
@@ -68,13 +78,33 @@ class ParentAssessmentsController extends GetxController {
     isLoading.value = false;
   }
 
+  Future<void> _loadNursery() async {
+    final id = SessionService().nurseryId ?? '';
+    await _nurserySvc.getAll(callBack: (list) {
+      final nurseries = list.whereType<NurseryModel>();
+      if (nurseries.isEmpty) return;
+      final n = nurseries.firstWhere(
+        (item) => item.key == id,
+        orElse: () => nurseries.first,
+      );
+      nurseryName = n.name;
+      nurseryLogo = n.logo;
+    });
+  }
+
   AssessmentRunModel? runFor(String runId) => runsById[runId];
 
   void openResult(ChildAssessmentModel row) {
     final run = runFor(row.runId);
     if (run == null) return;
     Get.to(
-      () => ParentAssessmentResultView(row: row, run: run),
+      () => ParentAssessmentResultView(
+        row: row,
+        run: run,
+        childName: childName,
+        nurseryName: nurseryName,
+        nurseryLogo: nurseryLogo,
+      ),
       transition: Transition.cupertino,
     );
   }

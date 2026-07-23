@@ -32,7 +32,7 @@ class _ReceptionistEventsViewState extends State<ReceptionistEventsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
         // Lift the FAB clear of MainPage's floating bottom nav bar (this is a

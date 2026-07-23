@@ -202,7 +202,7 @@ class _ChildDetailsSheetState extends State<ChildDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.9,
         child: KeyboardActions(

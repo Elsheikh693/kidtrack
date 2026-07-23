@@ -10,20 +10,23 @@ const _bg = Color(0xFFF6F7FB);
 const _line = Color(0xFFE9EDF3);
 const _amber = Color(0xFFD97706);
 
-// DateTime.weekday: Mon=1 … Sun=7.
+// DateTime.weekday: Mon=1 … Sun=7. Values are translation keys (localized at use).
 const _weekdayNames = <int, String>{
-  6: 'السبت',
-  7: 'الأحد',
-  1: 'الاثنين',
-  2: 'الثلاثاء',
-  3: 'الأربعاء',
-  4: 'الخميس',
-  5: 'الجمعة',
+  6: 'holidays16_day_sat',
+  7: 'holidays16_day_sun',
+  1: 'holidays16_day_mon',
+  2: 'holidays16_day_tue',
+  3: 'holidays16_day_wed',
+  4: 'holidays16_day_thu',
+  5: 'holidays16_day_fri',
 };
 
+// Translation keys per month (localized at use).
 const _arMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  'holidays16_month_1', 'holidays16_month_2', 'holidays16_month_3',
+  'holidays16_month_4', 'holidays16_month_5', 'holidays16_month_6',
+  'holidays16_month_7', 'holidays16_month_8', 'holidays16_month_9',
+  'holidays16_month_10', 'holidays16_month_11', 'holidays16_month_12',
 ];
 
 class HolidaysView extends StatefulWidget {
@@ -45,10 +48,10 @@ class _HolidaysViewState extends State<HolidaysView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
-        appBar: HomeAppBar(title: 'الإجازات', showFilterIcon: false),
+        appBar: HomeAppBar(title: 'holidays16_title'.tr, showFilterIcon: false),
         floatingActionButton: _GradientFab(onPressed: () => _showAdd(context)),
         body: Obx(() {
           if (controller.isLoading.value) {
@@ -60,7 +63,7 @@ class _HolidaysViewState extends State<HolidaysView> {
             children: [
               _WeekendSection(controller: controller),
               SizedBox(height: 24.h),
-              _SectionTitle('أيام الإجازة'),
+              _SectionTitle('holidays16_section_days'.tr),
               SizedBox(height: 12.h),
               _HolidaysList(controller: controller, onAdd: () => _showAdd(context)),
             ],
@@ -79,7 +82,7 @@ class _HolidaysViewState extends State<HolidaysView> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: Container(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -104,7 +107,7 @@ class _HolidaysViewState extends State<HolidaysView> {
                 ),
                 SizedBox(height: 14.h),
                 Text(
-                  'تحديد يوم إجازة',
+                  'holidays16_pick_day_title'.tr,
                   style: context.typography.mdBold.copyWith(
                     color: _ink,
                     fontSize: 16,
@@ -127,7 +130,7 @@ class _HolidaysViewState extends State<HolidaysView> {
                     controller: labelCtrl,
                     textAlign: TextAlign.right,
                     decoration: InputDecoration(
-                      hintText: 'اسم المناسبة (اختياري) — مثلاً عيد الفطر',
+                      hintText: 'holidays16_occasion_hint'.tr,
                       hintStyle: TextStyle(color: _faint, fontSize: 13),
                       filled: true,
                       fillColor: _bg,
@@ -157,7 +160,7 @@ class _HolidaysViewState extends State<HolidaysView> {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          'حفظ الإجازة',
+                          'holidays16_save'.tr,
                           style: context.typography.displaySmBold.copyWith(
                             color: Colors.white,
                             fontSize: 15,
@@ -188,10 +191,10 @@ class _WeekendSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle('العطلة الأسبوعية'),
+        _SectionTitle('holidays16_weekend_section'.tr),
         SizedBox(height: 6.h),
         Text(
-          'الأيام المختارة تتحسب إجازة كل أسبوع تلقائيًا',
+          'holidays16_weekend_hint'.tr,
           style: context.typography.xsRegular.copyWith(
             color: _muted,
             fontSize: 12.5,
@@ -206,7 +209,7 @@ class _WeekendSection extends StatelessWidget {
             children: [
               for (final entry in _weekdayNames.entries)
                 _DayChip(
-                  label: entry.value,
+                  label: entry.value.tr,
                   selected: selected.contains(entry.key),
                   onTap: () => controller.toggleWeekday(entry.key),
                 ),
@@ -287,8 +290,8 @@ class _HolidayCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final past = controller.isPast(holiday);
     final d = holiday.dateTime;
-    final dateStr = '${d.day} ${_arMonths[d.month - 1]} ${d.year}';
-    final weekday = _weekdayNames[d.weekday] ?? '';
+    final dateStr = '${d.day} ${_arMonths[d.month - 1].tr} ${d.year}';
+    final weekday = (_weekdayNames[d.weekday] ?? '').tr;
     final color = past ? _faint : _amber;
 
     return Container(
@@ -316,7 +319,9 @@ class _HolidayCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  holiday.label.trim().isNotEmpty ? holiday.label : 'إجازة',
+                  holiday.label.trim().isNotEmpty
+                      ? holiday.label
+                      : 'holidays16_holiday_default'.tr,
                   style: context.typography.displaySmBold.copyWith(
                     color: past ? _muted : _ink,
                     fontSize: 15,
@@ -352,16 +357,16 @@ class _HolidayCard extends StatelessWidget {
   void _confirmDelete(BuildContext context) {
     Get.dialog(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
-          title: const Text('حذف الإجازة'),
-          content: const Text('متأكد إنك عايز تشيل الإجازة دي؟'),
+          title: Text('holidays16_delete_title'.tr),
+          content: Text('holidays16_delete_confirm'.tr),
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: Text('إلغاء',
+              child: Text('holidays16_cancel'.tr,
                   style: context.typography.smRegular.copyWith(color: _muted)),
             ),
             TextButton(
@@ -369,7 +374,7 @@ class _HolidayCard extends StatelessWidget {
                 Get.back();
                 controller.deleteHoliday(holiday);
               },
-              child: Text('حذف',
+              child: Text('holidays16_delete'.tr,
                   style: context.typography.smRegular
                       .copyWith(color: const Color(0xFFEF4444))),
             ),
@@ -409,7 +414,7 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'مفيش إجازات محددة',
+            'holidays16_empty_title'.tr,
             style: context.typography.mdBold.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -418,7 +423,7 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'اضغط زر الإضافة عشان تحدد يوم إجازة',
+            'holidays16_empty_sub'.tr,
             textAlign: TextAlign.center,
             style: context.typography.xsRegular.copyWith(
               fontSize: 13,
@@ -491,7 +496,7 @@ class _GradientFab extends StatelessWidget {
             Icon(Icons.add_rounded, color: Colors.white, size: 22.sp),
             SizedBox(width: 8.w),
             Text(
-              'إضافة إجازة',
+              'holidays16_add'.tr,
               style: context.typography.displaySmBold.copyWith(
                 color: Colors.white,
                 fontSize: 14.5,

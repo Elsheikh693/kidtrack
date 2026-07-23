@@ -30,7 +30,7 @@ class HomeworkAllView extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = Get.find<ParentEducationController>();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -42,7 +42,7 @@ class HomeworkAllView extends StatelessWidget {
             child: Icon(Icons.arrow_forward_ios_rounded, size: 18, color: AppColors.textDefault),
           ),
           title: Text(
-            'الواجبات',
+            'parenteduc23_homework'.tr,
             style: context.typography.smSemiBold.copyWith(color: AppColors.textDefault),
           ),
           centerTitle: true,
@@ -87,11 +87,7 @@ class _DateSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    final dateStr = '${now.day} ${months[now.month - 1]}';
+    final dateStr = localizeDigits('${now.day} ${monthName(now.month)}');
 
     return Container(
       color: AppColors.white,
@@ -117,7 +113,7 @@ class _DateSelector extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'اليوم — $dateStr',
+              '${'parenteduc23_today'.tr} — $dateStr',
               style: context.typography.smMedium
                   .copyWith(color: AppColors.primary),
             ),
@@ -184,12 +180,12 @@ class _HomeworkDaySection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'الواجبات',
+                'parenteduc23_homework'.tr,
                 style: context.typography.smSemiBold.copyWith(color: AppColors.textDefault),
               ),
               const Spacer(),
               Text(
-                '$done / $total مكتمل',
+                '$done / $total ${'parenteduc23_completed'.tr}',
                 style: context.typography.xsRegular.copyWith(
                   color: done == total && total > 0
                       ? AppColors.successForeground

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../Global/widgets/kidtrack_tab_header.dart';
 import 'teacher_students_controller.dart';
 import 'widgets/teacher_student_card.dart';
+import '../../../../Global/Localization/app_direction.dart';
 
 class TeacherStudentsTab extends StatefulWidget {
   const TeacherStudentsTab({super.key});
@@ -32,8 +33,8 @@ class _TeacherStudentsTabState extends State<TeacherStudentsTab> {
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
-              const KidTrackCollapsingHeader(
-                title: 'الطلاب',
+              KidTrackCollapsingHeader(
+                title: 'teacherrep38_students_title'.tr,
                 icon: Icons.groups_rounded,
                 accentColor: _blue,
               ),
@@ -82,7 +83,7 @@ class _TeacherStudentsTabState extends State<TeacherStudentsTab> {
                                 size: 56, color: Colors.grey.shade300),
                             const SizedBox(height: 12),
                             Text(
-                              'لا يوجد أطفال في هذا الفصل',
+                              'teacherrep38_students_empty'.tr,
                               style: TextStyle(
                                 color: Colors.grey.shade500,
                                 fontSize: 15,
@@ -124,10 +125,10 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: 'البحث باسم الطالب...',
+        hintText: 'teacherrep38_students_search_hint'.tr,
         hintTextDirection: TextDirection.rtl,
         prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400),
         filled: true,
@@ -167,7 +168,7 @@ class _ClassroomFilterBar extends StatelessWidget {
         children: [
           // "All" chip
           _FilterChip(
-            label: 'الكل',
+            label: 'teacherrep38_filter_all'.tr,
             isSelected: selected.isEmpty,
             onTap: () => onSelect(''),
             color: _blue,

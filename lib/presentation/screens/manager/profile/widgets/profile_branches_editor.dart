@@ -313,7 +313,7 @@ class _BranchDetailsSheetState extends State<_BranchDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
@@ -470,7 +470,7 @@ class _AddBranchSheetState extends State<_AddBranchSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,

@@ -28,7 +28,7 @@ class _ParentAttentionViewState extends State<ParentAttentionView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'parent_attention_title'.tr),

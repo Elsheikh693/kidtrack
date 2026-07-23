@@ -72,7 +72,7 @@ class BillingMonthBar extends StatelessWidget {
     final months = BillingMonth.recent(count: 12);
     Get.bottomSheet(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,

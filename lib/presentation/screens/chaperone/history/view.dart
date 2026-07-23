@@ -32,7 +32,7 @@ class _ChaperoneHistoryViewState extends State<ChaperoneHistoryView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'tracking_history_title'.tr),
@@ -130,7 +130,7 @@ class _SessionCard extends StatelessWidget {
     final d = DateTime.fromMillisecondsSinceEpoch(ms);
     final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
     final m = d.minute.toString().padLeft(2, '0');
-    final ap = d.hour >= 12 ? 'م' : 'ص';
+    final ap = d.hour >= 12 ? 'billing11_time_pm'.tr : 'billing11_time_am'.tr;
     return '$h:$m $ap';
   }
 

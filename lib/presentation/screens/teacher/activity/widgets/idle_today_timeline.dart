@@ -36,7 +36,7 @@ class IdleTodayTimeline extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'أنشطة اليوم',
+                'teacheract34_today_activities'.tr,
                 style: context.typography.smSemiBold.copyWith(
                   color: AppColors.textSecondaryParagraph,
                 ),
@@ -69,7 +69,7 @@ class IdleTodayTimeline extends StatelessWidget {
               final evalCount = a.evaluations.length;
               final total = a.childIds.length;
               final evalLabel =
-                  evalCount > 0 ? '$evalCount/$total تقييم' : null;
+                  evalCount > 0 ? '$evalCount/$total ${'teacheract34_evaluation_word'.tr}' : null;
               return IdleTimelineTile(
                 key: ValueKey('comp_${a.key ?? i}'),
                 type: IdleTimelineTileType.completed,
@@ -122,10 +122,14 @@ class IdleTodayTimeline extends StatelessWidget {
       int.tryParse(parts[1]) ?? 0,
     );
     final diff = target.difference(now).inMinutes;
-    if (diff <= 0) return 'الآن';
-    if (diff < 60) return 'يبدأ خلال $diff دقيقة';
+    if (diff <= 0) return 'teacheract34_now'.tr;
+    if (diff < 60) {
+      return 'teacheract34_starts_in_minutes'.trParams({'count': '$diff'});
+    }
     final h = (diff / 60).floor();
     final m = diff % 60;
-    return m == 0 ? 'يبدأ خلال $h ساعة' : 'يبدأ خلال $hس $mد';
+    return m == 0
+        ? 'teacheract34_starts_in_hours'.trParams({'count': '$h'})
+        : 'teacheract34_starts_in_hm'.trParams({'h': '$h', 'm': '$m'});
   }
 }

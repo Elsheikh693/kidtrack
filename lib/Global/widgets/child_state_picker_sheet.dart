@@ -41,7 +41,7 @@ class _ChildStatePickerSheetState extends State<ChildStatePickerSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,

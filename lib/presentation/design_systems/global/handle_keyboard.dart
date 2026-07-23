@@ -1,4 +1,5 @@
 import '../../../index/index.dart';
+import 'package:get/get.dart';
 
 class HandleKeyboardService {
   static final HandleKeyboardService _instance =
@@ -26,7 +27,7 @@ class HandleKeyboardService {
       nextFocus: true,
       defaultDoneWidget: TextButton(
         onPressed: () => FocusScope.of(context).unfocus(),
-        child: AppText( text: "تم",
+        child: AppText( text: 'binding9_done'.tr,
             textStyle: context.typography.mdMedium
                 .copyWith(color: ColorMappingImpl().textLabel)),
       ),
@@ -38,7 +39,7 @@ class HandleKeyboardService {
                     return TextButton(
                       onPressed: () => node.unfocus(),
                       child: AppText(
-                          text: "تم",
+                          text: 'binding9_done'.tr,
                           textStyle: context.typography.mdMedium
                               .copyWith(color: ColorMappingImpl().textLabel)),
                     );

@@ -138,7 +138,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
     final sIcon = _subjectIcon(activity.subjectName);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         body: CustomScrollView(
@@ -292,7 +292,7 @@ class _ActivityReportViewState extends State<ActivityReportView>
                                 SizedBox(width: 8.w),
                                 _HeaderChip(
                                   icon: Icons.people_rounded,
-                                  label: '$participated طالب',
+                                  label: '$participated ${'teacherrep38_student_unit'.tr}',
                                 ),
                               ],
                             ),
@@ -601,7 +601,7 @@ class _EvalSection extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'توزيع التقييمات',
+                  'teacherrep38_eval_distribution'.tr,
                   style: context.typography.displaySmBold.copyWith(
                     fontSize: 14,
                     color: const Color(0xFF111827),
@@ -764,7 +764,7 @@ class _StudentTile extends StatelessWidget {
     final IconData icon = tpl != null
         ? EvalLevelIcons.iconFor(tpl.icon)
         : Icons.radio_button_unchecked_rounded;
-    final String label = tpl != null ? tpl.title : 'لم يُقيَّم';
+    final String label = tpl != null ? tpl.title : 'teacherrep38_not_evaluated'.tr;
 
     final avatarColors = [
       const Color(0xFF3B82F6), const Color(0xFF8B5CF6),

@@ -18,7 +18,7 @@ class CampaignPickerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectable = campaigns.where((c) => c.enabled).toList();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         constraints: BoxConstraints(maxHeight: 0.7.sh),
         padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),

@@ -158,7 +158,7 @@ class _ChildStateEditViewState extends State<ChildStateEditView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: HomeAppBar(

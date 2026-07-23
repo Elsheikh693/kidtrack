@@ -124,9 +124,6 @@ class _HomeBodyState extends State<_HomeBody> {
           final programs = Map<String, String>.of(
             controller.classroomProgramName,
           );
-          final activityCounts = Map<String, int>.of(
-            controller.classroomActivitiesCount,
-          );
           controller.assignment.value; // register subject assignment
 
           return Column(
@@ -138,19 +135,25 @@ class _HomeBodyState extends State<_HomeBody> {
                 badge: classrooms.length.toString(),
               ),
               const SizedBox(height: 14),
-              for (int i = 0; i < classrooms.length; i++)
-                _FadeSlideIn(
-                  delay: Duration(milliseconds: 80 + i * 70),
-                  child: ClassCard(
-                    classroom: classrooms[i],
-                    childCount: childCounts[classrooms[i].key ?? ''] ?? 0,
-                    presentCount: present[classrooms[i].key ?? ''] ?? 0,
-                    programName: programs[classrooms[i].key ?? ''] ?? '',
-                    activitiesCount:
-                        activityCounts[classrooms[i].key ?? ''] ?? 0,
-                    onTap: () => _openClass(classrooms[i]),
+              SizedBox(
+                height: 284,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemCount: classrooms.length,
+                  itemBuilder: (_, i) => _FadeSlideIn(
+                    delay: Duration(milliseconds: 80 + i * 70),
+                    child: ClassCard(
+                      classroom: classrooms[i],
+                      childCount: childCounts[classrooms[i].key ?? ''] ?? 0,
+                      presentCount: present[classrooms[i].key ?? ''] ?? 0,
+                      programName: programs[classrooms[i].key ?? ''] ?? '',
+                      onTap: () => _openClass(classrooms[i]),
+                    ),
                   ),
                 ),
+              ),
             ],
           );
         }),
@@ -158,7 +161,7 @@ class _HomeBodyState extends State<_HomeBody> {
         // Clear the floating bottom nav bar (extendBody: true) so the last
         // class card's "view details" button isn't hidden behind it. Matches
         // the reception dashboard's bottom clearance.
-        SizedBox(height: 100.h),
+        SizedBox(height: 140.h),
       ],
     );
   }

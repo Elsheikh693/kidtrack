@@ -11,7 +11,7 @@ class DeleteChildSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 20.h),
         child: Column(

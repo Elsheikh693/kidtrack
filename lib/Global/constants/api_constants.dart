@@ -83,6 +83,12 @@ class ApiConstants {
   /// reverse of teacher→parent [notes]). Keyed `gn_{activityId}_{childId}`.
   static String get guardianNotes => '$_n/guardianNotes';
 
+  /// Class-level written exams set by a teacher/manager, keyed by push id.
+  static String get exams => '$_n/exams';
+
+  /// Per-child written-exam outcomes, keyed `er_{examId}_{childId}`.
+  static String get examResults => '$_n/examResults';
+
   static String get lessonPlans => '$_n/lessonPlans';
 
   static String get classroomPosts => '$_n/classroomPosts';

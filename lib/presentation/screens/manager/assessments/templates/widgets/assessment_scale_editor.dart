@@ -37,7 +37,11 @@ class _AssessmentScaleEditorState extends State<AssessmentScaleEditor> {
       }
     } else {
       // Sensible default rating scale for a fresh template.
-      for (final label in ['ممتاز', 'جيد', 'ضعيف']) {
+      for (final label in [
+        'managerass17_level_excellent'.tr,
+        'managerass17_level_good'.tr,
+        'managerass17_level_weak'.tr,
+      ]) {
         _levelCtrls.add(TextEditingController(text: label));
       }
     }
@@ -139,12 +143,30 @@ class _AssessmentScaleEditorState extends State<AssessmentScaleEditor> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _presetChip(context, 'ممتاز · جيد · ضعيف',
-                  () => _applyPreset(['ممتاز', 'جيد', 'ضعيف'])),
-              _presetChip(context, 'ناجح · راسب',
-                  () => _applyPreset(['ناجح', 'راسب'])),
-              _presetChip(context, 'ممتاز · جيد جدًا · جيد · ضعيف',
-                  () => _applyPreset(['ممتاز', 'جيد جدًا', 'جيد', 'ضعيف'])),
+              _presetChip(
+                  context,
+                  'managerass17_preset_three'.tr,
+                  () => _applyPreset([
+                        'managerass17_level_excellent'.tr,
+                        'managerass17_level_good'.tr,
+                        'managerass17_level_weak'.tr,
+                      ])),
+              _presetChip(
+                  context,
+                  'managerass17_preset_two'.tr,
+                  () => _applyPreset([
+                        'managerass17_level_pass'.tr,
+                        'managerass17_level_fail'.tr,
+                      ])),
+              _presetChip(
+                  context,
+                  'managerass17_preset_four'.tr,
+                  () => _applyPreset([
+                        'managerass17_level_excellent'.tr,
+                        'managerass17_level_very_good'.tr,
+                        'managerass17_level_good'.tr,
+                        'managerass17_level_weak'.tr,
+                      ])),
             ],
           ),
           const SizedBox(height: 14),

@@ -33,7 +33,7 @@ class _StaffFormViewState extends State<StaffFormView> {
     final maxHeight = MediaQuery.of(context).size.height * 0.5;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: ConstrainedBox(

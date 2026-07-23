@@ -15,7 +15,7 @@ class CourseSessionsView extends StatelessWidget {
     final accent = course.category.color;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -26,7 +26,7 @@ class CourseSessionsView extends StatelessWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('الحضور والانصراف',
+              Text('receptioni28_attendance_title'.tr,
                   style: context.typography.mdBold
                       .copyWith(color: AppColors.textDefault)),
               Text(course.title,
@@ -46,7 +46,7 @@ class CourseSessionsView extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.all(32.w),
                 child: Text(
-                  'لم يتم تحديد عدد الحصص لهذا الكورس.\nعدّل الكورس وأضف عدد الحصص أولاً.',
+                  'receptioni28_no_sessions_defined'.tr,
                   textAlign: TextAlign.center,
                   style: context.typography.smRegular
                       .copyWith(color: AppColors.grayMedium),
@@ -59,7 +59,7 @@ class CourseSessionsView extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.all(32.w),
                 child: Text(
-                  'لا يوجد أطفال مسجّلين في هذا الكورس بعد.\nسجّل الأطفال من شاشة "الأطفال".',
+                  'receptioni28_no_enrolled_children'.tr,
                   textAlign: TextAlign.center,
                   style: context.typography.smRegular
                       .copyWith(color: AppColors.grayMedium),
@@ -181,10 +181,14 @@ class _SessionSummary extends StatelessWidget {
             Icon(Icons.event_available_rounded,
                 color: Colors.white, size: 22.sp),
             SizedBox(width: 10.w),
-            Text('الحصة ${controller.selectedIndex.value}',
+            Text(
+                'receptioni28_session_number'.trParams(
+                    {'index': '${controller.selectedIndex.value}'}),
                 style: context.typography.mdBold.copyWith(color: Colors.white)),
             const Spacer(),
-            Text('$present / $total حاضر',
+            Text(
+                'receptioni28_present_ratio'
+                    .trParams({'present': '$present', 'total': '$total'}),
                 style: context.typography.smSemiBold
                     .copyWith(color: Colors.white)),
           ],
@@ -266,7 +270,9 @@ class _AttendanceTile extends StatelessWidget {
                       style: context.typography.smSemiBold
                           .copyWith(color: AppColors.textDefault)),
                   SizedBox(height: 3.h),
-                  Text('حضر $attended من $total حصة',
+                  Text(
+                      'receptioni28_attended_ratio'.trParams(
+                          {'attended': '$attended', 'total': '$total'}),
                       style: context.typography.xsRegular
                           .copyWith(color: AppColors.grayMedium)),
                 ],
@@ -309,7 +315,7 @@ class _Actions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _TogglePill(
-          label: 'حاضر',
+          label: 'receptioni28_present'.tr,
           icon: Icons.check_rounded,
           color: _green,
           selected: present,
@@ -318,7 +324,7 @@ class _Actions extends StatelessWidget {
         ),
         SizedBox(width: 6.w),
         _TogglePill(
-          label: 'غائب',
+          label: 'receptioni28_absent'.tr,
           icon: Icons.close_rounded,
           color: _red,
           selected: absent,

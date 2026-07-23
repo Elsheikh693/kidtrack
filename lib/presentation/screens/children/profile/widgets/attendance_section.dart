@@ -8,7 +8,6 @@ class AttendanceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProfileSectionCard(
       title: 'child_profile_attendance'.tr,
-      onAction: controller.goToAttendance,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         child: Obx(() {
@@ -30,7 +29,9 @@ class AttendanceSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    absent == 0 ? 'لا غياب في هذه الفترة' : 'غاب $absent يوم',
+                    absent == 0
+                        ? 'childrenpr12_no_absence'.tr
+                        : '${'childrenpr12_absent_days_prefix'.tr} $absent ${'childrenpr12_days'.tr}',
                     style: context.typography.xsMedium.copyWith(
                       color: absent == 0
                           ? const Color(0xFF16A34A)
@@ -46,19 +47,19 @@ class AttendanceSection extends StatelessWidget {
                 Row(
                   children: [
                     _StatChip(
-                      label: 'حضر',
+                      label: 'childrenpr12_present'.tr,
                       count: controller.presentCount,
                       color: const Color(0xFF16A34A),
                     ),
                     const SizedBox(width: 8),
                     _StatChip(
-                      label: 'متأخر',
+                      label: 'childrenpr12_late'.tr,
                       count: controller.lateCount,
                       color: const Color(0xFFD97706),
                     ),
                     const SizedBox(width: 8),
                     _StatChip(
-                      label: 'غاب',
+                      label: 'childrenpr12_absent'.tr,
                       count: absent,
                       color: const Color(0xFFDC2626),
                     ),

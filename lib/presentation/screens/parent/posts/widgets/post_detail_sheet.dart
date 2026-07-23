@@ -57,7 +57,7 @@ class _PostDetailSheetState extends State<PostDetailSheet> {
   Widget build(BuildContext context) {
     final post = widget.post;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: DraggableScrollableSheet(
         initialChildSize: 0.88,
         minChildSize: 0.5,
@@ -91,9 +91,9 @@ class _PostDetailSheetState extends State<PostDetailSheet> {
                       const SizedBox(width: 8),
                       const Icon(Icons.push_pin_rounded, size: 14, color: Color(0xFFD97706)),
                       const SizedBox(width: 3),
-                      const Text(
-                        'مثبت',
-                        style: TextStyle(
+                      Text(
+                        'parentpick26_pinned'.tr,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFFD97706),
@@ -159,7 +159,8 @@ class _PostDetailSheetState extends State<PostDetailSheet> {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          'آخر تعديل: ${_formatDate(post.updatedAt!)}',
+                          'parentpick26_last_edited'
+                              .trParams({'date': _formatDate(post.updatedAt!)}),
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondaryParagraph,
@@ -178,12 +179,8 @@ class _PostDetailSheetState extends State<PostDetailSheet> {
 
   String _formatDate(int ms) {
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-    final months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-    final h = dt.hour;
-    final min = dt.minute.toString().padLeft(2, '0');
-    final ampm = h < 12 ? 'ص' : 'م';
-    final h12 = h % 12 == 0 ? 12 : h % 12;
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}، $h12:$min $ampm';
+    final datePart = localizeDigits('${dt.day} ${monthName(dt.month)} ${dt.year}');
+    return '$datePart${dateSep}${arabicClockTime(ms)}';
   }
 }
 

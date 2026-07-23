@@ -21,7 +21,7 @@ class _TutorialPlayerViewState extends State<TutorialPlayerView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundBlack,
         appBar: AppBar(

@@ -194,6 +194,12 @@ class _SettingsCard extends StatelessWidget {
             ),
           ),
           _SettingsTile(
+            icon: Icons.language_rounded,
+            color: AppColors.primary,
+            labelKey: 'settings_language',
+            onTap: showLanguageSheet,
+          ),
+          _SettingsTile(
             icon: Icons.notifications_outlined,
             color: AppColors.primary,
             labelKey: 'owner_item_notifications',

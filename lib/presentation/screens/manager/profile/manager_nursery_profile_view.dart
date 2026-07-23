@@ -29,7 +29,7 @@ class _ManagerNurseryProfileViewState extends State<ManagerNurseryProfileView>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: HomeAppBar(
@@ -88,7 +88,7 @@ class _ManagerNurseryProfileViewState extends State<ManagerNurseryProfileView>
               ),
               _section(
                 context,
-                'أيام الدراسة',
+                'managerass17_working_days'.tr,
                 ProfileWorkingDaysEditor(controller: controller),
               ),
               _section(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../link_book_controller.dart';
+import '../../../../../Global/Localization/app_direction.dart';
 
 /// Immersive full-screen photo viewer: swipe between the day's photos,
 /// pinch-to-zoom each one, with a Hero transition in from the album thumbnail.
@@ -55,7 +56,7 @@ class _PhotoGalleryViewerState extends State<_PhotoGalleryViewer> {
   Widget build(BuildContext context) {
     final photos = widget.photos;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Stack(

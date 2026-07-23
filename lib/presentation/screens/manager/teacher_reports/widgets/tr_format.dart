@@ -25,12 +25,12 @@ String trClock(int ms) {
   final isAm = t.hour < 12;
   final h = t.hour > 12 ? t.hour - 12 : (t.hour == 0 ? 12 : t.hour);
   final m = t.minute.toString().padLeft(2, '0');
-  final suffix = isAm ? 'ص' : 'م';
+  final suffix = isAm ? 'managerpro18_am'.tr : 'managerpro18_pm'.tr;
   return '$h:$m $suffix';
 }
 
 /// First letter of a teacher name, for avatar fallback.
 String trInitial(String name) {
   final t = name.trim();
-  return t.isEmpty ? '؟' : t.characters.first;
+  return t.isEmpty ? 'managerpro18_initial_fallback'.tr : t.characters.first;
 }

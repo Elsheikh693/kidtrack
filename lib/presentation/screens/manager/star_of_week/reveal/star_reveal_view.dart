@@ -1,7 +1,10 @@
 import 'package:confetti/confetti.dart';
 
 import '../../../../../index/index_main.dart';
+import '../../../shared/assessment/assessment_share_preview_sheet.dart';
+import '../../../shared/assessment/assessment_share.dart';
 import 'widgets/star_reveal_stage.dart';
+import 'widgets/star_share_card.dart';
 import 'widgets/star_twinkle_field.dart';
 
 /// Opens the full-screen celebratory reveal for a Star-of-the-Week pick.
@@ -63,6 +66,49 @@ class _StarRevealViewState extends State<StarRevealView>
     _rightConfetti.play();
   }
 
+  /// Load the nursery branding, then preview + share a celebratory image.
+  Future<void> _share() async {
+    final id = SessionService().nurseryId ?? '';
+    String name = '';
+    String? logo;
+    await Get.find<NurseryParentService>().getAll(callBack: (list) {
+      final nurseries = list.whereType<NurseryModel>();
+      if (nurseries.isEmpty) return;
+      final n = nurseries.firstWhere(
+        (x) => x.key == id,
+        orElse: () => nurseries.first,
+      );
+      name = n.name;
+      logo = n.logo;
+    });
+
+    final card = StarShareCard(
+      childName: widget.star.childName,
+      childPhotoUrl: widget.star.childPhotoUrl,
+      caption: widget.star.caption,
+      nurseryName: name,
+      nurseryLogo: logo,
+    );
+
+    Get.bottomSheet(
+      AssessmentSharePreviewSheet(
+        card: card,
+        title: 'star_share_preview_title'.tr,
+        subtitle: 'star_share_preview_sub'.tr,
+        accent: const Color(0xFF7C3AED),
+        onShare: () {
+          Get.back();
+          captureAndShareAssessment(
+            card: card,
+            shareText:
+                'star_share_text'.trParams({'name': widget.star.childName}),
+          );
+        },
+      ),
+      isScrollControlled: true,
+    );
+  }
+
   @override
   void dispose() {
     _reveal.dispose();
@@ -76,7 +122,7 @@ class _StarRevealViewState extends State<StarRevealView>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFF190A3A),
         body: Stack(
@@ -105,6 +151,19 @@ class _StarRevealViewState extends State<StarRevealView>
               top: MediaQuery.of(context).padding.top + 8,
               left: 12,
               child: _CloseButton(reveal: _reveal),
+            ),
+            // Share on social (fades in with the reveal).
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).padding.bottom + 24,
+              child: FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: _reveal,
+                  curve: const Interval(0.8, 1.0, curve: Curves.easeIn),
+                ),
+                child: Center(child: _ShareButton(onTap: _share)),
+              ),
             ),
           ],
         ),
@@ -206,6 +265,52 @@ class _CloseButton extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.close_rounded, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Share-on-social button (gold pill) ────────────────────────────────────────
+
+class _ShareButton extends StatelessWidget {
+  const _ShareButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  static const _gold = Color(0xFFF5C542);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [_gold, Color(0xFFEBB431)],
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: _gold.withValues(alpha: 0.4),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.ios_share_rounded,
+                color: Color(0xFF3B1E73), size: 19),
+            const SizedBox(width: 8),
+            Text(
+              'star_share_button'.tr,
+              style: context.typography.smSemiBold
+                  .copyWith(color: const Color(0xFF3B1E73)),
+            ),
+          ],
         ),
       ),
     );

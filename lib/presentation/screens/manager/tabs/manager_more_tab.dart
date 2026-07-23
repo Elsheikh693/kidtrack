@@ -151,6 +151,12 @@ class _ManagerMoreTabState extends State<ManagerMoreTab> {
           labelKey: 'manager_profile_fee_window',
           onTap: () => Get.toNamed(managerFeeWindowView),
         ),
+        ManagerGridTile(
+          icon: Icons.language_rounded,
+          color: AppColors.primary,
+          labelKey: 'settings_language',
+          onTap: showLanguageSheet,
+        ),
         // "حسابات استلام المدفوعات" now lives inside "خطوات الإعداد".
         // "طلبات الالتحاق" and "ملف التقديم" tiles temporarily removed
         // for manager/owner.

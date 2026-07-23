@@ -51,7 +51,7 @@ class _SendNotificationSheetState extends State<SendNotificationSheet>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

@@ -34,7 +34,7 @@ class ActivityEndGeneralNote extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           controller: ctrl,
-          textDirection: TextDirection.rtl,
+          textDirection: appTextDirection,
           maxLines: 2,
           decoration: InputDecoration(
             hintText: 'teacher_end_general_comment_hint'.tr,

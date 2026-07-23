@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../../Global/widgets/app_network_image.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
+import '../../../../../Global/Localization/app_direction.dart';
 
 /// Full activity details for a parent — opens with a clean, smooth reveal:
 /// the sheet slides up (default modal transition) and its content fades and
@@ -122,7 +123,7 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
       sections.add(
         _NoteBlock(
           icon: Icons.chat_bubble_rounded,
-          title: 'تعليق المعلمة',
+          title: 'parenteduc23_teacher_comment'.tr,
           text: childNote,
           color: const Color(0xFF7C3AED),
         ),
@@ -132,7 +133,7 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
       sections.add(
         _NoteBlock(
           icon: Icons.campaign_rounded,
-          title: 'ملاحظة عامة على النشاط',
+          title: 'parenteduc23_activity_general_note'.tr,
           text: groupNote,
           color: const Color(0xFFD97706),
         ),
@@ -173,7 +174,7 @@ class _ActivityDetailSheetState extends State<_ActivityDetailSheet>
     final homework = widget.homework;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.9,
@@ -402,9 +403,9 @@ class _EvalBlock extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'تقييم المعلمة',
-                    style: TextStyle(
+                  Text(
+                    'parenteduc23_teacher_eval'.tr,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: kJMuted,
@@ -511,9 +512,9 @@ class _HomeworkBlock extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'الواجبات المرتبطة',
-                style: TextStyle(
+              Text(
+                'parenteduc23_related_homework'.tr,
+                style: const TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                   color: accent,
@@ -575,7 +576,9 @@ class _HomeworkRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  done ? 'تم الإنجاز' : 'موعد التسليم: ${item.dueDate}',
+                  done
+                      ? 'parenteduc23_done_completed'.tr
+                      : '${'parenteduc23_due_date'.tr}: ${item.dueDate}',
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -680,9 +683,9 @@ class _PhotosBlock extends StatelessWidget {
           children: [
             Icon(Icons.photo_library_rounded, size: 18, color: color),
             const SizedBox(width: 8),
-            const Text(
-              'صور النشاط',
-              style: TextStyle(
+            Text(
+              'parenteduc23_activity_photos'.tr,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: kJInk,
@@ -803,13 +806,13 @@ class _EmptyDetails extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: kJBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.spa_rounded, size: 30, color: kJMuted),
-          SizedBox(height: 10),
+          const Icon(Icons.spa_rounded, size: 30, color: kJMuted),
+          const SizedBox(height: 10),
           Text(
-            'لا توجد تفاصيل إضافية لهذا النشاط',
-            style: TextStyle(
+            'parenteduc23_no_extra_details'.tr,
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: kJMuted,

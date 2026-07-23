@@ -24,7 +24,7 @@ class FinanceDashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<FinanceDashboardController>(tag: tag);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator(color: _accent));
@@ -415,7 +415,7 @@ class CollectionTile extends StatelessWidget {
             ),
             child: Text(
               item.childName.trim().isEmpty
-                  ? '؟'
+                  ? 'finance15_unknown_initial'.tr
                   : item.childName.trim().characters.first,
               style: context.typography.mdBold.copyWith(
                 color: _revenue,

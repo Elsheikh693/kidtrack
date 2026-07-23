@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'api_error_model.dart';
 
 /// Utility to convert any error type to ApiErrorModel.
@@ -14,29 +15,29 @@ class ErrorHandler {
     if (error is DioException) return ApiErrorModel.fromDio(error);
 
     if (error is TimeoutException) {
-      return const ApiErrorModel(
-        message: 'انتهت مدة الاتصال، حاول مرة أخرى.',
+      return ApiErrorModel(
+        message: 'datamodels2_error_timeout'.tr,
         statusCode: 408,
       );
     }
 
     if (error is SocketException) {
-      return const ApiErrorModel(
-        message: 'لا يوجد اتصال بالإنترنت.',
+      return ApiErrorModel(
+        message: 'datamodels2_error_no_internet'.tr,
         statusCode: 503,
       );
     }
 
     if (error is HttpException) {
-      return const ApiErrorModel(
-        message: 'فشل طلب HTTP، حاول مرة أخرى.',
+      return ApiErrorModel(
+        message: 'datamodels2_error_http'.tr,
         statusCode: 500,
       );
     }
 
     if (error is FormatException) {
-      return const ApiErrorModel(
-        message: 'صيغة الاستجابة غير صحيحة.',
+      return ApiErrorModel(
+        message: 'datamodels2_error_format'.tr,
         statusCode: 400,
       );
     }

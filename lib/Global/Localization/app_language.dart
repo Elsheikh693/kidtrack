@@ -17,9 +17,10 @@ class AppLanguage extends GetxController {
   void onInit() {
     super.onInit();
 
-    // App is Arabic-only for now — force 'ar' regardless of any saved value.
-    appLocale.value = 'ar';
-    Get.updateLocale(const Locale('ar'));
+    // Restore the language the user last picked (defaults to Arabic).
+    final saved = _storage.read();
+    appLocale.value = saved;
+    Get.updateLocale(Locale(saved));
   }
 
   // ============================================================

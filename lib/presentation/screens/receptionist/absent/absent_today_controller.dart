@@ -146,7 +146,6 @@ class AbsentTodayController extends GetxController {
 /// backend chat message in `functions/engagement/absentShiftEnd.js`. Emoji are
 /// fine here because WhatsApp renders them.
 String absenceWhatsAppMessage(String firstName) {
-  final name = firstName.trim().isEmpty ? 'طفلكم' : firstName.trim();
-  return 'أهلاً بيكم! 👋 وحشنا $name النهاردة في الحضانة وحبينا نطمن عليه 🥺 '
-      'كله تمام معاكم؟ 💛 لو فيه أي حاجة إحنا جنبكم — بس طمنونا $name غاب ليه النهاردة 🌟';
+  final name = firstName.trim().isEmpty ? 'programssu27_default_child'.tr : firstName.trim();
+  return 'programssu27_absence_whatsapp'.trParams({'name': name});
 }

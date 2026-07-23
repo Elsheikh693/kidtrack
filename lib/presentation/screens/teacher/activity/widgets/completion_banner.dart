@@ -32,11 +32,11 @@ class CompletionBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'تقييم مكتمل!',
+                  'teacheract32_eval_complete_title'.tr,
                   style: context.typography.mdBold.copyWith(color: Colors.white),
                 ),
                 Text(
-                  'تم تقييم جميع الطلاب — يمكنك إنهاء النشاط',
+                  'teacheract32_eval_complete_sub'.tr,
                   style: context.typography.xsMedium.copyWith(color: Colors.white70),
                 ),
               ],
@@ -52,7 +52,7 @@ class CompletionBanner extends StatelessWidget {
             ),
             onPressed: onEnd,
             child: Text(
-              'إنهاء',
+              'teacheract32_end'.tr,
               style: context.typography.xsMedium.copyWith(fontWeight: FontWeight.w800),
             ),
           ),

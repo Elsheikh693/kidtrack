@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
 
@@ -13,15 +14,16 @@ class DayHeroCard extends StatelessWidget {
   final String childName;
   final DaySummary summary;
 
-  String get _firstName =>
-      childName.trim().isEmpty ? 'طفلك' : childName.trim().split(' ').first;
+  String get _firstName => childName.trim().isEmpty
+      ? 'parenteduc23_your_child'.tr
+      : childName.trim().split(' ').first;
 
   String get _activityLine {
     final n = summary.activityCount;
-    if (n == 0) return 'لم يبدأ أنشطة اليوم';
-    if (n == 1) return '$_firstName شارك في نشاط واحد';
-    if (n == 2) return '$_firstName شارك في نشاطين';
-    return '$_firstName شارك في $n أنشطة';
+    if (n == 0) return 'parenteduc23_no_activities_today'.tr;
+    if (n == 1) return '$_firstName ${'parenteduc23_shared_one_activity'.tr}';
+    if (n == 2) return '$_firstName ${'parenteduc23_shared_two_activities'.tr}';
+    return '$_firstName ${'parenteduc23_shared_n_activities'.trParams({'count': '$n'})}';
   }
 
   @override
@@ -64,9 +66,9 @@ class DayHeroCard extends StatelessWidget {
                     // Date selector intentionally hidden here: parents browse
                     // past days from the Link Book (دفتر التواصل) instead, so a
                     // second date picker on the home hero was redundant.
-                    const Text(
-                      'تقييم اليوم',
-                      style: TextStyle(
+                    Text(
+                      'parenteduc23_day_eval'.tr,
+                      style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: kJMuted),
@@ -94,7 +96,10 @@ class DayHeroCard extends StatelessWidget {
             const SizedBox(height: 9),
             _SummaryLine(
               icon: Icons.assignment_turned_in_rounded,
-              text: 'أكمل ${summary.homeworkDone} من ${summary.homeworkTotal} واجب',
+              text: 'parenteduc23_completed_homework_count'.trParams({
+                'done': '${summary.homeworkDone}',
+                'total': '${summary.homeworkTotal}',
+              }),
               color: const Color(0xFF8E44AD),
             ),
           ],
@@ -104,8 +109,9 @@ class DayHeroCard extends StatelessWidget {
                 ? Icons.check_circle_rounded
                 : Icons.error_outline_rounded,
             text: summary.negativeNotes == 0
-                ? 'لا توجد ملاحظات سلبية'
-                : '${summary.negativeNotes} ملاحظة تحتاج انتباه',
+                ? 'parenteduc23_no_negative_notes'.tr
+                : 'parenteduc23_notes_need_attention'
+                    .trParams({'count': '${summary.negativeNotes}'}),
             color: summary.negativeNotes == 0
                 ? const Color(0xFF059669)
                 : const Color(0xFFD97706),

@@ -68,7 +68,7 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(
@@ -249,7 +249,7 @@ class _PaymentSheetState extends State<PaymentSheet> with KeyboardSheetMixin {
             borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
           ),
           builder: (_) => Directionality(
-            textDirection: TextDirection.rtl,
+            textDirection: appTextDirection,
             child: Padding(
               padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
               child: Column(

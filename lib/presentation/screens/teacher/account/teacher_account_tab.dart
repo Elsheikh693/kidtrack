@@ -65,6 +65,12 @@ class TeacherAccountTab extends StatelessWidget {
                   labelKey: 'tutorial_menu_entry',
                   onTap: () => Get.toNamed(appTutorialView),
                 ),
+                _SettingsTile(
+                  icon: Icons.language_rounded,
+                  color: AppColors.primary,
+                  labelKey: 'settings_language',
+                  onTap: showLanguageSheet,
+                ),
               ],
             ),
           ),

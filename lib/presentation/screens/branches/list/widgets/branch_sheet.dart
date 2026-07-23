@@ -92,7 +92,7 @@ class _BranchSheetState extends State<BranchSheet> with KeyboardSheetMixin {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: ConstrainedBox(
         // Cap the height so the sheet hugs its content (Column.min) and never
         // reaches the status bar. The field area scrolls if it grows past the

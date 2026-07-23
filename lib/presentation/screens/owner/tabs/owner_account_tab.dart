@@ -45,7 +45,7 @@ class OwnerAccountTab extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       slivers: [
         KidTrackCollapsingHeader(
-          title: 'الحساب',
+          title: 'ownerchild19_account_title'.tr,
           icon: Icons.manage_accounts_rounded,
           accentColor: const Color(0xFF7C3AED),
           subtitle: session.currentUser?.displayName,
@@ -184,6 +184,12 @@ class _SettingsCard extends StatelessWidget {
                 color: AppColors.textSecondaryParagraph,
               ),
             ),
+          ),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            color: AppColors.primary,
+            labelKey: 'settings_language',
+            onTap: showLanguageSheet,
           ),
           _SettingsTile(
             icon: Icons.contact_phone_outlined,

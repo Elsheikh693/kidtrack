@@ -16,18 +16,30 @@ class ClassroomHealthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: data.hasIssue
-              ? _barColor.withValues(alpha: 0.35)
-              : AppColors.grayLight,
+        onTap: () => Get.to(
+          () => const ClassroomExamsView(),
+          arguments: {
+            'classroomId': data.classroomId,
+            'classroomName': data.name,
+          },
+          transition: Transition.rightToLeft,
         ),
-      ),
-      child: Column(
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: data.hasIssue
+                  ? _barColor.withValues(alpha: 0.35)
+                  : AppColors.grayLight,
+            ),
+          ),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -72,9 +84,27 @@ class ClassroomHealthCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 10),
-          _TeacherLine(data: data),
-        ],
+              const SizedBox(height: 10),
+              _TeacherLine(data: data),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.assignment_rounded,
+                      size: 14, color: AppColors.activityBlue),
+                  const SizedBox(width: 5),
+                  Text(
+                    'exams_title'.tr,
+                    style: context.typography.xsMedium
+                        .copyWith(color: AppColors.activityBlue),
+                  ),
+                  const Spacer(),
+                  Icon(Icons.chevron_left_rounded,
+                      size: 16, color: AppColors.textSecondaryParagraph),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

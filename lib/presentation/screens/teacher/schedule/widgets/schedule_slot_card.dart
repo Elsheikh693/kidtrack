@@ -5,14 +5,16 @@ class ScheduleSlotCard extends StatelessWidget {
     super.key,
     required this.slot,
     required this.controller,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   final ScheduleModel slot;
   final TeacherWeeklyScheduleController controller;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  // Null for the teacher (read-only): the manager owns the timetable now, so the
+  // per-slot edit/delete menu is hidden when no callbacks are supplied.
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   static Color accentForType(String type) => switch (type) {
         'lesson' => AppColors.activityBlue,
@@ -118,6 +120,16 @@ class ScheduleSlotCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (slot.topic != null && slot.topic!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      slot.topic!.trim(),
+                      style: context.typography.xsMedium
+                          .copyWith(color: accent),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                   const SizedBox(height: 5),
                   Row(
                     children: [
@@ -159,36 +171,41 @@ class ScheduleSlotCard extends StatelessWidget {
               ),
             ),
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded,
-                color: AppColors.activityMuted, size: 20),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            onSelected: (v) {
-              if (v == 'edit') onEdit();
-              if (v == 'delete') onDelete();
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(children: [
-                  const Icon(Icons.edit_rounded, size: 16),
-                  const SizedBox(width: 8),
-                  Text('schedule_edit'.tr),
-                ]),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(children: [
-                  const Icon(Icons.delete_rounded,
-                      size: 16, color: AppColors.activityRed),
-                  const SizedBox(width: 8),
-                  Text('schedule_delete'.tr,
-                      style: const TextStyle(color: AppColors.activityRed)),
-                ]),
-              ),
-            ],
-          ),
+          if (onEdit != null || onDelete != null)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded,
+                  color: AppColors.activityMuted, size: 20),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              onSelected: (v) {
+                if (v == 'edit') onEdit?.call();
+                if (v == 'delete') onDelete?.call();
+              },
+              itemBuilder: (_) => [
+                if (onEdit != null)
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(children: [
+                      const Icon(Icons.edit_rounded, size: 16),
+                      const SizedBox(width: 8),
+                      Text('schedule_edit'.tr),
+                    ]),
+                  ),
+                if (onDelete != null)
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(children: [
+                      const Icon(Icons.delete_rounded,
+                          size: 16, color: AppColors.activityRed),
+                      const SizedBox(width: 8),
+                      Text('schedule_delete'.tr,
+                          style: const TextStyle(color: AppColors.activityRed)),
+                    ]),
+                  ),
+              ],
+            )
+          else
+            const SizedBox(width: 12),
           const SizedBox(width: 4),
         ],
       ),

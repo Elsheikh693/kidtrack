@@ -31,7 +31,7 @@ class _NotificationPrefsSheetState extends State<NotificationPrefsSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SafeArea(
         top: false,
         child: Column(

@@ -85,7 +85,66 @@ class TeacherHomeActionCards extends StatelessWidget {
             ],
           ),
         ),
+        SizedBox(height: 10.h),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _ActionCard(
+                  icon: Icons.assignment_turned_in_rounded,
+                  title: 'teacher_action_quizzes'.tr,
+                  subtitle: 'teacher_action_quizzes_sub'.tr,
+                  colors: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                  onTap: () => Get.toNamed(teacherAssessmentsView),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _ActionCard(
+                  icon: Icons.history_edu_rounded,
+                  title: 'teacher_action_exams'.tr,
+                  subtitle: 'teacher_action_exams_sub'.tr,
+                  colors: const [Color(0xFF0D9488), Color(0xFF0F766E)],
+                  onTap: () => _openExams(context),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  /// Exams live per-classroom. Pick the teacher's class first (or jump straight
+  /// in when they lead only one), then open its exams screen.
+  Future<void> _openExams(BuildContext context) async {
+    final ctrl = Get.find<TeacherActivityController>();
+    Loader.show();
+    await ctrl.ensureLoaded();
+    Loader.dismiss();
+    final classes = ctrl.myClassrooms;
+    if (classes.isEmpty) {
+      Loader.showError('teacher_action_exams_no_class'.tr);
+      return;
+    }
+    if (classes.length == 1) {
+      _goToExams(classes.first);
+      return;
+    }
+    if (!context.mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ExamClassPicker(classes: classes, onPick: _goToExams),
+    );
+  }
+
+  void _goToExams(ClassroomModel c) {
+    Get.to(
+      () => const ClassroomExamsView(),
+      arguments: {'classroomId': c.key, 'classroomName': c.name},
+      transition: Transition.rightToLeft,
     );
   }
 
@@ -202,6 +261,80 @@ class _ActionCard extends StatelessWidget {
                 height: 1.3,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet that lets the teacher choose which of their classes to open the
+/// exams screen for (shown only when they lead more than one class).
+class _ExamClassPicker extends StatelessWidget {
+  final List<ClassroomModel> classes;
+  final ValueChanged<ClassroomModel> onPick;
+
+  const _ExamClassPicker({required this.classes, required this.onPick});
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: appTextDirection,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 24.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text('teacher_action_exams_pick_class'.tr,
+                style: context.typography.mdBold
+                    .copyWith(color: const Color(0xFF1E293B))),
+            SizedBox(height: 12.h),
+            for (final c in classes)
+              GestureDetector(
+                onTap: () {
+                  Get.back<void>();
+                  onPick(c);
+                },
+                child: Container(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.meeting_room_rounded,
+                          color: Color(0xFF0D9488), size: 20),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(c.name,
+                            style: context.typography.smSemiBold
+                                .copyWith(color: const Color(0xFF1E293B))),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_outlined,
+                          size: 13, color: Color(0xFF94A3B8)),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),

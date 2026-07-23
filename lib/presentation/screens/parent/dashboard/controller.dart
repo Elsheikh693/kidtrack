@@ -30,7 +30,7 @@ class ParentDashboardController extends GetxController {
   // Active child's branch — filters classroom-scoped content (photos/activities)
   // so a shared classroom never shows the other branch's items.
   final _activeBranchId = ''.obs;
-  final _classroomNameStr = 'الفصل'.obs;
+  final _classroomNameStr = 'parentcour21_classroom_default'.tr.obs;
   final selectedPeriod = 'weekly'.obs;
   final isLoading = true.obs;
 
@@ -100,11 +100,16 @@ class ParentDashboardController extends GetxController {
   late final ChildStatusService _childStatusSvc;
   late final TeacherActivityService _activitySvc;
   late final ChildAssessmentParentService _assessmentSvc;
+  late final ExamResultParentService _examResultSvc;
   Worker? _childWorker;
 
   /// Count of published assessments for the active child that were published
   /// after the parent last opened the assessments screen (the home badge).
   final RxInt newAssessmentsCount = 0.obs;
+
+  /// Count of newly-graded exam results for the active child since the parent
+  /// last opened the exams screen (the home badge).
+  final RxInt newExamsCount = 0.obs;
 
   @override
   void onInit() {
@@ -115,12 +120,14 @@ class ParentDashboardController extends GetxController {
     _childStatusSvc = ChildStatusService();
     _activitySvc = TeacherActivityService();
     _assessmentSvc = Get.find<ChildAssessmentParentService>();
+    _examResultSvc = Get.find<ExamResultParentService>();
     // Register the active-child listener only after the initial load resolves,
     // so the first child assignment doesn't trigger a redundant reload.
     _loadActiveChild().then((_) {
       _childWorker =
           ever<String>(Get.find<ActiveChildService>().childId, _onActiveChildChanged);
       refreshAssessmentsBadge();
+      refreshExamsBadge();
     });
     _loadSeenLatest();
     _subscribeNextEvent();
@@ -261,7 +268,7 @@ class ParentDashboardController extends GetxController {
             childId: _activeChildId.value,
             parentId: _session.userId ?? '',
             childName: _activeChildName.value,
-            parentName: _session.currentUser?.displayName ?? 'ولي الأمر',
+            parentName: _session.currentUser?.displayName ?? 'parentcour21_guardian_fallback'.tr,
           );
     Loader.dismiss();
     if (ok) {
@@ -371,7 +378,7 @@ class ParentDashboardController extends GetxController {
     homework.clear();
     pendingInvoices.clear();
     daySchedule.clear();
-    _classroomNameStr.value = 'الفصل';
+    _classroomNameStr.value = 'parentcour21_classroom_default'.tr;
 
     isLoading.value = true;
     _startStreams();
@@ -379,6 +386,7 @@ class ParentDashboardController extends GetxController {
     _refreshEventAttendance();
     _recomputeLatestPost();
     refreshAssessmentsBadge();
+    refreshExamsBadge();
 
     // A switched-to sibling may also have an incomplete profile; chain the
     // notification-prefs prompt after it (self-guards once configured).
@@ -717,13 +725,9 @@ class ParentDashboardController extends GetxController {
   }
 
   static String _formatDueDate(int? ms) {
-    if (ms == null) return 'اليوم';
+    if (ms == null) return 'parentcour21_today'.tr;
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    return '${dt.day} ${months[dt.month - 1]}';
+    return '${dt.day} ${monthName(dt.month)}';
   }
 
   // ── Getters ───────────────────────────────────────────────────────────────────
@@ -789,6 +793,38 @@ class ParentDashboardController extends GetxController {
     }
   }
 
+  static String _examsSeenKey(String childId) => 'exams_seen_$childId';
+
+  /// Recompute the home badge: graded exam results for the child updated AFTER
+  /// the parent last opened the exams screen.
+  Future<void> refreshExamsBadge() async {
+    final childId = _activeChildId.value;
+    if (childId.isEmpty) {
+      newExamsCount.value = 0;
+      return;
+    }
+    final seen =
+        (StorageService().getData(_examsSeenKey(childId))?['ts'] as int?) ?? 0;
+    final list = await _examResultSvc.getForChild(childId);
+    newExamsCount.value = list
+        .where((r) =>
+            r.grade.isNotEmpty && (r.updatedAt ?? r.createdAt ?? 0) > seen)
+        .length;
+  }
+
+  /// Marks the child's graded exams as seen (clears the badge). Called when the
+  /// parent opens the exams screen.
+  static Future<void> markExamsSeen(String childId) async {
+    if (childId.isEmpty) return;
+    await StorageService().setData(
+      _examsSeenKey(childId),
+      {'ts': DateTime.now().millisecondsSinceEpoch},
+    );
+    if (Get.isRegistered<ParentDashboardController>()) {
+      Get.find<ParentDashboardController>().newExamsCount.value = 0;
+    }
+  }
+
   List<EduHomework> get completedHomework =>
       homework.where((h) => h.isCompleted).toList();
 
@@ -822,7 +858,7 @@ class ParentDashboardController extends GetxController {
     if (s == ChildStatus.checkedOut) {
       return EffectiveChildStatus(
         key: ChildStatus.checkedOut,
-        label: 'غادر الحضانة',
+        label: 'parentcour21_status_checked_out'.tr,
         icon: Icons.logout_rounded,
         color: const Color(0xFF64748B),
       );
@@ -830,7 +866,7 @@ class ParentDashboardController extends GetxController {
     if (s == ChildStatus.onBus) {
       return EffectiveChildStatus(
         key: ChildStatus.onBus,
-        label: 'في الباص',
+        label: 'parentcour21_status_on_bus'.tr,
         icon: Icons.directions_bus_rounded,
         color: const Color(0xFFD97706),
       );
@@ -838,7 +874,7 @@ class ParentDashboardController extends GetxController {
     if (s == ChildStatus.sleeping) {
       return EffectiveChildStatus(
         key: ChildStatus.sleeping,
-        label: 'وقت القيلولة',
+        label: 'parentcour21_status_nap'.tr,
         icon: Icons.bedtime_rounded,
         color: const Color(0xFF7C3AED),
       );
@@ -846,7 +882,7 @@ class ParentDashboardController extends GetxController {
     if (s == ChildStatus.havingMeal) {
       return EffectiveChildStatus(
         key: ChildStatus.havingMeal,
-        label: 'يتناول الوجبة',
+        label: 'parentcour21_status_meal'.tr,
         icon: Icons.restaurant_rounded,
         color: const Color(0xFFDC2626),
       );
@@ -883,14 +919,14 @@ class ParentDashboardController extends GetxController {
       }
       return EffectiveChildStatus(
         key: ChildStatus.checkedIn,
-        label: 'داخل الحضانة',
+        label: 'parentcour21_status_inside'.tr,
         icon: Icons.home_work_rounded,
         color: const Color(0xFF059669),
       );
     }
     return EffectiveChildStatus(
       key: ChildStatus.notArrived,
-      label: 'لم يصل بعد',
+      label: 'parentcour21_status_not_arrived'.tr,
       icon: Icons.schedule_rounded,
       color: const Color(0xFF94A3B8),
     );
@@ -913,26 +949,19 @@ class ParentDashboardController extends GetxController {
 
   // ── Home view-model helpers (real data → UI) ──────────────────────────────────
 
-  /// Arabic-Indic digit conversion for nicer labels (٩:٣٠ instead of 9:30).
-  static String ar(String s) {
-    const w = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const e = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    var out = s;
-    for (var i = 0; i < 10; i++) {
-      out = out.replaceAll(w[i], e[i]);
-    }
-    return out;
-  }
+  /// Locale-aware digits for nicer labels: Arabic-Indic under Arabic (٩:٣٠),
+  /// untouched Western under English (9:30).
+  static String ar(String s) => localizeDigits(s);
 
   String get greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'صباح الخير';
-    if (h < 17) return 'مساء الخير';
-    return 'مساء الخير';
+    if (h < 12) return 'parentcour21_morning_greeting'.tr;
+    if (h < 17) return 'parentcour21_evening_greeting'.tr;
+    return 'parentcour21_evening_greeting'.tr;
   }
 
   String get childInitial =>
-      childName.isNotEmpty ? childName.characters.first : 'ط';
+      childName.isNotEmpty ? childName.characters.first : 'parentcour21_child_initial'.tr;
 
   /// Active child id — needed by the home to read per-child activity data.
   String get activeChildId => _activeChildId.value;
@@ -973,7 +1002,7 @@ class ParentDashboardController extends GetxController {
   /// "1716..." → "٩:٣٠ ص"
   String fmtClockMsSuffix(int ms) {
     final t = DateTime.fromMillisecondsSinceEpoch(ms);
-    final suffix = t.hour < 12 ? 'ص' : 'م';
+    final suffix = t.hour < 12 ? 'parentcour21_am'.tr : 'parentcour21_pm'.tr;
     final h = t.hour > 12 ? t.hour - 12 : (t.hour == 0 ? 12 : t.hour);
     final m = t.minute.toString().padLeft(2, '0');
     return '${ar('$h')}:${ar(m)} $suffix';
@@ -991,15 +1020,15 @@ class ParentDashboardController extends GetxController {
     if (s.note != null && s.note!.isNotEmpty) return s.note!;
     switch (s.activityType) {
       case 'break':
-        return 'فسحة';
+        return 'parentcour21_activity_break'.tr;
       case 'outdoor':
-        return 'نشاط خارجي';
+        return 'parentcour21_activity_outdoor'.tr;
       case 'lunch':
-        return 'الغداء';
+        return 'parentcour21_activity_lunch'.tr;
       case 'nap':
-        return 'القيلولة';
+        return 'parentcour21_activity_nap'.tr;
       default:
-        return 'حصة';
+        return 'parentcour21_activity_lesson'.tr;
     }
   }
 
@@ -1009,7 +1038,7 @@ class ParentDashboardController extends GetxController {
     if (parts.length != 2) return ar(hhmm);
     final h = int.tryParse(parts[0]) ?? 0;
     final m = parts[1];
-    final suffix = h < 12 ? 'ص' : 'م';
+    final suffix = h < 12 ? 'parentcour21_am'.tr : 'parentcour21_pm'.tr;
     final h12 = h > 12 ? h - 12 : (h == 0 ? 12 : h);
     return '${ar('$h12')}:${ar(m)} $suffix';
   }
@@ -1083,10 +1112,10 @@ class ParentDashboardController extends GetxController {
     if (start == null) return '';
     final mins =
         DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(start)).inMinutes;
-    if (mins <= 0) return 'دلوقتي';
-    if (mins < 60) return 'من ${ar('$mins')} دقيقة';
+    if (mins <= 0) return 'parentcour21_now'.tr;
+    if (mins < 60) return '${'parentcour21_since'.tr} ${ar('$mins')} ${'parentcour21_minute_unit'.tr}';
     final h = mins ~/ 60;
-    return 'من ${ar('$h')} ساعة';
+    return '${'parentcour21_since'.tr} ${ar('$h')} ${'parentcour21_hour_unit'.tr}';
   }
 
   String get statusUpdatedLabel {
@@ -1094,7 +1123,7 @@ class ParentDashboardController extends GetxController {
     if (t == null) return '';
     final h = t.hour > 12 ? t.hour - 12 : (t.hour == 0 ? 12 : t.hour);
     final m = t.minute.toString().padLeft(2, '0');
-    return 'تم تحديث الحالة ${ar('$h')}:${ar(m)} · مباشر';
+    return '${'parentcour21_status_updated'.tr} ${ar('$h')}:${ar(m)} · ${'parentcour21_live'.tr}';
   }
 
   // ── Recap (after check-out) ────────────────────────────────────────────────────
@@ -1147,31 +1176,23 @@ class ParentDashboardController extends GetxController {
   bool get hasDayData => todayTimeline2.isNotEmpty || todayPhotos.isNotEmpty;
 
   String get recapHeadline {
-    final first = childName.isNotEmpty ? childName.split(' ').first : 'طفلك';
-    return '$first قضى يوم جميل';
+    final first = childName.isNotEmpty ? childName.split(' ').first : 'parentcour21_your_child'.tr;
+    return '$first ${'parentcour21_had_lovely_day'.tr}';
   }
-
-  static const _arWeekdays = [
-    'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد',
-  ];
-  static const _arMonths = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
 
   /// Pill label: اليوم / إمبارح / الاثنين ٢٢ يونيو
   String get selectedDateLabel {
     final d = selectedDate.value;
     final now = DateTime.now();
-    if (_isSameDay(d, now)) return 'اليوم';
-    if (_isSameDay(d, now.subtract(const Duration(days: 1)))) return 'إمبارح';
-    return '${_arWeekdays[d.weekday - 1]} ${ar('${d.day}')} ${_arMonths[d.month - 1]}';
+    if (_isSameDay(d, now)) return 'parentcour21_today'.tr;
+    if (_isSameDay(d, now.subtract(const Duration(days: 1)))) return 'parentcour21_yesterday'.tr;
+    return '${weekdayName(d.weekday)} ${ar('${d.day}')} ${monthName(d.month)}';
   }
 
   /// Hero header: الاثنين، ٢٢ يونيو
   String get selectedDateFull {
     final d = selectedDate.value;
-    return '${_arWeekdays[d.weekday - 1]}، ${ar('${d.day}')} ${_arMonths[d.month - 1]}';
+    return '${weekdayName(d.weekday)}${dateSep}${ar('${d.day}')} ${monthName(d.month)}';
   }
 
   // ── Holidays ────────────────────────────────────────────────────────────────
@@ -1197,9 +1218,9 @@ class ParentDashboardController extends GetxController {
     if (h != null && h.label.trim().isNotEmpty) return h.label.trim();
     if (_specificHolidayForSelected == null &&
         weekendDays.contains(selectedDate.value.weekday)) {
-      return 'عطلة أسبوعية';
+      return 'parentcour21_weekly_holiday'.tr;
     }
-    return 'إجازة';
+    return 'parentcour21_holiday'.tr;
   }
 
   // ── Pickup actions ────────────────────────────────────────────────────────────
@@ -1224,7 +1245,7 @@ class ParentDashboardController extends GetxController {
       requestedPickupTime: DateTime.now()
           .add(Duration(minutes: _etaToMinutes(eta)))
           .millisecondsSinceEpoch,
-      parentNotes: 'سأصل خلال $eta',
+      parentNotes: '${'parentcour21_arriving_in'.tr} $eta',
       status: 'requested',
     );
 

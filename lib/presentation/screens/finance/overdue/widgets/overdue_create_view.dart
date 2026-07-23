@@ -83,7 +83,7 @@ class _OverdueCreateViewState extends State<OverdueCreateView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

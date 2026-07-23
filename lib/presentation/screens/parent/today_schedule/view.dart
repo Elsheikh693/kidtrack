@@ -138,7 +138,7 @@ class _ParentTodayScheduleViewState extends State<ParentTodayScheduleView>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -264,13 +264,13 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'لا توجد أحداث مسجلة اليوم بعد',
+            'parentpick26_schedule_empty_title'.tr,
             style: context.typography.smSemiBold
                 .copyWith(color: AppColors.textSecondaryParagraph),
           ),
           const SizedBox(height: 6),
           Text(
-            'ستظهر هنا أحداث يومك عند تسجيل الحضور',
+            'parentpick26_schedule_empty_sub'.tr,
             style: context.typography.xsRegular
                 .copyWith(color: AppColors.textSecondaryParagraph),
           ),

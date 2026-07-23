@@ -22,7 +22,7 @@ class _ParentEventsViewState extends State<ParentEventsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'parent_events_title'.tr),
@@ -314,7 +314,7 @@ class _EventDetailSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = event.category.color;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: const BoxDecoration(

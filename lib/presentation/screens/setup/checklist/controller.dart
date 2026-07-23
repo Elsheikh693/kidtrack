@@ -67,6 +67,7 @@ class SetupChecklistController extends GetxController {
       SetupGroup(
         titleKey: 'setup_hub_group_branches',
         steps: [
+          _stepNurseryLogo,
           _stepBranches,
           _stepContacts,
           _stepStaff,
@@ -87,6 +88,15 @@ class SetupChecklistController extends GetxController {
       ),
     ];
   }
+
+  SetupStep get _stepNurseryLogo => const SetupStep(
+        id: 'nursery_logo',
+        titleKey: 'setup_hub_step_logo_title',
+        subtitleKey: 'setup_hub_step_logo_sub',
+        icon: Icons.image_rounded,
+        route: managerNurseryLogoView,
+        optional: true,
+      );
 
   SetupStep get _stepBranches => const SetupStep(
         id: 'branches',
@@ -239,10 +249,14 @@ class SetupChecklistController extends GetxController {
           done.add('payment_accounts');
         }
       }),
-      // Optional step: done as soon as the nursery has ≥1 privacy-policy clause.
+      // Optional steps, resolved from the one nursery record: privacy done once
+      // it has ≥1 clause, logo done once a logo image is set.
       _nurseryService.getOne(_session.nurseryId ?? '').then((n) {
         if ((n?.privacyPolicy ?? const <String>[]).isNotEmpty) {
           done.add('privacy_policy');
+        }
+        if ((n?.logo ?? '').isNotEmpty) {
+          done.add('nursery_logo');
         }
       }),
     ]);

@@ -85,7 +85,7 @@ class ActivityPhotoThumb extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: ctx,
       builder: (c) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),

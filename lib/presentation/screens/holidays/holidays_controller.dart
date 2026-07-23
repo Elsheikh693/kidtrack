@@ -43,16 +43,16 @@ class HolidaysController extends GetxController {
 
   Future<void> addHoliday(DateTime day, {String label = ''}) async {
     if (hasHolidayOn(day)) {
-      Loader.showError('اليوم ده متسجّل إجازة بالفعل');
+      Loader.showError('holidays16_already_holiday'.tr);
       return;
     }
     Loader.show();
     final ok = await _service.addHoliday(day, label: label);
     Loader.dismiss();
     if (ok) {
-      Loader.showSuccess('تم إضافة الإجازة');
+      Loader.showSuccess('holidays16_add_success'.tr);
     } else {
-      Loader.showError('حصل خطأ، حاول تاني');
+      Loader.showError('holidays16_error_retry'.tr);
     }
   }
 
@@ -60,7 +60,7 @@ class HolidaysController extends GetxController {
     Loader.show();
     final ok = await _service.removeHoliday(h.key);
     Loader.dismiss();
-    if (!ok) Loader.showError('حصل خطأ، حاول تاني');
+    if (!ok) Loader.showError('holidays16_error_retry'.tr);
   }
 
   Future<void> toggleWeekday(int weekday) async {
@@ -72,6 +72,6 @@ class HolidaysController extends GetxController {
     }
     weekendDays.assignAll(next); // optimistic
     final ok = await _service.setWeekendDays(next);
-    if (!ok) Loader.showError('تعذّر حفظ العطلة الأسبوعية');
+    if (!ok) Loader.showError('holidays16_weekend_save_error'.tr);
   }
 }

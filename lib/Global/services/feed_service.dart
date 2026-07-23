@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -63,7 +64,7 @@ class FeedService {
         branchIds: branchIds,
         classroomId: classroomId,
         authorId: _session.userId ?? '',
-        authorName: user?.displayName ?? 'المدير',
+        authorName: user?.displayName ?? 'globalserv7_role_manager'.tr,
         text: text,
         photos: photoUrls,
         category: category,
@@ -102,7 +103,8 @@ class FeedService {
         branchIds: branchIds,
         classroomId: classroomId,
         authorId: _session.userId ?? '',
-        authorName: authorName ?? user?.displayName ?? 'المدير',
+        authorName:
+            authorName ?? user?.displayName ?? 'globalserv7_role_manager'.tr,
         text: text,
         photos: photoUrls,
         category: category,

@@ -28,7 +28,7 @@ void showTodayActivitiesSheet(BuildContext context, List<TodayActivity> activiti
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: _TodayActivitiesSheet(activities: activities),
     ),
   );
@@ -252,14 +252,7 @@ class _TodayActivitiesSheetState extends State<_TodayActivitiesSheet>
   }
 
   String _todayLabel() {
-    final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
-    final dayName = days[now.weekday - 1];
-    return '$dayName، ${now.day} ${months[now.month - 1]} ${now.year}';
+    return arabicFullDate();
   }
 }
 

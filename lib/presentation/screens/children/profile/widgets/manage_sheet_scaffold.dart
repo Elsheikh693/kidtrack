@@ -21,7 +21,7 @@ class ManageSheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 20.h),

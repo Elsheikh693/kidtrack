@@ -36,10 +36,10 @@ class ReceptionistParentsTab extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        const KidTrackCollapsingHeader(
-          title: 'أولياء الأمور',
+        KidTrackCollapsingHeader(
+          title: 'receptioni29_parents_title'.tr,
           icon: Icons.people_rounded,
-          accentColor: Color(0xFF0891B2),
+          accentColor: const Color(0xFF0891B2),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),

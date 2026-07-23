@@ -134,7 +134,7 @@ void showAgePickerSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
     ),
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 16.h),

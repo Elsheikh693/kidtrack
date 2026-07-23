@@ -19,7 +19,7 @@ class ParentEventsController extends GetxController {
   List<NurseryEventModel> _allEvents = const [];
 
   String get _parentId => _session.userId ?? '';
-  String get _parentName => _session.currentUser?.displayName ?? 'ولي الأمر';
+  String get _parentName => _session.currentUser?.displayName ?? 'parenteduc24_default_parent'.tr;
   String _activeChildId = '';
   String _activeChildName = '';
   String _activeChildBranchId = '';

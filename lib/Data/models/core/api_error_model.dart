@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 
 class ApiErrorModel {
   final String message;
@@ -18,14 +19,14 @@ class ApiErrorModel {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return const ApiErrorModel(
-          message: 'انتهت مدة الاتصال، حاول مرة أخرى.',
+        return ApiErrorModel(
+          message: 'datamodels2_error_timeout'.tr,
           statusCode: 408,
         );
 
       case DioExceptionType.connectionError:
-        return const ApiErrorModel(
-          message: 'لا يوجد اتصال بالإنترنت.',
+        return ApiErrorModel(
+          message: 'datamodels2_error_no_internet'.tr,
           statusCode: 503,
         );
 
@@ -36,14 +37,14 @@ class ApiErrorModel {
         );
 
       case DioExceptionType.cancel:
-        return const ApiErrorModel(
-          message: 'تم إلغاء الطلب.',
+        return ApiErrorModel(
+          message: 'datamodels2_error_cancelled'.tr,
           statusCode: 0,
         );
 
       default:
         return ApiErrorModel(
-          message: e.message ?? 'حدث خطأ غير متوقع.',
+          message: e.message ?? 'datamodels2_error_unexpected'.tr,
           statusCode: e.response?.statusCode,
         );
     }
@@ -107,27 +108,27 @@ class ApiErrorModel {
   static String _messageForStatus(int? code) {
     switch (code) {
       case 400:
-        return 'طلب غير صالح.';
+        return 'datamodels2_error_400'.tr;
       case 401:
-        return 'غير مصرح لك، سجّل دخولك مرة أخرى.';
+        return 'datamodels2_error_401'.tr;
       case 403:
-        return 'ليس لديك صلاحية للوصول.';
+        return 'datamodels2_error_403'.tr;
       case 404:
-        return 'المورد المطلوب غير موجود.';
+        return 'datamodels2_error_404'.tr;
       case 409:
-        return 'تعارض في البيانات، حاول مرة أخرى.';
+        return 'datamodels2_error_409'.tr;
       case 422:
-        return 'بيانات غير صحيحة.';
+        return 'datamodels2_error_422'.tr;
       case 429:
-        return 'طلبات كثيرة جداً، انتظر قليلاً.';
+        return 'datamodels2_error_429'.tr;
       case 500:
-        return 'خطأ في الخادم، حاول لاحقاً.';
+        return 'datamodels2_error_500'.tr;
       case 502:
-        return 'الخادم لا يستجيب.';
+        return 'datamodels2_error_502'.tr;
       case 503:
-        return 'الخدمة غير متاحة حالياً.';
+        return 'datamodels2_error_503'.tr;
       default:
-        return 'حدث خطأ غير متوقع.';
+        return 'datamodels2_error_unexpected'.tr;
     }
   }
 

@@ -314,7 +314,47 @@ class ChildProfileController extends GetxController
     loadProfile();
   }
 
-  void goToAttendance() => Get.toNamed(checkInView);
+  // ─── Guardian edit / remove ──────────────────────────────────────────────────
+
+  /// Saves an edited guardian record (name / phone / email). Writes only the
+  /// guardian's own profile — the parent↔child links are untouched. Reloads so
+  /// the corrected name shows immediately.
+  Future<void> updateGuardian(ParentModel updated) async {
+    Loader.show();
+    await _parentSvc.update(
+      item: updated,
+      callBack: (status) {
+        Loader.dismiss();
+        if (status == ResponseStatus.success) {
+          Get.back();
+          loadProfile();
+          Loader.showSuccess('guardian_edit_success'.tr);
+        } else {
+          Loader.showError('common_error'.tr);
+        }
+      },
+    );
+  }
+
+  /// Permanently removes a guardian from this child. The server-side
+  /// `removeGuardian` Cloud Function unlinks them and — if they are left with no
+  /// other children — deletes their records AND Firebase Auth account, so the
+  /// same phone can re-register cleanly later (mirrors the withdrawal cleanup).
+  Future<void> removeGuardian(ParentModel guardian) async {
+    if (guardian.uid.isEmpty) return;
+    Loader.show();
+    final ok = await _parentSvc.removeGuardian(
+      childId: childId,
+      parentUid: guardian.uid,
+    );
+    Loader.dismiss();
+    if (ok) {
+      Loader.showSuccess('guardian_remove_success'.tr);
+      loadProfile();
+    } else {
+      Loader.showError('guardian_remove_error'.tr);
+    }
+  }
 
   // ─── Withdrawal ─────────────────────────────────────────────────────────────
 
@@ -324,6 +364,18 @@ class ChildProfileController extends GetxController
     final r = _session.effectiveRole;
     return r == UserType.receptionist ||
         r == UserType.owner ||
+        r == UserType.branchManager ||
+        r == UserType.superAdmin;
+  }
+
+  /// Permanent, record-less deletion is more destructive than a withdrawal, so
+  /// it is restricted to the nursery leadership — reception may withdraw a child
+  /// and fix data, but must NOT hard-delete a child or a guardian's Auth account.
+  /// Only managers, owners and super admins can. This same gate guards guardian
+  /// removal, which likewise wipes a Firebase Auth account.
+  bool get canDelete {
+    final r = _session.effectiveRole;
+    return r == UserType.owner ||
         r == UserType.branchManager ||
         r == UserType.superAdmin;
   }

@@ -116,7 +116,7 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.only(
@@ -159,7 +159,7 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                     ),
                     SizedBox(width: 10.w),
                     Text(
-                      isEditing ? 'تعديل الدرس' : 'درس جديد',
+                      isEditing ? 'coursesown13_edit_lesson'.tr : 'coursesown13_new_lesson'.tr,
                       style: context.typography.mdBold.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ],
@@ -169,10 +169,10 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                 // ── Title ────────────────────────────────────────────────
                 _Field(
                   controller: _titleCtrl,
-                  label: 'عنوان الدرس',
-                  hint: 'مثال: الحروف الهجائية',
+                  label: 'coursesown13_lesson_title_label'.tr,
+                  hint: 'coursesown13_lesson_title_hint'.tr,
                   accentColor: _accentColor,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'coursesown13_required'.tr : null,
                   focusNode: widget.keyboardService.getFocusNode(widget.keys[0]),
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) => FocusScope.of(context).requestFocus(
@@ -189,8 +189,8 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                       flex: 2,
                       child: _Field(
                         controller: _descCtrl,
-                        label: 'وصف مختصر',
-                        hint: 'وصف الدرس (اختياري)',
+                        label: 'coursesown13_short_desc_label'.tr,
+                        hint: 'coursesown13_lesson_desc_hint'.tr,
                         accentColor: _accentColor,
                         focusNode: widget.keyboardService.getFocusNode(widget.keys[1]),
                         textInputAction: TextInputAction.next,
@@ -203,7 +203,7 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                     Expanded(
                       child: _Field(
                         controller: _durationCtrl,
-                        label: 'المدة (دقيقة)',
+                        label: 'coursesown13_duration_label'.tr,
                         hint: '20',
                         keyboardType: TextInputType.number,
                         accentColor: _accentColor,
@@ -219,7 +219,7 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                 SizedBox(height: 16.h),
 
                 // ── Content type picker ───────────────────────────────────
-                Text('نوع المحتوى', style: context.typography.smSemiBold.copyWith(fontSize: 13)),
+                Text('coursesown13_content_type'.tr, style: context.typography.smSemiBold.copyWith(fontSize: 13)),
                 SizedBox(height: 8.h),
                 _ContentTypePicker(
                   selected: _contentType,
@@ -234,8 +234,8 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                       ? _Field(
                           key: const ValueKey('text'),
                           controller: _textCtrl,
-                          label: 'محتوى الدرس (نص)',
-                          hint: 'اكتب شرح الدرس هنا...',
+                          label: 'coursesown13_lesson_content_text_label'.tr,
+                          hint: 'coursesown13_lesson_content_text_hint'.tr,
                           maxLines: 6,
                           accentColor: _accentColor,
                           focusNode: widget.keyboardService.getFocusNode(widget.keys[3]),
@@ -272,7 +272,7 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
                         : Text(
-                            isEditing ? 'حفظ التعديلات' : 'إضافة الدرس',
+                            isEditing ? 'coursesown13_save_changes'.tr : 'coursesown13_add_lesson'.tr,
                             style: context.typography.displaySmBold.copyWith(fontSize: 15),
                           ),
                   ),
@@ -286,10 +286,10 @@ class _CreateLessonSheetState extends State<_CreateLessonSheet> {
   }
 
   String get _urlLabel => switch (_contentType) {
-    LessonContentType.video => 'رابط الفيديو',
-    LessonContentType.pdf   => 'رابط PDF',
-    LessonContentType.image => 'رابط الصورة',
-    _                       => 'الرابط',
+    LessonContentType.video => 'coursesown13_video_url_label'.tr,
+    LessonContentType.pdf   => 'coursesown13_pdf_url_label'.tr,
+    LessonContentType.image => 'coursesown13_image_url_label'.tr,
+    _                       => 'coursesown13_url_label'.tr,
   };
 
   String get _urlHint => switch (_contentType) {

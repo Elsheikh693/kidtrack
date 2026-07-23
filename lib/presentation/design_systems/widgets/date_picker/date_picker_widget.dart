@@ -82,7 +82,7 @@ class _GenericDatePickerState extends State<GenericDatePicker> {
                   Get.back();
                 },
                 child: Text(
-                  "تم",
+                  'presentati10_done'.tr,
                   style: context.typography.mdBold,
                 ),
               ),

@@ -26,7 +26,7 @@ class ParentCoursesController extends GetxController {
 
   String get _activeChildId => _activeChild?.childId.value ?? '';
 
-  String get childName  => _session.currentUser?.displayName ?? 'الأهل';
+  String get childName  => _session.currentUser?.displayName ?? 'ownertabs20_family'.tr;
   String get childStatus => 'inside';
   String? get childImage => null;
 

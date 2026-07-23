@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 enum DailyRating {
   excellent,
   veryGood,
@@ -25,10 +27,10 @@ enum DailyRating {
 
   String get labelAr {
     switch (this) {
-      case DailyRating.excellent:    return 'ممتاز';
-      case DailyRating.veryGood:     return 'جيد جداً';
-      case DailyRating.good:         return 'جيد';
-      case DailyRating.needsSupport: return 'يحتاج متابعة';
+      case DailyRating.excellent:    return 'datamodels3_rating_excellent'.tr;
+      case DailyRating.veryGood:     return 'datamodels3_rating_very_good'.tr;
+      case DailyRating.good:         return 'datamodels3_rating_good'.tr;
+      case DailyRating.needsSupport: return 'datamodels3_rating_needs_support'.tr;
     }
   }
 

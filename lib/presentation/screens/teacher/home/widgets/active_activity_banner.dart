@@ -44,7 +44,7 @@ class ActiveActivityBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'نشاط جارٍ الآن',
+                    'teacherhom35_activity_running_now'.tr,
                     style: context.typography.smSemiBold.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 11,
@@ -87,7 +87,7 @@ class ActiveActivityBanner extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    'فتح',
+                    'teacherhom35_open'.tr,
                     style: context.typography.displaySmBold.copyWith(
                       color: Colors.white,
                       fontSize: 11,
@@ -182,8 +182,8 @@ class _ElapsedTimerState extends State<_ElapsedTimer> {
         final h = d.inHours;
         final m = d.inMinutes % 60;
         final label = h > 0
-            ? '$h:${m.toString().padLeft(2, '0')} س'
-            : '$m د';
+            ? '$h:${m.toString().padLeft(2, '0')} ${'teacherhom35_hours_suffix'.tr}'
+            : '$m ${'teacherhom35_minutes_suffix'.tr}';
         return Text(
           label,
           style: context.typography.displaySmBold.copyWith(

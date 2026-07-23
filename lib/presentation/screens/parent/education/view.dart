@@ -76,11 +76,11 @@ class _ParentEducationViewState extends State<ParentEducationView> {
             SliverToBoxAdapter(
               child: JournalTimelineSection(items: timeline, enableNotes: true),
             ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: JournalSectionHeader(
                 icon: Icons.assignment_rounded,
-                label: 'الواجبات',
-                color: Color(0xFF8E44AD),
+                label: 'parenteduc23_homework'.tr,
+                color: const Color(0xFF8E44AD),
               ),
             ),
             SliverToBoxAdapter(
@@ -111,7 +111,7 @@ class _LinkBookEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
       child: GestureDetector(
         onTap: () => Get.to(() => const LinkBookView()),
         behavior: HitTestBehavior.opaque,
@@ -151,22 +151,22 @@ class _LinkBookEntry extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'دفتر التواصل',
-                      style: TextStyle(
+                      'parenteduc23_link_book'.tr,
+                      style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w800,
                         color: kJInk,
                       ),
                     ),
-                    SizedBox(height: 3),
+                    const SizedBox(height: 3),
                     Text(
-                      'تصفّح كل أيام طفلك في مكان واحد',
-                      style: TextStyle(
+                      'parenteduc23_link_book_subtitle'.tr,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: kJMuted,

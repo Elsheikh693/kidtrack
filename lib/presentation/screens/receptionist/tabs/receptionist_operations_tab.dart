@@ -66,7 +66,7 @@ class _ReceptionistOperationsTabState extends State<ReceptionistOperationsTab> {
                     _NavRow(
                       icon: Icons.event_busy_rounded,
                       color: const Color(0xFF6C4DDB),
-                      label: 'الإجازات',
+                      label: 'receptioni29_holidays'.tr,
                       onTap: () => Get.toNamed(holidaysView),
                     ),
                   ],

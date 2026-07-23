@@ -14,17 +14,17 @@ class FirebaseClient {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "كلمة المرور ضعيفة جدًا.",
+          message: 'datacore1_error_weak_password'.tr,
         );
         throw errorModel;
       } else if (e.code == 'email-already-in-use') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "هذا البريد الإلكتروني مستخدم بالفعل.",
+          message: 'datacore1_error_email_in_use'.tr,
         );
         throw errorModel;
       } else {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "حدث خطأ أثناء إنشاء الحساب. الرجاء المحاولة مرة أخرى.",
+          message: 'datacore1_error_create_account'.tr,
         );
         throw errorModel;
       }
@@ -46,32 +46,32 @@ class FirebaseClient {
       debugPrint("cooode is ${e.code}");
       if (e.code == 'too-many-requests') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "الخادم مشغول، يرجى المحاولة لاحقًا.",
+          message: 'datacore1_error_server_busy'.tr,
         );
         throw errorModel;
       } else if (e.code == 'wrong-password') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+          message: 'datacore1_error_wrong_credentials'.tr,
         );
         throw errorModel;
       } else if (e.code == 'weak-password') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "كلمة المرور ضعيفة جدًا.",
+          message: 'datacore1_error_weak_password'.tr,
         );
         throw errorModel;
       } else if (e.code == 'email-already-in-use') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "هذا البريد الإلكتروني مستخدم بالفعل.",
+          message: 'datacore1_error_email_in_use'.tr,
         );
         throw errorModel;
       } else if (e.code == 'invalid-credential') {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "بيانات الدخول غير صالحة. يرجى التحقق.",
+          message: 'datacore1_error_invalid_credential'.tr,
         );
         throw errorModel;
       } else {
         ApiErrorModel errorModel = ApiErrorModel(
-          message: "حدث خطأ ما، يرجى المحاولة مرة أخرى.",
+          message: 'datacore1_error_generic'.tr,
         );
         throw errorModel;
       }

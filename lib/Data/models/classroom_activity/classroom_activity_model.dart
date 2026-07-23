@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import 'activity_photo_model.dart';
 
 export 'activity_photo_model.dart';
@@ -36,6 +38,10 @@ class ClassroomActivityModel {
   final String? branchId;
   final String? subjectId;
   final String? subjectName;
+  // The schedule slot this session fulfils, when the teacher started it from the
+  // timetable. Null for ad-hoc activities. Lets late-session detection match a
+  // slot to its actual start exactly instead of guessing by subject/time.
+  final String? scheduleSlotId;
   final String title;
   final String teacherId;
   final String status; // 'active' | 'completed'
@@ -66,6 +72,7 @@ class ClassroomActivityModel {
     this.branchId,
     this.subjectId,
     this.subjectName,
+    this.scheduleSlotId,
     required this.title,
     required this.teacherId,
     this.status = 'active',
@@ -96,8 +103,11 @@ class ClassroomActivityModel {
     final d = elapsed;
     final h = d.inHours;
     final m = d.inMinutes % 60;
-    if (h > 0) return '$h س ${m.toString().padLeft(2, '0')} د';
-    return '$m دقيقة';
+    if (h > 0) {
+      return 'datamodels2_elapsed_hours_minutes'
+          .trParams({'h': '$h', 'm': m.toString().padLeft(2, '0')});
+    }
+    return 'datamodels2_elapsed_minutes'.trParams({'m': '$m'});
   }
 
   EvalLevel? evalFor(String childId) {
@@ -142,6 +152,7 @@ class ClassroomActivityModel {
       branchId: json['branchId']?.toString(),
       subjectId: json['subjectId']?.toString(),
       subjectName: json['subjectName']?.toString(),
+      scheduleSlotId: json['scheduleSlotId']?.toString(),
       title: json['title']?.toString() ?? '',
       teacherId: json['teacherId']?.toString() ?? '',
       status: json['status']?.toString() ?? 'active',
@@ -170,6 +181,7 @@ class ClassroomActivityModel {
     put('branchId', branchId);
     put('subjectId', subjectId);
     put('subjectName', subjectName);
+    put('scheduleSlotId', scheduleSlotId);
     data['title'] = title;
     data['teacherId'] = teacherId;
     data['status'] = status;
@@ -202,6 +214,7 @@ class ClassroomActivityModel {
     String? branchId,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
     String? title,
     String? teacherId,
     String? status,
@@ -223,6 +236,7 @@ class ClassroomActivityModel {
         branchId: branchId ?? this.branchId,
         subjectId: subjectId ?? this.subjectId,
         subjectName: subjectName ?? this.subjectName,
+        scheduleSlotId: scheduleSlotId ?? this.scheduleSlotId,
         title: title ?? this.title,
         teacherId: teacherId ?? this.teacherId,
         status: status ?? this.status,

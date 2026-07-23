@@ -31,7 +31,7 @@ class _ChargeChildPickerState extends State<ChargeChildPicker> {
             .toList();
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Column(

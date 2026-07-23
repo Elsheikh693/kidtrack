@@ -16,7 +16,7 @@ class PickupRecord {
     final dt = DateTime.fromMillisecondsSinceEpoch(completedAt);
     final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour >= 12 ? 'م' : 'ص';
+    final period = dt.hour >= 12 ? 'parentlink25_period_pm'.tr : 'parentlink25_period_am'.tr;
     return '$h:$m $period';
   }
 }
@@ -69,23 +69,17 @@ class PickupHistoryController extends GetxController {
   String _formatDate(DateTime dt) {
     final today = DateTime.now();
     final yesterday = today.subtract(const Duration(days: 1));
-    const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    final dayName = days[dt.weekday - 1];
-    final monthName = months[dt.month - 1];
-    final base = '$dayName ${dt.day} $monthName';
-    if (_sameDay(dt, today)) return 'اليوم، $base';
-    if (_sameDay(dt, yesterday)) return 'أمس، $base';
+    final base = localizeDigits(
+        '${weekdayName(dt.weekday)} ${dt.day} ${monthName(dt.month)}');
+    if (_sameDay(dt, today)) return '${'parentlink25_today'.tr}، $base';
+    if (_sameDay(dt, yesterday)) return '${'parentlink25_yesterday'.tr}، $base';
     return base;
   }
 
   String _dayLabel(DateTime dt) {
     final today = DateTime.now();
-    if (_sameDay(dt, today)) return 'اليوم';
-    if (_sameDay(dt, today.subtract(const Duration(days: 1)))) return 'أمس';
+    if (_sameDay(dt, today)) return 'parentlink25_today'.tr;
+    if (_sameDay(dt, today.subtract(const Duration(days: 1)))) return 'parentlink25_yesterday'.tr;
     return '';
   }
 

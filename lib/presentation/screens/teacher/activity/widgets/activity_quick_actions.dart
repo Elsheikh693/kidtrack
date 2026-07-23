@@ -41,7 +41,7 @@ class ActivityQuickActions extends StatelessWidget {
         children: [
           _QBtn(
             icon: Icons.photo_camera_rounded,
-            label: 'صور',
+            label: 'teacheract32_photos'.tr,
             color: const Color(0xFF0891B2),
             isLoading: isUploadingPhoto,
             badge: photoCount > 0 ? '$photoCount' : null,
@@ -49,20 +49,20 @@ class ActivityQuickActions extends StatelessWidget {
           ),
           _QBtn(
             icon: Icons.edit_note_rounded,
-            label: 'ملاحظة',
+            label: 'teacheract32_note'.tr,
             color: const Color(0xFF7C3AED),
             dot: hasGroupNote,
             onTap: onGroupNote,
           ),
           _QBtn(
             icon: Icons.menu_book_rounded,
-            label: 'واجب',
+            label: 'teacheract32_homework'.tr,
             color: const Color(0xFFD97706),
             onTap: onHomework,
           ),
           _QBtn(
             icon: Icons.stop_circle_rounded,
-            label: 'إنهاء',
+            label: 'teacheract32_end'.tr,
             color: const Color(0xFFDC2626),
             isLoading: isSaving,
             onTap: isSaving ? () {} : onEnd,

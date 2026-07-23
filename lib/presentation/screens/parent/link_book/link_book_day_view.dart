@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../education/widgets/journal_meta.dart';
 import '../education/widgets/journal_timeline_section.dart';
 import '../education/widgets/teacher_notes_section.dart';
 import 'link_book_controller.dart';
+import '../../../../Global/Localization/app_direction.dart';
 
 /// A single page of the Link Book opened full-screen: the child's whole day.
 class LinkBookDayView extends StatelessWidget {
@@ -16,12 +18,14 @@ class LinkBookDayView extends StatelessWidget {
   final String childName;
 
   String get _firstName =>
-      childName.trim().isEmpty ? 'طفلك' : childName.trim().split(' ').first;
+      childName.trim().isEmpty
+          ? 'parenteduc24_default_child'.tr
+          : childName.trim().split(' ').first;
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: kJBg,
         appBar: AppBar(
@@ -68,10 +72,15 @@ class _DayHero extends StatelessWidget {
 
   String get _activityLine {
     final n = day.activityCount;
-    if (n == 0) return 'لا توجد أنشطة مسجلة';
-    if (n == 1) return '$firstName شارك في نشاط واحد';
-    if (n == 2) return '$firstName شارك في نشاطين';
-    return '$firstName شارك في $n أنشطة';
+    if (n == 0) return 'parenteduc24_no_activities_recorded'.tr;
+    if (n == 1) {
+      return 'parenteduc24_shared_one_activity'.trParams({'name': firstName});
+    }
+    if (n == 2) {
+      return 'parenteduc24_shared_two_activities'.trParams({'name': firstName});
+    }
+    return 'parenteduc24_shared_n_activities'
+        .trParams({'name': firstName, 'count': '$n'});
   }
 
   @override
@@ -112,9 +121,9 @@ class _DayHero extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'تقييم اليوم',
-                      style: TextStyle(
+                    Text(
+                      'parenteduc24_day_evaluation'.tr,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: kJMuted,
@@ -144,7 +153,8 @@ class _DayHero extends StatelessWidget {
             const SizedBox(height: 9),
             _Line(
               icon: Icons.photo_camera_rounded,
-              text: '${day.photoCount} صورة من يومه',
+              text: 'parenteduc24_photos_from_day'
+                  .trParams({'count': '${day.photoCount}'}),
               color: const Color(0xFF0EA5E9),
             ),
           ],
@@ -154,8 +164,9 @@ class _DayHero extends StatelessWidget {
                 ? Icons.check_circle_rounded
                 : Icons.error_outline_rounded,
             text: day.negativeNotes == 0
-                ? 'لا توجد ملاحظات سلبية'
-                : '${day.negativeNotes} ملاحظة تحتاج انتباه',
+                ? 'parenteduc24_no_negative_notes'.tr
+                : 'parenteduc24_notes_need_attention'
+                    .trParams({'count': '${day.negativeNotes}'}),
             color: day.negativeNotes == 0
                 ? const Color(0xFF059669)
                 : const Color(0xFFD97706),

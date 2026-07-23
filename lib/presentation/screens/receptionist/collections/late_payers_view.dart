@@ -56,7 +56,7 @@ class _LatePayersViewState extends State<LatePayersView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
         appBar: HomeAppBar(
@@ -219,7 +219,7 @@ Future<bool?> confirmCashCollection(BuildContext context, LatePayer payer) {
   final amount = '${payer.amount.toStringAsFixed(0)} ${'overdue_currency'.tr}';
   return Get.dialog<bool>(
     Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Dialog(
         backgroundColor: Colors.white,
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),

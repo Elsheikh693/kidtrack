@@ -31,7 +31,7 @@ class EndChildTile extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: EndCommentSheet(child: child, endCtrl: endCtrl),
       ),
     );

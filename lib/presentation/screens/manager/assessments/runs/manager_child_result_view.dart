@@ -81,7 +81,7 @@ class _ManagerChildResultViewState extends State<ManagerChildResultView> {
   Widget build(BuildContext context) {
     final name = controller.childName(widget.childId);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(

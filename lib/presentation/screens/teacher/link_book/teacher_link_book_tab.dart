@@ -134,7 +134,7 @@ class _LbBody extends GetView<LinkBookController> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'لا توجد فصول مسجلة',
+                  'teacherlin37_no_classrooms'.tr,
                   style: context.typography.smSemiBold.copyWith(
                     color: const Color(0xFF374151),
                   ),

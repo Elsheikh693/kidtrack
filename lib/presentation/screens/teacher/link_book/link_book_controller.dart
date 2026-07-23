@@ -97,8 +97,8 @@ class LinkBookController extends GetxController {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final sel = DateTime(d.year, d.month, d.day);
-    if (sel == today) return 'اليوم';
-    if (sel == today.subtract(const Duration(days: 1))) return 'أمس';
+    if (sel == today) return 'teacherhom36_today'.tr;
+    if (sel == today.subtract(const Duration(days: 1))) return 'teacherhom36_yesterday'.tr;
     return '${d.day}/${d.month}/${d.year}';
   }
 
@@ -324,14 +324,14 @@ class LinkBookController extends GetxController {
   }
 
   String trendLabel(List<DayTrend> trend) {
-    if (trend.length < 3) return 'مستقر';
+    if (trend.length < 3) return 'teacherhom36_trend_stable'.tr;
     final recent = trend.skip(trend.length - 3).map((t) => t.avgRating).toList();
     final older = trend.take(trend.length - 3).map((t) => t.avgRating).toList();
     final recentAvg = recent.reduce((a, b) => a + b) / recent.length;
     final olderAvg = older.isEmpty ? recentAvg : older.reduce((a, b) => a + b) / older.length;
-    if (recentAvg > olderAvg + 0.3) return 'تحسن';
-    if (recentAvg < olderAvg - 0.3) return 'يحتاج متابعة';
-    return 'مستقر';
+    if (recentAvg > olderAvg + 0.3) return 'teacherhom36_trend_improving'.tr;
+    if (recentAvg < olderAvg - 0.3) return 'teacherhom36_trend_needs_follow'.tr;
+    return 'teacherhom36_trend_stable'.tr;
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
@@ -349,25 +349,25 @@ class LinkBookController extends GetxController {
     }
   }
 
-  static const Map<String, List<String>> _subjectSkills = {
-    'english': ['المفردات', 'الاستماع', 'التواصل'],
-    'إنجليز': ['المفردات', 'الاستماع', 'التواصل'],
-    'لغة إنجليز': ['المفردات', 'الاستماع', 'التواصل'],
-    'عربي': ['القراءة', 'الكتابة', 'التعبير'],
-    'اللغة العرب': ['القراءة', 'الكتابة', 'التعبير'],
-    'رياضيات': ['العد', 'حل المشكلات', 'التفكير المنطقي'],
-    'math': ['العد', 'حل المشكلات', 'التفكير المنطقي'],
-    'فن': ['الإبداع', 'المهارات الحركية الدقيقة', 'التعبير البصري'],
-    'رسم': ['الإبداع', 'المهارات الحركية الدقيقة', 'التعبير البصري'],
-    'art': ['الإبداع', 'المهارات الحركية الدقيقة', 'التعبير البصري'],
-    'علوم': ['الاستكشاف', 'الملاحظة', 'التساؤل'],
-    'science': ['الاستكشاف', 'الملاحظة', 'التساؤل'],
-    'موسيقى': ['الإيقاع', 'الاستماع الموسيقي', 'التعبير الفني'],
-    'رياضة': ['اللياقة', 'التعاون', 'التنسيق'],
-    'قرآن': ['الحفظ', 'التلاوة', 'الأخلاق'],
+  static Map<String, List<String>> get _subjectSkills => {
+    'english': ['teacherhom36_skill_vocabulary'.tr, 'teacherhom36_skill_listening'.tr, 'teacherhom36_skill_communication'.tr],
+    'إنجليز': ['teacherhom36_skill_vocabulary'.tr, 'teacherhom36_skill_listening'.tr, 'teacherhom36_skill_communication'.tr],
+    'لغة إنجليز': ['teacherhom36_skill_vocabulary'.tr, 'teacherhom36_skill_listening'.tr, 'teacherhom36_skill_communication'.tr],
+    'عربي': ['teacherhom36_skill_reading'.tr, 'teacherhom36_skill_writing'.tr, 'teacherhom36_skill_expression'.tr],
+    'اللغة العرب': ['teacherhom36_skill_reading'.tr, 'teacherhom36_skill_writing'.tr, 'teacherhom36_skill_expression'.tr],
+    'رياضيات': ['teacherhom36_skill_counting'.tr, 'teacherhom36_skill_problem_solving'.tr, 'teacherhom36_skill_logical_thinking'.tr],
+    'math': ['teacherhom36_skill_counting'.tr, 'teacherhom36_skill_problem_solving'.tr, 'teacherhom36_skill_logical_thinking'.tr],
+    'فن': ['teacherhom36_skill_creativity'.tr, 'teacherhom36_skill_fine_motor'.tr, 'teacherhom36_skill_visual_expression'.tr],
+    'رسم': ['teacherhom36_skill_creativity'.tr, 'teacherhom36_skill_fine_motor'.tr, 'teacherhom36_skill_visual_expression'.tr],
+    'art': ['teacherhom36_skill_creativity'.tr, 'teacherhom36_skill_fine_motor'.tr, 'teacherhom36_skill_visual_expression'.tr],
+    'علوم': ['teacherhom36_skill_exploration'.tr, 'teacherhom36_skill_observation'.tr, 'teacherhom36_skill_inquiry'.tr],
+    'science': ['teacherhom36_skill_exploration'.tr, 'teacherhom36_skill_observation'.tr, 'teacherhom36_skill_inquiry'.tr],
+    'موسيقى': ['teacherhom36_skill_rhythm'.tr, 'teacherhom36_skill_musical_listening'.tr, 'teacherhom36_skill_artistic_expression'.tr],
+    'رياضة': ['teacherhom36_skill_fitness'.tr, 'teacherhom36_skill_cooperation'.tr, 'teacherhom36_skill_coordination'.tr],
+    'قرآن': ['teacherhom36_skill_memorization'.tr, 'teacherhom36_skill_recitation'.tr, 'teacherhom36_skill_manners'.tr],
   };
 
-  static const List<String> _defaultSkills = ['المشاركة', 'التركيز', 'التعاون'];
+  static List<String> get _defaultSkills => ['teacherhom36_skill_participation'.tr, 'teacherhom36_skill_focus'.tr, 'teacherhom36_skill_cooperation'.tr];
 
   List<String> _computeSkills(List<ClassroomActivityModel> participated) {
     final skills = <String>{};
@@ -395,14 +395,14 @@ class LinkBookController extends GetxController {
     final excellentCount = evals.where((e) => e == EvalLevel.excellent).length;
     if (excellentCount > 0) {
       strengths.add(LbStrength(
-        'مشاركة ممتازة',
+        'teacherhom36_strength_excellent_participation'.tr,
         Icons.star_rounded,
         const Color(0xFFD97706),
       ));
     }
     if (participated.length >= 2) {
       strengths.add(LbStrength(
-        'تعلم نشط',
+        'teacherhom36_strength_active_learning'.tr,
         Icons.bolt_rounded,
         const Color(0xFF7C3AED),
       ));
@@ -412,23 +412,23 @@ class LinkBookController extends GetxController {
       if (eval != EvalLevel.excellent) continue;
       final sub = (a.subjectName ?? '').toLowerCase();
       if (sub.contains('إنجليز') || sub.contains('english') || sub.contains('لغة')) {
-        if (!strengths.any((LbStrength s) => s.label == 'تميز لغوي')) {
-          strengths.add(LbStrength('تميز لغوي', Icons.record_voice_over_rounded, const Color(0xFF059669)));
+        if (!strengths.any((LbStrength s) => s.label == 'teacherhom36_strength_language'.tr)) {
+          strengths.add(LbStrength('teacherhom36_strength_language'.tr, Icons.record_voice_over_rounded, const Color(0xFF059669)));
         }
       }
       if (sub.contains('فن') || sub.contains('رسم') || sub.contains('art')) {
-        if (!strengths.any((LbStrength s) => s.label == 'إبداع فني')) {
-          strengths.add(LbStrength('إبداع فني', Icons.palette_rounded, const Color(0xFFEC4899)));
+        if (!strengths.any((LbStrength s) => s.label == 'teacherhom36_strength_art'.tr)) {
+          strengths.add(LbStrength('teacherhom36_strength_art'.tr, Icons.palette_rounded, const Color(0xFFEC4899)));
         }
       }
       if (sub.contains('رياضيات') || sub.contains('math')) {
-        if (!strengths.any((LbStrength s) => s.label == 'تفكير رياضي')) {
-          strengths.add(LbStrength('تفكير رياضي', Icons.calculate_rounded, const Color(0xFF2563EB)));
+        if (!strengths.any((LbStrength s) => s.label == 'teacherhom36_strength_math'.tr)) {
+          strengths.add(LbStrength('teacherhom36_strength_math'.tr, Icons.calculate_rounded, const Color(0xFF2563EB)));
         }
       }
     }
     if (strengths.isEmpty && participated.isNotEmpty) {
-      strengths.add(LbStrength('حضور منتظم', Icons.check_circle_rounded, const Color(0xFF16A34A)));
+      strengths.add(LbStrength('teacherhom36_strength_regular_attendance'.tr, Icons.check_circle_rounded, const Color(0xFF16A34A)));
     }
     return strengths;
   }
@@ -441,12 +441,12 @@ class LinkBookController extends GetxController {
   ) {
     final focus = <LbFocusArea>[];
     if (participated.length < allActivities.length && allActivities.isNotEmpty) {
-      focus.add(LbFocusArea('المشاركة في جميع الأنشطة', 'تشجيع المشاركة', Icons.group_rounded));
+      focus.add(LbFocusArea('teacherhom36_focus_participate_all'.tr, 'teacherhom36_focus_encourage_participation'.tr, Icons.group_rounded));
     }
     final attentionActivities = participated.where((a) => a.evalFor(child.key!) == EvalLevel.needsAttention).toList();
     for (final a in attentionActivities) {
       final sub = a.subjectName ?? a.title;
-      focus.add(LbFocusArea(sub, 'يحتاج دعم إضافي', Icons.support_rounded));
+      focus.add(LbFocusArea(sub, 'teacherhom36_focus_needs_extra_support'.tr, Icons.support_rounded));
     }
     return focus.take(2).toList();
   }
@@ -459,25 +459,25 @@ class LinkBookController extends GetxController {
   ) {
     final badges = <String>[];
     if (participated.length == allActivities.length && allActivities.isNotEmpty) {
-      badges.add('مشاركة مثالية');
+      badges.add('teacherhom36_badge_perfect_participation'.tr);
     }
     final excellentCount = evals.where((e) => e == EvalLevel.excellent).length;
     if (excellentCount == evals.length && evals.isNotEmpty) {
-      badges.add('نجم اليوم');
+      badges.add('teacherhom36_badge_star_of_day'.tr);
     }
-    if (participated.length >= 2) badges.add('متعلم نشيط');
+    if (participated.length >= 2) badges.add('teacherhom36_badge_active_learner'.tr);
     for (final a in participated) {
       final eval = a.evalFor(childId);
       if (eval != EvalLevel.excellent) continue;
       final sub = (a.subjectName ?? '').toLowerCase();
-      if ((sub.contains('إنجليز') || sub.contains('english')) && !badges.contains('نجم اللغة')) {
-        badges.add('نجم اللغة');
+      if ((sub.contains('إنجليز') || sub.contains('english')) && !badges.contains('teacherhom36_badge_language_star'.tr)) {
+        badges.add('teacherhom36_badge_language_star'.tr);
       }
-      if ((sub.contains('فن') || sub.contains('رسم') || sub.contains('art')) && !badges.contains('فنان مبدع')) {
-        badges.add('فنان مبدع');
+      if ((sub.contains('فن') || sub.contains('رسم') || sub.contains('art')) && !badges.contains('teacherhom36_badge_creative_artist'.tr)) {
+        badges.add('teacherhom36_badge_creative_artist'.tr);
       }
-      if ((sub.contains('رياضيات') || sub.contains('math')) && !badges.contains('عبقري الأرقام')) {
-        badges.add('عبقري الأرقام');
+      if ((sub.contains('رياضيات') || sub.contains('math')) && !badges.contains('teacherhom36_badge_number_genius'.tr)) {
+        badges.add('teacherhom36_badge_number_genius'.tr);
       }
     }
     return badges;
@@ -489,20 +489,30 @@ class LinkBookController extends GetxController {
     double avgScore,
   ) {
     final name = child.firstName;
-    if (participated.isEmpty) return '$name لم يشارك في أنشطة اليوم.';
+    if (participated.isEmpty) {
+      return 'teacherhom36_did_not_participate_today'.trParams({'name': name});
+    }
     final count = participated.length;
     final mood = avgScore >= 4
-        ? 'يوماً رائعاً'
+        ? 'teacherhom36_mood_great_day'.tr
         : avgScore >= 2.5
-            ? 'يوماً جيداً'
-            : 'يوماً في الحضانة';
-    final word = count == 1 ? 'نشاط واحد' : '$count أنشطة';
+            ? 'teacherhom36_mood_good_day'.tr
+            : 'teacherhom36_mood_day_at_nursery'.tr;
+    final word = count == 1
+        ? 'teacherhom36_one_activity'.tr
+        : 'teacherhom36_n_activities'.trParams({'count': '$count'});
     final best = participated.firstWhereOrNull(
       (a) => a.evalFor(child.key!) == EvalLevel.excellent,
     );
-    final subjectMention =
-        best?.subjectName != null ? ' وتميّز في ${best!.subjectName}' : '';
-    return '$name قضى $mood. شارك في $word$subjectMention.';
+    final subjectMention = best?.subjectName != null
+        ? ' ${'teacherhom36_excelled_in'.trParams({'subject': best!.subjectName!})}'
+        : '';
+    return 'teacherhom36_hero_summary'.trParams({
+      'name': name,
+      'mood': mood,
+      'activities': word,
+      'extra': subjectMention,
+    });
   }
 
   List<String> _generateInsights(
@@ -515,38 +525,48 @@ class LinkBookController extends GetxController {
     final name = child.firstName;
     final insights = <String>[];
     if (participated.length == allActivities.length && allActivities.isNotEmpty) {
-      insights.add('$name شارك في جميع أنشطة اليوم.');
+      insights.add('teacherhom36_insight_participated_all'.trParams({'name': name}));
     } else if (participated.isEmpty) {
-      insights.add('$name لم يشارك في أنشطة اليوم.');
+      insights.add('teacherhom36_did_not_participate_today'.trParams({'name': name}));
     } else {
-      insights.add('$name شارك في ${participated.length} من أصل ${allActivities.length} أنشطة.');
+      insights.add('teacherhom36_insight_participated_partial'.trParams({
+        'name': name,
+        'done': '${participated.length}',
+        'total': '${allActivities.length}',
+      }));
     }
     if (avgScore >= 4) {
-      insights.add('أظهر ${child.firstName} أداءً ممتازاً خلال اليوم.');
+      insights.add('teacherhom36_insight_excellent_performance'.trParams({'name': child.firstName}));
     } else if (avgScore >= 2.5) {
-      insights.add('يُبدي ${child.firstName} أداءً جيداً مع مجال للتحسين.');
+      insights.add('teacherhom36_insight_good_performance'.trParams({'name': child.firstName}));
     }
     for (final a in participated) {
       final eval = a.evalFor(child.key!);
       if (eval == EvalLevel.excellent && a.subjectName != null) {
-        insights.add('أبدع ${child.firstName} في ${a.subjectName}.');
+        insights.add('teacherhom36_insight_excelled_subject'.trParams({
+          'name': child.firstName,
+          'subject': a.subjectName!,
+        }));
         break;
       }
     }
     final attention = participated.where((a) => a.evalFor(child.key!) == EvalLevel.needsAttention).toList();
     if (attention.isNotEmpty) {
       final sub = attention.first.subjectName ?? attention.first.title;
-      insights.add('يحتاج ${child.firstName} دعماً إضافياً في $sub.');
+      insights.add('teacherhom36_insight_needs_support_subject'.trParams({
+        'name': child.firstName,
+        'subject': sub,
+      }));
     }
     return insights;
   }
 
   static String _ratingLabel(double score) {
-    if (score >= 4.5) return 'ممتاز';
-    if (score >= 3.5) return 'جيد جداً';
-    if (score >= 2.5) return 'جيد';
-    if (score >= 1.5) return 'مقبول';
-    if (score > 0) return 'يحتاج دعم';
+    if (score >= 4.5) return 'teacherhom36_rating_excellent'.tr;
+    if (score >= 3.5) return 'teacherhom36_rating_very_good'.tr;
+    if (score >= 2.5) return 'teacherhom36_rating_good'.tr;
+    if (score >= 1.5) return 'teacherhom36_rating_fair'.tr;
+    if (score > 0) return 'teacherhom36_rating_needs_support'.tr;
     return '—';
   }
 }

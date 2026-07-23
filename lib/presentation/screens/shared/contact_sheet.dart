@@ -84,7 +84,7 @@ class _ContactSheetState extends State<_ContactSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
         child: Column(

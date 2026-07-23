@@ -108,7 +108,7 @@ class _UnauthorizedSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final notesCtrl = TextEditingController();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,

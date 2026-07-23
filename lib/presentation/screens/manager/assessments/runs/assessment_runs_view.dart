@@ -40,7 +40,7 @@ class _AssessmentRunsViewState extends State<AssessmentRunsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(
@@ -74,7 +74,7 @@ class _AssessmentRunsViewState extends State<AssessmentRunsView> {
                 classesLabel: run.classroomIds
                     .map(controller.classroomName)
                     .where((n) => n.isNotEmpty)
-                    .join('، '),
+                    .join('holidays16_list_separator'.tr),
                 onPublish: () => controller.publish(run),
                 onOpen: () => controller.openRun(run),
                 onDelete: () => controller.deleteRun(run),

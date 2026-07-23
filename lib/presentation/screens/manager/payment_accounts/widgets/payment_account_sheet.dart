@@ -82,7 +82,7 @@ class _PaymentAccountSheetState extends State<PaymentAccountSheet>
   Widget build(BuildContext context) {
     final isInstapay = _type == 'instapay';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

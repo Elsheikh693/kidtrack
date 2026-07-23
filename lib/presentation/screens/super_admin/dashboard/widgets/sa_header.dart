@@ -72,6 +72,22 @@ class SaHeader extends StatelessWidget {
                         ),
                         const Spacer(),
                         GestureDetector(
+                          onTap: showLanguageSheet,
+                          child: Container(
+                            padding: EdgeInsets.all(9.w),
+                            margin: EdgeInsetsDirectional.only(end: 8.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.08),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: Icon(Icons.language_rounded,
+                                color: Colors.white70, size: 16.sp),
+                          ),
+                        ),
+                        GestureDetector(
                           onTap: controller.logout,
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),

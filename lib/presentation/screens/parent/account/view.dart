@@ -23,7 +23,7 @@ class _ParentAccountViewState extends State<ParentAccountView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -82,6 +82,12 @@ class _ParentAccountViewState extends State<ParentAccountView> {
                   icon: Icons.star_rounded,
                   iconColor: const Color(0xFFF59E0B),
                   onTap: controller.rateOnStore,
+                ),
+                AccountMenuItem(
+                  labelKey: 'settings_language',
+                  icon: Icons.language_outlined,
+                  iconColor: AppColors.primary,
+                  onTap: showLanguageSheet,
                 ),
               ],
             ),

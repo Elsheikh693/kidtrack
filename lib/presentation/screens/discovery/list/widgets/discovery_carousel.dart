@@ -183,7 +183,7 @@ class _BannerCard extends StatelessWidget {
                   children: [
                     AppText(
                       text: data.titleKey.tr,
-                      textDirection: TextDirection.rtl,
+                      textDirection: appTextDirection,
                       textStyle: context.typography.lgBold
                           .copyWith(color: AppColors.white, height: 1.35),
                       maxLines: 2,
@@ -191,7 +191,7 @@ class _BannerCard extends StatelessWidget {
                     SizedBox(height: 10.h),
                     AppText(
                       text: data.subtitleKey.tr,
-                      textDirection: TextDirection.rtl,
+                      textDirection: appTextDirection,
                       textStyle: context.typography.smRegular.copyWith(
                         color: AppColors.white.withValues(alpha: 0.88),
                         height: 1.45,

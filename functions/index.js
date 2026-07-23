@@ -73,12 +73,33 @@ const { feeReminderScan } = require("./engagement/feeReminder");
 exports.feeReminderScan = feeReminderScan;
 
 // ============================================================
+// ⏰ LATE-SESSION START ALERT (scheduled scan → nudge teacher, escalate to
+//    manager when a scheduled session hasn't started; + manual nudge trigger)
+// ============================================================
+
+const {
+  lateSessionStartScan,
+  onTeacherNudgeCreated,
+} = require("./engagement/lateSessionStart");
+
+exports.lateSessionStartScan = lateSessionStartScan;
+exports.onTeacherNudgeCreated = onTeacherNudgeCreated;
+
+// ============================================================
 // 🚪 WITHDRAW CHILD (callable — hard delete + parent/auth cleanup)
 // ============================================================
 
 const { withdrawChild } = require("./children/withdrawChild");
 
 exports.withdrawChild = withdrawChild;
+
+// ============================================================
+// 👤 REMOVE GUARDIAN (callable — unlink + orphan/auth cleanup)
+// ============================================================
+
+const { removeGuardian } = require("./children/removeGuardian");
+
+exports.removeGuardian = removeGuardian;
 
 // ============================================================
 // 🔑 ACTIVATE (callable, public) — activation code → custom token

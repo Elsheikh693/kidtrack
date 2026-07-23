@@ -35,7 +35,7 @@ class TutorialPlayerController extends GetxController {
     final url = video.videoUrl.trim();
     if (url.isEmpty || Uri.tryParse(url)?.hasScheme != true) {
       AppLogger.error('TutorialPlayer', 'Invalid/empty video url: "$url"');
-      errorDetail.value = 'رابط الفيديو غير صالح';
+      errorDetail.value = 'presentati10_invalid_video_url'.tr;
       hasError.value = true;
       return;
     }

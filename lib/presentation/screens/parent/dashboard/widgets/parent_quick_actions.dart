@@ -1,5 +1,6 @@
 import '../../../../../index/index_main.dart';
 import '../../attention/parent_attention_view.dart';
+import '../../exams/parent_exams_view.dart';
 
 /// Four compact quick-action tiles on the parent home — Assessments, "needs
 /// attention" (badged), Events and the Link Book — laid out in a single row.
@@ -25,23 +26,14 @@ class ParentQuickActions extends StatelessWidget {
           ),
           SizedBox(width: 9.w),
           Expanded(
-            child: _QuickCard(
-              icon: Icons.celebration_rounded,
-              title: 'parent_action_events'.tr,
-              colors: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
-              onTap: () => Get.toNamed(parentEventsView),
-            ),
-          ),
-          SizedBox(width: 9.w),
-          Expanded(
             child: Obx(() {
-              final n = controller.attentionCount;
+              final n = controller.newExamsCount.value;
               return _QuickCard(
-                icon: Icons.notifications_active_rounded,
-                title: 'parent_action_attention'.tr,
-                colors: const [Color(0xFFF43F5E), Color(0xFFE11D48)],
+                icon: Icons.history_edu_rounded,
+                title: 'parent_action_exams'.tr,
+                colors: const [Color(0xFF0D9488), Color(0xFF0F766E)],
                 badge: n > 0 ? n : null,
-                onTap: () => Get.to(() => const ParentAttentionView()),
+                onTap: () => Get.to(() => const ParentExamsView()),
               );
             }),
           ),
@@ -55,6 +47,19 @@ class ParentQuickActions extends StatelessWidget {
                 colors: const [Color(0xFF3B82F6), Color(0xFF2563EB)],
                 badge: n > 0 ? n : null,
                 onTap: () => Get.toNamed(parentAssessmentsView),
+              );
+            }),
+          ),
+          SizedBox(width: 9.w),
+          Expanded(
+            child: Obx(() {
+              final n = controller.attentionCount;
+              return _QuickCard(
+                icon: Icons.notifications_active_rounded,
+                title: 'parent_action_attention'.tr,
+                colors: const [Color(0xFFF43F5E), Color(0xFFE11D48)],
+                badge: n > 0 ? n : null,
+                onTap: () => Get.to(() => const ParentAttentionView()),
               );
             }),
           ),

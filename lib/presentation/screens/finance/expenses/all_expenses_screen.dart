@@ -12,7 +12,7 @@ class AllExpensesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<FinanceDashboardController>(tag: tag);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
@@ -78,7 +78,7 @@ class AllExpensesScreen extends StatelessWidget {
   ) async {
     final ok = await Get.dialog<bool>(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text('expense_delete_title'.tr),
           content: Text('expense_delete_confirm'.tr),

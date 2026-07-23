@@ -88,10 +88,10 @@ class OwnerChildrenTab extends StatelessWidget {
     return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            const KidTrackCollapsingHeader(
-              title: 'الأطفال',
+            KidTrackCollapsingHeader(
+              title: 'ownerchild19_children_title'.tr,
               icon: Icons.child_care_rounded,
-              accentColor: Color(0xFF16A34A),
+              accentColor: const Color(0xFF16A34A),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),

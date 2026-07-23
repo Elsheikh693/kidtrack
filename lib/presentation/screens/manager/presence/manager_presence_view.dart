@@ -14,7 +14,7 @@ class ManagerPresenceView extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<ManagerPresenceController>();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(

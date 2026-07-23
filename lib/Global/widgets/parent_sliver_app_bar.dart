@@ -392,7 +392,9 @@ class ParentTopBar extends StatelessWidget {
 
   static String get _greeting {
     final h = DateTime.now().hour;
-    return h < 12 ? 'صباح الخير' : 'مساء الخير';
+    return h < 12
+        ? 'globalserv8_greeting_morning'.tr
+        : 'globalserv8_greeting_evening'.tr;
   }
 
   @override
@@ -679,21 +681,25 @@ class _StatusChip extends StatelessWidget {
 
   (String, Color, IconData) get _info => switch (status) {
     'checked_in' || 'having_meal' || 'sleeping' || 'pickup_requested' => (
-      'داخل الحضانة',
+      'globalserv8_status_inside'.tr,
       const Color(0xFF34D399),
       Icons.check_circle_rounded,
     ),
     'in_activity' => (
-      'نشاط',
+      'globalserv8_status_activity'.tr,
       const Color(0xFF60A5FA),
       Icons.directions_run_rounded,
     ),
     'on_bus' => (
-      'في الباص',
+      'globalserv8_status_on_bus'.tr,
       const Color(0xFFFBBF24),
       Icons.directions_bus_rounded,
     ),
-    _ => ('خارج', const Color(0xFF94A3B8), Icons.home_outlined),
+    _ => (
+      'globalserv8_status_outside'.tr,
+      const Color(0xFF94A3B8),
+      Icons.home_outlined,
+    ),
   };
 
   @override

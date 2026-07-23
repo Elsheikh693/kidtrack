@@ -89,7 +89,9 @@ class ClassroomOverviewCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      hasAttention ? 'تنبيه' : 'ممتاز',
+                      hasAttention
+                          ? 'teacherhom35_alert'.tr
+                          : 'teacherhom35_excellent'.tr,
                       style: context.typography.xsMedium.copyWith(
                         color: hasAttention
                             ? AppColors.activityRed
@@ -104,7 +106,8 @@ class ClassroomOverviewCard extends StatelessWidget {
 
               _InfoRow(
                 icon: Icons.groups_rounded,
-                text: '$childCount طالب',
+                text: 'teacherhom35_students_count'
+                    .trParams({'count': '$childCount'}),
                 color: AppColors.activitySlate,
               ),
 
@@ -112,7 +115,8 @@ class ClassroomOverviewCard extends StatelessWidget {
 
               _InfoRow(
                 icon: Icons.check_circle_rounded,
-                text: '$activityCount نشاط مكتمل',
+                text: 'teacherhom35_activities_completed_count'
+                    .trParams({'count': '$activityCount'}),
                 color: AppColors.activityBlue,
               ),
 
@@ -146,8 +150,9 @@ class ClassroomOverviewCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         hasAttention
-                            ? '$attentionCount يحتاج متابعة'
-                            : 'لا توجد تنبيهات',
+                            ? 'teacherhom35_needs_followup_count'
+                                .trParams({'count': '$attentionCount'})
+                            : 'teacherhom35_no_alerts'.tr,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.typography.xsMedium.copyWith(

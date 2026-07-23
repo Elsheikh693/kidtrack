@@ -3,6 +3,8 @@ import '../../../../Global/widgets/app_network_image.dart';
 import '../education/widgets/journal_meta.dart';
 import 'link_book_controller.dart';
 import 'widgets/photo_gallery_viewer.dart';
+import '../../../../Global/Localization/app_direction.dart';
+import 'package:get/get.dart';
 
 /// One subject's full journey for the child, opened full-screen: a hero with
 /// the latest evaluation + development trend + sparkline, then a vertical
@@ -18,12 +20,12 @@ class SubjectHistoryView extends StatelessWidget {
   final String childName;
 
   String get _firstName =>
-      childName.trim().isEmpty ? 'طفلك' : childName.trim().split(' ').first;
+      childName.trim().isEmpty ? 'parentlink25_child_fallback'.tr : childName.trim().split(' ').first;
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: kJBg,
         appBar: AppBar(
@@ -55,9 +57,9 @@ class SubjectHistoryView extends StatelessWidget {
                     const Icon(Icons.timeline_rounded,
                         size: 18, color: Color(0xFF6C4DDB)),
                     const SizedBox(width: 8),
-                    const Text(
-                      'الخط الزمني',
-                      style: TextStyle(
+                    Text(
+                      'parentlink25_timeline'.tr,
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: kJInk,
@@ -65,7 +67,7 @@ class SubjectHistoryView extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${subject.activityCount} نشاط',
+                      '${subject.activityCount} ${'parentlink25_activities_unit'.tr}',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
@@ -144,7 +146,7 @@ class _SubjectHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'رحلة $firstName في',
+                      'parentlink25_journey_in'.trParams({'name': firstName}),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -172,14 +174,14 @@ class _SubjectHero extends StatelessWidget {
             children: [
               _HeroStat(
                 icon: Icons.auto_awesome_rounded,
-                label: 'نشاط',
+                label: 'parentlink25_activity_label'.tr,
                 value: '${subject.activityCount}',
                 color: const Color(0xFF2563EB),
               ),
               const SizedBox(width: 10),
               _HeroStat(
                 icon: Icons.photo_camera_rounded,
-                label: 'صورة',
+                label: 'parentlink25_photo_label'.tr,
                 value: '${subject.photoCount}',
                 color: const Color(0xFF0EA5E9),
               ),
@@ -395,7 +397,7 @@ class _EntryCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            entry.title.isNotEmpty ? entry.title : 'نشاط',
+            entry.title.isNotEmpty ? entry.title : 'parentlink25_activity_label'.tr,
             style: const TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w800,
@@ -425,7 +427,7 @@ class _EntryCard extends StatelessWidget {
               icon: Icons.groups_rounded,
               text: groupNote,
               color: const Color(0xFF64748B),
-              label: 'ملاحظة للمجموعة',
+              label: 'parentlink25_group_note'.tr,
             ),
           ],
           if (entry.photos.isNotEmpty) ...[
@@ -468,7 +470,7 @@ class _NoteBlock extends StatelessWidget {
               Icon(icon, size: 13, color: color),
               const SizedBox(width: 6),
               Text(
-                label ?? 'ملاحظة المعلمة',
+                label ?? 'parentlink25_teacher_note'.tr,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -560,7 +562,7 @@ class _EntryPhotos extends StatelessWidget {
       for (final url in entry.photos)
         LinkBookPhoto(
           url: url,
-          activityTitle: entry.title.isNotEmpty ? entry.title : 'نشاط',
+          activityTitle: entry.title.isNotEmpty ? entry.title : 'parentlink25_activity_label'.tr,
           takenAt: entry.startedAt,
         ),
     ];

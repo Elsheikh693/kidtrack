@@ -153,7 +153,8 @@ class StarOfWeekController extends GetxController {
       childPhotoUrl: child.profileImage,
       caption: caption,
       pickedById: _session.userId ?? '',
-      pickedByName: _session.currentUser?.displayName ?? 'المدير',
+      pickedByName:
+          _session.currentUser?.displayName ?? 'managerpro18_default_manager'.tr,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
 

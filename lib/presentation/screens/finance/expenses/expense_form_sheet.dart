@@ -101,7 +101,7 @@ class _ExpenseFormSheetState extends State<_ExpenseFormSheet> {
   Widget build(BuildContext context) {
     final isAr = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: SingleChildScrollView(

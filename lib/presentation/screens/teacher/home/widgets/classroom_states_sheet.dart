@@ -52,7 +52,7 @@ class _ClassroomStatesSheetState extends State<ClassroomStatesSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         decoration: const BoxDecoration(
           color: Color(0xFFF8FAFC),

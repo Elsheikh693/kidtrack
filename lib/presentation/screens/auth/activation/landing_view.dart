@@ -48,7 +48,7 @@ class _ActivationLandingViewState extends State<ActivationLandingView>
     );
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         body: DecoratedBox(
           decoration: BoxDecoration(

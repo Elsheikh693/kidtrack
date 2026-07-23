@@ -34,40 +34,57 @@ class TeacherAssessmentsController extends GetxController {
 
   Future<void> loadData() async {
     isLoading.value = true;
+    // Resolve the teacher's classrooms first (the run/row filters need them),
+    // then fetch runs and child rows in PARALLEL for a faster open.
     await _resolveMyClassrooms();
-    await _loadRunsAndRows();
+    await Future.wait([_loadRuns(), _loadRows()]);
     isLoading.value = false;
   }
 
-  /// A teacher's classrooms = classrooms they lead (teacherId == uid) plus the
-  /// classroom on their staff record. Resolved via ParentServices (branch-scoped).
+  /// A teacher's classrooms — reuse the app-wide resolver (the same one the home
+  /// & activity screens use, which covers teacherId, staff.classroomId(s) and
+  /// teacher assignments) so this list never silently misses a class. Falls back
+  /// to classrooms led directly.
   Future<void> _resolveMyClassrooms() async {
     _myClassroomIds.clear();
-    await _classrooms.getAll(callBack: (list) {
-      for (final c in list.whereType<ClassroomModel>()) {
-        if (c.teacherId == uid && c.key != null) _myClassroomIds.add(c.key!);
-      }
-    });
-    await _staff.getAll(callBack: (list) {
-      for (final s in list.whereType<StaffModel>()) {
-        if (s.uid == uid && s.classroomId != null && s.classroomId!.isNotEmpty) {
-          _myClassroomIds.add(s.classroomId!);
+
+    final actCtrl = Get.find<TeacherActivityController>();
+    await actCtrl.ensureLoaded();
+    for (final c in actCtrl.myClassrooms) {
+      if (c.key != null) _myClassroomIds.add(c.key!);
+    }
+
+    // Fallback sources (in case the activity controller hasn't loaded yet).
+    await Future.wait([
+      _classrooms.getAll(callBack: (list) {
+        for (final c in list.whereType<ClassroomModel>()) {
+          if (c.teacherId == uid && c.key != null) _myClassroomIds.add(c.key!);
         }
-      }
-    });
+      }),
+      _staff.getAll(callBack: (list) {
+        for (final s in list.whereType<StaffModel>()) {
+          if (s.uid == uid &&
+              s.classroomId != null &&
+              s.classroomId!.isNotEmpty) {
+            _myClassroomIds.add(s.classroomId!);
+          }
+        }
+      }),
+    ]);
   }
 
-  Future<void> _loadRunsAndRows() async {
+  Future<void> _loadRuns() async {
     await _runs.getAll(callBack: (list) {
       runs.value = list
           .whereType<AssessmentRunModel>()
           .where((r) =>
-              r.isActive &&
-              r.classroomIds.any(_myClassroomIds.contains))
+              r.isActive && r.classroomIds.any(_myClassroomIds.contains))
           .toList()
         ..sort((a, b) => (b.createdAt ?? 0).compareTo(a.createdAt ?? 0));
     });
+  }
 
+  Future<void> _loadRows() async {
     await _childAssessments.getAll(callBack: (list) {
       final map = <String, List<ChildAssessmentModel>>{};
       for (final row in list.whereType<ChildAssessmentModel>()) {

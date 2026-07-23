@@ -112,12 +112,30 @@ class Binding implements Bindings {
       permanent: true,
     );
 
+    // ─── Late-session grace window (manager setting → late-session alerts) ─
+    Get.put<LateSessionSettingsService>(
+      LateSessionSettingsService(),
+      permanent: true,
+    );
+
+    // ─── Late-session live monitor (manager dashboard card) ───────────────
+    Get.put<LateSessionMonitorService>(
+      LateSessionMonitorService(),
+      permanent: true,
+    );
+
     // ─── Owner Analytics (shared BI data layer — loads the bundle once) ───
     Get.put<OwnerAnalyticsService>(OwnerAnalyticsService(), permanent: true);
 
     // ─── Owner finance-detail reports (raw invoices/txns/children/packages) ──
     Get.put<OwnerFinanceDataService>(
       OwnerFinanceDataService(),
+      permanent: true,
+    );
+
+    // ─── Owner non-finance reports (exam results, incidents, staff, feedback) ─
+    Get.put<OwnerReportsDataService>(
+      OwnerReportsDataService(),
       permanent: true,
     );
 
@@ -345,6 +363,18 @@ class Binding implements Bindings {
       tag: "starOfWeek",
       baseUrl: () => ApiConstants.starOfWeek,
       fromJson: (json) => StarOfWeekModel.fromJson(json),
+    );
+
+    // 24d. Written exams (class-level exam + per-child result)
+    BaseBinding.bindCrud<ExamModel>(
+      tag: "exams",
+      baseUrl: () => ApiConstants.exams,
+      fromJson: (json) => ExamModel.fromJson(json),
+    );
+    BaseBinding.bindCrud<ExamResultModel>(
+      tag: "examResults",
+      baseUrl: () => ApiConstants.examResults,
+      fromJson: (json) => ExamResultModel.fromJson(json),
     );
 
     // 25. Lesson Plans
@@ -694,6 +724,14 @@ class Binding implements Bindings {
       () => ChildReportParentService(),
       fenix: true,
     );
+    Get.lazyPut<ExamParentService>(
+      () => ExamParentService(),
+      fenix: true,
+    );
+    Get.lazyPut<ExamResultParentService>(
+      () => ExamResultParentService(),
+      fenix: true,
+    );
     Get.lazyPut<AssessmentParentService>(
       () => AssessmentParentService(),
       fenix: true,
@@ -953,7 +991,8 @@ class Binding implements Bindings {
       () => TeacherActivityService(),
       fenix: true,
     );
-    Get.lazyPut<TeacherActivityController>(() => TeacherActivityController());
+    Get.lazyPut<TeacherActivityController>(() => TeacherActivityController(),
+        fenix: true);
     Get.lazyPut<MediaApprovalController>(
       () => MediaApprovalController(),
       fenix: true,
@@ -1067,6 +1106,12 @@ class Binding implements Bindings {
       fenix: true,
     );
 
+    // ─── Branch Manager — weekly timetable editor (schedule tab) ──────────
+    Get.lazyPut<ManagerScheduleController>(
+      () => ManagerScheduleController(),
+      fenix: true,
+    );
+
     // ─── Branch Manager — Live Teaching donut (home) + day drill-down ─────
     Get.lazyPut<LiveTeachingController>(
       () => LiveTeachingController(),
@@ -1117,6 +1162,20 @@ class Binding implements Bindings {
     Get.lazyPut<OwnerRevenueForecastController>(
       () => OwnerRevenueForecastController(),
     );
+    // Phase-4 reports (academic, satisfaction, safety, staff-cost)
+    Get.lazyPut<OwnerAcademicController>(() => OwnerAcademicController());
+    Get.lazyPut<OwnerSatisfactionController>(
+      () => OwnerSatisfactionController(),
+    );
+    Get.lazyPut<OwnerSafetyController>(() => OwnerSafetyController());
+    Get.lazyPut<OwnerStaffCostController>(() => OwnerStaffCostController());
+    // Phase-5 reports (funnel, curriculum, punctuality, care, events, homework)
+    Get.lazyPut<OwnerFunnelController>(() => OwnerFunnelController());
+    Get.lazyPut<OwnerCurriculumController>(() => OwnerCurriculumController());
+    Get.lazyPut<OwnerPunctualityController>(() => OwnerPunctualityController());
+    Get.lazyPut<OwnerCareController>(() => OwnerCareController());
+    Get.lazyPut<OwnerEventsController>(() => OwnerEventsController());
+    Get.lazyPut<OwnerHomeworkController>(() => OwnerHomeworkController());
     // New shared finance dashboard — owner scope (network / branch via switcher).
     Get.lazyPut<FinanceDashboardController>(
       () => FinanceDashboardController(isOwner: true),

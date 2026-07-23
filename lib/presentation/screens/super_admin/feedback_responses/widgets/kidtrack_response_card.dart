@@ -12,7 +12,7 @@ class KidtrackResponseCard extends StatelessWidget {
 
   String get _initial {
     final t = item.parentName.trim();
-    return t.isEmpty ? '؟' : t.characters.first;
+    return t.isEmpty ? 'staffparen31_avatar_unknown'.tr : t.characters.first;
   }
 
   @override

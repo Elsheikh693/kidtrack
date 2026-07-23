@@ -129,10 +129,6 @@ mixin ProfileWindowMixin on GetxController {
   String _dateStr(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  static const _arMonths = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
-  String _arMonth(DateTime d) => _arMonths[d.month - 1];
+  String _arMonth(DateTime d) => 'billing11_month_${d.month}'.tr;
   String _dayLabel(DateTime d) => '${d.day} ${_arMonth(d)}';
 }

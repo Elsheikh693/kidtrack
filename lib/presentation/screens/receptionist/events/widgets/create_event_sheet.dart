@@ -49,7 +49,7 @@ class _CreateEventSheetState extends State<CreateEventSheet>
   Widget build(BuildContext context) {
     final isEdit = widget.editEvent != null;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.92,
@@ -282,11 +282,7 @@ class _CreateEventSheetState extends State<CreateEventSheet>
   }
 
   String _formatDate(DateTime d) {
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
+    return localizeDigits('${d.day} ${monthName(d.month)}');
   }
 
   Future<void> _submit(BuildContext context) async {

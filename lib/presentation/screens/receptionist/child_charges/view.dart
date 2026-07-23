@@ -25,7 +25,7 @@ class _ChildChargesViewState extends State<ChildChargesView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: HomeAppBar(title: 'daily_expense_title'.tr),

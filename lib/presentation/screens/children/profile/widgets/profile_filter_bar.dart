@@ -29,19 +29,19 @@ class ProfileFilterBar extends StatelessWidget {
         () => Row(
           children: [
             _Segment(
-              label: 'شهر',
+              label: 'childrenpr12_period_month'.tr,
               selected: controller.period.value == ProfilePeriod.month,
               onTap: () => controller.setPeriod(ProfilePeriod.month),
             ),
             const SizedBox(width: 4),
             _Segment(
-              label: 'أسبوع',
+              label: 'childrenpr12_period_week'.tr,
               selected: controller.period.value == ProfilePeriod.week,
               onTap: () => controller.setPeriod(ProfilePeriod.week),
             ),
             const SizedBox(width: 4),
             _Segment(
-              label: 'يوم',
+              label: 'childrenpr12_period_day'.tr,
               selected: controller.period.value == ProfilePeriod.day,
               onTap: () => controller.setPeriod(ProfilePeriod.day),
             ),

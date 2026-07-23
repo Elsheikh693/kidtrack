@@ -63,7 +63,8 @@ class NoActivityCard extends StatelessWidget {
                     children: [
                       Text(
                         hasActivities && remaining > 0
-                            ? '$remaining أنشطة متبقية اليوم'
+                            ? 'teacherhom35_activities_remaining_today'
+                                .trParams({'count': '$remaining'})
                             : 'teacher_home_no_active_title'.tr,
                         style: context.typography.smSemiBold
                             .copyWith(color: AppColors.activitySlate),
@@ -71,7 +72,10 @@ class NoActivityCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         hasActivities
-                            ? '$activitiesDone من $activitiesTotal مكتملة'
+                            ? 'teacherhom35_completed_of_total'.trParams({
+                                'done': '$activitiesDone',
+                                'total': '$activitiesTotal',
+                              })
                             : 'teacher_home_no_active_hint'.tr,
                         style: context.typography.xsRegular
                             .copyWith(color: AppColors.activityMuted),

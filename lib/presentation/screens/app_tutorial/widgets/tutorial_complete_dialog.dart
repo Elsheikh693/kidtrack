@@ -4,7 +4,7 @@ import '../../../../index/index_main.dart';
 void showTutorialCompleteDialog() {
   Get.dialog(
     Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Dialog(
         backgroundColor: AppColors.white,
         insetPadding: EdgeInsets.symmetric(horizontal: 32.w),

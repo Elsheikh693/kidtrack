@@ -38,7 +38,7 @@ class CourseLessonsController extends GetxController {
     required String? contentUrl,
     required String? textContent,
   }) async {
-    EasyLoading.show(status: 'جاري الحفظ...');
+    EasyLoading.show(status: 'childrenpr12_saving'.tr);
     final ok = await _service.createLesson(
       courseId: course.id,
       title: title,
@@ -51,9 +51,9 @@ class CourseLessonsController extends GetxController {
     );
     EasyLoading.dismiss();
     if (ok) {
-      EasyLoading.showSuccess('تم إضافة الدرس');
+      EasyLoading.showSuccess('childrenpr12_lesson_added'.tr);
     } else {
-      EasyLoading.showError('حدث خطأ');
+      EasyLoading.showError('childrenpr12_error'.tr);
     }
     return ok;
   }
@@ -67,7 +67,7 @@ class CourseLessonsController extends GetxController {
     required String? contentUrl,
     required String? textContent,
   }) async {
-    EasyLoading.show(status: 'جاري الحفظ...');
+    EasyLoading.show(status: 'childrenpr12_saving'.tr);
     final ok = await _service.updateLesson(
       courseId: course.id,
       lesson: lesson,
@@ -80,9 +80,9 @@ class CourseLessonsController extends GetxController {
     );
     EasyLoading.dismiss();
     if (ok) {
-      EasyLoading.showSuccess('تم تحديث الدرس');
+      EasyLoading.showSuccess('childrenpr12_lesson_updated'.tr);
     } else {
-      EasyLoading.showError('حدث خطأ');
+      EasyLoading.showError('childrenpr12_error'.tr);
     }
     return ok;
   }

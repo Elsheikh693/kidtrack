@@ -20,16 +20,8 @@ class TeacherHomeAppBar extends StatelessWidget {
 
   String get _dateLabel {
     final now = DateTime.now();
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    const days = [
-      'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس',
-      'الجمعة', 'السبت', 'الأحد',
-    ];
-    final dayName = days[now.weekday - 1];
-    return '$dayName، ${now.day} ${months[now.month - 1]}';
+    return localizeDigits(
+        '${weekdayName(now.weekday)}${dateSep}${now.day} ${monthName(now.month)}');
   }
 
   @override

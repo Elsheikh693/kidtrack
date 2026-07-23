@@ -60,7 +60,7 @@ class _AddBranchManagerSheetState extends State<AddBranchManagerSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.58,
         child: Column(

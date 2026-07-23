@@ -3,7 +3,8 @@ import 'delete_child_sheet.dart';
 
 /// Danger-zone row on the child profile: permanently delete the child record
 /// (for entries created by mistake). Distinct from withdrawal — it leaves no
-/// departure log. Visible only to enrollment-managing roles.
+/// departure log. Visible only to leadership (manager / owner / super admin);
+/// reception can withdraw but not hard-delete.
 class DeleteChildSection extends StatelessWidget {
   const DeleteChildSection({super.key, required this.controller});
 
@@ -13,7 +14,7 @@ class DeleteChildSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.child.value == null) return const SizedBox.shrink();
-      if (!controller.canManage) return const SizedBox.shrink();
+      if (!controller.canDelete) return const SizedBox.shrink();
 
       return Container(
         margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),

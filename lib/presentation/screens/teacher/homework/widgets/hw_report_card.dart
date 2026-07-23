@@ -39,11 +39,7 @@ class HwReportCard extends StatelessWidget {
   static String _dateLabel(int? ms) {
     if (ms == null) return '';
     final d = DateTime.fromMillisecondsSinceEpoch(ms);
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
+    return localizeDigits('${d.day} ${monthName(d.month)}');
   }
 
   void _openDetail(BuildContext context) {
@@ -251,7 +247,7 @@ class HwReportCard extends StatelessWidget {
                                 ),
                                 SizedBox(height: 4.h),
                                 Text(
-                                  '${(value * 100).round()}% إكمال',
+                                  '${(value * 100).round()}% ${'teacherhom36_completion'.tr}',
                                   style: context.typography.smSemiBold.copyWith(
                                     fontSize: 10,
                                     color: value >= 0.8
@@ -278,16 +274,16 @@ class HwReportCard extends StatelessWidget {
                         padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 12.h),
                         child: Row(
                           children: [
-                            _StatDot(value: completed, label: 'أكمل', color: const Color(0xFF16A34A)),
+                            _StatDot(value: completed, label: 'teacherhom36_status_completed'.tr, color: const Color(0xFF16A34A)),
                             SizedBox(width: 10.w),
-                            _StatDot(value: partial, label: 'جزئي', color: const Color(0xFFD97706)),
+                            _StatDot(value: partial, label: 'teacherhom36_status_partial'.tr, color: const Color(0xFFD97706)),
                             SizedBox(width: 10.w),
-                            _StatDot(value: notCompleted, label: 'لم يكمل', color: const Color(0xFFDC2626)),
+                            _StatDot(value: notCompleted, label: 'teacherhom36_status_not_completed'.tr, color: const Color(0xFFDC2626)),
                             SizedBox(width: 10.w),
-                            _StatDot(value: absent, label: 'غائب', color: const Color(0xFF6B7280)),
+                            _StatDot(value: absent, label: 'teacherhom36_status_absent'.tr, color: const Color(0xFF6B7280)),
                             if (unmarked > 0) ...[
                               SizedBox(width: 10.w),
-                              _StatDot(value: unmarked, label: 'بدون', color: const Color(0xFFCBD5E1)),
+                              _StatDot(value: unmarked, label: 'teacherhom36_status_none'.tr, color: const Color(0xFFCBD5E1)),
                             ],
                             const Spacer(),
                             Container(

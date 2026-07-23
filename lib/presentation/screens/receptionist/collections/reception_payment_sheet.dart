@@ -62,7 +62,7 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -296,7 +296,7 @@ class _ReceptionPaymentSheetState extends State<ReceptionPaymentSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: Padding(
           padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
           child: Column(

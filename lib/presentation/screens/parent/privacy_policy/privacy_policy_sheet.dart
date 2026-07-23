@@ -63,7 +63,7 @@ class _PrivacyPolicySheetState extends State<PrivacyPolicySheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SafeArea(
         top: false,
         child: Column(

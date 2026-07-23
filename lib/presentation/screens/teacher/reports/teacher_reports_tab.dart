@@ -48,8 +48,8 @@ class TeacherReportsTab extends StatelessWidget {
                             _StatsCard(ctrl: ctrl),
                             SizedBox(height: 22.h),
                             _SectionLabel(
-                              label:
-                                  'الأنشطة المكتملة  (${activities.length})',
+                              label: 'teacherrep38_completed_activities'
+                                  .trParams({'count': '${activities.length}'}),
                             ),
                             SizedBox(height: 12.h),
                           ],
@@ -80,9 +80,11 @@ class TeacherReportsTab extends StatelessWidget {
 
 // ── Header ─────────────────────────────────────────────────────────────────────
 
-const _kArMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+const _kMonthKeys = [
+  'teacherrep38_month_1', 'teacherrep38_month_2', 'teacherrep38_month_3',
+  'teacherrep38_month_4', 'teacherrep38_month_5', 'teacherrep38_month_6',
+  'teacherrep38_month_7', 'teacherrep38_month_8', 'teacherrep38_month_9',
+  'teacherrep38_month_10', 'teacherrep38_month_11', 'teacherrep38_month_12',
 ];
 
 /// Human date label: "اليوم" / "أمس" for the two most recent days, otherwise
@@ -94,7 +96,7 @@ String _dateLabel(DateTime d) {
   final diff = today.difference(target).inDays;
   if (diff == 0) return 'teacher_report_today'.tr;
   if (diff == 1) return 'teacher_report_yesterday'.tr;
-  return '${d.day} ${_kArMonths[d.month - 1]}';
+  return '${d.day} ${_kMonthKeys[d.month - 1].tr}';
 }
 
 class _Header extends StatelessWidget {
@@ -421,19 +423,19 @@ class _StatsCard extends StatelessWidget {
                 _StatItem(
                   icon: Icons.play_circle_rounded,
                   value: '${ctrl.totalActivities}',
-                  label: 'نشاط',
+                  label: 'teacherrep38_stat_activity'.tr,
                 ),
                 _VDivider(),
                 _StatItem(
                   icon: Icons.people_rounded,
                   value: '${ctrl.participatingStudents}',
-                  label: 'طالب',
+                  label: 'teacherrep38_stat_student'.tr,
                 ),
                 _VDivider(),
                 _StatItem(
                   icon: Icons.check_circle_rounded,
                   value: '${ctrl.totalEvaluations}',
-                  label: 'تقييم',
+                  label: 'teacherrep38_stat_evaluation'.tr,
                 ),
                 _VDivider(),
                 _StatItem(
@@ -441,7 +443,7 @@ class _StatsCard extends StatelessWidget {
                   value: ctrl.averageRating == 0
                       ? '—'
                       : ctrl.averageRating.toStringAsFixed(1),
-                  label: 'متوسط',
+                  label: 'teacherrep38_stat_average'.tr,
                 ),
               ],
             ),

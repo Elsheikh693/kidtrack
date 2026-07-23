@@ -14,7 +14,7 @@ class CourseEnrollView extends StatelessWidget {
     final accent = course.category.color;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -25,7 +25,7 @@ class CourseEnrollView extends StatelessWidget {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('تسجيل الأطفال',
+              Text('receptioni28_enroll_title'.tr,
                   style: context.typography.mdBold
                       .copyWith(color: AppColors.textDefault)),
               Text(course.title,
@@ -49,7 +49,7 @@ class CourseEnrollView extends StatelessWidget {
                       style: context.typography.smRegular
                           .copyWith(color: AppColors.textDefault),
                       decoration: InputDecoration(
-                        hintText: 'ابحث عن طفل...',
+                        hintText: 'receptioni28_search_child_hint'.tr,
                         hintStyle: context.typography.smRegular
                             .copyWith(color: AppColors.grayMedium),
                         prefixIcon: Icon(Icons.search_rounded,
@@ -103,7 +103,7 @@ class CourseEnrollView extends StatelessWidget {
                 }
                 if (c.children.isEmpty) {
                   return Center(
-                    child: Text('لا يوجد أطفال',
+                    child: Text('receptioni28_no_children'.tr,
                         style: context.typography.smRegular
                             .copyWith(color: AppColors.grayMedium)),
                   );

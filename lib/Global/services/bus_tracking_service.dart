@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import '../../Data/models/bus_tracking/bus_tracking_model.dart';
 import '../../Global/Utils/logger.dart';
 import 'notification_send_service.dart';
@@ -110,14 +111,16 @@ class BusTrackingService {
 
       if (child.parentId != null) {
         final body = direction == BusTripDirection.toHome
-            ? 'انطلق ${child.childName} من الحضانة في طريقه للمنزل'
-            : 'تم استلام ${child.childName} من المنزل في طريقه للحضانة';
+            ? 'globalutil6_bus_departed_to_home'
+                .trParams({'name': child.childName})
+            : 'globalutil6_bus_picked_to_nursery'
+                .trParams({'name': child.childName});
         await _notifService.sendToUser(
           child.parentId!,
           NotificationModel(
             userId: child.parentId!,
             nurseryId: nurseryId,
-            title: 'الطفل في الحافلة',
+            title: 'globalutil6_bus_on_bus_title'.tr,
             body: body,
             type: 'bus_on_bus',
             createdAt: now,
@@ -151,14 +154,16 @@ class BusTrackingService {
 
       if (child.parentId != null) {
         final body = direction == BusTripDirection.toHome
-            ? 'وصل ${child.childName} إلى المنزل بأمان'
-            : 'وصل ${child.childName} إلى الحضانة بأمان';
+            ? 'globalutil6_bus_arrived_home'
+                .trParams({'name': child.childName})
+            : 'globalutil6_bus_arrived_nursery'
+                .trParams({'name': child.childName});
         await _notifService.sendToUser(
           child.parentId!,
           NotificationModel(
             userId: child.parentId!,
             nurseryId: nurseryId,
-            title: 'الطفل وصل بأمان',
+            title: 'globalutil6_bus_delivered_title'.tr,
             body: body,
             type: 'bus_delivered',
             createdAt: now,
@@ -185,8 +190,8 @@ class BusTrackingService {
         NotificationModel(
           userId: parentUserId,
           nurseryId: nurseryId,
-          title: 'الحافلة قريبة',
-          body: 'الحافلة في طريقها لتوصيل ${child.childName}، كن مستعداً',
+          title: 'globalutil6_bus_near_title'.tr,
+          body: 'globalutil6_bus_near_body'.trParams({'name': child.childName}),
           type: 'bus_near',
           createdAt: DateTime.now().millisecondsSinceEpoch,
         ),

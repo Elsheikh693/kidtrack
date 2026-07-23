@@ -57,15 +57,11 @@ class _TeacherWeeklyScheduleViewState
                                   itemCount: controller.currentSlots.length,
                                   itemBuilder: (_, i) {
                                     final slot = controller.currentSlots[i];
+                                    // Read-only for teachers: the manager owns
+                                    // the timetable, so no edit/delete callbacks.
                                     return ScheduleSlotCard(
                                       slot: slot,
                                       controller: controller,
-                                      onEdit: () => _showSheet(
-                                        context,
-                                        existing: slot,
-                                      ),
-                                      onDelete: () =>
-                                          _confirmDelete(context, slot),
                                     );
                                   },
                                 ),
@@ -73,57 +69,6 @@ class _TeacherWeeklyScheduleViewState
                       ),
                     ],
                   ),
-      ),
-      floatingActionButton: Obx(
-        () => controller.myClassrooms.isEmpty
-            ? const SizedBox.shrink()
-            : FloatingActionButton.extended(
-                onPressed: () => _showSheet(context),
-                backgroundColor: AppColors.activityGreen,
-                elevation: 2,
-                icon: const Icon(Icons.add_rounded, color: AppColors.white),
-                label: Text(
-                  'schedule_add_fab'.tr,
-                  style: context.typography.smSemiBold
-                      .copyWith(color: AppColors.white),
-                ),
-              ),
-      ),
-    );
-  }
-
-  void _showSheet(BuildContext context, {ScheduleModel? existing}) {
-    Get.bottomSheet(
-      ScheduleEntrySheet(controller: controller, existing: existing),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
-
-  void _confirmDelete(BuildContext context, ScheduleModel slot) {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text('schedule_delete'.tr),
-        content: Text('teacher_schedule_delete_confirm'.tr),
-        actions: [
-          TextButton(
-            onPressed: Get.back,
-            child: Text('teacher_schedule_cancel'.tr),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              controller.deleteSlot(slot);
-            },
-            child: Text(
-              'schedule_delete'.tr,
-              style: const TextStyle(color: AppColors.activityRed),
-            ),
-          ),
-        ],
       ),
     );
   }

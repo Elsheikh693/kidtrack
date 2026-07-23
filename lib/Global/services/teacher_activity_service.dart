@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:get/get.dart';
 import '../../Data/models/classroom_activity/classroom_activity_model.dart';
 import '../../Data/models/assessment/assessment_model.dart';
 import '../../Data/models/child/child_model.dart';
@@ -337,6 +338,7 @@ class TeacherActivityService {
     required List<String> childIds,
     String? subjectId,
     String? subjectName,
+    String? scheduleSlotId,
     String mode = 'class',
   }) async {
     try {
@@ -352,6 +354,7 @@ class TeacherActivityService {
         branchId: branchId,
         subjectId: subjectId,
         subjectName: subjectName,
+        scheduleSlotId: scheduleSlotId,
         title: title,
         teacherId: teacherId,
         status: 'active',
@@ -594,7 +597,7 @@ class TeacherActivityService {
               branchId: branchId,
               eventType: ChildEventType.homeworkAssigned,
               source: ChildEventSource.teacher,
-              title: 'واجب جديد: ${hw.title}',
+              title: '${'globalserv8_new_homework'.tr}: ${hw.title}',
               activityId: activityId,
               classroomId: classroomId,
               subjectName: hw.subjectName,
@@ -1239,8 +1242,8 @@ class TeacherActivityService {
     final eventsRoot = _db.ref('platform/$nurseryId/childDailyEvents/$dateKey');
 
     final label = eventType == ChildEventType.activityStarted
-        ? 'بدأ نشاط: $title'
-        : 'انتهى نشاط: $title';
+        ? '${'globalserv8_activity_started'.tr}: $title'
+        : '${'globalserv8_activity_ended'.tr}: $title';
 
     final batch = <Future>[];
     for (final childId in childIds) {
@@ -1434,6 +1437,37 @@ class TeacherActivityService {
     } catch (e) {
       AppLogger.error(_tag, 'getHomeworkSubmissions: $e');
       return {};
+    }
+  }
+
+  /// Every parent homework submission across the nursery, flattened — for owner
+  /// analytics. One read of the whole `homeworkSubmissions/{homeworkId}/{childId}`
+  /// tree (no per-homework fan-out).
+  Future<List<HomeworkSubmissionModel>> getAllHomeworkSubmissions(
+    String nurseryId,
+  ) async {
+    try {
+      final snap =
+          await _db.ref('platform/$nurseryId/homeworkSubmissions').get();
+      if (!snap.exists || snap.value == null) return const [];
+      final root = Map<dynamic, dynamic>.from(snap.value as Map);
+      final out = <HomeworkSubmissionModel>[];
+      for (final hw in root.entries) {
+        if (hw.value is! Map) continue;
+        final byChild = Map<dynamic, dynamic>.from(hw.value as Map);
+        for (final ch in byChild.entries) {
+          if (ch.value is! Map) continue;
+          out.add(HomeworkSubmissionModel.fromJson(
+            Map<dynamic, dynamic>.from(ch.value as Map),
+            homeworkId: hw.key.toString(),
+            childId: ch.key.toString(),
+          ));
+        }
+      }
+      return out;
+    } catch (e) {
+      AppLogger.error(_tag, 'getAllHomeworkSubmissions: $e');
+      return const [];
     }
   }
 

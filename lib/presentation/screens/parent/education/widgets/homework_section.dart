@@ -94,10 +94,10 @@ class HomeworkSection extends StatelessWidget {
     final undo = await showDialog<bool>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           title: Text(
-            'إلغاء تأكيد الحل؟',
+            'parenteduc24_hw_undo_title'.tr,
             style: context.typography.mdBold
                 .copyWith(color: AppColors.textDefault),
           ),
@@ -110,7 +110,7 @@ class HomeworkSection extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
               child: Text(
-                'تراجع',
+                'parenteduc24_cancel_back'.tr,
                 style: context.typography.smSemiBold
                     .copyWith(color: AppColors.textSecondaryParagraph),
               ),
@@ -118,7 +118,7 @@ class HomeworkSection extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               child: Text(
-                'إلغاء التأكيد',
+                'parenteduc24_hw_unconfirm'.tr,
                 style: context.typography.smSemiBold
                     .copyWith(color: AppColors.errorForeground),
               ),

@@ -30,7 +30,7 @@ Future<void> captureAndShareFeedback({
         child: Material(
           type: MaterialType.transparency,
           child: Directionality(
-            textDirection: TextDirection.rtl,
+            textDirection: appTextDirection,
             child: RepaintBoundary(
               key: boundaryKey,
               child: SizedBox(width: width, child: card),

@@ -79,7 +79,7 @@ class _EvalLevelEditViewState extends State<EvalLevelEditView> {
   Widget build(BuildContext context) {
     final accent = Color(_color);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: HomeAppBar(

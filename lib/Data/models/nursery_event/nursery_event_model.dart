@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../classroom_activity/activity_photo_model.dart';
 
 enum EventCategory {
@@ -132,9 +133,13 @@ class NurseryEventModel {
 
   String get formattedDate {
     final d = dateTime;
-    const months = [
-      'يناير','فبراير','مارس','أبريل','مايو','يونيو',
-      'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر',
+    final months = [
+      'datamodels4_month_1'.tr, 'datamodels4_month_2'.tr,
+      'datamodels4_month_3'.tr, 'datamodels4_month_4'.tr,
+      'datamodels4_month_5'.tr, 'datamodels4_month_6'.tr,
+      'datamodels4_month_7'.tr, 'datamodels4_month_8'.tr,
+      'datamodels4_month_9'.tr, 'datamodels4_month_10'.tr,
+      'datamodels4_month_11'.tr, 'datamodels4_month_12'.tr,
     ];
     return '${d.day} ${months[d.month - 1]}';
   }

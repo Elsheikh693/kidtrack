@@ -171,12 +171,20 @@ class ParentFeedController extends GetxController {
 
   static String timeAgo(int ms) {
     final d = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ms));
-    if (d.inSeconds < 60) return 'الآن';
-    if (d.inMinutes < 60) return 'منذ ${d.inMinutes} دقيقة';
-    if (d.inHours < 24) return 'منذ ${d.inHours} ساعة';
-    if (d.inDays == 1) return 'أمس';
-    if (d.inDays < 7) return 'منذ ${d.inDays} أيام';
-    if (d.inDays < 30) return 'منذ ${d.inDays ~/ 7} أسابيع';
-    return 'منذ ${d.inDays ~/ 30} شهر';
+    if (d.inSeconds < 60) return 'parentpick26_time_now'.tr;
+    if (d.inMinutes < 60) {
+      return 'parentpick26_time_minutes'.trParams({'count': '${d.inMinutes}'});
+    }
+    if (d.inHours < 24) {
+      return 'parentpick26_time_hours'.trParams({'count': '${d.inHours}'});
+    }
+    if (d.inDays == 1) return 'parentpick26_time_yesterday'.tr;
+    if (d.inDays < 7) {
+      return 'parentpick26_time_days'.trParams({'count': '${d.inDays}'});
+    }
+    if (d.inDays < 30) {
+      return 'parentpick26_time_weeks'.trParams({'count': '${d.inDays ~/ 7}'});
+    }
+    return 'parentpick26_time_months'.trParams({'count': '${d.inDays ~/ 30}'});
   }
 }

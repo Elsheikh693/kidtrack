@@ -3,6 +3,7 @@ import '../../../../../Global/widgets/app_network_image.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../link_book_controller.dart';
 import 'photo_gallery_viewer.dart';
+import 'package:get/get.dart';
 
 /// "ألبوم اليوم" — a polished mosaic of the day's photos that opens the
 /// immersive full-screen viewer with a Hero transition.
@@ -52,9 +53,9 @@ class LinkBookGallerySection extends StatelessWidget {
                     size: 17, color: _accent),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'ألبوم اليوم',
-                style: TextStyle(
+              Text(
+                'parentlink25_day_album'.tr,
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                   color: kJInk,

@@ -64,7 +64,7 @@ class _CollectPaymentSheetState extends State<CollectPaymentSheet> {
   Widget build(BuildContext context) {
     final remainingAfter = (_outstanding - _enteredAmount).clamp(0, _outstanding);
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: SingleChildScrollView(

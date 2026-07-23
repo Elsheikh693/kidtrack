@@ -60,7 +60,7 @@ class _SupportTicketSheetState extends State<SupportTicketSheet> with KeyboardSh
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: wrapWithKeyboard(
         context: context,
         child: SingleChildScrollView(

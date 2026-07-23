@@ -44,7 +44,7 @@ class PickupSection extends StatelessWidget {
                       size: 18.sp)),
                   SizedBox(width: 10.w),
                   Text(
-                    'الاستلام',
+                    'parentdash22_pickup'.tr,
                     style: context.typography.smSemiBold
                         .copyWith(color: AppColors.textDefault),
                   ),
@@ -54,7 +54,7 @@ class PickupSection extends StatelessWidget {
                     child: Row(
                       children: [
                         Text(
-                          'عرض الكل',
+                          'parentdash22_view_all'.tr,
                           style: context.typography.xsMedium
                               .copyWith(color: AppColors.primary),
                         ),
@@ -145,7 +145,7 @@ class _IdlePickupBody extends StatelessWidget {
               children: [
                 _InfoChip(
                   icon: Icons.login_rounded,
-                  label: 'دخل',
+                  label: 'parentdash22_checked_in'.tr,
                   value: checkInTime,
                   color: const Color(0xFF059669),
                 ),
@@ -157,7 +157,7 @@ class _IdlePickupBody extends StatelessWidget {
                 SizedBox(width: 12.w),
                 _InfoChip(
                   icon: statusIcon,
-                  label: 'الحالة',
+                  label: 'parentdash22_status'.tr,
                   value: statusLabel,
                   color: statusColor,
                 ),
@@ -181,7 +181,7 @@ class _IdlePickupBody extends StatelessWidget {
                         )),
                       SizedBox(width: 5.w),
                       Text(
-                        'مباشر',
+                        'parentdash22_live'.tr,
                         style: context.typography.smSemiBold.copyWith(color: statusColor, fontSize: 11),
                       ),
                     ],
@@ -199,7 +199,7 @@ class _IdlePickupBody extends StatelessWidget {
               onPressed: () => showPickupRequestSheet(context, controller),
               icon: Icon(Icons.directions_car_rounded, size: 18.sp),
               label: Text(
-                'طلب استلام $childName',
+                'parentdash22_request_pickup_name'.trParams({'name': childName}),
                 style: context.typography.displaySmBold.copyWith(fontSize: 14),
               ),
               style: ElevatedButton.styleFrom(
@@ -262,8 +262,8 @@ class _ChildUnavailableBody extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     isCheckedOut
-                        ? 'غادر الطفل الحضانة، لا يمكن طلب الاستلام'
-                        : 'لم يصل الطفل بعد، لا يمكن طلب الاستلام الآن',
+                        ? 'parentdash22_child_left_no_pickup'.tr
+                        : 'parentdash22_child_not_arrived_no_pickup'.tr,
                     style: context.typography.xsRegular.copyWith(color: Color(0xFF94A3B8), fontSize: 11),
                   ),
                 ],
@@ -302,7 +302,7 @@ class _ActivePickupBody extends StatelessWidget {
           GestureDetector(
             onTap: onCancel,
             child: Text(
-              'إلغاء طلب الاستلام',
+              'parentdash22_cancel_pickup_request'.tr,
               style: context.typography.smSemiBold.copyWith(color: Color(0xFFDC2626), fontSize: 13),
             ),
           ),
@@ -332,15 +332,16 @@ class _StatusBanner extends StatelessWidget {
           gradient: const [Color(0xFFF97316), Color(0xFFFB923C)],
           shadowColor: const Color(0xFFF97316),
           icon: Icons.backpack_rounded,
-          title: 'جاري تحضير $childName',
-          subtitle: 'سيكون جاهزاً في أقرب وقت',
+          title: 'parentdash22_preparing_child'.trParams({'name': childName}),
+          subtitle: 'parentdash22_ready_soon'.tr,
         ),
       _ => _buildBanner(
           gradient: const [Color(0xFF059669), Color(0xFF10B981)],
           shadowColor: const Color(0xFF059669),
           icon: Icons.directions_car_rounded,
-          title: 'في الطريق',
-          subtitle: 'سأصل لاستلام $childName خلال $eta',
+          title: 'parentdash22_on_the_way'.tr,
+          subtitle: 'parentdash22_arriving_for_child'
+              .trParams({'name': childName, 'eta': eta}),
           trailing: _etaBadge(eta),
         ),
     };
@@ -485,8 +486,14 @@ class PickupFab extends StatelessWidget {
 
       if (requested) {
         final (label, color) = switch (status) {
-          'preparing' => ('جاري التحضير...', const Color(0xFFF97316)),
-          _ => ('في الطريق • $eta', const Color(0xFF059669)),
+          'preparing' => (
+              'parentdash22_preparing'.tr,
+              const Color(0xFFF97316)
+            ),
+          _ => (
+              'parentdash22_on_way_eta'.trParams({'eta': eta}),
+              const Color(0xFF059669)
+            ),
         };
 
         return FloatingActionButton.extended(
@@ -509,7 +516,7 @@ class PickupFab extends StatelessWidget {
         icon: Icon(Icons.directions_car_rounded,
             color: Colors.white, size: 20.sp),
         label: Text(
-          'طلب استلام',
+          'parentdash22_request_pickup'.tr,
           style: context.typography.displaySmBold.copyWith(color: Colors.white, fontSize: 13),
         ),
       );
@@ -520,18 +527,18 @@ class PickupFab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: appTextDirection,
         child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-          title: Text('إلغاء طلب الاستلام؟',
+          title: Text('parentdash22_cancel_pickup_title'.tr,
               style: context.typography.mdBold.copyWith(fontSize: 16)),
-          content: Text('هل تريد إلغاء طلب الاستلام الحالي؟',
+          content: Text('parentdash22_cancel_pickup_confirm'.tr,
               style: context.typography.xsRegular.copyWith(fontSize: 13)),
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: Text('لا',
+              child: Text('parentdash22_no'.tr,
                   style: context.typography.smRegular.copyWith(color: AppColors.textSecondaryParagraph)),
             ),
             TextButton(
@@ -539,7 +546,7 @@ class PickupFab extends StatelessWidget {
                 controller.cancelPickup();
                 Get.back();
               },
-              child: Text('نعم، إلغاء',
+              child: Text('parentdash22_yes_cancel'.tr,
                   style: context.typography.displaySmBold.copyWith(color: Color(0xFFDC2626))),
             ),
           ],

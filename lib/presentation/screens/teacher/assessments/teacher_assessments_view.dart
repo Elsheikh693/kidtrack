@@ -1,4 +1,5 @@
 import '../../../../index/index_main.dart';
+import '../../shared/assessment/assessment_list_shimmer.dart';
 import 'widgets/teacher_assessment_run_card.dart';
 
 class TeacherAssessmentsView extends StatefulWidget {
@@ -20,7 +21,7 @@ class _TeacherAssessmentsViewState extends State<TeacherAssessmentsView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: HomeAppBar(
@@ -30,7 +31,7 @@ class _TeacherAssessmentsViewState extends State<TeacherAssessmentsView> {
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const AssessmentListShimmer();
           }
           if (controller.runs.isEmpty) {
             return _empty(context);

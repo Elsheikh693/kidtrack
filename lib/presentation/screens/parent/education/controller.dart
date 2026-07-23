@@ -323,7 +323,7 @@ class ParentEducationController extends GetxController {
   final List<EduSkill> skills = const [];
   final RxInt selectedDayIndex = 0.obs;
   HomeworkDay get selectedDay => HomeworkDay(
-        label: 'اليوم',
+        label: 'parentdash22_today'.tr,
         dateStr: '',
         homeworkList: homework.toList(),
         notes: teacherNotes.toList(),
@@ -832,11 +832,15 @@ class ParentEducationController extends GetxController {
   }
 
   static String _formatDueDate(int? ms) {
-    if (ms == null) return 'اليوم';
+    if (ms == null) return 'parentdash22_today'.tr;
     final dt = DateTime.fromMillisecondsSinceEpoch(ms);
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    final months = [
+      'parentdash22_month_1'.tr, 'parentdash22_month_2'.tr,
+      'parentdash22_month_3'.tr, 'parentdash22_month_4'.tr,
+      'parentdash22_month_5'.tr, 'parentdash22_month_6'.tr,
+      'parentdash22_month_7'.tr, 'parentdash22_month_8'.tr,
+      'parentdash22_month_9'.tr, 'parentdash22_month_10'.tr,
+      'parentdash22_month_11'.tr, 'parentdash22_month_12'.tr,
     ];
     return '${dt.day} ${months[dt.month - 1]}';
   }
@@ -930,10 +934,11 @@ class ParentEducationController extends GetxController {
   CurrentActivity _mapActivity(ClassroomActivityModel act) {
     final mins = act.elapsed.inMinutes;
     final ago = mins < 1
-        ? 'الآن'
+        ? 'parentdash22_now'.tr
         : mins < 60
-            ? 'منذ $mins دقيقة'
-            : 'منذ ${act.elapsed.inHours} ساعة';
+            ? 'parentdash22_minutes_ago'.trParams({'n': '$mins'})
+            : 'parentdash22_hours_ago'
+                .trParams({'n': '${act.elapsed.inHours}'});
     return CurrentActivity(
       subjectKey: act.subjectName ?? act.subjectId ?? act.title,
       lessonTitle: act.title,
@@ -973,9 +978,13 @@ class ParentEducationController extends GetxController {
   }
 
   String _monthName(int m) {
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    final months = [
+      'parentdash22_month_1'.tr, 'parentdash22_month_2'.tr,
+      'parentdash22_month_3'.tr, 'parentdash22_month_4'.tr,
+      'parentdash22_month_5'.tr, 'parentdash22_month_6'.tr,
+      'parentdash22_month_7'.tr, 'parentdash22_month_8'.tr,
+      'parentdash22_month_9'.tr, 'parentdash22_month_10'.tr,
+      'parentdash22_month_11'.tr, 'parentdash22_month_12'.tr,
     ];
     return months[m - 1];
   }

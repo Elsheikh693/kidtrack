@@ -12,10 +12,20 @@ class ParentNotesDayHeader extends StatelessWidget {
   final int count;
 
   static const _accent = Color(0xFF6C4DDB);
-  static const _months = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-  ];
+  List<String> get _months => [
+        'staffparen31_month_jan'.tr,
+        'staffparen31_month_feb'.tr,
+        'staffparen31_month_mar'.tr,
+        'staffparen31_month_apr'.tr,
+        'staffparen31_month_may'.tr,
+        'staffparen31_month_jun'.tr,
+        'staffparen31_month_jul'.tr,
+        'staffparen31_month_aug'.tr,
+        'staffparen31_month_sep'.tr,
+        'staffparen31_month_oct'.tr,
+        'staffparen31_month_nov'.tr,
+        'staffparen31_month_dec'.tr,
+      ];
 
   String get _label {
     final now = DateTime.now();

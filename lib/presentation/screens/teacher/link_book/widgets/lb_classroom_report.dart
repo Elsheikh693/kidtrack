@@ -38,14 +38,14 @@ class LbClassroomReport extends GetView<LinkBookController> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'لا توجد أنشطة مكتملة',
+                  'teacherlin37_no_completed_activities'.tr,
                   style: context.typography.smSemiBold.copyWith(
                     color: const Color(0xFF374151),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'لم يتم إنهاء أي نشاط في هذا اليوم',
+                  'teacherlin37_no_activity_ended'.tr,
                   style: context.typography.xsRegular.copyWith(
                     color: Colors.grey.shade400,
                   ),
@@ -159,7 +159,7 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            'أنشطة اليوم',
+            'teacherlin37_today_activities'.tr,
             style: context.typography.mdBold.copyWith(
               color: const Color(0xFF111827),
             ),
@@ -426,7 +426,7 @@ class _LbActivityCard extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
-                                        '$timeLabel · $durationMin د',
+                                        '$timeLabel · $durationMin ${'teacherlin37_min_unit'.tr}',
                                         style: context.typography.xsRegular.copyWith(
                                           color: Colors.grey.shade400,
                                         ),
@@ -460,7 +460,7 @@ class _LbActivityCard extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
-                                        'مكتمل',
+                                        'teacherlin37_completed'.tr,
                                         style: context.typography.xsRegular.copyWith(
                                           color: _kGreen,
                                           fontWeight: FontWeight.w600,
@@ -519,7 +519,7 @@ class _LbActivityCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '$_total طالب',
+                              '$_total ${'teacherlin37_students_unit'.tr}',
                               style: context.typography.xsRegular.copyWith(
                                 color: const Color(0xFF9CA3AF),
                               ),

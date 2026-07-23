@@ -89,7 +89,7 @@ class _TutorialVideoSheetState extends State<TutorialVideoSheet> {
   Widget build(BuildContext context) {
     final isNew = widget.existing == null;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding:
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),

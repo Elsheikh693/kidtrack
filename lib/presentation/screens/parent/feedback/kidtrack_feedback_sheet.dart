@@ -332,7 +332,7 @@ class _KidtrackFeedbackWidgetState extends State<_KidtrackFeedbackWidget> {
           controller: _commentCtrl,
           maxLines: 4,
           maxLength: 500,
-          textDirection: TextDirection.rtl,
+          textDirection: appTextDirection,
           textAlign: TextAlign.right,
           style: context.typography.smRegular.copyWith(
             color: AppColors.textDefault,

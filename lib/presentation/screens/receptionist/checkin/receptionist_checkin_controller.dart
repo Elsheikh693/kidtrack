@@ -36,12 +36,12 @@ class CheckInChildEntry {
 
   String get statusLabel {
     switch (_effectiveStatus) {
-      case ChildStatus.checkedIn:    return 'داخل الحضانة';
-      case ChildStatus.havingMeal:   return 'يتناول الوجبة';
-      case ChildStatus.sleeping:     return 'قيلولة';
-      case ChildStatus.onBus:        return 'في الباص';
-      case ChildStatus.checkedOut:   return 'انصرف اليوم';
-      default:                       return 'لم يصل';
+      case ChildStatus.checkedIn:    return 'programssu27_status_checked_in'.tr;
+      case ChildStatus.havingMeal:   return 'programssu27_status_having_meal'.tr;
+      case ChildStatus.sleeping:     return 'programssu27_status_sleeping'.tr;
+      case ChildStatus.onBus:        return 'programssu27_status_on_bus'.tr;
+      case ChildStatus.checkedOut:   return 'programssu27_status_checked_out'.tr;
+      default:                       return 'programssu27_status_not_arrived'.tr;
     }
   }
 

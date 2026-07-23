@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../Domain/UseCases/use_case.dart';
 import '../education/widgets/journal_meta.dart';
+import '../exams/parent_exams_view.dart';
 import 'link_book_controller.dart';
 import 'link_book_day_view.dart';
 import 'subject_history_view.dart';
 import 'widgets/link_book_day_card.dart';
 import 'widgets/subject_history_card.dart';
+import '../../../../Global/Localization/app_direction.dart';
+import '../../../../Global/Utils/date_helpers.dart';
 
 /// The full Link Book: every day of the child as a browsable grid of pages.
 class LinkBookView extends StatefulWidget {
@@ -28,7 +31,7 @@ class _LinkBookViewState extends State<LinkBookView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: kJBg,
         appBar: AppBar(
@@ -42,9 +45,9 @@ class _LinkBookViewState extends State<LinkBookView> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'دفتر التواصل',
-                  style: TextStyle(
+                Text(
+                  'parentlink25_link_book_title'.tr,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: kJInk,
@@ -53,7 +56,7 @@ class _LinkBookViewState extends State<LinkBookView> {
                 if (showSub) ...[
                   const SizedBox(height: 2),
                   Text(
-                    '${controller.childName} · $count يوم',
+                    '${controller.childName} · $count ${'parentlink25_day_unit'.tr}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -67,6 +70,13 @@ class _LinkBookViewState extends State<LinkBookView> {
             );
           }),
           iconTheme: const IconThemeData(color: kJInk),
+          actions: [
+            IconButton(
+              tooltip: 'exams_title'.tr,
+              onPressed: () => Get.to(() => const ParentExamsView()),
+              icon: const Icon(Icons.assignment_rounded, color: Color(0xFF6C4DDB)),
+            ),
+          ],
         ),
         body: Obx(() {
           if (controller.isLoading.value) {
@@ -196,7 +206,7 @@ class _ModeToggle extends StatelessWidget {
           Expanded(
             child: _ModeTab(
               icon: Icons.calendar_today_rounded,
-              label: 'الأيام',
+              label: 'parentlink25_tab_days'.tr,
               selected: mode == LbViewMode.days,
               onTap: () => onSelect(LbViewMode.days),
             ),
@@ -204,7 +214,7 @@ class _ModeToggle extends StatelessWidget {
           Expanded(
             child: _ModeTab(
               icon: Icons.category_rounded,
-              label: 'المواد',
+              label: 'parentlink25_tab_subjects'.tr,
               selected: mode == LbViewMode.subjects,
               onTap: () => onSelect(LbViewMode.subjects),
             ),
@@ -288,19 +298,19 @@ class _SubjectsEmpty extends StatelessWidget {
                   size: 36, color: Color(0xFF6C4DDB)),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'لا توجد مواد بعد',
-              style: TextStyle(
+            Text(
+              'parentlink25_no_subjects_title'.tr,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 color: kJInk,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'هتظهر المواد هنا أول ما تبدأ أنشطة طفلك.',
+            Text(
+              'parentlink25_no_subjects_desc'.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w500,
                 color: kJMuted,
@@ -313,14 +323,9 @@ class _SubjectsEmpty extends StatelessWidget {
   }
 }
 
-const _kArMonths = [
-  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-];
-
 String _monthLabel(DateTime m) {
   final now = DateTime.now();
-  final base = _kArMonths[m.month - 1];
+  final base = monthName(m.month);
   return m.year == now.year ? base : '$base ${m.year}';
 }
 
@@ -396,19 +401,19 @@ class _MonthEmpty extends StatelessWidget {
                 size: 32, color: Color(0xFF6C4DDB)),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'لا توجد أيام في هذا الشهر',
-            style: TextStyle(
+          Text(
+            'parentlink25_no_days_month_title'.tr,
+            style: const TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w800,
               color: kJInk,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'اختر شهرًا آخر من الأعلى.',
+          Text(
+            'parentlink25_no_days_month_desc'.tr,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
               color: kJMuted,
@@ -483,19 +488,19 @@ class _Empty extends StatelessWidget {
                   size: 44, color: Color(0xFF6C4DDB)),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'الدفتر فاضي حاليًا',
-              style: TextStyle(
+            Text(
+              'parentlink25_empty_title'.tr,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: kJInk,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'لسه مفيش أيام مسجلة لطفلك.\nهتظهر هنا أول ما تبدأ الأنشطة.',
+            Text(
+              'parentlink25_empty_desc'.tr,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 height: 1.6,
                 fontWeight: FontWeight.w500,

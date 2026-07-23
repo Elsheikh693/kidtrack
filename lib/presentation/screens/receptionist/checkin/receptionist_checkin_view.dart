@@ -28,14 +28,14 @@ class _ReceptionistCheckInViewState extends State<ReceptionistCheckInView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
           backgroundColor: const Color(0xFF0891B2),
           foregroundColor: Colors.white,
           title: Text(
-            'تسجيل الحضور',
+            'programssu27_checkin_title'.tr,
             style: context.typography.mdBold,
           ),
           centerTitle: true,
@@ -106,21 +106,21 @@ class _SummaryBar extends StatelessWidget {
         child: Row(
           children: [
             _StatChip(
-              label: 'الكل',
+              label: 'programssu27_filter_all'.tr,
               count: controller.totalCount,
               color: Colors.white,
               bg: Colors.white.withValues(alpha: 0.2),
             ),
             SizedBox(width: 10.w),
             _StatChip(
-              label: 'حاضر',
+              label: 'programssu27_filter_present'.tr,
               count: controller.presentCount,
               color: const Color(0xFF34D399),
               bg: const Color(0xFF34D399).withValues(alpha: 0.15),
             ),
             SizedBox(width: 10.w),
             _StatChip(
-              label: 'غائب',
+              label: 'programssu27_filter_absent'.tr,
               count: controller.absentCount,
               color: const Color(0xFFFCA5A5),
               bg: const Color(0xFFFCA5A5).withValues(alpha: 0.15),
@@ -190,7 +190,7 @@ class _SearchAndFilter extends StatelessWidget {
             controller: search,
             onChanged: controller.setSearch,
             decoration: InputDecoration(
-              hintText: 'بحث عن طفل...',
+              hintText: 'programssu27_search_hint'.tr,
               hintStyle: context.typography.smRegular
                   .copyWith(fontSize: 14, color: const Color(0xFF94A3B8)),
               prefixIcon: Icon(Icons.search_rounded,
@@ -212,20 +212,20 @@ class _SearchAndFilter extends StatelessWidget {
             return Row(
               children: [
                 _FilterChip(
-                  label: 'الكل',
+                  label: 'programssu27_filter_all'.tr,
                   selected: f == 'all',
                   onTap: () => controller.setFilter('all'),
                 ),
                 SizedBox(width: 8.w),
                 _FilterChip(
-                  label: 'حاضر',
+                  label: 'programssu27_filter_present'.tr,
                   selected: f == 'present',
                   onTap: () => controller.setFilter('present'),
                   color: const Color(0xFF059669),
                 ),
                 SizedBox(width: 8.w),
                 _FilterChip(
-                  label: 'غائب',
+                  label: 'programssu27_filter_absent'.tr,
                   selected: f == 'absent',
                   onTap: () => controller.setFilter('absent'),
                   color: const Color(0xFFDC2626),
@@ -292,7 +292,7 @@ class _EmptyList extends StatelessWidget {
               size: 64.sp, color: Colors.grey.shade300),
           SizedBox(height: 12.h),
           Text(
-            'لا يوجد أطفال',
+            'programssu27_empty_no_children'.tr,
             style: context.typography.displaySmBold
                 .copyWith(color: const Color(0xFF94A3B8)),
           ),
@@ -457,7 +457,7 @@ class _InBtn extends StatelessWidget {
             Icon(Icons.login_rounded, size: 15.sp, color: Colors.white),
             SizedBox(width: 5.w),
             Text(
-              'حضر',
+              'programssu27_action_check_in'.tr,
               style: context.typography.xsMedium.copyWith(color: Colors.white),
             ),
           ],
@@ -489,7 +489,7 @@ class _OutBtn extends StatelessWidget {
             Icon(Icons.logout_rounded, size: 15.sp, color: const Color(0xFFDC2626)),
             SizedBox(width: 5.w),
             Text(
-              'خروج',
+              'programssu27_action_check_out'.tr,
               style: context.typography.xsMedium.copyWith(color: Color(0xFFDC2626)),
             ),
           ],

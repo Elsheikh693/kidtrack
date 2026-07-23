@@ -226,7 +226,7 @@ class _EndCommentSheetState extends State<EndCommentSheet> {
                           Expanded(
                             child: TextField(
                               controller: _customCtrl,
-                              textDirection: TextDirection.rtl,
+                              textDirection: appTextDirection,
                               autofocus: true,
                               maxLength: 60,
                               decoration: InputDecoration(

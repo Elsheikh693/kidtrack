@@ -230,7 +230,7 @@ pw.Widget _cardWidget(
                   pw.Divider(color: primaryLight, thickness: 1, height: 1),
                   pw.SizedBox(height: 8),
                   pw.Text(
-                    'امسح الرمز · حمّل تطبيق KidTrack · ادخل بالكود بدون كلمة سر',
+                    'shared30_activation_card_instructions'.tr,
                     textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(
                         font: regular, fontSize: 8, color: PdfColors.grey700),

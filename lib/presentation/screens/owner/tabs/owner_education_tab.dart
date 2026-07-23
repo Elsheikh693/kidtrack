@@ -44,10 +44,10 @@ class OwnerEducationTab extends StatelessWidget {
     return CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            const KidTrackCollapsingHeader(
-              title: 'التعليم',
+            KidTrackCollapsingHeader(
+              title: 'ownertabs20_education'.tr,
               icon: Icons.school_rounded,
-              accentColor: Color(0xFFD97706),
+              accentColor: const Color(0xFFD97706),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),

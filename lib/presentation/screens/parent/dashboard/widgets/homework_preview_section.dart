@@ -176,7 +176,7 @@ class _AllDoneMiniState extends State<_AllDoneMini>
             Text('🎉', style: context.typography.mdRegular.copyWith(fontSize: 20)),
             SizedBox(width: 10.w),
             Text(
-              'ممتاز! أنجزنا كل الواجبات اليوم',
+              'parentcour21_all_homework_done'.tr,
               style: context.typography.smSemiBold
                   .copyWith(color: const Color(0xFF059669)),
             ),

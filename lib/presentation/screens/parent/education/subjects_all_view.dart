@@ -21,7 +21,7 @@ class SubjectsAllView extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = Get.find<ParentEducationController>();
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundNeutral100,
         appBar: AppBar(
@@ -34,7 +34,7 @@ class SubjectsAllView extends StatelessWidget {
                 size: 18, color: AppColors.textDefault),
           ),
           title: Text(
-            'المواد الدراسية',
+            'parenteduc23_subjects_title'.tr,
             style: context.typography.smSemiBold
                 .copyWith(color: AppColors.textDefault),
           ),
@@ -52,7 +52,7 @@ class SubjectsAllView extends StatelessWidget {
           if (subjects.isEmpty) {
             return Center(
               child: Text(
-                'لا توجد مواد دراسية',
+                'parenteduc23_no_subjects'.tr,
                 style: context.typography.smMedium
                     .copyWith(color: AppColors.textSecondaryParagraph),
               ),

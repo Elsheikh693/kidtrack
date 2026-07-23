@@ -1,43 +1,18 @@
 import '../../../../../index/index_main.dart';
-import 'idle_classroom_section.dart';
-import 'idle_progress_card.dart';
-import 'idle_quick_actions_row.dart';
-import 'idle_today_timeline.dart';
-import 'start_activity_cta.dart';
-import 'quick_homework_sheet.dart';
+import 'activity_empty_day.dart';
+import 'classroom_tabs.dart';
+import 'session_card.dart';
 
+/// Idle state of the Activities tab: pick a classroom (pills) and start today's
+/// scheduled sessions straight from their cards. Starting is schedule-driven.
 class IdleActivityView extends StatelessWidget {
-  const IdleActivityView({
-    super.key,
-    required this.ctrl,
-    required this.onStart,
-  });
+  const IdleActivityView({super.key, required this.ctrl});
 
   final TeacherActivityController ctrl;
 
-  /// Opens the start sheet in the given mode ('class' | 'activity').
-  final void Function(String mode) onStart;
-
-  void _showQuickHomework(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => QuickHomeworkSheet(
-        onSave: (title, desc) => ctrl.postQuickHomework(
-          title: title,
-          description: desc,
-        ),
-      ),
-    );
-  }
-
-  void _goToReports() {
-    Get.find<MainPageViewModel>().changePage(3);
-  }
-
-  void _goToLinkBook() {
-    Get.find<MainPageViewModel>().changePage(2);
+  static String _hm(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -45,70 +20,104 @@ class IdleActivityView extends StatelessWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // ── AppBar ──────────────────────────────────────────────────────────
         TeacherClassicAppBar(title: 'teacher_tab_activities'.tr),
-
-        // ── Classroom selector ───────────────────────────────────────────────
-        SliverToBoxAdapter(child: IdleClassroomSection(ctrl: ctrl)),
-
-        // ── Today progress + timeline + quick actions ────────────────────────
+        SliverToBoxAdapter(child: ClassroomTabs(ctrl: ctrl)),
         Obx(() {
-          final completed = ctrl.todayCompleted;
-          final upcoming = ctrl.todayScheduleSlots;
-          final totalActivities = completed.length + upcoming.length;
+          final classroomId = ctrl.selectedClassroomId.value;
+          final completed = ctrl.todayCompleted.toList();
+          final upcoming = ctrl.todayScheduleSlots.toList();
+          final total = completed.length + upcoming.length;
 
-          return SliverList(
-            delegate: SliverChildListDelegate([
-              // Progress bar
-              if (totalActivities > 0)
-                IdleProgressCard(
-                  completed: completed.length,
-                  total: totalActivities,
+          final Widget content = total == 0
+              ? _empty(context, classroomId)
+              : _list(context, classroomId, completed, upcoming);
+
+          return SliverToBoxAdapter(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.05, 0),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
                 ),
-
-              // Today's activities timeline
-              IdleTodayTimeline(
-                completed: completed,
-                upcoming: upcoming,
-                ctrl: ctrl,
-                onStartSchedule: ctrl.startFromSchedule,
               ),
-
-
-              const SizedBox(height: 14),
-            ]),
+              child: content,
+            ),
           );
         }),
+      ],
+    );
+  }
 
-        // ── Start CTAs: whole-class session + focused subset activity ────────
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              children: [
-                StartActivityCta(
-                  title: 'teacher_activity_cta_class_title'.tr,
-                  subtitle: 'teacher_activity_cta_class_sub'.tr,
-                  icon: Icons.groups_rounded,
-                  colors: [AppColors.primary, AppColors.activityPurple],
-                  onStart: () => onStart('class'),
-                ),
-                const SizedBox(height: 12),
-                StartActivityCta(
-                  title: 'teacher_activity_cta_activity_title'.tr,
-                  subtitle: 'teacher_activity_cta_activity_sub'.tr,
-                  icon: Icons.auto_awesome_rounded,
-                  colors: const [
-                    AppColors.activityGreen,
-                    AppColors.activityGreenDark,
-                  ],
-                  onStart: () => onStart('activity'),
-                ),
-              ],
+  Widget _empty(BuildContext context, String classroomId) {
+    return SizedBox(
+      key: ValueKey('empty_$classroomId'),
+      height: 420.h,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 56.h, 24.w, 0),
+        child: const Align(
+          alignment: Alignment.topCenter,
+          child: ActivityEmptyDay(),
+        ),
+      ),
+    );
+  }
+
+  Widget _list(
+    BuildContext context,
+    String classroomId,
+    List<ClassroomActivityModel> completed,
+    List<ScheduleModel> upcoming,
+  ) {
+    return Column(
+      key: ValueKey('list_$classroomId'),
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              'teacher_activity_today_list'.tr,
+              style: context.typography.mdBold
+                  .copyWith(color: AppColors.textDefault),
             ),
           ),
         ),
+        for (final a in completed)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: SessionCard(
+              startTime: _hm(a.startedAt),
+              title: a.title,
+              subtitle: a.subjectName,
+              status: SessionStatus.done,
+            ),
+          ),
+        for (var i = 0; i < upcoming.length; i++)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: SessionCard(
+              startTime: upcoming[i].startTime,
+              endTime: upcoming[i].endTime,
+              title: ctrl.scheduleTitle(upcoming[i]),
+              subtitle: _topicOf(upcoming[i]),
+              status: i == 0 ? SessionStatus.now : SessionStatus.upcoming,
+              onStart: i == 0 ? () => ctrl.startFromSchedule(upcoming[i]) : null,
+            ),
+          ),
+        SizedBox(height: 100.h),
       ],
     );
+  }
+
+  String? _topicOf(ScheduleModel s) {
+    final t = s.topic?.trim() ?? '';
+    return t.isEmpty ? null : t;
   }
 }

@@ -28,7 +28,7 @@ class _NurseryProfileViewState extends State<NurseryProfileView> {
   Widget build(BuildContext context) {
     final n = controller.nursery;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.white,
         body: Column(

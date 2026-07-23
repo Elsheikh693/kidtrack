@@ -559,7 +559,7 @@ class _AddGuardianSheetState extends State<_AddGuardianSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
         child: Column(
@@ -1016,7 +1016,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
           20.w,

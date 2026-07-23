@@ -160,7 +160,7 @@ class TeacherReportsController extends GetxController {
     }
     if (childTotal > 0) {
       final rate = (evalTotal / childTotal * 100).round();
-      list.add('✓ $rate% من الطلاب تم تقييمهم اليوم');
+      list.add('teacherrep38_insight_eval_rate'.trParams({'rate': '$rate'}));
     }
 
     // Most active subject
@@ -174,7 +174,7 @@ class TeacherReportsController extends GetxController {
     if (subjectCounts.isNotEmpty) {
       final best = subjectCounts.entries
           .reduce((a, b) => a.value > b.value ? a : b);
-      list.add('✓ مادة ${best.key} الأكثر نشاطاً اليوم');
+      list.add('teacherrep38_insight_top_subject'.trParams({'subject': best.key}));
     }
 
     // Students needing repeated attention
@@ -189,7 +189,10 @@ class TeacherReportsController extends GetxController {
     for (final entry in attentionCount.entries.where((e) => e.value >= 2).take(2)) {
       final child = _findChild(entry.key);
       if (child != null) {
-        list.add('⚠ ${child.firstName} يحتاج متابعة في ${entry.value} أنشطة');
+        list.add('teacherrep38_insight_needs_attention'.trParams({
+          'name': child.firstName,
+          'count': '${entry.value}',
+        }));
       }
     }
 
@@ -208,7 +211,10 @@ class TeacherReportsController extends GetxController {
       if (topEntry.value >= 2) {
         final child = _findChild(topEntry.key);
         if (child != null) {
-          list.add('⭐ ${child.firstName} حقق تقييماً ممتازاً في ${topEntry.value} أنشطة');
+          list.add('teacherrep38_insight_excellent'.trParams({
+            'name': child.firstName,
+            'count': '${topEntry.value}',
+          }));
         }
       }
     }

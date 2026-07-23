@@ -1,81 +1,88 @@
+import 'package:get/get.dart';
+
 abstract class PermissionLabels {
+  // Values are translation keys, resolved via `.tr` in [label] / [groupOf].
   static const Map<String, String> _labels = {
     // الأطفال
-    'children.view':            'عرض الأطفال',
-    'children.add':             'إضافة طفل',
-    'children.edit':            'تعديل بيانات طفل',
-    'children.delete':          'حذف طفل',
-    'children.transfer_class':  'نقل طفل بين الفصول',
-    'children.transfer_branch': 'نقل طفل بين الفروع',
+    'children.view':            'globalutil6_perm_children_view',
+    'children.add':             'globalutil6_perm_children_add',
+    'children.edit':            'globalutil6_perm_children_edit',
+    'children.delete':          'globalutil6_perm_children_delete',
+    'children.transfer_class':  'globalutil6_perm_children_transfer_class',
+    'children.transfer_branch': 'globalutil6_perm_children_transfer_branch',
     // أولياء الأمور
-    'parents.view': 'عرض أولياء الأمور',
-    'parents.add':  'إضافة ولي أمر',
-    'parents.edit': 'تعديل بيانات ولي الأمر',
+    'parents.view': 'globalutil6_perm_parents_view',
+    'parents.add':  'globalutil6_perm_parents_add',
+    'parents.edit': 'globalutil6_perm_parents_edit',
     // الحضور
-    'attendance.view':      'عرض سجل الحضور',
-    'attendance.check_in':  'تسجيل الحضور',
-    'attendance.check_out': 'تسجيل الانصراف',
-    'attendance.edit':      'تعديل سجل الحضور',
+    'attendance.view':      'globalutil6_perm_attendance_view',
+    'attendance.check_in':  'globalutil6_perm_attendance_check_in',
+    'attendance.check_out': 'globalutil6_perm_attendance_check_out',
+    'attendance.edit':      'globalutil6_perm_attendance_edit',
     // الفصول
-    'classroom.view':          'عرض الفصول',
-    'classroom.manage':        'إدارة الفصول',
-    'classroom.posts':         'النشر في الفصل',
-    'classroom.review_photos': 'مراجعة صور الأنشطة',
+    'classroom.view':          'globalutil6_perm_classroom_view',
+    'classroom.manage':        'globalutil6_perm_classroom_manage',
+    'classroom.posts':         'globalutil6_perm_classroom_posts',
+    'classroom.review_photos': 'globalutil6_perm_classroom_review_photos',
     // الرعاية اليومية
-    'daily_care.view': 'عرض الرعاية اليومية',
-    'daily_care.log':  'تسجيل الرعاية اليومية',
+    'daily_care.view': 'globalutil6_perm_daily_care_view',
+    'daily_care.log':  'globalutil6_perm_daily_care_log',
     // الموظفون
-    'staff.view':        'عرض الموظفين',
-    'staff.add':         'إضافة موظف',
-    'staff.edit':        'تعديل بيانات موظف',
-    'staff.deactivate':  'إيقاف موظف',
-    'staff.permissions': 'إدارة الصلاحيات',
+    'staff.view':        'globalutil6_perm_staff_view',
+    'staff.add':         'globalutil6_perm_staff_add',
+    'staff.edit':        'globalutil6_perm_staff_edit',
+    'staff.deactivate':  'globalutil6_perm_staff_deactivate',
+    'staff.permissions': 'globalutil6_perm_manage_permissions',
     // الاستلام
-    'pickup.view':    'عرض قائمة الاستلام',
-    'pickup.manage':  'إدارة الاستلام',
-    'pickup.approve': 'الموافقة على الاستلام',
+    'pickup.view':    'globalutil6_perm_pickup_view',
+    'pickup.manage':  'globalutil6_perm_pickup_manage',
+    'pickup.approve': 'globalutil6_perm_pickup_approve',
     // قائمة الانتظار
-    'waiting_list.view':   'عرض قائمة الانتظار',
-    'waiting_list.manage': 'إدارة قائمة الانتظار',
+    'waiting_list.view':   'globalutil6_perm_waiting_list_view',
+    'waiting_list.manage': 'globalutil6_perm_waiting_list_manage',
     // الإعلانات
-    'announcements.view':        'عرض الإعلانات',
-    'announcements.send_class':  'إرسال إعلان للفصل',
-    'announcements.send_branch': 'إرسال إعلان للفرع',
-    'announcements.send_all':    'إرسال إعلان لجميع أولياء الأمور',
+    'announcements.view':        'globalutil6_perm_announcements_view',
+    'announcements.send_class':  'globalutil6_perm_announcements_send_class',
+    'announcements.send_branch': 'globalutil6_perm_announcements_send_branch',
+    'announcements.send_all':    'globalutil6_perm_announcements_send_all',
     // التقارير
-    'reports.attendance': 'تقارير الحضور',
-    'reports.children':   'تقارير الأطفال',
-    'reports.staff':      'تقارير الموظفين',
-    'reports.finance':    'التقارير المالية',
+    'reports.attendance': 'globalutil6_perm_reports_attendance',
+    'reports.children':   'globalutil6_perm_reports_children',
+    'reports.staff':      'globalutil6_perm_reports_staff',
+    'reports.finance':    'globalutil6_perm_reports_finance',
     // المالية
-    'finance.view':   'عرض الحسابات',
-    'finance.manage': 'إدارة الحسابات',
+    'finance.view':   'globalutil6_perm_finance_view',
+    'finance.manage': 'globalutil6_perm_finance_manage',
     // الإعدادات
-    'settings.nursery':     'إعدادات الحضانة',
-    'settings.branches':    'إدارة الفروع',
-    'settings.permissions': 'إدارة الصلاحيات',
+    'settings.nursery':     'globalutil6_perm_settings_nursery',
+    'settings.branches':    'globalutil6_perm_settings_branches',
+    'settings.permissions': 'globalutil6_perm_manage_permissions',
   };
 
   static const Map<String, String> _groups = {
-    'children':     'الأطفال',
-    'parents':      'أولياء الأمور',
-    'attendance':   'الحضور والغياب',
-    'classroom':    'الفصول الدراسية',
-    'daily_care':   'الرعاية اليومية',
-    'staff':        'الموظفون',
-    'pickup':       'الاستلام',
-    'waiting_list': 'قائمة الانتظار',
-    'announcements':'الإعلانات',
-    'reports':      'التقارير',
-    'finance':      'المالية',
-    'settings':     'الإعدادات',
+    'children':     'globalutil6_permgroup_children',
+    'parents':      'globalutil6_permgroup_parents',
+    'attendance':   'globalutil6_permgroup_attendance',
+    'classroom':    'globalutil6_permgroup_classroom',
+    'daily_care':   'globalutil6_permgroup_daily_care',
+    'staff':        'globalutil6_permgroup_staff',
+    'pickup':       'globalutil6_permgroup_pickup',
+    'waiting_list': 'globalutil6_permgroup_waiting_list',
+    'announcements':'globalutil6_permgroup_announcements',
+    'reports':      'globalutil6_permgroup_reports',
+    'finance':      'globalutil6_permgroup_finance',
+    'settings':     'globalutil6_permgroup_settings',
   };
 
-  static String label(String key) => _labels[key] ?? key;
+  static String label(String key) {
+    final k = _labels[key];
+    return k != null ? k.tr : key;
+  }
 
   static String groupOf(String key) {
     final prefix = key.contains('.') ? key.split('.').first : key;
-    return _groups[prefix] ?? prefix;
+    final g = _groups[prefix];
+    return g != null ? g.tr : prefix;
   }
 
   /// Groups a flat list of keys by their section prefix.

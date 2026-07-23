@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:get/get.dart';
 import '../../Data/models/child_current_status/child_current_status_model.dart';
 import '../../Data/models/child_daily_event/child_daily_event_model.dart';
 import '../../Data/models/child_attendance/child_attendance_model.dart';
@@ -229,7 +230,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.checkIn,
       source: byRole,
-      title: 'وصل الحضانة',
+      title: 'globalserv7_event_checked_in'.tr,
       createdBy: receptionistId,
       createdByRole: byRole,
       createdAt: now.millisecondsSinceEpoch,
@@ -289,7 +290,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.checkOut,
       source: ChildEventSource.reception,
-      title: 'غادر الحضانة',
+      title: 'globalserv7_event_checked_out'.tr,
       createdBy: receptionistId,
       createdByRole: ChildEventSource.reception,
       createdAt: now.millisecondsSinceEpoch,
@@ -442,7 +443,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.napStarted,
       source: ChildEventSource.nanny,
-      title: 'بدأ القيلولة',
+      title: 'globalserv7_event_nap_started'.tr,
       createdBy: nannyId,
       createdByRole: ChildEventSource.nanny,
       createdAt: now.millisecondsSinceEpoch,
@@ -477,7 +478,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.napCompleted,
       source: ChildEventSource.nanny,
-      title: 'استيقظ من القيلولة',
+      title: 'globalserv7_event_nap_ended'.tr,
       sessionId: sessionId,
       createdBy: nannyId,
       createdByRole: ChildEventSource.nanny,
@@ -515,7 +516,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.busBoarded,
       source: ChildEventSource.bus,
-      title: 'ركب الباص',
+      title: 'globalserv7_event_bus_boarded'.tr,
       createdBy: chaperoneId,
       createdByRole: ChildEventSource.bus,
       createdAt: now.millisecondsSinceEpoch,
@@ -549,7 +550,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.busArrived,
       source: ChildEventSource.bus,
-      title: 'وصل من الباص',
+      title: 'globalserv7_event_bus_arrived'.tr,
       createdBy: chaperoneId,
       createdByRole: ChildEventSource.bus,
       createdAt: now.millisecondsSinceEpoch,
@@ -587,7 +588,7 @@ class ChildStatusService {
       branchId: branchId,
       eventType: ChildEventType.pickupRequested,
       source: ChildEventSource.parent,
-      title: 'ولي الأمر في الطريق',
+      title: 'globalserv7_event_pickup_requested'.tr,
       createdBy: parentId,
       createdByRole: ChildEventSource.parent,
       createdAt: now.millisecondsSinceEpoch,
@@ -604,18 +605,18 @@ class ChildStatusService {
 
   static String _mealLabel(String type) {
     switch (type) {
-      case 'breakfast': return 'وجبة الإفطار';
-      case 'lunch':     return 'وجبة الغداء';
-      case 'snack':     return 'وجبة الوجبة الخفيفة';
-      default:          return 'وجبة';
+      case 'breakfast': return 'globalserv7_meal_breakfast'.tr;
+      case 'lunch':     return 'globalserv7_meal_lunch'.tr;
+      case 'snack':     return 'globalserv7_meal_snack'.tr;
+      default:          return 'globalserv7_meal_generic'.tr;
     }
   }
 
   static String _mealStatusLabel(String s) {
     switch (s) {
-      case 'ate_all':  return 'أكل كل شيء';
-      case 'ate_half': return 'أكل النصف';
-      case 'refused':  return 'رفض الأكل';
+      case 'ate_all':  return 'globalserv7_meal_ate_all'.tr;
+      case 'ate_half': return 'globalserv7_meal_ate_half'.tr;
+      case 'refused':  return 'globalserv7_meal_refused'.tr;
       default:         return s;
     }
   }

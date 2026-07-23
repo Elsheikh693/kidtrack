@@ -20,7 +20,7 @@ class AppSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -41,6 +41,14 @@ class AppSettingsView extends StatelessWidget {
         body: ListView(
           padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 28.h),
           children: [
+            _SettingsTile(
+              icon: Icons.language_rounded,
+              iconColor: AppColors.primary,
+              title: 'settings_language'.tr,
+              subtitle: 'settings_language_sub'.tr,
+              onTap: showLanguageSheet,
+            ),
+            SizedBox(height: 14.h),
             _SettingsTile(
               icon: Icons.call_rounded,
               iconColor: const Color(0xFF6366F1),

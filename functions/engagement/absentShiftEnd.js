@@ -43,6 +43,39 @@ function cairoDateKey(now = new Date()) {
   }).format(now);
 }
 
+// Weekday of a Cairo date, in Dart's DateTime.weekday convention (Mon=1..Sun=7)
+// so it lines up with the weekendDays keys the app writes. `date` is the
+// "YYYY-MM-DD" Cairo key; we parse it as UTC midnight so the host timezone can't
+// shift the weekday.
+function cairoWeekday(date) {
+  const [y, m, d] = String(date).split("-").map(Number);
+  const jsDay = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0=Sun..6=Sat
+  return jsDay === 0 ? 7 : jsDay; // → Mon=1..Sun=7
+}
+
+// Is the nursery closed today? Two independent sources, mirroring the app's
+// HolidayService:
+//   • specific holiday date → platform/{nid}/holidays/{date}
+//   • weekly weekend        → platform/{nid}/holidaySettings/weekendDays
+//     (map of DateTime.weekday int → true, e.g. {"5":true,"6":true} = Fri+Sat)
+// Returns { off, reason }. When off, we must NOT send absence messages — a
+// day-off is not an absence, and blasting parents on the weekend is a disaster.
+async function nurseryDayOff(nurseryId, date, weekday) {
+  const holidaySnap = await db()
+    .ref(`platform/${nurseryId}/holidays/${date}`)
+    .once("value");
+  if (holidaySnap.exists()) return { off: true, reason: "holiday" };
+
+  const weekendSnap = await db()
+    .ref(`platform/${nurseryId}/holidaySettings/weekendDays`)
+    .once("value");
+  const weekend = weekendSnap.val();
+  if (weekend && typeof weekend === "object" && weekend[String(weekday)] === true) {
+    return { off: true, reason: "weekend" };
+  }
+  return { off: false };
+}
+
 // Minutes elapsed since midnight in Cairo time (0..1439).
 function cairoMinuteOfDay(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -195,12 +228,21 @@ async function allNurseryIds() {
 async function runAbsentScan() {
   const date = cairoDateKey();
   const minuteNow = cairoMinuteOfDay();
+  const weekday = cairoWeekday(date);
 
   const nurseryIds = await allNurseryIds();
 
   let sent = 0;
   const summary = [];
   for (const nurseryId of nurseryIds) {
+    // Never chase absences on a day the nursery is closed — a holiday or the
+    // weekly weekend is not an absence. This MUST come before any scanning.
+    const dayOff = await nurseryDayOff(nurseryId, date, weekday);
+    if (dayOff.off) {
+      summary.push({ nurseryId, sent: 0, note: `day off (${dayOff.reason})` });
+      continue;
+    }
+
     const ends = await shiftEndMap(nurseryId);
     const endedShifts = new Set(
       Object.entries(ends)

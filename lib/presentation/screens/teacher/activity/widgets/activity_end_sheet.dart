@@ -57,7 +57,7 @@ class _ActivityEndSheetState extends State<ActivityEndSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: DraggableScrollableSheet(
         initialChildSize: 0.92,
         minChildSize: 0.5,

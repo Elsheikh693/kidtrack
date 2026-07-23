@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../education/widgets/journal_meta.dart';
 import '../../education/controller.dart' show DayTimelineItem;
 import '../guardian_note_controller.dart';
+import '../../../../../Global/Localization/app_direction.dart';
 
 /// Bottom sheet where the guardian writes / edits / deletes their note on a
 /// single session. Opened from [GuardianNoteSection].
@@ -60,7 +61,7 @@ class _GuardianNoteSheetState extends State<GuardianNoteSheet> {
         ? widget.item.title
         : widget.item.subjectName;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,

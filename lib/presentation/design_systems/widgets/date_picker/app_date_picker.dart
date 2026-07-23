@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../design_constants/colors/app_colors.dart';
+import '../../../../Global/Localization/app_direction.dart';
 
 /// Shared iOS-style date picker used across the app.
 ///
@@ -30,7 +32,7 @@ Future<DateTime?> showAppDatePicker(
   return showCupertinoModalPopup<DateTime>(
     context: context,
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: 340,
         decoration: const BoxDecoration(
@@ -50,19 +52,19 @@ Future<DateTime?> showAppDatePicker(
                   children: [
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('إلغاء',
-                          style: TextStyle(color: muted, fontSize: 15)),
+                      child: Text('binding9_cancel'.tr,
+                          style: const TextStyle(color: muted, fontSize: 15)),
                     ),
                     if (showTodayButton && !now.isAfter(max) && !now.isBefore(min))
                       CupertinoButton(
                         onPressed: () => Navigator.pop(ctx, now),
-                        child: const Text('اليوم',
-                            style: TextStyle(fontSize: 15)),
+                        child: Text('binding9_today'.tr,
+                            style: const TextStyle(fontSize: 15)),
                       ),
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx, temp),
                       child: Text(
-                        'تم',
+                        'binding9_done'.tr,
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 15,
@@ -115,7 +117,7 @@ Future<TimeOfDay?> showAppTimePicker(
   return showCupertinoModalPopup<TimeOfDay>(
     context: context,
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Container(
         height: 340,
         decoration: const BoxDecoration(
@@ -135,8 +137,8 @@ Future<TimeOfDay?> showAppTimePicker(
                   children: [
                     CupertinoButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('إلغاء',
-                          style: TextStyle(color: muted, fontSize: 15)),
+                      child: Text('binding9_cancel'.tr,
+                          style: const TextStyle(color: muted, fontSize: 15)),
                     ),
                     CupertinoButton(
                       onPressed: () => Navigator.pop(
@@ -144,7 +146,7 @@ Future<TimeOfDay?> showAppTimePicker(
                         TimeOfDay(hour: temp.hour, minute: temp.minute),
                       ),
                       child: Text(
-                        'تم',
+                        'binding9_done'.tr,
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 15,

@@ -127,7 +127,7 @@ class _ClassroomSheetState extends State<ClassroomSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.85,
         child: Column(

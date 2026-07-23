@@ -198,21 +198,7 @@ class _Header extends StatelessWidget {
 
   static String _todayLabel() {
     final now = DateTime.now();
-    const months = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    return '${now.day} ${months[now.month - 1]}';
+    return localizeDigits('${now.day} ${monthName(now.month)}');
   }
 
   void _showDateSheet(BuildContext context) {
@@ -226,7 +212,7 @@ class _Header extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _OptionsSheet(
-        title: 'التصفية بالتاريخ',
+        title: 'teacherhom36_filter_by_date'.tr,
         options: options
             .map(
               (o) => _SheetItem(
@@ -249,7 +235,7 @@ class _Header extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _OptionsSheet(
-        title: 'اختر الفصل',
+        title: 'teacherhom36_choose_class'.tr,
         options: [
           _SheetItem(
             label: 'hw_all_classes'.tr,
@@ -280,7 +266,7 @@ class _Header extends StatelessWidget {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _OptionsSheet(
-        title: 'اختر المادة',
+        title: 'teacherhom36_choose_subject'.tr,
         options: [
           _SheetItem(
             label: 'hw_all_subjects'.tr,

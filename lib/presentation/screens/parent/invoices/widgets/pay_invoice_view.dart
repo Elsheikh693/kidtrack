@@ -86,7 +86,7 @@ class _PayInvoiceViewState extends State<PayInvoiceView> {
     final invoice = widget.invoice;
     final hasAccounts = widget.accounts.isNotEmpty;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: _bg,
         appBar: AppBar(

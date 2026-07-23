@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -89,7 +90,8 @@ class EventService {
         category: category,
         price: price,
         createdBy: _session.userId ?? '',
-        createdByName: _session.currentUser?.displayName ?? 'الاستقبال',
+        createdByName:
+            _session.currentUser?.displayName ?? 'globalserv7_role_reception'.tr,
         createdAt: DateTime.now().millisecondsSinceEpoch,
       );
       await _eventsRef.child(id).set(event.toJson());

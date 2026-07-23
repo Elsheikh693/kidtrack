@@ -3,6 +3,7 @@ import '../dashboard/widgets/dashboard_hero.dart';
 import '../dashboard/widgets/dashboard_presence_card.dart';
 import '../dashboard/widgets/dashboard_quick_links.dart';
 import '../dashboard/widgets/dashboard_shimmer.dart';
+import '../dashboard/widgets/late_sessions_banner.dart';
 import '../media_approval/widgets/media_approval_banner.dart';
 import '../star_of_week/widgets/star_dashboard_card.dart';
 
@@ -57,6 +58,7 @@ class _ManagerDashboardTabState extends State<ManagerDashboardTab> {
                   delegate: SliverChildListDelegate([
                     DashboardQuickLinks(controller: controller),
                     SizedBox(height: 18.h),
+                    LateSessionsBanner(controller: controller),
                     const StarDashboardCard(),
                     SizedBox(height: 14.h),
                     const MediaApprovalBanner(),

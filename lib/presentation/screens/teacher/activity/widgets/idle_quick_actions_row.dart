@@ -22,28 +22,28 @@ class IdleQuickActionsRow extends StatelessWidget {
         children: [
           _ActionBtn(
             icon: Icons.play_circle_outline_rounded,
-            label: 'بدء نشاط',
+            label: 'teacheract33_action_start_activity'.tr,
             color: AppColors.activityGreen,
             onTap: onStartActivity,
           ),
           const SizedBox(width: 8),
           _ActionBtn(
             icon: Icons.assignment_outlined,
-            label: 'واجب سريع',
+            label: 'teacheract33_action_quick_homework'.tr,
             color: AppColors.activityAmberBrand,
             onTap: onQuickHomework,
           ),
           const SizedBox(width: 8),
           _ActionBtn(
             icon: Icons.bar_chart_rounded,
-            label: 'التقارير',
+            label: 'teacheract33_action_reports'.tr,
             color: AppColors.activityBlue,
             onTap: onGoToReports,
           ),
           const SizedBox(width: 8),
           _ActionBtn(
             icon: Icons.menu_book_rounded,
-            label: 'دفتر التواصل',
+            label: 'teacheract33_action_link_book'.tr,
             color: AppColors.activityPurple,
             onTap: onGoToLinkBook,
           ),

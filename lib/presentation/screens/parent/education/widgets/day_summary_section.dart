@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../controller.dart';
 import 'journal_meta.dart';
 
@@ -29,12 +30,12 @@ class DaySummarySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.summarize_rounded, size: 18, color: kJMuted),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.summarize_rounded, size: 18, color: kJMuted),
+              const SizedBox(width: 8),
               Text(
-                'ملخص اليوم',
-                style: TextStyle(
+                'parenteduc23_day_summary'.tr,
+                style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.w800, color: kJInk),
               ),
             ],
@@ -44,19 +45,19 @@ class DaySummarySection extends StatelessWidget {
             children: [
               _StatBox(
                 value: '${summary.activityCount}',
-                label: 'الأنشطة',
+                label: 'parenteduc23_activities_label'.tr,
                 color: const Color(0xFF2563EB),
               ),
               const SizedBox(width: 10),
               _StatBox(
                 value: '${summary.homeworkDone}/${summary.homeworkTotal}',
-                label: 'الواجبات',
+                label: 'parenteduc23_homework'.tr,
                 color: const Color(0xFF8E44AD),
               ),
               const SizedBox(width: 10),
               _StatBox(
                 value: m.label,
-                label: 'التقييم العام',
+                label: 'parenteduc23_overall_eval'.tr,
                 color: m.color,
                 small: true,
               ),
@@ -64,9 +65,9 @@ class DaySummarySection extends StatelessWidget {
           ),
           if (summary.skills.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text(
-              'المهارات المكتسبة',
-              style: TextStyle(
+            Text(
+              'parenteduc23_skills_gained'.tr,
+              style: const TextStyle(
                   fontSize: 13, fontWeight: FontWeight.w700, color: kJInk),
             ),
             const SizedBox(height: 10),

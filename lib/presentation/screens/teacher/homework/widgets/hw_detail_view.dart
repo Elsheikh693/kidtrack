@@ -85,8 +85,8 @@ class _HwDetailViewState extends State<HwDetailView>
           homework: widget.homework, statuses: _statuses);
       Get.back();
       Get.snackbar(
-        'تم',
-        'تم حفظ المتابعة',
+        'teacherhom36_done'.tr,
+        'teacherhom36_follow_up_saved'.tr,
         backgroundColor: _kGreen,
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
@@ -125,7 +125,7 @@ class _HwDetailViewState extends State<HwDetailView>
     );
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: appTextDirection,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         body: Column(
@@ -240,11 +240,7 @@ class _GradientHeader extends StatelessWidget {
   static String _dateLabel(int? ms) {
     if (ms == null) return '';
     final d = DateTime.fromMillisecondsSinceEpoch(ms);
-    const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
+    return localizeDigits('${d.day} ${monthName(d.month)}');
   }
 
   @override
@@ -485,7 +481,7 @@ class _SummaryCard extends StatelessWidget {
                   ),
                   SizedBox(height: 5.h),
                   Text(
-                    '${(value * 100).round()}% إكمال',
+                    '${(value * 100).round()}% ${'teacherhom36_completion'.tr}',
                     style: context.typography.smSemiBold.copyWith(
                       fontSize: 11,
                       color: _kGreen,
@@ -499,16 +495,16 @@ class _SummaryCard extends StatelessWidget {
             Row(
               children: [
                 _AnimatedStatPill(
-                    value: completed, label: 'أكمل', color: _kGreen),
+                    value: completed, label: 'teacherhom36_status_completed'.tr, color: _kGreen),
                 _AnimatedStatPill(
-                    value: partial, label: 'جزئي', color: _kAmber),
+                    value: partial, label: 'teacherhom36_status_partial'.tr, color: _kAmber),
                 _AnimatedStatPill(
-                    value: notCompleted, label: 'لم يكمل', color: _kRed),
+                    value: notCompleted, label: 'teacherhom36_status_not_completed'.tr, color: _kRed),
                 _AnimatedStatPill(
-                    value: absent, label: 'غائب', color: _kGray),
+                    value: absent, label: 'teacherhom36_status_absent'.tr, color: _kGray),
                 _AnimatedStatPill(
                   value: unmarked,
-                  label: 'بدون',
+                  label: 'teacherhom36_status_none'.tr,
                   color: const Color(0xFFCBD5E1),
                 ),
               ],
@@ -581,7 +577,7 @@ class _BulkBar extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              'الكل:',
+              'teacherhom36_bulk_all'.tr,
               style: context.typography.smSemiBold.copyWith(
                 fontSize: 12,
                 color: const Color(0xFF94A3B8),
@@ -589,28 +585,28 @@ class _BulkBar extends StatelessWidget {
             ),
             SizedBox(width: 8.w),
             _BulkBtn(
-              label: 'أكمل',
+              label: 'teacherhom36_status_completed'.tr,
               color: _kGreen,
               icon: Icons.check_circle_rounded,
               onTap: () => onBulk(HomeworkStatus.completed),
             ),
             SizedBox(width: 6.w),
             _BulkBtn(
-              label: 'جزئي',
+              label: 'teacherhom36_status_partial'.tr,
               color: _kAmber,
               icon: Icons.remove_circle_rounded,
               onTap: () => onBulk(HomeworkStatus.partiallyCompleted),
             ),
             SizedBox(width: 6.w),
             _BulkBtn(
-              label: 'لم يكمل',
+              label: 'teacherhom36_status_not_completed'.tr,
               color: _kRed,
               icon: Icons.cancel_rounded,
               onTap: () => onBulk(HomeworkStatus.notCompleted),
             ),
             SizedBox(width: 6.w),
             _BulkBtn(
-              label: 'غائب',
+              label: 'teacherhom36_status_absent'.tr,
               color: _kGray,
               icon: Icons.person_off_rounded,
               onTap: () => onBulk(HomeworkStatus.absent),
@@ -900,13 +896,13 @@ class _FilterBar extends StatelessWidget {
   final Map<String, int> counts;
   final void Function(String) onSelect;
 
-  static const _options = <(String, String, Color)>[
-    ('all', 'الكل', _kBlue),
-    ('completed', 'أكمل', _kGreen),
-    ('partial', 'جزئي', _kAmber),
-    ('not', 'لم يكمل', _kRed),
-    ('absent', 'غائب', _kGray),
-    ('unmarked', 'بدون', Color(0xFF94A3B8)),
+  static List<(String, String, Color)> get _options => <(String, String, Color)>[
+    ('all', 'teacherhom36_status_all'.tr, _kBlue),
+    ('completed', 'teacherhom36_status_completed'.tr, _kGreen),
+    ('partial', 'teacherhom36_status_partial'.tr, _kAmber),
+    ('not', 'teacherhom36_status_not_completed'.tr, _kRed),
+    ('absent', 'teacherhom36_status_absent'.tr, _kGray),
+    ('unmarked', 'teacherhom36_status_none'.tr, const Color(0xFF94A3B8)),
   ];
 
   @override
