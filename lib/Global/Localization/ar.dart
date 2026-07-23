@@ -4772,4 +4772,87 @@ const Map<String, String> ar = {
   "sa_billing_title": "فوترة الاشتراكات",
   "sa_billing_subtitle": "تحصيل اشتراك المنصة من الحضانات",
   "sa_billing_empty": "لا توجد حضانات",
+
+  // ─── Common ──────────────────────────────────────────────────────────────
+  "save": "حفظ",
+  "common_edit": "تعديل",
+
+  // ─── Audit Log ───────────────────────────────────────────────────────────
+  "audit_title": "سجل التدقيق",
+
+  // ─── Login (extra) ───────────────────────────────────────────────────────
+  "login_error_general": "حدث خطأ أثناء تسجيل الدخول، حاول مرة أخرى",
+
+  // ─── Owner ───────────────────────────────────────────────────────────────
+  "owner_default_name": "المالك",
+
+  // ─── Invoices (extra) ────────────────────────────────────────────────────
+  "invoice_success_deleted": "تم حذف الفاتورة بنجاح",
+  "invoice_error_failed": "حدث خطأ، حاول مرة أخرى",
+
+  // ─── Support Tickets ─────────────────────────────────────────────────────
+  "ticket_success_updated": "تم تحديث التذكرة بنجاح",
+  "ticket_success_deleted": "تم حذف التذكرة بنجاح",
+  "ticket_error_failed": "حدث خطأ، حاول مرة أخرى",
+
+  // ─── Daily Care ──────────────────────────────────────────────────────────
+  "care_title": "الرعاية اليومية",
+  "care_add_fab": "إضافة سجل",
+  "care_add_title": "إضافة سجل رعاية",
+  "care_edit_title": "تعديل سجل الرعاية",
+  "care_child_label": "الطفل",
+  "care_child_hint": "اختر الطفل",
+  "care_classroom_label": "الفصل",
+  "care_classroom_hint": "اختر الفصل",
+  "care_meals_section": "الوجبات",
+  "care_breakfast": "الفطار",
+  "care_lunch": "الغداء",
+  "care_snack": "وجبة خفيفة",
+  "care_bathroom_count": "عدد مرات دخول الحمام",
+  "care_diaper_changes": "عدد مرات تغيير الحفاض",
+  "care_mood_section": "الحالة المزاجية",
+  "care_notes_label": "ملاحظات",
+  "care_save": "حفظ",
+  "care_delete": "حذف",
+  "care_empty_title": "لا توجد سجلات رعاية",
+  "care_empty_subtitle": "أضف أول سجل رعاية يومية لهذا اليوم",
+  "care_error_child": "يرجى اختيار الطفل",
+  "care_error_classroom": "يرجى اختيار الفصل",
+  "care_error_failed": "حدث خطأ، حاول مرة أخرى",
+  "care_success_added": "تم إضافة السجل بنجاح",
+  "care_success_updated": "تم تحديث السجل بنجاح",
+  "care_success_deleted": "تم حذف السجل بنجاح",
+  "care_mood_happy": "سعيد",
+  "care_mood_calm": "هادئ",
+  "care_mood_cranky": "متضايق",
+  "care_mood_sick": "متعب",
+  "care_meal_ate_all": "أكل الكل",
+  "care_meal_ate_some": "أكل البعض",
+  "care_meal_did_not_eat": "لم يأكل",
+
+  // ─── Child Leave Requests ────────────────────────────────────────────────
+  "child_leave_title": "طلبات الإجازة",
+  "child_leave_add_title": "إضافة طلب إجازة",
+  "child_leave_edit_title": "تعديل طلب الإجازة",
+  "child_leave_child_label": "الطفل",
+  "child_leave_child_hint": "اختر الطفل",
+  "child_leave_reason_label": "السبب",
+  "child_leave_reason_hint": "اكتب سبب الإجازة",
+  "child_leave_pick_date": "اختر التاريخ",
+  "child_leave_error_child": "يرجى اختيار الطفل",
+  "child_leave_error_start": "يرجى اختيار تاريخ البداية",
+  "child_leave_error_end": "يرجى اختيار تاريخ النهاية",
+  "child_leave_error_reason": "يرجى إدخال سبب الإجازة",
+  "child_leave_error_failed": "حدث خطأ، حاول مرة أخرى",
+  "child_leave_success_added": "تم إرسال طلب الإجازة بنجاح",
+  "child_leave_success_updated": "تم تحديث طلب الإجازة بنجاح",
+  "child_leave_success_deleted": "تم حذف طلب الإجازة بنجاح",
+
+  // ─── Teacher Homework (quick) ────────────────────────────────────────────
+  "teacher_homework_new": "واجب جديد",
+  "teacher_homework_title_hint": "عنوان الواجب",
+  "teacher_homework_desc_hint": "تفاصيل الواجب",
+  "teacher_homework_post": "نشر",
+  "teacher_homework_post_success": "تم نشر الواجب بنجاح",
+  "teacher_homework_post_error": "تعذّر نشر الواجب، حاول مرة أخرى",
 };

@@ -4799,4 +4799,87 @@ const Map<String, String> en = {
   "sa_billing_title": "Subscription billing",
   "sa_billing_subtitle": "Collect platform subscriptions from nurseries",
   "sa_billing_empty": "No nurseries",
+
+  // ─── Common ──────────────────────────────────────────────────────────────
+  "save": "Save",
+  "common_edit": "Edit",
+
+  // ─── Audit Log ───────────────────────────────────────────────────────────
+  "audit_title": "Audit Log",
+
+  // ─── Login (extra) ───────────────────────────────────────────────────────
+  "login_error_general": "An error occurred while signing in, please try again",
+
+  // ─── Owner ───────────────────────────────────────────────────────────────
+  "owner_default_name": "Owner",
+
+  // ─── Invoices (extra) ────────────────────────────────────────────────────
+  "invoice_success_deleted": "Invoice deleted successfully",
+  "invoice_error_failed": "Something went wrong, please try again",
+
+  // ─── Support Tickets ─────────────────────────────────────────────────────
+  "ticket_success_updated": "Ticket updated successfully",
+  "ticket_success_deleted": "Ticket deleted successfully",
+  "ticket_error_failed": "Something went wrong, please try again",
+
+  // ─── Daily Care ──────────────────────────────────────────────────────────
+  "care_title": "Daily Care",
+  "care_add_fab": "Add Record",
+  "care_add_title": "Add Care Record",
+  "care_edit_title": "Edit Care Record",
+  "care_child_label": "Child",
+  "care_child_hint": "Select child",
+  "care_classroom_label": "Classroom",
+  "care_classroom_hint": "Select classroom",
+  "care_meals_section": "Meals",
+  "care_breakfast": "Breakfast",
+  "care_lunch": "Lunch",
+  "care_snack": "Snack",
+  "care_bathroom_count": "Bathroom visits",
+  "care_diaper_changes": "Diaper changes",
+  "care_mood_section": "Mood",
+  "care_notes_label": "Notes",
+  "care_save": "Save",
+  "care_delete": "Delete",
+  "care_empty_title": "No care records",
+  "care_empty_subtitle": "Add the first daily care record for today",
+  "care_error_child": "Please select a child",
+  "care_error_classroom": "Please select a classroom",
+  "care_error_failed": "Something went wrong, please try again",
+  "care_success_added": "Record added successfully",
+  "care_success_updated": "Record updated successfully",
+  "care_success_deleted": "Record deleted successfully",
+  "care_mood_happy": "Happy",
+  "care_mood_calm": "Calm",
+  "care_mood_cranky": "Cranky",
+  "care_mood_sick": "Unwell",
+  "care_meal_ate_all": "Ate all",
+  "care_meal_ate_some": "Ate some",
+  "care_meal_did_not_eat": "Did not eat",
+
+  // ─── Child Leave Requests ────────────────────────────────────────────────
+  "child_leave_title": "Leave Requests",
+  "child_leave_add_title": "Add Leave Request",
+  "child_leave_edit_title": "Edit Leave Request",
+  "child_leave_child_label": "Child",
+  "child_leave_child_hint": "Select child",
+  "child_leave_reason_label": "Reason",
+  "child_leave_reason_hint": "Enter the leave reason",
+  "child_leave_pick_date": "Pick a date",
+  "child_leave_error_child": "Please select a child",
+  "child_leave_error_start": "Please select a start date",
+  "child_leave_error_end": "Please select an end date",
+  "child_leave_error_reason": "Please enter the leave reason",
+  "child_leave_error_failed": "Something went wrong, please try again",
+  "child_leave_success_added": "Leave request submitted successfully",
+  "child_leave_success_updated": "Leave request updated successfully",
+  "child_leave_success_deleted": "Leave request deleted successfully",
+
+  // ─── Teacher Homework (quick) ────────────────────────────────────────────
+  "teacher_homework_new": "New Homework",
+  "teacher_homework_title_hint": "Homework title",
+  "teacher_homework_desc_hint": "Homework details",
+  "teacher_homework_post": "Post",
+  "teacher_homework_post_success": "Homework posted successfully",
+  "teacher_homework_post_error": "Failed to post homework, please try again",
 };
